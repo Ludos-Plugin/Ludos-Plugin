@@ -13,7 +13,7 @@ Notre projet a pour vocation de rendre accessible le mode de jeu Manhunt sur Min
 * **Axel Sevennet** _alias_ [@AxelSevenS](https://github.com/AxelSevenS)
 * **Valentin Chorro** _alias_[@Ganon358](https://github.com/Ganon358)
 ### Collaborateurs
-* ** Guillaume PHAM _alias_[@GuillaumePham](https://github.com/GuillaumePHAM)
-* ** Quentin Colleta _alias_[@feur25](https://github.com/feur25)
+* **Guillaume PHAM _alias_[@GuillaumePham](https://github.com/GuillaumePHAM)
+* **Quentin Colleta _alias_[@feur25](https://github.com/feur25)
 
 
