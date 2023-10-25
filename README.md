@@ -10,7 +10,7 @@ Notre projet a pour vocation de rendre accessible le mode de jeu Manhunt sur Min
 
 ## Membre du projet
 ### Chef
-* **Axel Sevennet** _alias_ [@AxelSevenS](https://github.com/AxelSevenS)
+* **Axel Sevenet** _alias_ [@AxelSevenS](https://github.com/AxelSevenS)
 * **Valentin Chorro** _alias_ [@Ganon358](https://github.com/Ganon358)
 ### Collaborateurs
 * **Guillaume PHAM** _alias_ [@GuillaumePham](https://github.com/GuillaumePHAM)
