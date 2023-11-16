@@ -13,8 +13,8 @@ public class StalkerRole extends PlayerRole {
     @Override
     public void processAbilities(Player player) {
         // Passive Ability
+        //nique ta mere quentin 
         utility.removeNameTag(player.getName());
-        
         // super.hidePlayerName();
     }
 }

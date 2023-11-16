@@ -1,6 +1,7 @@
 package fr.ludos.roles;
 
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.ConsoleCommandSender;
@@ -15,18 +16,26 @@ public class RolesUtility extends JavaPlugin implements Listener {
     static ConsoleCommandSender console;
     ScoreboardManager sbm;
     Team NoNameTagTeam;
+    
 
+    @Override
     public void onEnable() {
+        Bukkit.broadcastMessage("Started");
         server = this.getServer();
         server.getPluginManager().registerEvents(this, this);
         sbm = server.getScoreboardManager();
         console = server.getConsoleSender();
         console.sendMessage(ChatColor.GREEN + "" + ChatColor.ITALIC + "NoNameTag Loaded");
-        for(Player player : server.getOnlinePlayers())
+        for( Player player : server.getOnlinePlayers() ) {
             removeNameTag(player.getDisplayName());
+        }
     }
 
-    public void onDisable() { console.sendMessage(ChatColor.RED + "NoNameTag Disabled"); }
+    @Override
+    public void onDisable() {
+        Bukkit.broadcastMessage("Ended");
+        console.sendMessage(ChatColor.RED + "NoNameTag Disabled");
+    }
 
     public void removeNameTag(String PlayerName) {
         if (!teamExists()) makeTeam();

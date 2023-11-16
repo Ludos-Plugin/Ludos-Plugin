@@ -2,11 +2,11 @@ name : Ludos
 version: "1.0"
 api: test
 api-version: 1.19
-main: fr.Ludos.Main
+main: fr.ludos.Main
 
 
 commands:
-   ludos:
-      usage: /ludos [config | start] [manhunt]
+   playludos:
+      usage: "Usage: /<command> [config | start] <game>"
       description: "The main Ludos command"
    

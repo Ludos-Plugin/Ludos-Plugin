@@ -34,9 +34,9 @@ public final class ManhuntTeamController extends TeamController implements Liste
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
         if ( 
-            event.getEntity() instanceof Player player &&
-            huntedTeam.hasEntry(player.getName())
+            huntedTeam.hasEntry(event.getEntity().getName())
         ) {
             Bukkit.broadcastMessage(player.getName());
             Bukkit.broadcastMessage("Hunted killed!");

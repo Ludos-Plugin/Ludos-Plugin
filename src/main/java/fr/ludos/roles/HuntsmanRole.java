@@ -7,11 +7,11 @@ public class HuntsmanRole extends PlayerRole {
     @Override
     public void processCrafting(Player player) {
         
+        
     }
 
     @Override
     public void processAbilities(Player player) {
         
     }
-
 }
