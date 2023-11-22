@@ -14,6 +14,6 @@ Notre projet a pour vocation de rendre accessible le mode de jeu Manhunt sur Min
 * **Valentin Chorro** _alias_ [@Ganon358](https://github.com/Ganon358)
 ### Collaborateurs
 * **Guillaume PHAM** _alias_ [@GuillaumePham](https://github.com/GuillaumePHAM)
-* **Quentin Colleta** _alias_ [@feur25](https://github.com/feur25)
+* **Quentin Coletta** _alias_ [@feur25](https://github.com/feur25)
 
 
