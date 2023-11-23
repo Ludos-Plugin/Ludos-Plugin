@@ -2,13 +2,12 @@ plugins {
     id 'java'
 }
 
-group = 'fr.Ludos'
+group = 'fr.ludos'
 version = '1.0'
 
 repositories {
     mavenCentral()
     mavenLocal()
-    
 }
 
 dependencies {

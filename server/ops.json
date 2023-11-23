@@ -28,5 +28,11 @@
     "name": "serdeau",
     "level": 4,
     "bypassesPlayerLimit": false
+  },
+  {
+    "uuid": "a7b19805-9249-31e8-a0f3-5a26c067374e",
+    "name": "ClairEtNait",
+    "level": 4,
+    "bypassesPlayerLimit": false
   }
 ]

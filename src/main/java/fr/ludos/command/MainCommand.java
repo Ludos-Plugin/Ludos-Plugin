@@ -1,46 +1,70 @@
 package fr.ludos.command;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.stream.Collectors;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
+import org.bukkit.command.TabExecutor;
 
-public class MainCommand implements CommandExecutor, TabCompleter {
+
+import fr.ludos.games.Game;
+
+public class MainCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        for ( int i = 0; i < args.length; i++ ) {
-            Bukkit.broadcastMessage( args[i] );
+        // if (args.length < 1 || ! Game.registered.containsKey(args[0])) {
+        //     return false;
+        // }
+        switch (args.length) {
+            case 0:
+                return false;
+            default:
+                if ( ! Game.registered.containsKey(args[0]) ) {
+                    return false;
+                }
+
+                return Game.registered.get(args[0])
+                    .onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
         }
-        return true;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        if ( !(sender instanceof Player) ) return null;
-        if ( !command.getName().equalsIgnoreCase("ludosplay") ) return null;
-
         switch (args.length) {
+            case 0:
             case 1:
+                return Game.registered.keySet().stream()
+                    .sorted()
+                    .collect(Collectors.toList());
             default:
-                List<String> actions = new ArrayList<String>();
-                actions.add("config");
-                actions.add("start");
+                if ( ! Game.registered.containsKey(args[0]) ) {
+                    return null;
+                }
 
-                Collections.sort(actions);
-                return actions;
-            case 2:
-                List<String> games = new ArrayList<String>();
-                games.add("manhunt");
-
-                Collections.sort(games);
-                return games;
+                return Game.registered.get(args[0])
+                    .onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
         }
+    }
+
+    public String getUsage() {
+
+        StringBuilder usage = new StringBuilder("/<command> ");
+
+        usage.append('[');
+        usage.append(String.join(" | ", Game.registered.keySet()));
+        usage.append(']');
+
+        usage.append(' ');
+
+        usage.append('[');
+        usage.append( Arrays.stream(MainCommandOptions.values()).map(x -> x.toString())
+                        .sorted()
+                        .collect(Collectors.joining(" | ")) );
+        usage.append(']');
+
+        return usage.toString();
     }
 }
