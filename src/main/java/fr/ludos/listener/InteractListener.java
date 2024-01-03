@@ -9,12 +9,14 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
 import fr.ludos.Main;
-import fr.ludos.monster.ZombieBomber;
+import fr.ludos.mob.ZombieBomber;
 
 /**
  * InteractListener class handles player interactions and entity damage events in a Bukkit/Spigot server.
@@ -22,16 +24,24 @@ import fr.ludos.monster.ZombieBomber;
  * with a specific item, and it cancels damage caused by explosions to Bomber zombies.
  * <br><br>
  * Features:
+ * <br><br>
  * - Spawns Bomber zombies upon player interaction with a specific item.
+ * <br><br>
  * - Cancels damage caused by explosions to Bomber zombies.
+ * <br><br>
  * - Updates the custom name of living entities.
  * <br><br>
  * Usage:
+ * <br><br>
  * - Instantiate InteractListener with the Main plugin instance.
+ * <br><br>
  * - Register this listener with the Bukkit event manager.
  * <br><br>
  * Example:
+ * <br><br>
+ * <pre>{@code
  * Bukkit.getPluginManager().registerEvents(new InteractListener(plugin), plugin);
+ * }</pre>
  * <br><br>
  * @param plugin The Main plugin instance for event handling.
  * @author feur25
@@ -104,21 +114,34 @@ public class InteractListener implements Listener {
 
      @EventHandler
      public void onDamage(EntityDamageEvent event) {
-         if (event.getEntity() instanceof LivingEntity) {
-             LivingEntity livingEntity = (LivingEntity) event.getEntity();
-     
-             // Check if the entity is a Bomber zombie
-             if (livingEntity.getType() == EntityType.ZOMBIE && livingEntity.getCustomName() != null &&
-                     livingEntity.getCustomName().startsWith("Bomber")) {
-                 if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
-                     event.setCancelled(true);
-                 }
-     
-                 double maxHealth = livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
-     
-                 int currentHealth = (int) livingEntity.getHealth();
-                 livingEntity.setCustomName("Bomber" + ChatColor.RED + currentHealth + " / " + (int) maxHealth + " ❤︎");
-             }
-         }
+        if (event.getEntity() instanceof LivingEntity) {
+            LivingEntity livingEntity = (LivingEntity) event.getEntity();
+    
+            // Check if the entity is a Bomber zombie
+            if (livingEntity.getType() == EntityType.ZOMBIE && livingEntity.getCustomName() != null &&
+                livingEntity.getCustomName().startsWith("Bomber")
+            ) {
+                if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+                    event.setCancelled(true);
+                }
+    
+                double maxHealth = livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+    
+                int currentHealth = (int) livingEntity.getHealth();
+                livingEntity.setCustomName("Bomber " + ChatColor.RED + currentHealth + "/" + (int) maxHealth + " ❤︎");
+            }
+        }
      }
+
+    @EventHandler
+    public void onEntityDamage(EntityDamageByEntityEvent event){
+        // Player player = (Player) event.getEntity();
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        // Player player = (Player) event.getPlayer();
+    }
+
+  
 }

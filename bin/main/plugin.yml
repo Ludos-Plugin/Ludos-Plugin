@@ -6,7 +6,10 @@ main: fr.ludos.Main
 
 
 commands:
-   playludos:
-      usage: "Usage: /<command> [config | start] <game>"
+   ludosplay:
       description: "The main Ludos command"
+   ludosrole:
+      description: "Pick a role to use when playing a Ludos game"
+   bomberzombie:
+      description: "Give a bomber zombie monster spawn egg, try it ! just wait i finish to setup this monster"
    

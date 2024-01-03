@@ -10,14 +10,20 @@ import org.bukkit.entity.Zombie;
  * summoned by a necromancer in a Bukkit/Spigot server.
  * <br><br>
  * Features:
+ * <br><br>
  * - Controls the behavior of zombies based on specified parameters.
  * <br><br>
  * Usage:
+ * <br><br>
  * - Use the controlZombie method to control the behavior of a zombie.
+ * <br><br>
  * - Parameters include the zombie entity, the summoner player, teleport range, and attack range.
  * <br><br>
  * Example:
+ * <br><br>
+ * <pre>{@code
  * NecromancerMonsterController.controlZombie(zombie, summoner, teleportRange, attackRange);
+ * }</pre>
  * <br><br>
  * @param zombie        The zombie entity to be controlled.
  * @param summoner      The player who summoned the zombie.

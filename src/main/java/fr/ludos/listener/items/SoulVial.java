@@ -33,17 +33,28 @@ import java.util.Map;
  * Souls can be used for various in-game mechanics or abilities.
  * <br><br>
  * Features:
+ * <br><br>
  * - Provides a method to get the Soul Vial item for a specific player.
+ * <br><br>
  * - Automatically increases the soul count when the player kills a monster.
+ * <br><br>
  * - Bottle interaction, which allow to choose any effect, this enchantment increase in furthermore
  * <br><br>
  * Usage:
+ * <br><br>
  * - Call getSoulVial(player) to obtain the Soul Vial ItemStack for a given player.
+ * <br><br>
  * - Souls are automatically added when the player kills a monster, triggering the onEntityDeath event.
+ * <br><br>
  * - The Soul Vial's appearance reflects the soul count, and lore displays the current soul count.
  * <br><br>
+ * - Call openEffectSelectionMenu (player), open a new menu which allows you to choose a potion effect based on your soul counter
+ * <br><br>
  * Example:
- * SoulVial.getSoulVial(player); --> Returns the Soul Vial ItemStack for the specified player.
+ * <br><br>
+ * <pre>{@code
+ * SoulVial.getSoulVial(player);
+ * }</pre> --> Returns the Soul Vial ItemStack for the specified player.
  * <br><br>
  * @author feur25
  * @version 1.0
@@ -119,6 +130,7 @@ public class SoulVial implements Listener {
      *
      * @param event The EntityDeathEvent triggered when a living entity dies.
      */
+
     @EventHandler
     public void onEntityDeath(EntityDeathEvent event) {
         if (event.getEntity().getKiller() instanceof Player) {
@@ -169,7 +181,7 @@ public class SoulVial implements Listener {
         inventory.setItem(inventory.getSize() - 1, potionItem);
     }
 
-    /**
+    /** 
      * Handles inventory click events.
      *
      * @param event The InventoryClickEvent triggered when a player clicks in the inventory.

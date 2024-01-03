@@ -1,4 +1,4 @@
-package fr.ludos.roles;
+package fr.ludos.role;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

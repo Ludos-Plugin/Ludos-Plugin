@@ -16,16 +16,22 @@ import java.util.Arrays;
  * The spawn egg, when used, allows players to spawn a Bomber zombie that explodes when approached.
  * <br><br>
  * Features:
- * - Executes the /monster command, giving the player a custom spawn egg for a Bomber zombie.
+ * <br><br>
+ * - Executes the /bomberzombie command, giving the player a custom spawn egg for a Bomber zombie.
+ * <br><br>
  * - The custom spawn egg has a display name and lore.
+ * <br><br>
  * - The spawn egg, when used, spawns a Bomber zombie that explodes when approached.
  * <br><br>
  * Usage:
+ * <br><br>
  * - Register the command in the plugin's main class using: getCommand("bomberzombie").setExecutor(new MonsterCommand());
- * - Players can use the /monster command to receive a custom spawn egg for a Bomber zombie.
+ * <br><br>
+ * - Players can use the /bomberzombie command to receive a custom spawn egg for a Bomber zombie.
  *  <br><br>
  * Example:
- * /monster
+ * <br><br>
+ * /bomberzombie
  * <br><br>
  * @param sender  The command sender, expected to be a Player.
  * @param command The command that was executed.
@@ -51,7 +57,7 @@ public class MonsterCommand implements CommandExecutor {
     public static final String bomberZombieName = "Bomber";
 
     /**
-     * Executes the /monster command, giving the player a custom spawn egg for a Bomber zombie.
+     * Executes the /bomberzombie command, giving the player a custom spawn egg for a Bomber zombie.
      *
      * @param sender  The command sender, expected to be a Player.
      * @param command The command that was executed.
