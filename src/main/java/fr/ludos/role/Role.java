@@ -45,13 +45,9 @@ public abstract class Role implements Listener {
     }
 
 
-    public abstract void processCrafting(Player player);
-    public abstract void processAbilities(Player player);
-
-
-    public Role() {
-        Bukkit.getPluginManager().registerEvents((Listener)this, Main.getInstance());
-    }
+    // public Role() {
+    //     Bukkit.getPluginManager().registerEvents((Listener)this, Main.getInstance());
+    // }
 
 
     public static abstract class Builder {

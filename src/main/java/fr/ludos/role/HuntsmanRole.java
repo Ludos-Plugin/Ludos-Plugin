@@ -1,31 +1,28 @@
 package fr.ludos.role;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.Listener;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.AbstractArrow.PickupStatus;
 
 
-public class HuntsmanRole extends Role implements Listener {
-    
-    @Override
-    public void processCrafting(Player player) {}
+public class HuntsmanRole extends Role {
 
-    @Override
-    public void processAbilities(Player player) {} 
-    
-    @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
-        ItemStack crossBowHunter = new ItemStack(Material.CROSSBOW, 1);
-        ItemMeta crossBowMeta = crossBowHunter.getItemMeta();
-        crossBowMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-        ItemStack arrow = new ItemStack(Material.ARROW, 1);
-    }
+    // @EventHandler
+    // public void onPlayerRespawn(PlayerRespawnEvent event) {
+    //     ItemStack crossBowHunter = new ItemStack(Material.CROSSBOW, 1);
+    //     ItemMeta crossBowMeta = crossBowHunter.getItemMeta();
+    //     crossBowMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+    //     ItemStack arrow = new ItemStack(Material.ARROW, 1);
+    // }
     
     public void playerEventListener(Player player, PlayerDeathEvent event, ItemStack CrossBow) {
         player.getInventory().removeItem(CrossBow);
@@ -35,22 +32,56 @@ public class HuntsmanRole extends Role implements Listener {
         return player.getTotalExperience();
     }
 
+
+
     @EventHandler
-    public void upgradeStuff(Player player) {
-        if (getPlayerXP(player) >= 100) {
-            ItemStack hunterBow = new ItemStack(Material.BOW, 1);
-            ItemMeta hunterBowMeta = hunterBow.getItemMeta();
-            hunterBowMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-            ItemStack arrow = new ItemStack(Material.ARROW, 1);
-        }
-        
-        if (getPlayerXP(player) >= 300) {
-            ItemStack trident = new ItemStack(Material.TRIDENT, 1);
-            ItemMeta tritentMeta = trident.getItemMeta();
-            tritentMeta.addEnchant(Enchantment.RIPTIDE, 1, true);
-            
+    public void onPlayerDropItem(PlayerDropItemEvent event) {
+        ItemStack item = event.getItemDrop().getItemStack();
+        if (item.getType() == Material.ARROW) {
+            event.setCancelled(true);
         }
     }
+
+    @EventHandler
+    public void onShootArrow(EntityShootBowEvent event) {
+        if ( ! (event.getEntity() instanceof Player) ) {
+            return;
+        }
+        Player player = (Player) event.getEntity();
+        
+        Arrow arrowProjectile = (Arrow) event.getProjectile();
+        arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
+        if (arrowProjectile.isShotFromCrossbow()) {
+            arrowProjectile.setGravity(false);
+            arrowProjectile.setDamage(0.5);
+        }
+
+        updateArrowCount(player);
+    }
+
+    private void updateArrowCount(Player player) {
+        Inventory inventory = player.getInventory();
+
+        ItemStack arrowItem = new ItemStack(Material.ARROW);
+        inventory.remove(Material.ARROW);
+        inventory.addItem(arrowItem);
+    }
+
+
+
+
+
+
+    // @EventHandler
+    // public void upgradeStuff(Player player) {        
+    //     if (getPlayerXP(player) >= 100/*  && ! HuntsmanCrossbow.playerOwns(player) */) {
+    //         // HuntsmanCrossbow.createNew(player);
+    //     }
+        
+    //     if (getPlayerXP(player) >= 300/*  && ! HuntsmanSpear.playerOwns(player) */) {
+    //         // HuntsmanSpear.createNew(player);
+    //     }
+    // }
 
 
     public static class Builder extends Role.Builder {
