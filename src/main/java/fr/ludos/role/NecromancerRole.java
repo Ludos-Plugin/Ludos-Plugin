@@ -1,6 +1,5 @@
 package fr.ludos.role;
 
-import org.bukkit.entity.Player;
 
 import fr.ludos.Main;
 

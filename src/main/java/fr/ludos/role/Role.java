@@ -1,12 +1,9 @@
 package fr.ludos.role;
 
-import fr.ludos.Main;
-
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.entity.Player;
 
@@ -24,6 +21,11 @@ public abstract class Role implements Listener {
     public static Builder getRole(Player player) {
         return registered.getOrDefault(
             playerRoles.getOrDefault(player.getName(), ""), null);
+    }
+
+    public static boolean isPlayerRole(Player player, String role) {
+        Builder currentRole = getRole(player);
+        return (currentRole != null && currentRole.getId() == role);
     }
 
     public static void setRole(Player player, String roleId) {

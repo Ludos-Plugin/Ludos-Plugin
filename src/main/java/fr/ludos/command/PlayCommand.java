@@ -9,7 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 
 
-import fr.ludos.games.Game;
+import fr.ludos.game.Game;
 
 public class PlayCommand implements TabExecutor {
 

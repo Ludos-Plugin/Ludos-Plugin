@@ -15,18 +15,13 @@ import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.NecromancerRole;
 import fr.ludos.role.StalkerRole;
-import fr.ludos.games.Game;
-import fr.ludos.games.ManhuntGame;
+import fr.ludos.game.Game;
+import fr.ludos.game.ManhuntGame;
 import fr.ludos.listener.InteractListener;
 import fr.ludos.listener.ServerListener;
-import fr.ludos.item.burrower.BurrowerPickEvents;
-import fr.ludos.recipe.ArrowRecipe;
-import fr.ludos.recipe.BerriesRecipe;
-import fr.ludos.recipe.EnchantementTableRecipe;
-import fr.ludos.recipe.GoldenAppleRecipe;
-import fr.ludos.recipe.Recipe;
-import fr.ludos.item.SoulVial;
-import fr.ludos.skill.VampiricLeechSkill;
+import fr.ludos.item.burrower.pick.BurrowerPickEvents;
+import fr.ludos.item.huntsman.bow.HuntsmanBowEvents;
+import fr.ludos.item.burrower.digtool.BurrowingClawEvents;
 
 /**
  * Main is the main class of the Bukkit plugin, responsible for handling plugin initialization and events.
@@ -43,6 +38,7 @@ public class Main extends JavaPlugin implements Listener {
         return instance;
     }
 
+
     /**
      * Called when the plugin is enabled. Registers commands, listeners, and initializes game-related components.
      */
@@ -53,7 +49,6 @@ public class Main extends JavaPlugin implements Listener {
         instance = this;
 
 		PluginManager manager = Bukkit.getPluginManager();
-
 
         manager.registerEvents(new InteractListener(this), this);
         manager.registerEvents(new ServerListener(this), this);
@@ -72,13 +67,15 @@ public class Main extends JavaPlugin implements Listener {
 		// Recipe.RegisterRecipe(new GoldenAppleRecipe(this));
 
         manager.registerEvents(new BurrowerPickEvents(), this);
-        manager.registerEvents(new HuntsmanRole(), this);
+        manager.registerEvents(new BurrowingClawEvents(), this);
+        manager.registerEvents(new HuntsmanBowEvents(), this);
 
 
-        manager.registerEvents(new VampiricLeechSkill(), this);
-        manager.registerEvents(new SoulVial(), this);
 
+        // manager.registerEvents(new VampiricLeechSkill(), this);
+        // manager.registerEvents(new SoulVial(), this);
 
+        Bukkit.broadcastMessage("test marche bug");
 
         PluginCommand cmd = getCommand("ludosplay");
         PlayCommand playCommand = new PlayCommand();
