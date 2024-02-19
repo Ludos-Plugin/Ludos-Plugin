@@ -94,55 +94,8 @@ public abstract class SpecialItem {
         stack.setItemMeta(meta);
     }
 
-
-    // /**
-    //  * @param inventory
-    //  * @return true if the provided inventory contains a Burrower's pick
-    //  */
-    // public static <TLevel extends SpecialItemLevels> Boolean containedIn(Inventory inventory) {
-    //     ItemStack[] items = inventory.getContents();
-    //     for (int i = 0; i < items.length; i++) {
-    //         if ( new SpecialItem(items[i]) != null ) {
-    //             return true;
-    //         }
-    //     }
-
-    //     return false;
-    // }
-
-    // /**
-    //  * @param inventory
-    //  * @return true if the provided inventory contains a Burrower's pick
-    //  */
-    // public static <TLevel extends SpecialItemLevels> SpecialItem<TLevel> findIn(Inventory inventory) {
-    //     ItemStack[] items = inventory.getContents();
-    //     for (int i = 0; i < items.length; i++) {
-    //         SpecialItem<TLevel> pick = new SpecialItem<TLevel>(items[i]);
-    //         if (pick != null) {
-    //             return pick;
-    //         }
-    //     }
-
-    //     return null;
-    // }
     
     protected static <T, Z> Z getPersistentData(ItemStack item, NamespacedKey key, PersistentDataType<T, Z> type) {
         return item.getItemMeta().getPersistentDataContainer().get(key, type);
-    }
-
-    protected static int getLvlFromItem(ItemStack item, NamespacedKey key) {
-        return getPersistentData(item, key, PersistentDataType.INTEGER);
-    }
-
-    protected static double getXpFromItem(ItemStack item, NamespacedKey key) {
-        return getPersistentData(item, key, PersistentDataType.DOUBLE);
-    }
-
-    protected static Player getOwnerFromItem(ItemStack item, NamespacedKey key) {
-        return Bukkit.getPlayer(
-            UUID.fromString(
-                getPersistentData(item, key, PersistentDataType.STRING)
-            )
-        );
     }
 }

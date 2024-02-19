@@ -126,7 +126,6 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
         return BurrowerPickEvents.getXpKey();
 	}
 
-
 	@Override
 	protected String getLore() {
         return "";

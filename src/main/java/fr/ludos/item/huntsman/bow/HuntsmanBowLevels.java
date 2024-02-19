@@ -1,20 +1,23 @@
 package fr.ludos.item.huntsman.bow;
 
-import java.util.Map;
-
 import javax.annotation.Nullable;
-
 import org.apache.commons.lang3.ArrayUtils;
-
-import org.bukkit.enchantments.Enchantment;
-
 import fr.ludos.item.SpecialItemLevels;
 
 public enum HuntsmanBowLevels implements SpecialItemLevels {
-    BASE (200, null, new HuntsmanBowLevels[]{});
+    BASE (200, LevelBranch.NONE, new HuntsmanBowLevels[]{}),
+    FIRE1 (200, LevelBranch.FIRE, new HuntsmanBowLevels[]{}),
+    FIRE2 (200, LevelBranch.FIRE, new HuntsmanBowLevels[]{}),
+    EXPLOSION (200, LevelBranch.FIRE, new HuntsmanBowLevels[]{}),
+    SLOW1 (200, LevelBranch.SLOWNESS, new HuntsmanBowLevels[]{}),
+    SLOW2 (200, LevelBranch.SLOWNESS, new HuntsmanBowLevels[]{}), 
+    SLOW2_COBWEB (200, LevelBranch.SLOWNESS, new HuntsmanBowLevels[]{}), 
+    POISON1(200, LevelBranch.POISON, new HuntsmanBowLevels[]{}),
+    POISON2(200, LevelBranch.POISON, new HuntsmanBowLevels[]{}),
+    POISON2_NAUSEA(200, LevelBranch.POISON, new HuntsmanBowLevels[]{}); 
 
     private double xpThreshold;
-    private Map<Enchantment, Integer> enchantments;
+    private LevelBranch type;
     private HuntsmanBowLevels[] evolutions;
 
     public final static HuntsmanBowLevels[] values = HuntsmanBowLevels.values();
@@ -22,24 +25,26 @@ public enum HuntsmanBowLevels implements SpecialItemLevels {
     public int index() {
         return ArrayUtils.indexOf(values(), this);
     }
-    public Map<Enchantment, Integer> getEnchantments() {
-        return enchantments;
-    }
     public HuntsmanBowLevels[] getEvolutions() {
         return evolutions;
     }
-    public double xpThreshold() {
+    public LevelBranch getType() {
+        return type;
+    }
+    public double getXpThreshold() {
         return xpThreshold;
     }
     public boolean isMax() {
-        return (index() + 1) >= values.length; 
+        return evolutions.length == 0; 
     }
 
 
-    private HuntsmanBowLevels(double xpThreshold, Map<Enchantment, Integer> enchantments, HuntsmanBowLevels[] evolutions) {
+    private HuntsmanBowLevels(double xpThreshold, LevelBranch branch, HuntsmanBowLevels[] evolutions) {
+        this.type = branch;
         this.xpThreshold = xpThreshold;
-        this.enchantments = enchantments;
     }
+
+    
 
 
     @Nullable
@@ -57,5 +62,12 @@ public enum HuntsmanBowLevels implements SpecialItemLevels {
             return null;
         }
         return values()[currentIndex + 1];
+    }
+
+    public static enum LevelBranch {
+        NONE,
+        FIRE,
+        POISON,
+        SLOWNESS;
     }
 }

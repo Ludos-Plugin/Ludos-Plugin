@@ -2,7 +2,9 @@ package fr.ludos.game;
 
 import fr.ludos.Main;
 import fr.ludos.command.PlayCommandOptions;
+import fr.ludos.role.Role;
 
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.command.TabExecutor;
@@ -19,34 +21,61 @@ import java.util.stream.Collectors;
 import java.util.HashMap;
 import javax.annotation.Nullable;
 
-import fr.ludos.controller.TeamController;
-
 
 public abstract class Game implements Listener {
-    protected Scoreboard scoreboard;
+    protected final Scoreboard scoreboard;
     protected TeamController teamController;
 
+    @Nullable
+    public static Game current = null;
     public static final Map<String, Builder> registered = new HashMap<String, Builder>();
+
+    public final Map<String, Role> activeRoles = new HashMap<String, Role>();
 
 
     public static void registerGame(Builder constructor) {
         Game.registered.put(constructor.getId(), constructor);
     }
 
-    @Nullable
-    public static Game buildGame(String name) {
-        if ( registered.containsKey(name) ) {
-            return registered.get(name).build();
-        }
+    public static void startGame(Builder builder) {
+        stopGame();
 
-        return null;
+        current = builder.build();
+    }
+    public static void startGame(String id) {
+        if ( ! registered.containsKey(id) ) {
+            return;
+        }
+        
+        startGame(registered.get(id));
+    }
+    public static void stopGame() {
+        if ( current != null) {
+            current.stop();
+            current = null;
+        }
     }
 
-    public abstract void start();
+    public Game(Builder builder) {
+        scoreboard = Bukkit.getServer().getScoreboardManager().getNewScoreboard();
+        Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
 
+        for (Role.Builder role : Role.registered.values()) {
+            activeRoles.put(role.getId(), role.build(builder.getId()));
+        }
+    }
 
-    public Game() {
-        Bukkit.getPluginManager().registerEvents((Listener)this, Main.getInstance());
+    public void stop() {
+        HandlerList.unregisterAll(this);
+
+        for (Role role : activeRoles.values()) {
+            role.stop();
+        }
+        activeRoles.clear();
+
+        if (teamController != null) {
+            teamController.stop();
+        }
     }
     
 

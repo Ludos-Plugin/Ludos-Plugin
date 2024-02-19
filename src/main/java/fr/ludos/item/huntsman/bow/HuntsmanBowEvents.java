@@ -29,6 +29,12 @@ import org.bukkit.NamespacedKey;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.Role;
 
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.EntityType;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+
 
 public class HuntsmanBowEvents implements Listener {
 
@@ -69,20 +75,80 @@ public class HuntsmanBowEvents implements Listener {
 
 
     @EventHandler
+    public void poisonArrow1(Player player) {
+
+        Location eyeLocation = player.getEyeLocation();
+        World world = player.getWorld();
+
+        Arrow poisonArrow = (Arrow) world.spawnEntity(eyeLocation, EntityType.ARROW);
+        poisonArrow.setPickupStatus(PickupStatus.DISALLOWED);
+        poisonArrow.setGravity(true);
+        poisonArrow.setShooter(player);
+        poisonArrow.setVelocity(eyeLocation.getDirection().multiply(2));
+
+        PotionEffect poisoneffect = new PotionEffect(PotionEffectType.POISON, 100, 1);
+        poisonArrow.addCustomEffect(poisoneffect, true);
+    }
+
+
+// //Arrow arrowProjectile = (Arrow) event.getProjectile();
+//         arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
+//         if (arrowProjectile.isShotFromCrossbow()) {
+//             arrowProjectile.setGravity(false);
+//             arrowProjectile.setDamage(0.5);
+//         }
+
+    @EventHandler
+    public void poisonArrow2(Player player) {
+
+        Location eyeLocation = player.getEyeLocation();
+        World world = player.getWorld();  
+        Arrow poisonArrow = (Arrow) world.spawnEntity(eyeLocation, EntityType.ARROW);
+        poisonArrow.setPickupStatus(PickupStatus.DISALLOWED);
+        poisonArrow.setShooter(player);
+        poisonArrow.setVelocity(eyeLocation.getDirection().multiply(2));
+
+        PotionEffect poisoneffect = new PotionEffect(PotionEffectType.POISON, 60, 2);
+        poisonArrow.addCustomEffect(poisoneffect, true);
+        
+    }
+
+    @EventHandler
+    public void fireArrow(Player player, int level) {
+
+        Location eyeLocation = player.getEyeLocation();
+        World world = player.getWorld();
+
+        Arrow fireArrow = (Arrow) world.spawnEntity(eyeLocation, EntityType.ARROW);
+        fireArrow.setShooter(player);
+        fireArrow.setVelocity(eyeLocation.getDirection().multiply(2));
+    }
+
+    @EventHandler
     public void onShootArrow(EntityShootBowEvent event) {
         if ( ! (event.getEntity() instanceof Player) ) {
             return;
         }
         Player player = (Player) event.getEntity();
-        
-        Arrow arrowProjectile = (Arrow) event.getProjectile();
-        arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
-        if (arrowProjectile.isShotFromCrossbow()) {
-            arrowProjectile.setGravity(false);
-            arrowProjectile.setDamage(0.5);
-        }
 
-        updateArrowCount(player);
+        try {
+            HuntsmanBow bow = new HuntsmanBow(event.getBow());
+
+            Arrow arrowProjectile = (Arrow)event.getProjectile();
+            arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
+            updateArrowCount(player);
+            if (bow.getLevel().getType() == HuntsmanBowLevels.LevelBranch.POISON) {
+
+            }
+            if (bow.getLevel() == HuntsmanBowLevels.POISON1) {
+                poisonArrow1(player);
+            }
+            if (bow.getLevel() == HuntsmanBowLevels.POISON2) {
+                poisonArrow2(player);
+            }
+        } catch (Error e) {
+
+        }
     }
 
     private void updateArrowCount(Player player) {
@@ -144,7 +210,7 @@ public class HuntsmanBowEvents implements Listener {
 
     @EventHandler
     public void playerJoinTheGame(PlayerJoinEvent event) {
-        actuatebowInventory(event.getPlayer());
+        actuateBowInventory(event.getPlayer());
     }
 
     @EventHandler
@@ -164,11 +230,11 @@ public class HuntsmanBowEvents implements Listener {
 
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event)  {
-        actuatebowInventory(event.getPlayer());
+        actuateBowInventory(event.getPlayer());
     }
 
 
-    private void actuatebowInventory(Player player) {
+    private void actuateBowInventory(Player player) {
         if ( ! Role.isPlayerRole(player, BurrowerRole.id) ) {
             return;
         }
@@ -186,6 +252,6 @@ public class HuntsmanBowEvents implements Listener {
         inventory.addItem(
             new HuntsmanBow(player, level).getStack()
         );
-    }
+    } 
 
 }

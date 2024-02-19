@@ -26,6 +26,17 @@ import org.bukkit.inventory.Inventory;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.Role;
 
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+
+import org.bukkit.event.player.PlayerInteractEvent;
+
+import org.bukkit.Material;
+
+// import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.block.Block;
+
 import org.bukkit.event.enchantment.EnchantItemEvent;
 
 
@@ -65,6 +76,9 @@ public class BurrowerPickEvents implements Listener {
 
     private static Map<String, BurrowerPickLevels> deadPlayerLevels = Collections.emptyMap();
 
+    private static final PotionEffect MINING_FATIGUE_EFFECT = new PotionEffect(PotionEffectType.SLOW_DIGGING, Integer.MAX_VALUE, 1);
+
+    private boolean isTwoByTwoModeEnabled = false;
     
 
     static NamespacedKey getOwnerKey() {
@@ -97,6 +111,58 @@ public class BurrowerPickEvents implements Listener {
 
         }
     }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        if (!player.isSneaking()) return; 
+
+        if (event.getAction().toString().contains("RIGHT_CLICK")) {
+            toggleTwoByTwoMode(player);
+        }
+    }
+
+    private void toggleTwoByTwoMode(Player player) {
+        isTwoByTwoModeEnabled = !isTwoByTwoModeEnabled; 
+
+        if (isTwoByTwoModeEnabled) {
+            player.addPotionEffect(MINING_FATIGUE_EFFECT);
+        } else {
+            player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
+        }
+    }
+
+    @EventHandler
+    public void onBlockBreakMining(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        if (!player.isSneaking()) return;
+
+        ItemStack mainHandItem = player.getInventory().getItemInMainHand();
+
+        if (isTwoByTwoModeEnabled) {
+            BurrowerPick currentPick = BurrowerPick.findIn(player.getInventory());
+
+            if (currentPick == null) return; 
+
+            int radius = currentPick.getLevel().radius();
+
+            Block targetBlock = event.getBlock();
+            for (int xOffset = -radius; xOffset <= radius; xOffset++) {
+                for (int zOffset = -radius; zOffset <= radius; zOffset++) {
+                    Block adjacentBlock = targetBlock.getRelative(xOffset, 0, zOffset);
+                    if (player.hasPermission("burrower.pickaxe.break") && isBreakable(adjacentBlock.getType())) {
+                        adjacentBlock.breakNaturally(mainHandItem);
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isBreakable(Material material) {
+        return material.isBlock() && material != Material.BEDROCK && material != Material.BARRIER;
+    }
+
+    
     @EventHandler
     public void onInventoryClickItem(InventoryClickEvent event) {
         ItemStack item = event.getCurrentItem();
@@ -111,6 +177,7 @@ public class BurrowerPickEvents implements Listener {
         }
 
     }
+    
     // @EventHandler
     // public void onInventoryMoveItem(InventoryMoveItemEvent event) {
     //     Bukkit.broadcastMessage(event.getDestination().toString());
@@ -149,7 +216,6 @@ public class BurrowerPickEvents implements Listener {
         }
     }
 
-
     @EventHandler
     public void playerJoinTheGame(PlayerJoinEvent event) {
         actuatePickInventory(event.getPlayer());
@@ -185,7 +251,6 @@ public class BurrowerPickEvents implements Listener {
         if ( BurrowerPick.containedIn(inventory) ) {
             return;
         }
-
 
         BurrowerPickLevels level = BurrowerPickLevels.WOODEN;
         if (player != null && deadPlayerLevels.containsKey(player.getName())) {

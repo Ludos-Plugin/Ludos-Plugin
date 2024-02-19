@@ -15,14 +15,14 @@ import org.bukkit.entity.Entity;
 
 /**
  * NecroticAuraSkill class provides the implementation for the Necrotic Aura skill in a Bukkit/Spigot server.
- * When activated by a necromancer player, it deals damage and applies a wither effect to the hunted player within
- * a specified radius. Additionally, it displays particle effects around the hunted player.
+ * When activated by a necromancer player, it deals damage and applies a wither effect to the prey player within
+ * a specified radius. Additionally, it displays particle effects around the prey player.
  * <br><br>
  * Features:
  * <br><br>
- * - Deals damage and applies wither effect to the hunted player.
+ * - Deals damage and applies wither effect to the prey player.
  * <br><br>
- * - Displays particle effects around the hunted player.
+ * - Displays particle effects around the prey player.
  * <br><br>
  * Usage:
  * <br><br>
@@ -31,12 +31,12 @@ import org.bukkit.entity.Entity;
  * Example:
  * <br><br>
  * <pre>{@code
- * NecroticAuraSkill.activateNecroticAura(plugin, necromancer, hunted);
+ * NecroticAuraSkill.activateNecroticAura(plugin, necromancer, prey);
  * }</pre>
  * <br><br>
  * @param plugin      The instance of the main plugin class.
  * @param necromancer The player who activates the skill.
- * @param hunted      The player being hunted.
+ * @param prey      The player being prey.
  * @author feur25
  * @version 1.0
  * @see org.bukkit.Bukkit
@@ -59,14 +59,14 @@ public class NecroticAuraSkill {
      *
      * @param plugin      The instance of the main plugin class.
      * @param necromancer The player who activates the skill.
-     * @param hunted      The player being hunted.
+     * @param prey      The player being prey.
      */
 
-    public static void activateNecroticAura(Main plugin, Player necromancer, Player hunted) {
+    public static void activateNecroticAura(Main plugin, Player necromancer, Player prey) {
 
         // Apply damage and potion effect
         for (Entity entity : necromancer.getNearbyEntities(AURA_RADIUS, AURA_RADIUS, AURA_RADIUS)) {
-            if (entity instanceof LivingEntity && entity.getUniqueId().equals(hunted.getUniqueId())) {
+            if (entity instanceof LivingEntity && entity.getUniqueId().equals(prey.getUniqueId())) {
                 LivingEntity livingEntity = (LivingEntity) entity;
 
                 livingEntity.damage(AURA_DAMAGE);
@@ -82,7 +82,7 @@ public class NecroticAuraSkill {
                 double y = 1;
                 double z = AURA_RADIUS * Math.sin(t);
 
-                hunted.getWorld().spawnParticle(Particle.SPELL_WITCH, hunted.getLocation().clone().add(x, y, z), 1);
+                prey.getWorld().spawnParticle(Particle.SPELL_WITCH, prey.getLocation().clone().add(x, y, z), 1);
             }
         });
     }

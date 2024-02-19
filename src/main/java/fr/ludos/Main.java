@@ -19,9 +19,6 @@ import fr.ludos.game.Game;
 import fr.ludos.game.ManhuntGame;
 import fr.ludos.listener.InteractListener;
 import fr.ludos.listener.ServerListener;
-import fr.ludos.item.burrower.pick.BurrowerPickEvents;
-import fr.ludos.item.huntsman.bow.HuntsmanBowEvents;
-import fr.ludos.item.burrower.digtool.BurrowingClawEvents;
 
 /**
  * Main is the main class of the Bukkit plugin, responsible for handling plugin initialization and events.
@@ -59,23 +56,7 @@ public class Main extends JavaPlugin implements Listener {
         Role.registerRole(new NecromancerRole.Builder());
         Role.registerRole(new StalkerRole.Builder());
         Role.registerRole(new BurrowerRole.Builder());
-        
 
-		// Recipe.RegisterRecipe(new ArrowRecipe(this));
-		// Recipe.RegisterRecipe(new BerriesRecipe(this));
-		// Recipe.RegisterRecipe(new EnchantementTableRecipe(this));
-		// Recipe.RegisterRecipe(new GoldenAppleRecipe(this));
-
-        manager.registerEvents(new BurrowerPickEvents(), this);
-        manager.registerEvents(new BurrowingClawEvents(), this);
-        manager.registerEvents(new HuntsmanBowEvents(), this);
-
-
-
-        // manager.registerEvents(new VampiricLeechSkill(), this);
-        // manager.registerEvents(new SoulVial(), this);
-
-        Bukkit.broadcastMessage("test marche bug");
 
         PluginCommand cmd = getCommand("ludosplay");
         PlayCommand playCommand = new PlayCommand();

@@ -29,7 +29,7 @@ public class Border extends JavaPlugin {
         Random random = new Random();
         double randomX = random.nextDouble() * 2 - 1 * 100000;
         double randomZ = random.nextDouble() * 2 - 1 * 100000;
-        for(Player player : Bukkit.getServer().getOnlinePlayers()) {
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             Location location = new Location(world, randomX, player.getLocation().getY(), randomZ);
             player.teleport(location);
         }

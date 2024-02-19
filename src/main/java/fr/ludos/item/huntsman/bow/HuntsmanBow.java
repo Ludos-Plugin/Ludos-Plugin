@@ -2,12 +2,22 @@ package fr.ludos.item.huntsman.bow;
 
 import fr.ludos.item.LevelItem;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.ChatColor;
+
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionEffect;
 
 
 /**
@@ -140,8 +150,28 @@ public class HuntsmanBow extends LevelItem<HuntsmanBowLevels> {
     @Override
     public void setLvl(HuntsmanBowLevels lvl) {
         super.setLvl(lvl);
-        getStack().addEnchantments(lvl.getEnchantments());
     }
+
+
+    @EventHandler
+    public void onProjectileHit(ProjectileHitEvent event) {
+        Projectile projectile = event.getEntity();
+
+        if (!(projectile.getShooter() instanceof Player)) return;
+
+        if(event.getHitEntity() != null){
+            Entity hitEntity = event.getEntity();
+            if(hitEntity instanceof LivingEntity){
+                LivingEntity livingEntity = (LivingEntity) hitEntity;
+
+            }
+
+        }
+        Player shooterPlayer = (Player) projectile.getShooter();
+        shooterPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 50, 2)llllll);
+
+    }
+
 
 	@Override
 	public void addLvl() {
@@ -149,7 +179,19 @@ public class HuntsmanBow extends LevelItem<HuntsmanBowLevels> {
             return;
         }
 
-        setLvl(HuntsmanBowLevels.getNextLevel(getLevel()));
+       ItemStack stack = new ItemStack(Material.BOOK);
+    
+
+        HuntsmanBowLevels[] evolutions = getLevel().getEvolutions();
+
+        if (evolutions.length == 0) {
+            return;
+        } else if (evolutions.length == 1) {
+            
+        } else {
+            
+        }
+
         if (getOwner() != null) {
             getOwner().sendMessage(ChatColor.GREEN + "Your pickaxe has leveled up!"); // TODO: Translate
         }

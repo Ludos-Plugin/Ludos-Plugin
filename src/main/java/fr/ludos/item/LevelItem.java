@@ -126,18 +126,19 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels> extends Specia
     //     return null;
     // }
     
+
     protected static int getLvlFromItem(ItemStack item, NamespacedKey key) {
-        return item.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.INTEGER);
+        return getPersistentData(item, key, PersistentDataType.INTEGER);
     }
 
     protected static double getXpFromItem(ItemStack item, NamespacedKey key) {
-        return item.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.DOUBLE);
+        return getPersistentData(item, key, PersistentDataType.DOUBLE);
     }
 
     protected static Player getOwnerFromItem(ItemStack item, NamespacedKey key) {
         return Bukkit.getPlayer(
             UUID.fromString(
-                item.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.STRING)
+                getPersistentData(item, key, PersistentDataType.STRING)
             )
         );
     }
@@ -154,7 +155,7 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels> extends Specia
     
     public void setXp(double value) {
 
-        double scaledTreshold = level.xpThreshold();
+        double scaledTreshold = level.getXpThreshold();
         if (value >= scaledTreshold) {
             addLvl();
             value -= scaledTreshold;
@@ -171,7 +172,7 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels> extends Specia
             xpFormatted += MAX_LVL_LABEL;
         } else {
             String xpRounded = Double.toString(Math.round(xp * 100.0) / 100.0);
-            xpFormatted += xpRounded + '/' + level.xpThreshold();
+            xpFormatted += xpRounded + '/' + level.getXpThreshold();
         }
 
         meta.setLore(Arrays.asList(getLore(), xpFormatted));

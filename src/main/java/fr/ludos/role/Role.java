@@ -4,9 +4,19 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+
+import fr.ludos.Main;
+
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+
+/**
+ * The Role class contains runtime data for the Role itself as well as the events for the Role-users
+ * It contains events and Data.
+ */
 public abstract class Role implements Listener {
 
     public static final Map<String, Builder> registered = new HashMap<String, Builder>();
@@ -15,6 +25,18 @@ public abstract class Role implements Listener {
 
     public static void registerRole(Builder constructor) {
         Role.registered.put(constructor.getId(), constructor);
+    }
+
+    /**
+     * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
+     * It contains configuration for the Role itself.
+     */
+    public Role(Builder builder){
+        Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
+    }
+
+    public void stop() {
+        HandlerList.unregisterAll(this);
     }
 
     @Nullable
@@ -51,9 +73,15 @@ public abstract class Role implements Listener {
     //     Bukkit.getPluginManager().registerEvents((Listener)this, Main.getInstance());
     // }
 
-
+    
+    /**
+     * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
+     * It contains configuration for the Role itself.
+     */
     public static abstract class Builder {
         public abstract String getId();
+
+        public abstract Role build(String gameId);
     }
 
 }
