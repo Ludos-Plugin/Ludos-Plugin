@@ -41,13 +41,5 @@ bin/
 ### Mac OS ###
 .DS_Store
 gradle.properties
-server/
-server/world/level.dat
-server/world/level.dat_old
-server/world/data/raids.dat
-server/world_nether/level.dat
-server/world_nether/level.dat_old
-server/world_nether/DIM-1/data/raids.dat
-server/world_the_end/level.dat
-server/world_the_end/level.dat_old
-server/world_the_end/DIM1/data/raids_end.dat
+
+data/

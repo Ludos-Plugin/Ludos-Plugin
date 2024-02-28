@@ -1,0 +1,15 @@
+name : Ludos
+version: "1.0"
+api: test
+api-version: 1.19
+main: fr.ludos.Main
+
+
+commands:
+   play:
+      description: "The main Ludos command"
+   role:
+      description: "Pick a role to use when playing a Ludos game"
+   bomberzombie:
+      description: "Give a bomber zombie monster spawn egg, try it ! just wait i finish to setup this monster"
+   
