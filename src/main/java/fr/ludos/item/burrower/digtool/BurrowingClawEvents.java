@@ -114,9 +114,6 @@ public class BurrowingClawEvents implements Listener {
         Player player = event.getPlayer();
         ItemStack mainItem = player.getInventory().getItemInMainHand();
 
-        // if (!isBurrowingClaw(mainItem)) {
-        //     return;
-        // }
         try {
             new BurrowingClaw(mainItem);
         } catch (IllegalArgumentException e) {

@@ -14,6 +14,11 @@ public class NecromancerRole extends Role {
     //     // change prey param player to the true prey player
     //     // NecroticAuraSkill.activateNecroticAura(plugin, player, player);
     //     // VampiricLeechSkill.activateVampiricLeech(plugin, player);
+    // }>>>>>>> c12ccea39c04c170c97f852412f67f3dcdd6ce20
+    // public void processAbilities(Player player) {
+    //     // change prey param player to the true prey player
+    //     // NecroticAuraSkill.activateNecroticAura(plugin, player, player);
+    //     // VampiricLeechSkill.activateVampiricLeech(plugin, player);
     // }
 
 

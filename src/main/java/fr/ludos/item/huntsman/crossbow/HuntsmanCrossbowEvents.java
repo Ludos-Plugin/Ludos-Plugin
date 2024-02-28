@@ -162,6 +162,6 @@ public class HuntsmanCrossbowEvents implements Listener {
         inventory.addItem(
             new HuntsmanCrossbow(player).getStack()
         );
-    } 
+    }
 
 }

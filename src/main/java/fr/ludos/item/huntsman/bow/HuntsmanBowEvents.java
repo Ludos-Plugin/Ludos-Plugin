@@ -253,6 +253,6 @@ public class HuntsmanBowEvents implements Listener {
         inventory.addItem(
             new HuntsmanBow(player, level).getStack()
         );
-    } 
+    }
 
 }

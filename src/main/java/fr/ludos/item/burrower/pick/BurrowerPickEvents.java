@@ -101,6 +101,8 @@ public class BurrowerPickEvents implements Listener {
         lvlKey = new NamespacedKey(plugin, LVL_NAMESPACE_KEY);
     }
     
+
+
     @EventHandler
     public void onPlayerDropItem(PlayerDropItemEvent event) {
         ItemStack item = event.getItemDrop().getItemStack();
@@ -219,7 +221,6 @@ public class BurrowerPickEvents implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Bukkit.broadcastMessage("Player joined");
         actuatePickInventory(event.getPlayer());
     }
 
@@ -240,7 +241,6 @@ public class BurrowerPickEvents implements Listener {
 
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event)  {
-        
         actuatePickInventory(event.getPlayer());
     }
 
@@ -259,7 +259,7 @@ public class BurrowerPickEvents implements Listener {
         if (player != null && deadPlayerLevels.containsKey(player.getName())) {
             level = deadPlayerLevels.get(player.getName());
         }
-        
+
         inventory.addItem(
             new BurrowerPick(player, level).getStack()
         );

@@ -109,7 +109,6 @@ public class ManhuntGame extends Game {
 
         @Override
         public boolean gameCommand(CommandSender sender, Command command, String label, String[] args, PlayCommandOptions option) {
-
             switch ( option ) {
                 case config:
                     if (args.length == 0) {

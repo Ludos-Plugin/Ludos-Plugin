@@ -48,7 +48,7 @@ public class Main extends JavaPlugin implements Listener {
 
         manager.registerEvents(new InteractListener(this), this);
         manager.registerEvents(new ServerListener(this), this);
-    
+        
 
         Game.registerGame(new ManhuntGame.Builder());
 

@@ -11,6 +11,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
 import java.util.UUID;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.Arrays;
+import java.util.UUID;
 
 
 /**
@@ -93,37 +97,6 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels> extends Specia
 		setLvl(level);
 		setXp(xp);
     }
-
-    // /**
-    //  * @param inventory
-    //  * @return true if the provided inventory contains a Burrower's pick
-    //  */
-    // public static <TLevel extends SpecialItemLevels> Boolean containedIn(Inventory inventory) {
-    //     ItemStack[] items = inventory.getContents();
-    //     for (int i = 0; i < items.length; i++) {
-    //         if ( new SpecialItem(items[i]) != null ) {
-    //             return true;
-    //         }
-    //     }
-
-    //     return false;
-    // }
-
-    // /**
-    //  * @param inventory
-    //  * @return true if the provided inventory contains a Burrower's pick
-    //  */
-    // public static <TLevel extends SpecialItemLevels> SpecialItem<TLevel> findIn(Inventory inventory) {
-    //     ItemStack[] items = inventory.getContents();
-    //     for (int i = 0; i < items.length; i++) {
-    //         SpecialItem<TLevel> pick = new SpecialItem<TLevel>(items[i]);
-    //         if (pick != null) {
-    //             return pick;
-    //         }
-    //     }
-
-    //     return null;
-    // }
     
 
     protected static int getLvlFromItem(ItemStack item, NamespacedKey key) {

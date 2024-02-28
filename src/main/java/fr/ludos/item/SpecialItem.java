@@ -1,7 +1,6 @@
 package fr.ludos.item;
 
 import org.bukkit.persistence.*;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -10,10 +9,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import fr.ludos.item.LevelItem;
 import java.util.function.Function;
-
-import java.util.UUID;
 
 
 /**
@@ -71,7 +67,6 @@ public abstract class SpecialItem {
     public abstract NamespacedKey getOwnerKey();
 
 
-
     public SpecialItem(ItemStack stack) throws IllegalArgumentException {
         if (stack == null) {
             throw new IllegalArgumentException();
@@ -122,7 +117,6 @@ public abstract class SpecialItem {
 
         return false;
     }
-
     
     protected static <T, Z> Z getPersistentData(ItemStack item, NamespacedKey key, PersistentDataType<T, Z> type) {
         return item.getItemMeta().getPersistentDataContainer().get(key, type);
