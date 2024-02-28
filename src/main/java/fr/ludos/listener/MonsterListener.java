@@ -20,33 +20,33 @@ import org.bukkit.event.entity.EntityTargetEvent;
 
 public class MonsterListener implements Listener {
 
-    private Player playerToIgnore;
+	private Player playerToIgnore;
 
-    /**
-     * Constructs a new MonsterTargetListener with the specified player to ignore.
-     *
-     * @param playerToIgnore The player that will be ignored by targeted zombies and skeletons.
-     */
+	/**
+	 * Constructs a new MonsterTargetListener with the specified player to ignore.
+	 *
+	 * @param playerToIgnore The player that will be ignored by targeted zombies and skeletons.
+	 */
 
-    public MonsterListener(Player playerToIgnore) {
-        this.playerToIgnore = playerToIgnore;
-    }
+	public MonsterListener(Player playerToIgnore) {
+		this.playerToIgnore = playerToIgnore;
+	}
 
-    /**
-     * Handles EntityTargetEvent to cancel targeting for zombies and skeletons towards the specified player.
-     *
-     * @param event The EntityTargetEvent triggered when an entity targets another entity.
-     */
-    
-    @EventHandler
-    public void onEntityTarget(EntityTargetEvent event) {
-        if (event.getEntityType() == EntityType.ZOMBIE || event.getEntityType() == EntityType.SKELETON) {
-            if (event.getTarget() instanceof Player) {
-                Player targetPlayer = (Player) event.getTarget();
-                if (targetPlayer.equals(playerToIgnore)) {
-                    event.setCancelled(true);
-                }
-            }
-        }
-    }
+	/**
+	 * Handles EntityTargetEvent to cancel targeting for zombies and skeletons towards the specified player.
+	 *
+	 * @param event The EntityTargetEvent triggered when an entity targets another entity.
+	 */
+
+	@EventHandler
+	public void onEntityTarget(EntityTargetEvent event) {
+		if (event.getEntityType() == EntityType.ZOMBIE || event.getEntityType() == EntityType.SKELETON) {
+			if (event.getTarget() instanceof Player) {
+				Player targetPlayer = (Player) event.getTarget();
+				if (targetPlayer.equals(playerToIgnore)) {
+					event.setCancelled(true);
+				}
+			}
+		}
+	}
 }

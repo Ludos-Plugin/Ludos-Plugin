@@ -12,67 +12,67 @@ import org.bukkit.plugin.PluginManager;
 
 public class HuntsmanRole extends Role {
 
-    private final HuntsmanBowEvents bowEvents;
-    // private final HuntsmanCrossbowEvents crossbowEvents;
-    // private final HuntsmanSpearEvents spearEvents;
+	private final HuntsmanBowEvents bowEvents;
+	// private final HuntsmanCrossbowEvents crossbowEvents;
+	// private final HuntsmanSpearEvents spearEvents;
 
-    public HuntsmanRole(Builder builder) {
-        super(builder);
-        PluginManager manager = Bukkit.getPluginManager();
+	public HuntsmanRole(Builder builder) {
+		super(builder);
+		PluginManager manager = Bukkit.getPluginManager();
 
-        bowEvents = new HuntsmanBowEvents();
-        manager.registerEvents((Listener)bowEvents, Main.getInstance());
+		bowEvents = new HuntsmanBowEvents();
+		manager.registerEvents((Listener)bowEvents, Main.getInstance());
 
-        // bowEvents = new HuntsmanCrossbowEvents();
-        // manager.registerEvents((Listener)bowEvents, Main.getInstance());
+		// bowEvents = new HuntsmanCrossbowEvents();
+		// manager.registerEvents((Listener)bowEvents, Main.getInstance());
 
-        // bowEvents = new HuntsmanSpearEvents();
-        // manager.registerEvents((Listener)bowEvents, Main.getInstance());
-    }
+		// bowEvents = new HuntsmanSpearEvents();
+		// manager.registerEvents((Listener)bowEvents, Main.getInstance());
+	}
 
-    @Override
-    public void stop() {
-        super.stop();
-        HandlerList.unregisterAll(bowEvents);
-        // HandlerList.unregisterAll(crossbowEvents);
-        // HandlerList.unregisterAll(spearEvents);
-    }
+	@Override
+	public void stop() {
+		super.stop();
+		HandlerList.unregisterAll(bowEvents);
+		// HandlerList.unregisterAll(crossbowEvents);
+		// HandlerList.unregisterAll(spearEvents);
+	}
 
-    // @EventHandler
-    // public void onPlayerRespawn(PlayerRespawnEvent event) {
-    //     ItemStack crossBowHunter = new ItemStack(Material.CROSSBOW, 1);
-    //     ItemMeta crossBowMeta = crossBowHunter.getItemMeta();
-    //     crossBowMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-    //     ItemStack arrow = new ItemStack(Material.ARROW, 1);
-    // }
-
-
+	// @EventHandler
+	// public void onPlayerRespawn(PlayerRespawnEvent event) {
+	//     ItemStack crossBowHunter = new ItemStack(Material.CROSSBOW, 1);
+	//     ItemMeta crossBowMeta = crossBowHunter.getItemMeta();
+	//     crossBowMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+	//     ItemStack arrow = new ItemStack(Material.ARROW, 1);
+	// }
 
 
 
 
-    // @EventHandler
-    // public void upgradeStuff(Player player) {        
-    //     if (player.getTotalExperience() >= 100/*  && ! HuntsmanCrossbow.playerOwns(player) */) {
-    //         // HuntsmanCrossbow.createNew(player);
-    //     }
-        
-    //     if (player.getTotalExperience() >= 300/*  && ! HuntsmanSpear.playerOwns(player) */) {
-    //         // HuntsmanSpear.createNew(player);
-    //     }
-    // }
 
 
-    public static class Builder extends Role.Builder {
+	// @EventHandler
+	// public void upgradeStuff(Player player) {
+	//     if (player.getTotalExperience() >= 100/*  && ! HuntsmanCrossbow.playerOwns(player) */) {
+	//         // HuntsmanCrossbow.createNew(player);
+	//     }
 
-        @Override
-        public String getId() {
-            return "huntsman";
-        }
+	//     if (player.getTotalExperience() >= 300/*  && ! HuntsmanSpear.playerOwns(player) */) {
+	//         // HuntsmanSpear.createNew(player);
+	//     }
+	// }
 
-        @Override
-        public HuntsmanRole build(String gameId) {
-            return new HuntsmanRole(this);
-        }
-    }
+
+	public static class Builder extends Role.Builder {
+
+		@Override
+		public String getId() {
+			return "huntsman";
+		}
+
+		@Override
+		public HuntsmanRole build(String gameId) {
+			return new HuntsmanRole(this);
+		}
+	}
 }

@@ -53,33 +53,33 @@ import java.util.Arrays;
 
 public class MonsterCommand implements CommandExecutor {
 
-    /** The display name for the custom spawn egg representing the Bomber zombie. */
-    public static final String bomberZombieName = "Bomber";
+	/** The display name for the custom spawn egg representing the Bomber zombie. */
+	public static final String bomberZombieName = "Bomber";
 
-    /**
-     * Executes the /bomberzombie command, giving the player a custom spawn egg for a Bomber zombie.
-     *
-     * @param sender  The command sender, expected to be a Player.
-     * @param command The command that was executed.
-     * @param label   The alias used for the command.
-     * @param args    The arguments provided with the command.
-     * @return true if the command was handled successfully, false otherwise.
-     */
+	/**
+	 * Executes the /bomberzombie command, giving the player a custom spawn egg for a Bomber zombie.
+	 *
+	 * @param sender  The command sender, expected to be a Player.
+	 * @param command The command that was executed.
+	 * @param label   The alias used for the command.
+	 * @param args    The arguments provided with the command.
+	 * @return true if the command was handled successfully, false otherwise.
+	 */
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender instanceof Player player) {
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		if (sender instanceof Player player) {
 
-            ItemStack zombieCustomEgg = new ItemStack(Material.ZOMBIE_SPAWN_EGG, 1);
-            ItemMeta zombieCustomEggMeta = zombieCustomEgg.getItemMeta();
+			ItemStack zombieCustomEgg = new ItemStack(Material.ZOMBIE_SPAWN_EGG, 1);
+			ItemMeta zombieCustomEggMeta = zombieCustomEgg.getItemMeta();
 
-            zombieCustomEggMeta.setDisplayName(bomberZombieName);
-            zombieCustomEggMeta.setLore(Arrays.asList("Spawns a bomber zombie, explodes if you near"));
-            zombieCustomEgg.setItemMeta(zombieCustomEggMeta);
+			zombieCustomEggMeta.setDisplayName(bomberZombieName);
+			zombieCustomEggMeta.setLore(Arrays.asList("Spawns a bomber zombie, explodes if you near"));
+			zombieCustomEgg.setItemMeta(zombieCustomEggMeta);
 
-            player.getInventory().addItem(zombieCustomEgg);
-        }
+			player.getInventory().addItem(zombieCustomEgg);
+		}
 
-        return true;
-    }
+		return true;
+	}
 }

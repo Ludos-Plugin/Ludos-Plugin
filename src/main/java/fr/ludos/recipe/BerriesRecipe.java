@@ -10,28 +10,32 @@ import fr.ludos.Main;
 import org.bukkit.inventory.ShapelessRecipe;
 
 
-public class BerriesRecipe extends Recipe {
+public class BerriesRecipe extends RecipeRegisterer {
 	private static final String RECIPE_NAMESPACE_KEY = "ludos_berries_recipe";
 
-    private static NamespacedKey recipeKey = null;
+	private static NamespacedKey recipeKey = null;
 
 
-    public BerriesRecipe(Main plugin) {
+	public BerriesRecipe(Main plugin) {
 		super(plugin);
 
 		recipeKey = new NamespacedKey(plugin, RECIPE_NAMESPACE_KEY);
 	}
 
-    @Override
+	@Override
 	public void Register() {
-        // Create a shapeless recipe for a berry
-        ItemStack berries = new ItemStack(Material.SWEET_BERRIES, 4);
-        ShapelessRecipe berryRecipe = new ShapelessRecipe(recipeKey, berries);
-        berryRecipe.addIngredient(0, Material.GRAVEL);
-        berryRecipe.addIngredient(1, Material.GRAVEL);
-        Bukkit.addRecipe(berryRecipe);
-    }
+		ItemStack berries = new ItemStack(Material.SWEET_BERRIES, 4);
+		ShapelessRecipe berryRecipe = new ShapelessRecipe(recipeKey, berries);
+		berryRecipe.addIngredient(0, Material.GRAVEL);
+		berryRecipe.addIngredient(1, Material.GRAVEL);
+		Bukkit.addRecipe(berryRecipe);
+	}
+
+	@Override
+	public void Unregister() {
+		Bukkit.getServer().removeRecipe(recipeKey);
+	}
 }
-      
+
 
 

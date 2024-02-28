@@ -1,84 +1,105 @@
 package fr.ludos.game.manhunt;
 
 import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitTask;
-
-import fr.ludos.Main;
-
 import org.bukkit.ChatColor;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
+
+import fr.ludos.Main;
 
 public class ManhuntTimer implements Listener {
 
-    private boolean chronoStarted = false;
+	private static final Integer revealSeconds = 180;
+    private ManhuntGame game;
+	private BossBar bossbar;
+
+    private boolean state = false;
     private long startTime;
     private BukkitTask task;
-    private long totalseconds;
+	
+    private long totalSeconds;
+    private String formattedTime;
 
-    private ManhuntTeamController teamController;
+    public ManhuntTimer(ManhuntGame game) {
+        this.game = game;
+		bossbar = Bukkit.createBossBar("Timer", BarColor.RED, BarStyle.SEGMENTED_12);
 
-    public ManhuntTimer(ManhuntTeamController teamController) {
-        this.teamController = teamController;
-
-        Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
-        Main.getInstance().getLogger().info("ManhuntTimer has been enabled!");
+        start();
     }
-
-    public void stop() {
-        HandlerList.unregisterAll((Listener)this);
-        Main.getInstance().getLogger().info("ManhuntTimer has been disabled!");
-    }
-    
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (!chronoStarted) {
-            startChrono();
-            chronoStarted = true;
-        }
+        start();
+    }
 
-        Player player = event.getPlayer();
-        if ( this.teamController.preyTeam.hasEntry( player.getName() ) ) {
-            stopChrono();
-            chronoStarted = false;
+    @EventHandler
+    public void onPlayerJoin(PlayerQuitEvent event) {
+        if (Bukkit.getOnlinePlayers().size() == 0) {
+            stop();
         }
     }
 
-    private void startChrono() {
+    private void start() {
+        if (state) {
+            return;
+        }
+        state = true;
+
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			bossbar.addPlayer(player);
+		}
+		bossbar.setVisible(true);
+
         startTime = System.currentTimeMillis();
-        task = Bukkit.getScheduler().runTaskTimer(Main.getInstance(), this::updateChrono, 0, 20);
+        task = new BukkitRunnable() {
+            @Override
+            public void run() {
+                update();
+            }
+        }.runTaskTimer(Main.getInstance(), 0, 20);
     }
 
-    private void stopChrono() {
+    public void stop() {
+        if (!state) {
+            return;
+        }
+        state = false;
+
+        HandlerList.unregisterAll((Listener) this);
         task.cancel();
-        long endTime = System.currentTimeMillis();
-        long totalTime = endTime - startTime;
+		
+		bossbar.removeAll();
+		bossbar.setVisible(true);
 
-        long seconds = totalTime / 1000;
-        long minutes = seconds / 60;
-        seconds %= 60;
-
-        String formattedTime = String.format("%02d:%02d", minutes, seconds);
         Bukkit.broadcastMessage(ChatColor.GREEN + "Chrono terminé. Temps total : " + formattedTime);
     }
 
-    private void updateChrono() {
+    private void update() {
         long currentTime = System.currentTimeMillis();
         long elapsedTime = currentTime - startTime;
 
-        totalseconds = elapsedTime / 1000;
-        long minutes = totalseconds / 60;
-        long seconds = totalseconds % 60;
+        totalSeconds = elapsedTime / 1000;
+        long hours = totalSeconds / 3600;
+        long minutes = totalSeconds % 3600 / 60;
+        long seconds = totalSeconds % 60;
 
-        String formattedTime = String.format("%02d:%02d", minutes, seconds);
-        Bukkit.broadcastMessage(ChatColor.GREEN + "Chrono: " + formattedTime);
+        formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
 
-        if (totalseconds % 180 == 0){
-            Bukkit.broadcastMessage("Position du chassé ");
+		double progress = ((double)totalSeconds % (double)revealSeconds) / (double)revealSeconds;
+		bossbar.setProgress(progress);
+		bossbar.setTitle(formattedTime);
+
+        if (totalSeconds % 180 == 0 && totalSeconds != 0) {
+            Bukkit.broadcastMessage("Position du chassé " + "");
         }
     }
 }

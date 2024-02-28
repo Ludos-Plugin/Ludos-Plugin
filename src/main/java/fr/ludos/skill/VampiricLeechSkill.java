@@ -76,10 +76,10 @@
 //     }
 
 //     /** Register VampiricLeechSkill as an event listener
-//      * 
+//      *
 //      * @param plugin      The instance of the main plugin class.
 //      * @param necromancer The player who activates the skill.
-//      */ 
+//      */
 
 //     public static void activateVampiricLeech(Main plugin, Player necromancer) {
 //         Bukkit.getPluginManager().registerEvents(new VampiricLeechSkill(), plugin);

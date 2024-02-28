@@ -49,98 +49,80 @@ import fr.ludos.item.SpecialItem;
 
 public class BurrowingClaw extends SpecialItem {
 
-    private int usages = 0;
+	private int usages = 0;
 
-    public int getUsages() {
-        return usages;
-    }
+	public int getUsages() {
+		return usages;
+	}
 
-    public BurrowingClaw(ItemStack stack) throws IllegalArgumentException {
-        super(stack);
+	public BurrowingClaw(ItemStack stack) throws IllegalArgumentException {
+		super(stack);
 
-        PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
-        if ( ! container.has(BurrowingClawEvents.getUsagesKey(), PersistentDataType.INTEGER) ) {
-            throw new IllegalArgumentException();
-        }
+		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
+		if ( ! container.has(BurrowingClawEvents.getUsagesKey(), PersistentDataType.INTEGER) ) {
+			throw new IllegalArgumentException();
+		}
 
-        this.usages = getPersistentData(stack, BurrowingClawEvents.getUsagesKey(), PersistentDataType.INTEGER);
-    }
+		this.usages = getPersistentData(stack, BurrowingClawEvents.getUsagesKey(), PersistentDataType.INTEGER);
+	}
 
-    public BurrowingClaw(Player owner) {
-        this(new ItemStack(Material.RABBIT_FOOT), owner);
-    }
-    public BurrowingClaw(ItemStack stack, Player owner) {
-        super(stack, owner);
+	public BurrowingClaw(Player owner) {
+		this(new ItemStack(Material.RABBIT_FOOT), owner);
+	}
+	public BurrowingClaw(ItemStack stack, Player owner) {
+		super(stack, owner);
 
-        setUsages(300);
-    }
+		setUsages(300);
+	}
 
-    public void setUsages(int usages) {
-        ItemMeta meta = getStack().getItemMeta();
+	public void setUsages(int usages) {
+		ItemMeta meta = getStack().getItemMeta();
 
-        this.usages = usages;
-        meta.getPersistentDataContainer().set(BurrowingClawEvents.getUsagesKey(), PersistentDataType.INTEGER, usages);
-        getStack().setItemMeta(meta);
-    }
+		this.usages = usages;
+		meta.getPersistentDataContainer().set(BurrowingClawEvents.getUsagesKey(), PersistentDataType.INTEGER, usages);
+		getStack().setItemMeta(meta);
+	}
 
-    
-    /**
-     * @param inventory
-     * @return true if the provided inventory contains a Burrowering Claw
-     */
-    public static Boolean containedIn(Inventory inventory) {
-        ItemStack[] items = inventory.getContents();
-        for (int i = 0; i < items.length; i++) {
-            ItemStack item = items[i];
-            if (item == null) {
-                continue;
-            }
-            try {
-                new BurrowingClaw(item);
-                return true;
-            } catch (IllegalArgumentException e) {
-                continue;
-            }
-        }
 
-        return false;
-    }
+	/**
+	 * @param inventory
+	 * @return true if the provided inventory contains a Burrowering Claw
+	 */
+	public static Boolean containedIn(Inventory inventory) {
+		ItemStack[] items = inventory.getContents();
+		for (int i = 0; i < items.length; i++) {
+			ItemStack item = items[i];
+			if (item == null) {
+				continue;
+			}
+			try {
+				new BurrowingClaw(item);
+				return true;
+			} catch (IllegalArgumentException e) {
+				continue;
+			}
+		}
 
-    /**
-     * @param inventory
-     * @return true if the provided inventory contains a Burrower's pick
-     */
-    public static BurrowingClaw findIn(Inventory inventory) {
-        ItemStack[] items = inventory.getContents();
-        for (int i = 0; i < items.length; i++) {
-            try {
-                BurrowingClaw pick = new BurrowingClaw(items[i]);
-                return pick;
-            } catch (IllegalArgumentException e) {
-                continue;
-            }
-        }
+		return false;
+	}
 
-        return null;
-    }
+	public void SetUsages(int usages) {
 
-    public void SetUsages(int usages) {
-
-    }
+	}
 
 	@Override
 	public NamespacedKey getOwnerKey() {
-        return BurrowingClawEvents.getOwnerKey();
+		return BurrowingClawEvents.getOwnerKey();
 	}
 
 
 	@Override
 	protected String getLore() {
-        return "";
+		return "";
 	}
 
 	@Override
 	protected String getName() {
-        return ChatColor.LIGHT_PURPLE + "Stick of Burrowing"; // TODO: Translate
+		return ChatColor.LIGHT_PURPLE + "Stick of Burrowing"; // TODO: Translate
 	}
 }

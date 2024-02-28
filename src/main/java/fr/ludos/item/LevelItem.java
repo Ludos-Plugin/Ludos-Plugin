@@ -5,12 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.Arrays;
-import java.util.UUID;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
@@ -53,110 +48,110 @@ import java.util.UUID;
 
 public abstract class LevelItem<TLevel extends SpecialItemLevels> extends SpecialItem {
 
-    private static final String MAX_LVL_LABEL = "MAX";
+	private static final String MAX_LVL_LABEL = "MAX";
 
-    private TLevel level;
-    private double xp;
-
-
-    public abstract NamespacedKey getLvlKey();
-    public abstract NamespacedKey getXpKey();
+	private TLevel level;
+	private double xp;
 
 
-    public TLevel getLevel() {
-        return level;
-    }
-    public double getXp() {
-        return xp;
-    }
+	public abstract NamespacedKey getLvlKey();
+	public abstract NamespacedKey getXpKey();
 
-    public abstract TLevel convertToLevel(int level);
 
-    public LevelItem(ItemStack stack) throws IllegalArgumentException {
-        super(stack);
+	public TLevel getLevel() {
+		return level;
+	}
+	public double getXp() {
+		return xp;
+	}
 
-        PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
-        if (
-            ! container.has(getLvlKey(), PersistentDataType.INTEGER) ||
-            ! container.has(getXpKey(), PersistentDataType.DOUBLE)
-        ) {
-            throw new IllegalArgumentException();
-        }
+	public abstract TLevel convertToLevel(int level);
 
-        this.level = convertToLevel(getLvlFromItem(stack, getLvlKey()));
-        this.xp = getXpFromItem(stack, getXpKey());
-    }
+	public LevelItem(ItemStack stack) throws IllegalArgumentException {
+		super(stack);
 
-    public LevelItem(ItemStack stack, Player owner, TLevel level) {
-        this(stack, owner, level, 0);
-    }
+		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
+		if (
+			! container.has(getLvlKey(), PersistentDataType.INTEGER) ||
+			! container.has(getXpKey(), PersistentDataType.DOUBLE)
+		) {
+			throw new IllegalArgumentException();
+		}
 
-    public LevelItem(ItemStack stack, Player owner, TLevel level, double xp) {
-        super(stack, owner);
+		this.level = convertToLevel(getLvlFromItem(stack, getLvlKey()));
+		this.xp = getXpFromItem(stack, getXpKey());
+	}
+
+	public LevelItem(ItemStack stack, Player owner, TLevel level) {
+		this(stack, owner, level, 0);
+	}
+
+	public LevelItem(ItemStack stack, Player owner, TLevel level, double xp) {
+		super(stack, owner);
 
 		setLvl(level);
 		setXp(xp);
-    }
-    
+	}
 
-    protected static int getLvlFromItem(ItemStack item, NamespacedKey key) {
-        return getPersistentData(item, key, PersistentDataType.INTEGER);
-    }
 
-    protected static double getXpFromItem(ItemStack item, NamespacedKey key) {
-        return getPersistentData(item, key, PersistentDataType.DOUBLE);
-    }
+	protected static int getLvlFromItem(ItemStack item, NamespacedKey key) {
+		return getPersistentData(item, key, PersistentDataType.INTEGER);
+	}
 
-    protected static Player getOwnerFromItem(ItemStack item, NamespacedKey key) {
-        return Bukkit.getPlayer(
-            UUID.fromString(
-                getPersistentData(item, key, PersistentDataType.STRING)
-            )
-        );
-    }
+	protected static double getXpFromItem(ItemStack item, NamespacedKey key) {
+		return getPersistentData(item, key, PersistentDataType.DOUBLE);
+	}
 
-    public void setLvl(TLevel level) {
-        ItemMeta meta = getStack().getItemMeta();
+	protected static Player getOwnerFromItem(ItemStack item, NamespacedKey key) {
+		return Bukkit.getPlayer(
+			UUID.fromString(
+				getPersistentData(item, key, PersistentDataType.STRING)
+			)
+		);
+	}
 
-        this.level = level;
-        meta.getPersistentDataContainer().set(getLvlKey(), PersistentDataType.INTEGER, level.index());
-        getStack().setItemMeta(meta);
-    }
-    
-    public abstract void addLvl();
-    
-    public void setXp(double value) {
+	public void setLvl(TLevel level) {
+		ItemMeta meta = getStack().getItemMeta();
 
-        double scaledTreshold = level.getXpThreshold();
-        if (value >= scaledTreshold) {
-            addLvl();
-            value -= scaledTreshold;
-        }
+		this.level = level;
+		meta.getPersistentDataContainer().set(getLvlKey(), PersistentDataType.INTEGER, level.index());
+		getStack().setItemMeta(meta);
+	}
 
-        ItemMeta meta = getStack().getItemMeta();
-        
-        this.xp = value;
-        meta.getPersistentDataContainer().set(getXpKey(), PersistentDataType.DOUBLE, xp);
+	public abstract void addLvl();
 
-        String xpFormatted = ChatColor.GRAY + "XP: " + ChatColor.YELLOW;
+	public void setXp(double value) {
 
-        if ( level.isMax() ) {
-            xpFormatted += MAX_LVL_LABEL;
-        } else {
-            String xpRounded = Double.toString(Math.round(xp * 100.0) / 100.0);
-            xpFormatted += xpRounded + '/' + level.getXpThreshold();
-        }
+		double scaledTreshold = level.getXpThreshold();
+		if (value >= scaledTreshold) {
+			addLvl();
+			value -= scaledTreshold;
+		}
 
-        meta.setLore(Arrays.asList(getLore(), xpFormatted));
-        getStack().setItemMeta(meta);
-    }
+		ItemMeta meta = getStack().getItemMeta();
 
-    public void addXp(double xp) {
-        if (level.isMax()) {
-            return;
-        }
+		this.xp = value;
+		meta.getPersistentDataContainer().set(getXpKey(), PersistentDataType.DOUBLE, xp);
 
-        double newXp = this.xp + xp;
-        setXp(newXp);
-    }
+		String xpFormatted = ChatColor.GRAY + "XP: " + ChatColor.YELLOW;
+
+		if ( level.isMax() ) {
+			xpFormatted += MAX_LVL_LABEL;
+		} else {
+			String xpRounded = Double.toString(Math.round(xp * 100.0) / 100.0);
+			xpFormatted += xpRounded + '/' + level.getXpThreshold();
+		}
+
+		meta.setLore(Arrays.asList(getLore(), xpFormatted));
+		getStack().setItemMeta(meta);
+	}
+
+	public void addXp(double xp) {
+		if (level.isMax()) {
+			return;
+		}
+
+		double newXp = this.xp + xp;
+		setXp(newXp);
+	}
 }

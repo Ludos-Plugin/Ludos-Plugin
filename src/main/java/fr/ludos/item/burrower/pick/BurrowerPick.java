@@ -46,149 +46,131 @@ import fr.ludos.item.LevelItem;
 
 public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
-    public BurrowerPick(ItemStack stack) throws IllegalArgumentException {
-        super(stack);
-    }
+	public BurrowerPick(ItemStack stack) throws IllegalArgumentException {
+		super(stack);
+	}
 
-    public BurrowerPick(Player owner) {
-        this(owner, BurrowerPickLevels.WOODEN);
-    }
-    public BurrowerPick(Player owner, BurrowerPickLevels level) {
-        super(new ItemStack(level.getMaterial()), owner, level);
-    }
+	public BurrowerPick(Player owner) {
+		this(owner, BurrowerPickLevels.WOODEN);
+	}
+	public BurrowerPick(Player owner, BurrowerPickLevels level) {
+		super(new ItemStack(level.getMaterial()), owner, level);
+	}
 
-    public BurrowerPick(ItemStack item, Player owner) {
-        this(item, owner, BurrowerPickLevels.WOODEN);
-    }
-    public BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level) {
-        this(item, owner, level, 0);
-    }
-    public BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level, double xp) {
-        super(item, owner, level, xp);
-    }
+	public BurrowerPick(ItemStack item, Player owner) {
+		this(item, owner, BurrowerPickLevels.WOODEN);
+	}
+	public BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level) {
+		this(item, owner, level, 0);
+	}
+	public BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level, double xp) {
+		super(item, owner, level, xp);
+	}
 
-    
-    /**
-     * @param inventory
-     * @return true if the provided inventory contains a Burrower's pick
-     */
-    public static Boolean containedIn(Inventory inventory) {
-        ItemStack[] items = inventory.getContents();
-        for (int i = 0; i < items.length; i++) {
-            ItemStack item = items[i];
-            if (item == null) {
-                continue;
-            }
-            try {
-                new BurrowerPick(item);
-                return true;
-            } catch (IllegalArgumentException e) {
-                continue;
-            }
-        }
 
-        return false;
-    }
+	/**
+	 * @param inventory
+	 * @return true if the provided inventory contains a Burrower's pick
+	 */
+	public static Boolean containedIn(Inventory inventory) {
+		ItemStack[] items = inventory.getContents();
+		for (int i = 0; i < items.length; i++) {
+			ItemStack item = items[i];
+			if (item == null) {
+				continue;
+			}
+			try {
+				new BurrowerPick(item);
+				return true;
+			} catch (IllegalArgumentException e) {
+				continue;
+			}
+		}
 
-    /**
-     * @param inventory
-     * @return true if the provided inventory contains a Burrower's pick
-     */
-    public static BurrowerPick findIn(Inventory inventory) {
-        ItemStack[] items = inventory.getContents();
-        for (int i = 0; i < items.length; i++) {
-            try {
-                BurrowerPick pick = new BurrowerPick(items[i]);
-                return pick;
-            } catch (IllegalArgumentException e) {
-                continue;
-            }
-        }
-
-        return null;
-    }
+		return false;
+	}
 
 	@Override
 	public BurrowerPickLevels convertToLevel(int level) {
-        return BurrowerPickLevels.findByKey(level);
+		return BurrowerPickLevels.findByKey(level);
 	}
 
 	@Override
 	public NamespacedKey getOwnerKey() {
-        return BurrowerPickEvents.getOwnerKey();
+		return BurrowerPickEvents.getOwnerKey();
 	}
 
 	@Override
 	public NamespacedKey getLvlKey() {
-        return BurrowerPickEvents.getLvlKey();
+		return BurrowerPickEvents.getLvlKey();
 	}
 
 	@Override
 	public NamespacedKey getXpKey() {
-        return BurrowerPickEvents.getXpKey();
+		return BurrowerPickEvents.getXpKey();
 	}
 
 	@Override
 	protected String getLore() {
-        return "";
+		return "";
 	}
 
 	@Override
 	protected String getName() {
-        return "Burrower's Pick"; // TODO: Translate
+		return "Burrower's Pick"; // TODO: Translate
 	}
 
-    public void awardBreak(Player player, Block block) {
-        if (getOwner() != player) {
-            return;
-        }
+	public void awardBreak(Player player, Block block) {
+		if (getOwner() != player) {
+			return;
+		}
 
-        double oreXp = BurrowerPick.getOreReward(block);
-        if (oreXp != 0) {
-            addXp(oreXp);
-        }
-    }
+		double oreXp = BurrowerPick.getOreReward(block);
+		if (oreXp != 0) {
+			addXp(oreXp);
+		}
+	}
 
-    public void addLvl() {
-        if (getLevel().isMax()) {
-            return;
-        }
+	public void addLvl() {
+		if (getLevel().isMax()) {
+			return;
+		}
 
-        setLvl(BurrowerPickLevels.getNextLevel(getLevel()));
-        if (getOwner() != null) {
-            getOwner().sendMessage(ChatColor.GREEN + "Your pickaxe has leveled up!"); // TODO: Translate
-        }
-    }
-    
-    
-    public static double getOreReward(Block ore){
-        switch (ore.getType()) {
-           case ANCIENT_DEBRIS:
-                return 60;
-            case EMERALD_ORE:
-                return 50;
-            case DIAMOND_ORE:
-                return 45;
-            case GOLD_ORE:
-                return 40;
-            case REDSTONE_ORE:
-                return 35;
-            case LAPIS_ORE:
-                return 30;
-            case NETHER_QUARTZ_ORE:
-                return 25;
-            case IRON_ORE:
-                return 20;
-            case OBSIDIAN:
-                return 15;
-            case COAL_ORE:
-                return 10;
-            case COPPER_ORE:
-                return 5;
-            case STONE:
-                return 1;
-            default:
-                return 0;
-        }
-    }
+		setLvl(BurrowerPickLevels.getNextLevel(getLevel()));
+		if (getOwner() != null) {
+			getOwner().sendMessage(ChatColor.GREEN + "Your pickaxe has leveled up!"); // TODO: Translate
+		}
+	}
+
+
+	public static double getOreReward(Block ore){
+		switch (ore.getType()) {
+		   case ANCIENT_DEBRIS:
+				return 60;
+			case EMERALD_ORE:
+				return 50;
+			case DIAMOND_ORE:
+				return 45;
+			case GOLD_ORE:
+				return 40;
+			case REDSTONE_ORE:
+				return 35;
+			case LAPIS_ORE:
+				return 30;
+			case NETHER_QUARTZ_ORE:
+				return 25;
+			case IRON_ORE:
+				return 20;
+			case OBSIDIAN:
+				return 15;
+			case COAL_ORE:
+				return 10;
+			case COPPER_ORE:
+				return 5;
+			case STONE:
+				return 1;
+			default:
+				return 0;
+		}
+	}
 }

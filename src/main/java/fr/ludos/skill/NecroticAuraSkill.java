@@ -51,39 +51,39 @@ import org.bukkit.entity.Entity;
 
 public class NecroticAuraSkill {
 
-    private static final int AURA_RADIUS = 8;
-    private static final int AURA_DAMAGE = 2;
+	private static final int AURA_RADIUS = 8;
+	private static final int AURA_DAMAGE = 2;
 
-    /**
-     * Activate the Necrotic Aura skill around the necromancer player.
-     *
-     * @param plugin      The instance of the main plugin class.
-     * @param necromancer The player who activates the skill.
-     * @param prey      The player being prey.
-     */
+	/**
+	 * Activate the Necrotic Aura skill around the necromancer player.
+	 *
+	 * @param plugin      The instance of the main plugin class.
+	 * @param necromancer The player who activates the skill.
+	 * @param prey      The player being prey.
+	 */
 
-    public static void activateNecroticAura(Main plugin, Player necromancer, Player prey) {
+	public static void activateNecroticAura(Main plugin, Player necromancer, Player prey) {
 
-        // Apply damage and potion effect
-        for (Entity entity : necromancer.getNearbyEntities(AURA_RADIUS, AURA_RADIUS, AURA_RADIUS)) {
-            if (entity instanceof LivingEntity && entity.getUniqueId().equals(prey.getUniqueId())) {
-                LivingEntity livingEntity = (LivingEntity) entity;
+		// Apply damage and potion effect
+		for (Entity entity : necromancer.getNearbyEntities(AURA_RADIUS, AURA_RADIUS, AURA_RADIUS)) {
+			if (entity instanceof LivingEntity && entity.getUniqueId().equals(prey.getUniqueId())) {
+				LivingEntity livingEntity = (LivingEntity) entity;
 
-                livingEntity.damage(AURA_DAMAGE);
+				livingEntity.damage(AURA_DAMAGE);
 
-                livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 60, 1));
-            }
-        }
+				livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 60, 1));
+			}
+		}
 
-        // Display particle effects for the aura
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            for (double t = 0; t <= Math.PI * 2; t += Math.PI / 16) {
-                double x = AURA_RADIUS * Math.cos(t);
-                double y = 1;
-                double z = AURA_RADIUS * Math.sin(t);
+		// Display particle effects for the aura
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+			for (double t = 0; t <= Math.PI * 2; t += Math.PI / 16) {
+				double x = AURA_RADIUS * Math.cos(t);
+				double y = 1;
+				double z = AURA_RADIUS * Math.sin(t);
 
-                prey.getWorld().spawnParticle(Particle.SPELL_WITCH, prey.getLocation().clone().add(x, y, z), 1);
-            }
-        });
-    }
+				prey.getWorld().spawnParticle(Particle.SPELL_WITCH, prey.getLocation().clone().add(x, y, z), 1);
+			}
+		});
+	}
 }

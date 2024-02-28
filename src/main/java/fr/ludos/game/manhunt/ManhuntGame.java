@@ -10,10 +10,10 @@ import org.bukkit.event.Listener;
 import org.apache.commons.lang3.EnumUtils;
 
 import java.util.stream.Collectors;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.scoreboard.Scoreboard;
 
 import fr.ludos.Main;
 import fr.ludos.command.CommandUtility;
@@ -29,224 +30,266 @@ import fr.ludos.game.Game;
 
 public class ManhuntGame extends Game {
 
-    private ManhuntCompassEvents compassEvents;
-    private ManhuntTimer timer;
+	public static final String manhuntKey = "Manhunt";
+	public static final String playersKey = "Players";
+	public static final String preyKey = "Prey";
 
-    protected ManhuntGame(Builder builder) {
-        super(builder);
+	private Scoreboard scoreboard;
+	private ManhuntTeamController teamController;
 
-        ManhuntTeamController controller = new ManhuntTeamController(scoreboard, builder.getPlayers(), builder.getPrey());
-        this.teamController = controller;
-        
-        this.timer = new ManhuntTimer(controller);
+	private ManhuntCompassEvents compassEvents;
+	private ManhuntTimer timer;
 
-        compassEvents = new ManhuntCompassEvents();
-        Bukkit.getPluginManager().registerEvents(compassEvents, Main.getInstance());
+	public Scoreboard getScoreboard() {
+		return this.scoreboard;
+	}
 
-        Bukkit.broadcastMessage("The Game of Manhunt started");
-    }
+	protected ManhuntGame(Builder builder) {
+		super(builder);
 
-    @Override
-    public void stop() {
-        super.stop();
+		this.scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
+		this.teamController = new ManhuntTeamController(this, builder.getPlayers(), builder.getPrey());
 
-        timer.stop();
+		this.timer = new ManhuntTimer(this);
 
-        HandlerList.unregisterAll((Listener)compassEvents);
-
-        Bukkit.broadcastMessage("The Game of Manhunt ended");
-    }
-
-    @EventHandler
-    public void onEntityDamage(EntityDamageByEntityEvent event) {
-        // if(
-        //     event.getDamager() instanceof Player damager && 
-        //     event.getEntity() instanceof Player entity &&
-        //     teamController.areAllies(damager, entity) 
-        // ) {
-        //     event.setCancelled(false);
-        // }   
-    }
+		compassEvents = new ManhuntCompassEvents();
+		Bukkit.getPluginManager().registerEvents(compassEvents, Main.getInstance());
 
 
-    
+		Bukkit.broadcastMessage("The Game of Manhunt started");
+	}
 
-    public static class Builder extends Game.Builder {
-        private static final String allOption = "all";
-        private static final String randomOption = "random";
+	@Override
+	public void stop() {
+		super.stop();
 
-        private Player prey = null;
-        private List<Player> players = null;
+		teamController.stop();
+
+		timer.stop();
+
+		HandlerList.unregisterAll((Listener)compassEvents);
 
 
-        @Nullable
-        public Set<Player> getPlayers() {
-            if (players == null) {
-                return null;
-            }
-            return new HashSet<Player>(players);
-        }
+		Bukkit.broadcastMessage("The Game of Manhunt ended");
+	}
 
-        @Nullable
-        public Player getPrey() {
-            return prey;
-        }
 
-        public String getPlayersString() {
-            return players == null ? "All" : players.stream() // TODO: Translate
-                .map(Player::getName)
-                .collect(Collectors.joining(" "));
-        }
+	@EventHandler
+	public void onEntityDamage(EntityDamageByEntityEvent event) {
+		// if(
+		//     event.getDamager() instanceof Player damager &&
+		//     event.getEntity() instanceof Player entity &&
+		//     teamController.areAllies(damager, entity)
+		// ) {
+		//     event.setCancelled(false);
+		// }
+	}
 
-        public String getPreyString() {
-            return prey == null ? "Random" : prey.getName(); // TODO: Translate
-        }
 
-        @Override
-        public String getId() {
-            return "manhunt";
-        }
 
-        @Override
-        public boolean gameCommand(CommandSender sender, Command command, String label, String[] args, PlayCommandOptions option) {
-            switch ( option ) {
-                case config:
-                    if (args.length == 0) {
-                        return false;
-                    }
 
-                    String arg = args[0];
-                    if ( ! EnumUtils.isValidEnum(ManhuntGameConfigs.class, arg) ) {
-                        return false;
-                    }
-                    ManhuntGameConfigs config = ManhuntGameConfigs.valueOf( arg );
+	public static class Builder extends Game.Builder {
+		private static final String allOption = "all";
+		private static final String randomOption = "random";
 
-                    return handleConfigsCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), config);
-                case start:
-                    Game.startGame(this);
-                    break;
-                case stop:
-                    Game.stopGame();
-                    break;
-            }
+		private String prey = null;
+		private Set<String> players = null;
 
-            return true;
-        }
 
-        @Override
-        public List<String> gameTabComplete(CommandSender sender, Command command, String label, String[] args, PlayCommandOptions option) {
-            if (args.length == 0) {
-                return null;
-            }
+		public Builder() {
+			Main main = Main.getInstance();
 
-            switch ( option ) {
-                case config:
-                    if (args.length == 1) {
-                        // Show all configs
-                        return Arrays.stream(ManhuntGameConfigs.values())
-                            .map(ManhuntGameConfigs::toString)
-                            .sorted()
-                            .collect(Collectors.toList());
-                    }
-                    
-                    String arg = args[0];
-                    if ( ! EnumUtils.isValidEnum(ManhuntGameConfigs.class, arg) ) {
-                        return null;
-                    }
-                    ManhuntGameConfigs config = ManhuntGameConfigs.valueOf( arg );
 
-                    return handleConfigsTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length), config);
-                case start:
-                    break;
-                case stop:
-                    break;
-            }
+			players = main.getConfig().getStringList(manhuntKey + '.' + playersKey).stream()
+				.collect(Collectors.toSet());
+			if (players.size() == 0) {
+				players = null;
+			}
+			prey = main.getConfig().getString(manhuntKey + '.' + preyKey);
+		}
 
-            return null;
-        }
 
-        private boolean handleConfigsCommand(CommandSender sender, Command command, String label, String[] args, ManhuntGameConfigs config) {
-            switch ( config ) {
-                case players:
-                    if ( args.length == 0 ) {
-                        // Field is left empty, send the current config
-                        sender.sendMessage( getPlayersString() );
-                        return true;
-                    }
+		@Nullable
+		public Set<Player> getPlayers() {
+			if (players == null) {
+				return null;
+			}
+			return new HashSet<Player>(
+				players.stream()
+					.map(Bukkit::getPlayerExact)
+					.collect(Collectors.toSet())
+			);
+		}
 
-                    if ( args[0].equalsIgnoreCase(allOption) ) {
-                        // Reset to default option
-                        players = null;
-                        sender.sendMessage("All players included in the game"); // TODO: Translate
-                        return true;
-                    }
-                    
-                    players = new ArrayList<Player>();
-                    for ( int i = 0; i < args.length; i++) {
-                        Player argPlayer = Bukkit.getPlayerExact(args[i]);
-                        if (argPlayer == null) {
-                            continue;
-                        }
+		@Nullable
+		public Player getPrey() {
+			return Bukkit.getPlayerExact(prey);
+		}
 
-                        players.add(argPlayer);
-                    }
-                    if (players.isEmpty()) {
-                        players = null;
-                    }
+		public String getPlayersString() {
+			return players == null ? "All" : players.stream() // TODO: Translate
+				.collect(Collectors.joining(" "));
+		}
 
-                    sender.sendMessage( getPlayersString() );
-                    return true;
-                case prey:
-                    if ( args.length == 0 ) {
-                        // Field is left empty, send the current config
-                        sender.sendMessage( getPreyString() );
-                        return true;
-                    }
+		public String getPreyString() {
+			return prey == null ? "Random" : prey; // TODO: Translate
+		}
 
-                    if ( args[0].equalsIgnoreCase(randomOption) ) {
-                        // Reset to default option
-                        prey = null;
-                        sender.sendMessage("Prey player set to Random"); // TODO: Translate
-                        return true;
-                    }
+		@Override
+		public String getId() {
+			return "manhunt";
+		}
 
-                    prey = Bukkit.getPlayerExact(args[0]);
+		@Override
+		public boolean gameCommand(CommandSender sender, Command command, String label, String[] args, PlayCommandOptions option) {
+			switch ( option ) {
+				case config:
+					if (args.length == 0) {
+						return false;
+					}
 
-                    sender.sendMessage( getPreyString() );
-                    return true;
-            }
+					String arg = args[0];
+					if ( ! EnumUtils.isValidEnum(ManhuntGameConfigs.class, arg) ) {
+						return false;
+					}
+					ManhuntGameConfigs config = ManhuntGameConfigs.valueOf( arg );
 
-            return false;
-        }
+					return handleConfigsCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), config);
+				case start:
+					Game.startGame(this);
+					break;
+				case stop:
+					Game.stopGame();
+					break;
+			}
 
-        private List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args, ManhuntGameConfigs config) {
-            List<String> allPlayers = CommandUtility.getOnlinePlayerNames();
+			return true;
+		}
 
-            switch ( config ) {
-                case players:
-                    // Options are : any enumeration of players, or all players
+		@Override
+		public List<String> gameTabComplete(CommandSender sender, Command command, String label, String[] args, PlayCommandOptions option) {
+			if (args.length == 0) {
+				return null;
+			}
 
-                    if ( args.length == 1 ) {
-                        allPlayers.add(allOption);
-                    }
-                    return allPlayers;
-                case prey:
-                    // Options are : any single player, or a random player
+			switch ( option ) {
+				case config:
+					if (args.length == 1) {
+						// Show all configs
+						return Arrays.stream(ManhuntGameConfigs.values())
+							.map(ManhuntGameConfigs::toString)
+							.sorted()
+							.collect(Collectors.toList());
+					}
 
-                    if ( args.length == 1 ) {
-                        allPlayers.add(randomOption);
-                        return allPlayers;
-                    }
-                    return null;
-            }
+					String arg = args[0];
+					if ( ! EnumUtils.isValidEnum(ManhuntGameConfigs.class, arg) ) {
+						return null;
+					}
+					ManhuntGameConfigs config = ManhuntGameConfigs.valueOf( arg );
 
-            return null;
-        }
+					return handleConfigsTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length), config);
+				case start:
+					break;
+				case stop:
+					break;
+			}
 
-        @Override
-        public ManhuntGame build() {
-            return new ManhuntGame(this);
-        }
-    }
-    
+			return null;
+		}
+
+		private boolean handleConfigsCommand(CommandSender sender, Command command, String label, String[] args, ManhuntGameConfigs config) {
+			Main main = Main.getInstance();
+			switch ( config ) {
+				case players:
+					if ( args.length == 0 ) {
+						// Field is left empty, send the current config
+						sender.sendMessage( getPlayersString() );
+						return true;
+					}
+
+					if ( args[0].equalsIgnoreCase(allOption) ) {
+						// Reset to default option
+						players = null;
+
+						main.getConfig().set(manhuntKey + '.' + playersKey, null);
+						main.saveConfig();
+
+						sender.sendMessage("All players included in the game"); // TODO: Translate
+						return true;
+					}
+
+					players = new HashSet<String>();
+					for ( int i = 0; i < args.length; i++) {
+						players.add(args[i]);
+					}
+					if (players.isEmpty()) {
+						players = null;
+					}
+
+					main.getConfig().set(manhuntKey + '.' + playersKey, players.stream().collect(Collectors.toList()));
+					main.saveConfig();
+
+					sender.sendMessage( getPlayersString() );
+					return true;
+				case prey:
+					if ( args.length == 0 ) {
+						// Field is left empty, send the current config
+						sender.sendMessage( getPreyString() );
+						return true;
+					}
+
+					if ( args[0].equalsIgnoreCase(randomOption) ) {
+						// Reset to default option
+						prey = null;
+
+						main.getConfig().set(manhuntKey + '.' + preyKey, null);
+						main.saveConfig();
+
+						sender.sendMessage("Prey player set to Random"); // TODO: Translate
+						return true;
+					}
+
+					prey = args[0];
+
+					main.getConfig().set(manhuntKey + '.' + preyKey, prey);
+					main.saveConfig();
+
+					sender.sendMessage( getPreyString() );
+					return true;
+			}
+
+			return false;
+		}
+
+		private List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args, ManhuntGameConfigs config) {
+			List<String> allPlayers = CommandUtility.getOnlinePlayerNames();
+
+			switch ( config ) {
+				case players:
+					// Options are : any enumeration of players, or all players
+
+					if ( args.length == 1 ) {
+						allPlayers.add(allOption);
+					}
+					return allPlayers;
+				case prey:
+					// Options are : any single player, or a random player
+
+					if ( args.length == 1 ) {
+						allPlayers.add(randomOption);
+						return allPlayers;
+					}
+					return null;
+			}
+
+			return null;
+		}
+
+		@Override
+		public ManhuntGame build() {
+			return new ManhuntGame(this);
+		}
+	}
+
 }

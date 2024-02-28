@@ -10,29 +10,34 @@ import fr.ludos.Main;
 import org.bukkit.inventory.ShapedRecipe;
 
 
-public class EnchantementTableRecipe extends Recipe {
+public class EnchantementTableRecipe extends RecipeRegisterer {
 	private static final String RECIPE_NAMESPACE_KEY = "ludos_enchantment_recipe";
 
-    private static NamespacedKey recipeKey = null;
+	private static NamespacedKey recipeKey = null;
 
 
-    public EnchantementTableRecipe(Main plugin) {
+	public EnchantementTableRecipe(Main plugin) {
 		super(plugin);
 
 		recipeKey = new NamespacedKey(plugin, RECIPE_NAMESPACE_KEY);
 	}
 
-    @Override
+	@Override
 	public void Register() {
-        ItemStack EnchantementTable = new ItemStack(Material.ENCHANTING_TABLE, 1);
-        ShapedRecipe EnchantementTablerecipe = new ShapedRecipe(recipeKey, EnchantementTable);
-        EnchantementTablerecipe.shape(
-            "III", 
-            "IDI", 
-            "***"
-        );
-        EnchantementTablerecipe.setIngredient('I', Material.LEATHER);
-        EnchantementTablerecipe.setIngredient('D', Material.DIAMOND);
-        Bukkit.addRecipe(EnchantementTablerecipe);
-    }
+		ItemStack EnchantementTable = new ItemStack(Material.ENCHANTING_TABLE, 1);
+		ShapedRecipe EnchantementTableRecipe = new ShapedRecipe(recipeKey, EnchantementTable);
+		EnchantementTableRecipe.shape(
+			"III",
+			"IDI",
+			"***"
+		);
+		EnchantementTableRecipe.setIngredient('I', Material.LEATHER);
+		EnchantementTableRecipe.setIngredient('D', Material.DIAMOND);
+		Bukkit.addRecipe(EnchantementTableRecipe);
+	}
+
+	@Override
+	public void Unregister() {
+		Bukkit.getServer().removeRecipe(recipeKey);
+	}
 }

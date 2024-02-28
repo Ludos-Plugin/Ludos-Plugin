@@ -74,71 +74,71 @@ import fr.ludos.controller.NecromancerMonsterController;
 
 public class ZombieBomber {
 
-    private final int MAX_HEALTH = 7;
+	private final int MAX_HEALTH = 7;
 
-    /**
-     * Constructs a new ZombieBomber at the specified location, controlled by the given summoner player.
-     *
-     * @param location The location where the ZombieBomber will be spawned.
-     * @param summoner The player who summoned the ZombieBomber.
-     * @param plugin   The Main plugin instance for scheduling tasks.
-     */
+	/**
+	 * Constructs a new ZombieBomber at the specified location, controlled by the given summoner player.
+	 *
+	 * @param location The location where the ZombieBomber will be spawned.
+	 * @param summoner The player who summoned the ZombieBomber.
+	 * @param plugin   The Main plugin instance for scheduling tasks.
+	 */
 
-    public ZombieBomber(Location location, Player summoner, Main plugin) {
-        Zombie zombie = (Zombie) location.getWorld().spawnEntity(location, EntityType.ZOMBIE);
+	public ZombieBomber(Location location, Player summoner, Main plugin) {
+		Zombie zombie = (Zombie) location.getWorld().spawnEntity(location, EntityType.ZOMBIE);
 
-        zombie.setBaby();
+		zombie.setBaby();
 
-        Attributable zombieAt = zombie;
-        AttributeInstance attribute = zombieAt.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+		Attributable zombieAt = zombie;
+		AttributeInstance attribute = zombieAt.getAttribute(Attribute.GENERIC_MAX_HEALTH);
 
-        attribute.setBaseValue(MAX_HEALTH);
-        zombie.setHealth(MAX_HEALTH);
-
-
-        zombie.setCustomName("Bomber " + ChatColor.RED + (int) zombie.getHealth() + "/" + MAX_HEALTH + " ❤︎");
-        zombie.setCustomNameVisible(true);
-
-        zombie.getEquipment().setItemInMainHand(new ItemStack(Material.FLINT_AND_STEEL, 1));
-        zombie.getEquipment().setHelmet(new ItemStack(Material.TNT, 1));
+		attribute.setBaseValue(MAX_HEALTH);
+		zombie.setHealth(MAX_HEALTH);
 
 
-        new BukkitRunnable() {
-            int bombsPlaced = 0;
+		zombie.setCustomName("Bomber " + ChatColor.RED + (int) zombie.getHealth() + "/" + MAX_HEALTH + " ❤︎");
+		zombie.setCustomNameVisible(true);
 
-            @Override
-            public void run() {
-                if (zombie.isDead() || bombsPlaced >= 3) {
-                    cancel();
-                    zombie.remove();
-                    return;
-                }
+		zombie.getEquipment().setItemInMainHand(new ItemStack(Material.FLINT_AND_STEEL, 1));
+		zombie.getEquipment().setHelmet(new ItemStack(Material.TNT, 1));
 
-                if ( ! (zombie.getTarget() instanceof Player playerTarget) || playerTarget != summoner ) {
-                    Location location = zombie.getLocation();
-                    Entity finalTarget = zombie.getNearbyEntities(10, 10, 10).stream()
-                        .filter(tar -> (tar instanceof Player playerTar) && playerTar != summoner) // get player candidates
-                        .sorted((tar1, tar2) -> (int)tar1.getLocation().distance(location) - (int)tar2.getLocation().distance(location)) // sort by distance
-                        .findFirst()
-                        .get();
-                    
-                    zombie.setTarget( (Player) finalTarget );
-                    return;
-                }
 
-                if ( zombie.getLocation().distance(playerTarget.getLocation()) < 5 ) {
-                    TNTPrimed tnt = (TNTPrimed) zombie.getLocation().getWorld()
-                        .spawnEntity(zombie.getLocation(), EntityType.PRIMED_TNT);
+		new BukkitRunnable() {
+			int bombsPlaced = 0;
 
-                    tnt.setFuseTicks(20);
-                    bombsPlaced++;
-                }
+			@Override
+			public void run() {
+				if (zombie.isDead() || bombsPlaced >= 3) {
+					cancel();
+					zombie.remove();
+					return;
+				}
 
-                NecromancerMonsterController.controlZombie(zombie, summoner, 10, 20);
+				if ( ! (zombie.getTarget() instanceof Player playerTarget) || playerTarget != summoner ) {
+					Location location = zombie.getLocation();
+					Entity finalTarget = zombie.getNearbyEntities(10, 10, 10).stream()
+						.filter(tar -> (tar instanceof Player playerTar) && playerTar != summoner) // get player candidates
+						.sorted((tar1, tar2) -> (int)tar1.getLocation().distance(location) - (int)tar2.getLocation().distance(location)) // sort by distance
+						.findFirst()
+						.get();
 
-                zombie.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 120, 2));
-            }
+					zombie.setTarget( (Player) finalTarget );
+					return;
+				}
 
-        }.runTaskTimer(plugin, 100L, 100L);
-    }
+				if ( zombie.getLocation().distance(playerTarget.getLocation()) < 5 ) {
+					TNTPrimed tnt = (TNTPrimed) zombie.getLocation().getWorld()
+						.spawnEntity(zombie.getLocation(), EntityType.PRIMED_TNT);
+
+					tnt.setFuseTicks(20);
+					bombsPlaced++;
+				}
+
+				NecromancerMonsterController.controlZombie(zombie, summoner, 10, 20);
+
+				zombie.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 120, 2));
+			}
+
+		}.runTaskTimer(plugin, 100L, 100L);
+	}
 }

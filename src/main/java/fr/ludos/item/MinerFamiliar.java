@@ -24,177 +24,177 @@ import java.util.Random;
 
 public class MinerFamiliar {
 
-    private Villager villager;
-    private List<Task> tasks = new ArrayList<>();
-    private final Main plugin;
-    private final Player owner;
+	private Villager villager;
+	private List<Task> tasks = new ArrayList<>();
+	private final Main plugin;
+	private final Player owner;
 
-    /**
-     * Constructor for the MinerFamiliar class.
-     *
-     * @param owner  The owner (player) of the familiar.
-     * @param plugin The main plugin instance.
-     */
+	/**
+	 * Constructor for the MinerFamiliar class.
+	 *
+	 * @param owner  The owner (player) of the familiar.
+	 * @param plugin The main plugin instance.
+	 */
 
-    public MinerFamiliar(Player owner, Main plugin) {
-        this.owner = owner;
-        this.plugin = plugin;
-        summonFamiliar(owner);
-        addTasks();
-        startTaskScheduler();
-    }
+	public MinerFamiliar(Player owner, Main plugin) {
+		this.owner = owner;
+		this.plugin = plugin;
+		summonFamiliar(owner);
+		addTasks();
+		startTaskScheduler();
+	}
 
-    /**
-     * Summons the familiar at the owner's location and configures its appearance and equipment.
-     *
-     * @param owner The owner (player) of the familiar.
-     */
+	/**
+	 * Summons the familiar at the owner's location and configures its appearance and equipment.
+	 *
+	 * @param owner The owner (player) of the familiar.
+	 */
 
-    private void summonFamiliar(Player owner) {
-        Location spawnLocation = owner.getLocation();
-        villager = owner.getWorld().spawn(spawnLocation, Villager.class);
+	private void summonFamiliar(Player owner) {
+		Location spawnLocation = owner.getLocation();
+		villager = owner.getWorld().spawn(spawnLocation, Villager.class);
 
-        // Configure the familiar (appearance, profession, etc.)
-        villager.setAdult();
-        villager.setCustomName(owner.getName() + "'s Familiar");
-        villager.setCustomNameVisible(true);
+		// Configure the familiar (appearance, profession, etc.)
+		villager.setAdult();
+		villager.setCustomName(owner.getName() + "'s Familiar");
+		villager.setCustomNameVisible(true);
 
-        // Equip the familiar with the same pickaxe as its master
-        ItemStack pickaxe = owner.getInventory().getItemInMainHand().clone();
-        villager.getEquipment().setItemInMainHand(pickaxe);
-    }
+		// Equip the familiar with the same pickaxe as its master
+		ItemStack pickaxe = owner.getInventory().getItemInMainHand().clone();
+		villager.getEquipment().setItemInMainHand(pickaxe);
+	}
 
-    /**
-     * Adds initial tasks to the familiar's task list.
-     */
+	/**
+	 * Adds initial tasks to the familiar's task list.
+	 */
 
-    private void addTasks() {
-        tasks.add(new MoveToRandomLocationTask());
-        tasks.add(new MineBlockTask());
-    }
+	private void addTasks() {
+		tasks.add(new MoveToRandomLocationTask());
+		tasks.add(new MineBlockTask());
+	}
 
-    /**
-     * Starts the task scheduler to execute the familiar's tasks at regular intervals.
-     */
+	/**
+	 * Starts the task scheduler to execute the familiar's tasks at regular intervals.
+	 */
 
-    private void startTaskScheduler() {
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-            if (!tasks.isEmpty()) {
-                Task currentTask = tasks.get(0);
+	private void startTaskScheduler() {
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+			if (!tasks.isEmpty()) {
+				Task currentTask = tasks.get(0);
 
-                if (currentTask.isComplete(villager)) {
-                    tasks.remove(0);
-                    if (!tasks.isEmpty()) {
-                        currentTask = tasks.get(0);
-                        currentTask.start(villager);
-                    } else {
-                        // Teleport to owner after completing tasks
-                        villager.teleport(owner.getLocation());
-                    }
-                }
+				if (currentTask.isComplete(villager)) {
+					tasks.remove(0);
+					if (!tasks.isEmpty()) {
+						currentTask = tasks.get(0);
+						currentTask.start(villager);
+					} else {
+						// Teleport to owner after completing tasks
+						villager.teleport(owner.getLocation());
+					}
+				}
 
-                currentTask.execute(villager);
-            }
-        }, 0L, 20L); // Execute every second (20 ticks)
-    }
+				currentTask.execute(villager);
+			}
+		}, 0L, 20L); // Execute every second (20 ticks)
+	}
 
-    /**
-     * The Task interface represents a task that the familiar can perform.
-     */
+	/**
+	 * The Task interface represents a task that the familiar can perform.
+	 */
 
-    private interface Task {
-        boolean isComplete(Villager villager);
-        void start(Villager villager);
-        void execute(Villager villager);
-    }
+	private interface Task {
+		boolean isComplete(Villager villager);
+		void start(Villager villager);
+		void execute(Villager villager);
+	}
 
-    /**
-     * The MoveToRandomLocationTask class represents a task where the familiar moves to a random location.
-     */
-    
-    private class MoveToRandomLocationTask implements Task {
-        private Location targetLocation;
+	/**
+	 * The MoveToRandomLocationTask class represents a task where the familiar moves to a random location.
+	 */
 
-        @Override
-        public boolean isComplete(Villager villager) {
-            return villager.getLocation().distance(targetLocation) < 1.0;
-        }
+	private class MoveToRandomLocationTask implements Task {
+		private Location targetLocation;
 
-        @Override
-        public void start(Villager villager) {
-            Random random = new Random();
-            double x = owner.getLocation().getX() + random.nextInt(10) - 5;
-            double y = owner.getLocation().getY();
-            double z = owner.getLocation().getZ() + random.nextInt(10) - 5;
-            targetLocation = new Location(owner.getWorld(), x, y, z);
-        }
+		@Override
+		public boolean isComplete(Villager villager) {
+			return villager.getLocation().distance(targetLocation) < 1.0;
+		}
 
-        @Override
-        public void execute(Villager villager) {
-            Vector direction = targetLocation.toVector().subtract(villager.getLocation().toVector()).normalize();
-            villager.setVelocity(direction.multiply(0.5));
-        }
-    }
+		@Override
+		public void start(Villager villager) {
+			Random random = new Random();
+			double x = owner.getLocation().getX() + random.nextInt(10) - 5;
+			double y = owner.getLocation().getY();
+			double z = owner.getLocation().getZ() + random.nextInt(10) - 5;
+			targetLocation = new Location(owner.getWorld(), x, y, z);
+		}
 
-    /**
-     * The MineBlockTask class represents a task where the familiar mines a specific block.
-     */
+		@Override
+		public void execute(Villager villager) {
+			Vector direction = targetLocation.toVector().subtract(villager.getLocation().toVector()).normalize();
+			villager.setVelocity(direction.multiply(0.5));
+		}
+	}
 
-    private class MineBlockTask implements Task {
-        private Material targetMaterial;
+	/**
+	 * The MineBlockTask class represents a task where the familiar mines a specific block.
+	 */
 
-        @Override
-        public boolean isComplete(Villager villager) {
-            return villager.getTargetBlockExact(1).getType() != targetMaterial;
-        }
+	private class MineBlockTask implements Task {
+		private Material targetMaterial;
 
-        @Override
-        public void start(Villager villager) {
-            // Set the target block based on the desired material
-            ItemStack pickaxe = villager.getEquipment().getItemInMainHand();
-            if (pickaxe.getType() == Material.WOODEN_PICKAXE || pickaxe.getType() == Material.STONE_PICKAXE) {
-                targetMaterial = Material.IRON_ORE;
-            } else if (pickaxe.getType() == Material.IRON_PICKAXE) {
-                targetMaterial = Material.IRON_ORE;
-            } else if (pickaxe.getType() == Material.GOLDEN_PICKAXE) {
-                targetMaterial = Material.GOLD_ORE;
-            } else if (pickaxe.getType() == Material.DIAMOND_PICKAXE) {
-                targetMaterial = Material.DIAMOND_ORE;
-            } else {
-                targetMaterial = Material.STONE;
-            }
-        }
+		@Override
+		public boolean isComplete(Villager villager) {
+			return villager.getTargetBlockExact(1).getType() != targetMaterial;
+		}
 
-        @Override
-        public void execute(Villager villager) {
+		@Override
+		public void start(Villager villager) {
+			// Set the target block based on the desired material
+			ItemStack pickaxe = villager.getEquipment().getItemInMainHand();
+			if (pickaxe.getType() == Material.WOODEN_PICKAXE || pickaxe.getType() == Material.STONE_PICKAXE) {
+				targetMaterial = Material.IRON_ORE;
+			} else if (pickaxe.getType() == Material.IRON_PICKAXE) {
+				targetMaterial = Material.IRON_ORE;
+			} else if (pickaxe.getType() == Material.GOLDEN_PICKAXE) {
+				targetMaterial = Material.GOLD_ORE;
+			} else if (pickaxe.getType() == Material.DIAMOND_PICKAXE) {
+				targetMaterial = Material.DIAMOND_ORE;
+			} else {
+				targetMaterial = Material.STONE;
+			}
+		}
 
-            Block minedBlock = villager.getTargetBlockExact(1);
+		@Override
+		public void execute(Villager villager) {
 
-            if (isMineable(minedBlock.getType())) {
-                ItemStack minedItem = new ItemStack(minedBlock.getType(), 1);
-                owner.getInventory().addItem(minedItem);
+			Block minedBlock = villager.getTargetBlockExact(1);
 
-                minedBlock.setType(Material.AIR);
-            } else {
-                minedBlock.setType(Material.AIR);
-            }
+			if (isMineable(minedBlock.getType())) {
+				ItemStack minedItem = new ItemStack(minedBlock.getType(), 1);
+				owner.getInventory().addItem(minedItem);
 
-            villager.swingMainHand();
-        }
+				minedBlock.setType(Material.AIR);
+			} else {
+				minedBlock.setType(Material.AIR);
+			}
 
-        /**
-         * Checks if a block is mineable.
-         *
-         * @param type The type of the block to check.
-         * @return True if the block is mineable, false otherwise.
-         */
+			villager.swingMainHand();
+		}
 
-        private boolean isMineable(Material type) {
-            return type == Material.COAL_ORE ||
-                    type == Material.IRON_ORE ||
-                    type == Material.GOLD_ORE ||
-                    type == Material.DIAMOND_ORE ||
-                    type == Material.EMERALD_ORE;
-        }
-    }
+		/**
+		 * Checks if a block is mineable.
+		 *
+		 * @param type The type of the block to check.
+		 * @return True if the block is mineable, false otherwise.
+		 */
+
+		private boolean isMineable(Material type) {
+			return type == Material.COAL_ORE ||
+					type == Material.IRON_ORE ||
+					type == Material.GOLD_ORE ||
+					type == Material.DIAMOND_ORE ||
+					type == Material.EMERALD_ORE;
+		}
+	}
 }

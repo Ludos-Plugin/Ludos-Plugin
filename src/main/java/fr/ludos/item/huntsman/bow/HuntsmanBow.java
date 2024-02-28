@@ -5,12 +5,10 @@ import fr.ludos.item.LevelItem;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.ChatColor;
 
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Projectile;
@@ -56,126 +54,107 @@ import org.bukkit.potion.PotionEffect;
 public class HuntsmanBow extends LevelItem<HuntsmanBowLevels> {
 
 
-    public HuntsmanBow(ItemStack stack) throws IllegalArgumentException {
-        super(stack);
-    }
+	public HuntsmanBow(ItemStack stack) throws IllegalArgumentException {
+		super(stack);
+	}
 
-    public HuntsmanBow(Player owner) {
-        this(owner, HuntsmanBowLevels.BASE);
-    }
-    public HuntsmanBow(Player owner, HuntsmanBowLevels level) {
-        super(new ItemStack(Material.BOW), owner, level);
-    }
-    
-    public HuntsmanBow(ItemStack item, Player owner) {
-        this(item, owner, HuntsmanBowLevels.BASE);
-    }
-    public HuntsmanBow(ItemStack item, Player owner, HuntsmanBowLevels level) {
-        this(item, owner, level, 0);
-    }
-    public HuntsmanBow(ItemStack item, Player owner, HuntsmanBowLevels level, double xp) {
-        super(item, owner, level, xp);
-    }
+	public HuntsmanBow(Player owner) {
+		this(owner, HuntsmanBowLevels.BASE);
+	}
+	public HuntsmanBow(Player owner, HuntsmanBowLevels level) {
+		super(new ItemStack(Material.BOW), owner, level);
+	}
 
-
-    /**
-     * @param inventory
-     * @return true if the provided inventory contains a Burrower's pick
-     */
-    public static HuntsmanBow findIn(Inventory inventory) {
-        ItemStack[] items = inventory.getContents();
-        for (int i = 0; i < items.length; i++) {
-            try {
-                HuntsmanBow pick = new HuntsmanBow(items[i]);
-                return pick;
-            } catch (IllegalArgumentException e) {
-                continue;
-            }
-        }
-
-        return null;
-    }
+	public HuntsmanBow(ItemStack item, Player owner) {
+		this(item, owner, HuntsmanBowLevels.BASE);
+	}
+	public HuntsmanBow(ItemStack item, Player owner, HuntsmanBowLevels level) {
+		this(item, owner, level, 0);
+	}
+	public HuntsmanBow(ItemStack item, Player owner, HuntsmanBowLevels level, double xp) {
+		super(item, owner, level, xp);
+	}
 
 
 	@Override
 	public HuntsmanBowLevels convertToLevel(int level) {
-        return HuntsmanBowLevels.findByKey(level);
+		return HuntsmanBowLevels.findByKey(level);
 	}
 
 	@Override
 	public NamespacedKey getOwnerKey() {
-        return HuntsmanBowEvents.getOwnerkey();
+		return HuntsmanBowEvents.getOwnerkey();
 	}
 
 	@Override
 	public NamespacedKey getLvlKey() {
-        return HuntsmanBowEvents.getLvlKey();
+		return HuntsmanBowEvents.getLvlKey();
 	}
 
 	@Override
 	public NamespacedKey getXpKey() {
-        return HuntsmanBowEvents.getXpKey();
+		return HuntsmanBowEvents.getXpKey();
 	}
 
 
 	@Override
 	protected String getLore() {
-        return "";
+		return "";
 	}
 
 	@Override
 	protected String getName() {
-        return "Stolen Bow"; // TODO: Translate
+		return "Stolen Bow"; // TODO: Translate
 	}
 
 
-    @Override
-    public void setLvl(HuntsmanBowLevels lvl) {
-        super.setLvl(lvl);
-    }
+	@Override
+	public void setLvl(HuntsmanBowLevels lvl) {
+		super.setLvl(lvl);
+	}
 
 
-    @EventHandler
-    public void onProjectileHit(ProjectileHitEvent event) {
-        Projectile projectile = event.getEntity();
+	@EventHandler
+	public void onProjectileHit(ProjectileHitEvent event) {
+		Projectile projectile = event.getEntity();
 
-        if (!(projectile.getShooter() instanceof Player)) return;
+		if (!(projectile.getShooter() instanceof Player)) return;
 
-        if(event.getHitEntity() != null){
-            Entity hitEntity = event.getEntity();
-            if(hitEntity instanceof LivingEntity){
-                LivingEntity livingEntity = (LivingEntity) hitEntity;
+		if (event.getHitEntity() != null) {
+			Entity hitEntity = event.getEntity();
+			if (hitEntity instanceof LivingEntity) {
+				LivingEntity livingEntity = (LivingEntity) hitEntity;
 
-            }
+			}
 
-        }
-        Player shooterPlayer = (Player) projectile.getShooter();
-        shooterPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 50, 2));
+		}
+		Player shooterPlayer = (Player) projectile.getShooter();
+		shooterPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 50, 2));
 
-    }
+	}
 
 
 	@Override
 	public void addLvl() {
-        if (getLevel().isMax()) {
-            return;
-        }
+		if (getLevel().isMax()) {
+			return;
+		}
 
-       ItemStack stack = new ItemStack(Material.BOOK);
-    
+	   ItemStack stack = new ItemStack(Material.BOOK);
 
-        HuntsmanBowLevels[] evolutions = getLevel().getEvolutions();
 
-        if (evolutions.length == 0) {
-            return;
-        } else if (evolutions.length == 1) {
-            
-        } else {
-            
-        }
+		HuntsmanBowLevels[] evolutions = getLevel().getEvolutions();
 
-        if (getOwner() != null) {
-            getOwner().sendMessage(ChatColor.GREEN + "Your pickaxe has leveled up!"); // TODO: Translate
-        }
+		if (evolutions.length == 0) {
+			return;
+		} else if (evolutions.length == 1) {
+
+		} else {
+
+		}
+
+		if (getOwner() != null) {
+			getOwner().sendMessage(ChatColor.GREEN + "Your pickaxe has leveled up!"); // TODO: Translate
+		}
 	}
 }

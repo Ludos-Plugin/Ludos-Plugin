@@ -18,6 +18,12 @@
     "bypassesPlayerLimit": false
   },
   {
+    "uuid": "cc7be20e-0633-45d6-a8d4-bbd71c950163",
+    "name": "ClairEtNet",
+    "level": 4,
+    "bypassesPlayerLimit": false
+  },
+  {
     "uuid": "42414a67-a75a-4db8-ad91-4b471feb324e",
     "name": "AxelSeven",
     "level": 4,

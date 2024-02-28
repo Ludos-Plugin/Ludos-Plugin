@@ -9,13 +9,13 @@ import fr.ludos.Main;
 
 import org.bukkit.inventory.ShapelessRecipe;
 
-public class ArrowRecipe extends Recipe {
+public class ArrowRecipe extends RecipeRegisterer {
 	private static final String RECIPE_NAMESPACE_KEY = "ludos_arrow_recipe";
 
-    private static NamespacedKey recipeKey = null;
+	private static NamespacedKey recipeKey = null;
 
 
-    public ArrowRecipe(Main plugin) {
+	public ArrowRecipe(Main plugin) {
 		super(plugin);
 
 		recipeKey = new NamespacedKey(plugin, RECIPE_NAMESPACE_KEY);
@@ -23,9 +23,14 @@ public class ArrowRecipe extends Recipe {
 
 	@Override
 	public void Register() {
-        ItemStack arrow = new ItemStack(Material.ARROW, 1);
-        ShapelessRecipe recipe = new ShapelessRecipe(recipeKey, arrow);
-        recipe.addIngredient(Material.STICK);
-        Bukkit.addRecipe(recipe);
+		ItemStack arrow = new ItemStack(Material.ARROW, 1);
+		ShapelessRecipe recipe = new ShapelessRecipe(recipeKey, arrow);
+		recipe.addIngredient(Material.STICK);
+		Bukkit.addRecipe(recipe);
+	}
+
+	@Override
+	public void Unregister() {
+		Bukkit.getServer().removeRecipe(recipeKey);
 	}
 }

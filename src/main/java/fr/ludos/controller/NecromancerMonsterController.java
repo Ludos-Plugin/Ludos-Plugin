@@ -40,25 +40,25 @@ import org.bukkit.entity.Zombie;
 
 public class NecromancerMonsterController {
 
-    /**
-     * Controls the behavior of the specified zombie based on the given parameters.
-     *
-     * @param zombie        The zombie entity to be controlled.
-     * @param summoner      The player who summoned the zombie.
-     * @param teleportRange The maximum distance for the zombie to teleport towards the target player.
-     * @param attackRange   The range within which the zombie attacks nearby enemies.
-     */
+	/**
+	 * Controls the behavior of the specified zombie based on the given parameters.
+	 *
+	 * @param zombie        The zombie entity to be controlled.
+	 * @param summoner      The player who summoned the zombie.
+	 * @param teleportRange The maximum distance for the zombie to teleport towards the target player.
+	 * @param attackRange   The range within which the zombie attacks nearby enemies.
+	 */
 
-     public static void controlZombie(Zombie zombie, Player summoner, double teleportRange, double attackRange) {
+	 public static void controlZombie(Zombie zombie, Player summoner, double teleportRange, double attackRange) {
 
-        if (zombie.getLocation().distance(summoner.getLocation()) > teleportRange && zombie.getTarget() == null) {
-            zombie.teleport(summoner);
-        }
+		if (zombie.getLocation().distance(summoner.getLocation()) > teleportRange && zombie.getTarget() == null) {
+			zombie.teleport(summoner);
+		}
 
-        for (Entity entity : zombie.getNearbyEntities(attackRange, attackRange, attackRange)) {
-            if (entity.getType() == EntityType.PLAYER && entity != summoner) {
-                zombie.setTarget((Player) entity);
-            }
-        }
-    }
+		for (Entity entity : zombie.getNearbyEntities(attackRange, attackRange, attackRange)) {
+			if (entity.getType() == EntityType.PLAYER && entity != summoner) {
+				zombie.setTarget((Player) entity);
+			}
+		}
+	}
 }

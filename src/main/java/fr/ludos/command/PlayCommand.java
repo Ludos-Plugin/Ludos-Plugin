@@ -14,57 +14,57 @@ import fr.ludos.game.Game;
 
 public class PlayCommand implements TabExecutor {
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length == 0) {
-            return false;
-        }
-        if ( ! Game.registered.containsKey(args[0]) ) {
-            return false;
-        }
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		if (args.length == 0) {
+			return false;
+		}
+		if ( ! Game.registered.containsKey(args[0]) ) {
+			return false;
+		}
 
-        return Game.registered.get(args[0])
-            .onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-    }
+		return Game.registered.get(args[0])
+			.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+	}
 
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length <= 1) {
-            return Game.registered.keySet().stream()
-                .sorted()
-                .collect(Collectors.toList());
-        }
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		if (args.length <= 1) {
+			return Game.registered.keySet().stream()
+				.sorted()
+				.collect(Collectors.toList());
+		}
 
-        String arg = args[0];
-        if ( ! Game.registered.containsKey(arg) ) {
-            return null;
-        }
-        return Game.registered.get(arg)
-            .onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-    }
+		String arg = args[0];
+		if ( ! Game.registered.containsKey(arg) ) {
+			return null;
+		}
+		return Game.registered.get(arg)
+			.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+	}
 
-    public String getUsage() {
+	public String getUsage() {
 
-        StringBuilder usage = new StringBuilder("/<command> ");
+		StringBuilder usage = new StringBuilder("/<command> ");
 
-        usage.append('<');
-        usage.append( Game.registered.keySet().stream()
-                        .sorted()
-                        .collect(Collectors.joining(" | ") ) );
-        usage.append('>');
+		usage.append('<');
+		usage.append( Game.registered.keySet().stream()
+						.sorted()
+						.collect(Collectors.joining(" | ") ) );
+		usage.append('>');
 
-        usage.append(' ');
+		usage.append(' ');
 
-        usage.append('<');
-        usage.append( Arrays.stream(PlayCommandOptions.values()).map(PlayCommandOptions::toString)
-                        .sorted()
-                        .collect(Collectors.joining(" | ")) );
-        usage.append('>');
+		usage.append('<');
+		usage.append( Arrays.stream(PlayCommandOptions.values()).map(PlayCommandOptions::toString)
+						.sorted()
+						.collect(Collectors.joining(" | ")) );
+		usage.append('>');
 
-        usage.append(' ');
+		usage.append(' ');
 
-        usage.append("[option]");
+		usage.append("[option]");
 
-        return usage.toString();
-    }
+		return usage.toString();
+	}
 }

@@ -7,7 +7,6 @@ import fr.ludos.Main;
 import org.bukkit.event.Listener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -16,14 +15,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.Action;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,189 +51,144 @@ import java.util.Map;
 
 public class BurrowingClawEvents implements Listener {
 
-    private static final String OWNER_NAMESPACE_KEY = "ludos_miner_claw_owner";
-    private static final String USAGES_NAMESPACE_KEY = "ludos_miner_claw_usages";
+	private static final String OWNER_NAMESPACE_KEY = "ludos_miner_claw_owner";
+	private static final String USAGES_NAMESPACE_KEY = "ludos_miner_claw_usages";
 
-    private static NamespacedKey ownerKey = null;
-    private static NamespacedKey usagesKey = null;
+	private static NamespacedKey ownerKey = null;
+	private static NamespacedKey usagesKey = null;
 
-    private static Map<Player, Long> messageToggle = new HashMap<>();
+	private static Map<Player, Long> messageToggle = new HashMap<>();
 
-    private static final int TUNNEL_LENGTH = 20;
+	private static final int TUNNEL_LENGTH = 20;
 
-    private final List<Block> tunnelBlocks = new ArrayList<>();
+	private final List<Block> tunnelBlocks = new ArrayList<>();
+    private Map<Block, Material> originalBlockTypes = new HashMap<>();
 
-    private final Map<Player, Long> cooldowns = new HashMap<>();
-    private final Map<Player, Integer> usages = new HashMap<>();
+	private final Map<Player, Long> cooldowns = new HashMap<>();
+	private final Map<Player, Integer> usages = new HashMap<>();
 
-    private static final int MAX_USAGES = 3;
-    private static final int COOLDOWN_SECONDS = 10;
-
-    
-
-    static NamespacedKey getOwnerKey() {
-        return ownerKey;
-    }
-    static NamespacedKey getUsagesKey() {
-        return usagesKey;
-    }
+	private static final int MAX_USAGES = 3;
+	private static final int COOLDOWN_SECONDS = 10;
 
 
-    public BurrowingClawEvents() {
-        Main plugin = Main.getInstance();
-        ownerKey = new NamespacedKey(plugin, OWNER_NAMESPACE_KEY);
-        usagesKey = new NamespacedKey(plugin, USAGES_NAMESPACE_KEY);
-    }
-    
 
-    public static int counterSpell = 3;
-    private int range = 150;
+	static NamespacedKey getOwnerKey() {
+		return ownerKey;
+	}
+	static NamespacedKey getUsagesKey() {
+		return usagesKey;
+	}
 
-    public class BlockBreak {
-        Location location;
-        Material material;
+
+	public BurrowingClawEvents() {
+		Main plugin = Main.getInstance();
+		ownerKey = new NamespacedKey(plugin, OWNER_NAMESPACE_KEY);
+		usagesKey = new NamespacedKey(plugin, USAGES_NAMESPACE_KEY);
+	}
+
+
+	public static int counterSpell = 3;
+	private int range = 150;
+
+	public class BlockBreak {
+		Location location;
+		Material material;
+
+		public BlockBreak(Location location, Material material){
+			this.location = location;
+			this.material = material;
+		}
+	}
+
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
+		player.getInventory().addItem(new BurrowingClaw(player).getStack());
+	}
+
+	@EventHandler
+	public void onPlayerInteract(PlayerInteractEvent event) {
+		Player player = event.getPlayer();
+		ItemStack mainItem = player.getInventory().getItemInMainHand();
+
+		try {
+			new BurrowingClaw(mainItem);
+		} catch (IllegalArgumentException e) {
+			return;
+		}
+
+		if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			handleRightClick(player);
+		} else if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
+			retractTunnel();
+		}
+	}
+
+	private void handleRightClick(Player player) {
+		long currentTime = System.currentTimeMillis();
+		if (!canUseClaw(player, currentTime)) {
+			return;
+		}
+
+		generateTunnel(player);
+		startCooldown(player, currentTime);
+		reduceUsage(player);
+	}
+
+	private boolean canUseClaw(Player player, long currentTime) {
+		long lastUse = cooldowns.getOrDefault(player, 0L);
+		return currentTime - lastUse >= COOLDOWN_SECONDS * 1000;
+	}
+
+	private void startCooldown(Player player, long currentTime) {
+		cooldowns.put(player, currentTime);
+	}
+
+	private void reduceUsage(Player player) {
+		int remainingUsages = usages.getOrDefault(player, MAX_USAGES);
+		if (remainingUsages > 0) {
+			usages.put(player, remainingUsages - 1);
+		}
+	}
+
+	private void generateTunnel(Player player) {
+		for (int i = 1; i <= TUNNEL_LENGTH; i++) {
+			generateBlock(player, i, -1);
+			// generateBlock(player, -i);
+		}
+	}
+
+    private void generateBlock(Player player, int xOffset, int yOffset) {
+        Location eyeLoc = player.getEyeLocation();
+        Vector direction = player.getLocation().getDirection();
+
+		
+        Location locXLocation = eyeLoc.clone().add(direction.clone().normalize().multiply(xOffset));
+        Location locYLocation = locXLocation.clone().add(0, yOffset, 0);
+
+        Block blockXBlock = locXLocation.getBlock();
+        tunnelBlocks.add(blockXBlock);
         
-        public BlockBreak(Location location, Material material){
-            this.location = location;
-            this.material = material;
-        }
-    }
+        Block blockYBlock = locYLocation.getBlock();
+        tunnelBlocks.add(blockYBlock);
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        player.getInventory().addItem(new BurrowingClaw(player).getStack());
-    }
-
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        ItemStack mainItem = player.getInventory().getItemInMainHand();
-
-        try {
-            new BurrowingClaw(mainItem);
-        } catch (IllegalArgumentException e) {
-            return;
-        }
-
-        if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            handleRightClick(player);
-        } else if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            retractTunnel();
-        }
-    }
-
-    private void handleRightClick(Player player) {
-        long currentTime = System.currentTimeMillis();
-        if (!canUseClaw(player, currentTime)) {
-            return;
-        }
-
-        generateTunnel(player);
-        startCooldown(player, currentTime);
-        reduceUsage(player);
-    }
-
-    private boolean canUseClaw(Player player, long currentTime) {
-        long lastUse = cooldowns.getOrDefault(player, 0L);
-        return currentTime - lastUse >= COOLDOWN_SECONDS * 1000;
-    }
-
-    private void startCooldown(Player player, long currentTime) {
-        cooldowns.put(player, currentTime);
-    }
-
-    private void reduceUsage(Player player) {
-        int remainingUsages = usages.getOrDefault(player, MAX_USAGES);
-        if (remainingUsages > 0) {
-            usages.put(player, remainingUsages - 1);
-        }
-    }
-
-    private void generateTunnel(Player player) {
-        for (int i = 1; i <= TUNNEL_LENGTH; i++) {
-            generateBlock(player, i);
-            generateBlock(player, -i);
-        }
-    }
-
-    private void generateBlock(Player player, int yOffset) {
-        Location loc = player.getLocation().clone().add(0, yOffset, 0);
-        Block block = loc.getBlock();
-        tunnelBlocks.add(block);
-        block.setType(Material.AIR);
-    }
-
-    private void retractTunnel() {
-        tunnelBlocks.forEach(block -> block.setType(block.getType()));
-        Bukkit.broadcastMessage("Tunnel retracted");
-        Bukkit.broadcastMessage("Tunnel size: " + tunnelBlocks.size());
-        // tunnelBlocks.clear();
-    }
-
-
-    // @EventHandler
-    // public void interactRightClick(PlayerInteractEvent event) {
-    //     if ( event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) {        
-    //         return;
-    //     }
-
-    //     Player player = event.getPlayer();
-    //     ItemStack mainItem = player.getInventory().getItemInMainHand();
-    //     BurrowingClaw claw;
-    //     try {
-    //         claw = new BurrowingClaw(mainItem);
-    //     } catch (IllegalArgumentException e) {
-    //         return;
-    //     }
-
-    //     long cooldown = 100L;
-    //     Long currentTime = System.currentTimeMillis();
-    //     if ( currentTime - messageToggle.getOrDefault(player, 0L) > cooldown ) {
-    //         messageToggle.remove(player);
-    //     }
-    //     if (messageToggle.containsKey(player)) {
-    //         return;
-    //     }
-
-
-    //     if (claw.getUsages() < 1) {
-    //         return;
-    //     }
-
-    //     messageToggle.put(player, currentTime);
-    //     claw.setUsages(claw.getUsages() - 1);
-
-
-    //     List<BlockBreak> blockBreakList = new ArrayList<>();
-    //     Location topBlockLocation = player.getEyeLocation();
-
-    //     for (int i = 0; i < range; i++) {
-    //         topBlockLocation = topBlockLocation.add(topBlockLocation.getDirection());
-    //         Block topBlock = topBlockLocation.getBlock();
-    //         Location bottomBlockLocation = topBlockLocation.clone().add(0, -1, 0);
-    //         Block bottomBlock = bottomBlockLocation.getBlock();
-
-    //         blockBreakList.add(new BlockBreak(topBlockLocation, topBlock.getType()));
-    //         blockBreakList.add(new BlockBreak(bottomBlockLocation, bottomBlock.getType()));
-
-    //         topBlock.setType(Material.AIR);
-    //         bottomBlock.setType(Material.AIR);
-    //     }
+        originalBlockTypes.put(blockXBlock, blockXBlock.getType()); 
+        blockXBlock.setType(Material.AIR);
         
-    //     new BukkitRunnable() {
-    //         @Override
-    //         public void run(){
-                
-    //         }
-    //     }.runTaskLater(Main.getInstance(), 5000L);
-    // }
+        originalBlockTypes.put(blockYBlock, blockYBlock.getType()); 
+        blockYBlock.setType(Material.AIR);
+    }
 
-    // @EventHandler
-    // public void BreakBlock(BlockBreakEvent event) {
-    //     Block block = event.getBlock();
-    //     if (block.getType() == Material.AIR) {
-    //         block.setType(Material.STONE);
-    //     }
-    // }
+	private void retractTunnel() {
+        tunnelBlocks.forEach(block -> {
+            Material originalType = originalBlockTypes.get(block);
+            if (originalType != null) {
+                block.setType(originalType);
+            }
+        });
+        
+		Bukkit.broadcastMessage("Tunnel retracted");
+		Bukkit.broadcastMessage("Tunnel size: " + tunnelBlocks.size());
+		tunnelBlocks.clear();
+	}
 }
