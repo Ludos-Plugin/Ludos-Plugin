@@ -1,30 +1,20 @@
 package fr.ludos.role;
 
-import org.bukkit.entity.Player;
-
-import fr.ludos.Main;
-import fr.ludos.skill.NecroticAuraSkill;
-import fr.ludos.skill.VampiricLeechSkill;
-
 public class NecromancerRole extends Role {
 
-    private final Main plugin;
-
-    public NecromancerRole(Main plugin) {
-        this.plugin = plugin;
+    public NecromancerRole(Builder builder) {
+        super(builder);
     }
 
-    RolesUtility utility = new RolesUtility();
+    // @Override
+    // public void processCrafting(Player player) {}
 
-    @Override
-    public void processCrafting(Player player) {}
-
-    @Override
-    public void processAbilities(Player player) {
-        // change hunted param player to the true hunted player
-        NecroticAuraSkill.activateNecroticAura(plugin, player, player);
-        VampiricLeechSkill.activateVampiricLeech(plugin, player);
-    }
+    // @Override
+    // public void processAbilities(Player player) {
+    //     // change prey param player to the true prey player
+    //     // NecroticAuraSkill.activateNecroticAura(plugin, player, player);
+    //     // VampiricLeechSkill.activateVampiricLeech(plugin, player);
+    // }
 
 
     public static class Builder extends Role.Builder {
@@ -32,6 +22,11 @@ public class NecromancerRole extends Role {
         @Override
         public String getId() {
             return "necromancer";
+        }
+
+        @Override
+        public NecromancerRole build(String gameId) {
+            return new NecromancerRole(this);
         }
     }
 }

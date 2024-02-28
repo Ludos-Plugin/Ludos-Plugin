@@ -2,7 +2,8 @@ package fr.ludos.command;
 
 public enum PlayCommandOptions {
     config ("config"),
-    start ("start");
+    start ("start"),
+    stop ("stop");
 
     private String name;
 

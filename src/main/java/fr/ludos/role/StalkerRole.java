@@ -1,19 +1,20 @@
 package fr.ludos.role;
 
-import org.bukkit.entity.Player;
-
 public class StalkerRole extends Role {
-    RolesUtility utility = new RolesUtility();
 
-    @Override
-    public void processCrafting(Player player) {}
-
-    @Override
-    public void processAbilities(Player player) {
-        // Passive Ability
-        utility.removeNameTag(player.getName());
-        // super.hidePlayerName();
+    public StalkerRole(Builder builder) {
+        super(builder);
     }
+
+    // @Override
+    // public void processCrafting(Player player) {}
+
+    // @Override
+    // public void processAbilities(Player player) {
+    //     // Passive Ability
+    //     utility.removeNameTag(player.getName());
+    //     // super.hidePlayerName();
+    // }
 
 
     public static class Builder extends Role.Builder {
@@ -21,6 +22,11 @@ public class StalkerRole extends Role {
         @Override
         public String getId() {
             return "stalker";
+        }
+
+        @Override
+        public StalkerRole build(String gameId) {
+            return new StalkerRole(this);
         }
     }
 }

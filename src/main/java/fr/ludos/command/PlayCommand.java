@@ -4,12 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 
 
-import fr.ludos.games.Game;
+import fr.ludos.game.Game;
 
 public class PlayCommand implements TabExecutor {
 
@@ -33,10 +34,12 @@ public class PlayCommand implements TabExecutor {
                 .sorted()
                 .collect(Collectors.toList());
         }
-        if ( ! Game.registered.containsKey(args[0]) ) {
+
+        String arg = args[0];
+        if ( ! Game.registered.containsKey(arg) ) {
             return null;
         }
-        return Game.registered.get(args[0])
+        return Game.registered.get(arg)
             .onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
     }
 

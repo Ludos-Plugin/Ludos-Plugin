@@ -1,56 +1,66 @@
 package fr.ludos.role;
 
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import fr.ludos.item.huntsman.bow.HuntsmanBowEvents;
+// import fr.ludos.item.huntsman.crossbow.HuntsmanCrossbowEvents;
+// import fr.ludos.item.huntsman.spear.HuntsmanSpearEvents;
+import fr.ludos.Main;
+import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.event.HandlerList;
+import org.bukkit.plugin.PluginManager;
 
 
-public class HuntsmanRole extends Role implements Listener {
-    
+public class HuntsmanRole extends Role {
+
+    private final HuntsmanBowEvents bowEvents;
+    // private final HuntsmanCrossbowEvents crossbowEvents;
+    // private final HuntsmanSpearEvents spearEvents;
+
+    public HuntsmanRole(Builder builder) {
+        super(builder);
+        PluginManager manager = Bukkit.getPluginManager();
+
+        bowEvents = new HuntsmanBowEvents();
+        manager.registerEvents((Listener)bowEvents, Main.getInstance());
+
+        // bowEvents = new HuntsmanCrossbowEvents();
+        // manager.registerEvents((Listener)bowEvents, Main.getInstance());
+
+        // bowEvents = new HuntsmanSpearEvents();
+        // manager.registerEvents((Listener)bowEvents, Main.getInstance());
+    }
+
     @Override
-    public void processCrafting(Player player) {}
-
-    @Override
-    public void processAbilities(Player player) {} 
-    
-    @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
-        ItemStack crossBowHunter = new ItemStack(Material.CROSSBOW, 1);
-        ItemMeta crossBowMeta = crossBowHunter.getItemMeta();
-        crossBowMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-        ItemStack arrow = new ItemStack(Material.ARROW, 1);
-    }
-    
-    public void playerEventListener(Player player, PlayerDeathEvent event, ItemStack CrossBow) {
-        player.getInventory().removeItem(CrossBow);
+    public void stop() {
+        super.stop();
+        HandlerList.unregisterAll(bowEvents);
+        // HandlerList.unregisterAll(crossbowEvents);
+        // HandlerList.unregisterAll(spearEvents);
     }
 
-    public int getPlayerXP(Player player) {
-        return player.getTotalExperience();
-    }
+    // @EventHandler
+    // public void onPlayerRespawn(PlayerRespawnEvent event) {
+    //     ItemStack crossBowHunter = new ItemStack(Material.CROSSBOW, 1);
+    //     ItemMeta crossBowMeta = crossBowHunter.getItemMeta();
+    //     crossBowMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+    //     ItemStack arrow = new ItemStack(Material.ARROW, 1);
+    // }
 
-    @EventHandler
-    public void upgradeStuff(Player player) {
-        if (getPlayerXP(player) >= 100) {
-            ItemStack hunterBow = new ItemStack(Material.BOW, 1);
-            ItemMeta hunterBowMeta = hunterBow.getItemMeta();
-            hunterBowMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-            ItemStack arrow = new ItemStack(Material.ARROW, 1);
-        }
+
+
+
+
+
+    // @EventHandler
+    // public void upgradeStuff(Player player) {        
+    //     if (player.getTotalExperience() >= 100/*  && ! HuntsmanCrossbow.playerOwns(player) */) {
+    //         // HuntsmanCrossbow.createNew(player);
+    //     }
         
-        if (getPlayerXP(player) >= 300) {
-            ItemStack trident = new ItemStack(Material.TRIDENT, 1);
-            ItemMeta tritentMeta = trident.getItemMeta();
-            tritentMeta.addEnchant(Enchantment.RIPTIDE, 1, true);
-            
-        }
-    }
+    //     if (player.getTotalExperience() >= 300/*  && ! HuntsmanSpear.playerOwns(player) */) {
+    //         // HuntsmanSpear.createNew(player);
+    //     }
+    // }
 
 
     public static class Builder extends Role.Builder {
@@ -58,6 +68,11 @@ public class HuntsmanRole extends Role implements Listener {
         @Override
         public String getId() {
             return "huntsman";
+        }
+
+        @Override
+        public HuntsmanRole build(String gameId) {
+            return new HuntsmanRole(this);
         }
     }
 }

@@ -8,7 +8,6 @@ java {
     }
 }
 
-
 group = 'fr.ludos'
 version = '1.0'
 

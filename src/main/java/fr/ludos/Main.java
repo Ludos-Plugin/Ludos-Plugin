@@ -4,25 +4,21 @@ import java.net.http.WebSocket.Listener;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.command.PlayCommand;
 import fr.ludos.command.RoleCommand;
 import fr.ludos.command.MonsterCommand;
 import fr.ludos.role.Role;
+import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.NecromancerRole;
 import fr.ludos.role.StalkerRole;
-import fr.ludos.games.Game;
-import fr.ludos.games.ManhuntGame;
+import fr.ludos.game.Game;
+import fr.ludos.game.manhunt.ManhuntGame;
 import fr.ludos.listener.InteractListener;
-import fr.ludos.listener.MonsterListener;
 import fr.ludos.listener.ServerListener;
-import fr.ludos.listener.items.burrower.BurrowerPickEvents;
-import fr.ludos.listener.items.SoulVial;
-import fr.ludos.skill.VampiricLeechSkill;
-
 /**
  * Main is the main class of the Bukkit plugin, responsible for handling plugin initialization and events.
  * It registers commands, listeners, and initializes game-related components.
@@ -38,6 +34,7 @@ public class Main extends JavaPlugin implements Listener {
         return instance;
     }
 
+
     /**
      * Called when the plugin is enabled. Registers commands, listeners, and initializes game-related components.
      */
@@ -47,25 +44,18 @@ public class Main extends JavaPlugin implements Listener {
 
         instance = this;
 
-        // Get the player to ignore from the server
-        Player playerToIgnore = Bukkit.getPlayerExact("serdeau");
+		PluginManager manager = Bukkit.getPluginManager();
 
-        if (playerToIgnore != null) {
-            getServer().getPluginManager().registerEvents(new MonsterListener(playerToIgnore), this);
-        } else {
-            getLogger().warning("Unable to find the player to ignore.");
-        }
-
-        Bukkit.getPluginManager().registerEvents(new InteractListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new ServerListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new BurrowerPickEvents(), this);
+        manager.registerEvents(new InteractListener(this), this);
+        manager.registerEvents(new ServerListener(this), this);
+    
 
         Game.registerGame(new ManhuntGame.Builder());
 
         Role.registerRole(new HuntsmanRole.Builder());
         Role.registerRole(new NecromancerRole.Builder());
         Role.registerRole(new StalkerRole.Builder());
-
+        Role.registerRole(new BurrowerRole.Builder());
 
 
         PluginCommand cmd = getCommand("ludosplay");
@@ -85,10 +75,6 @@ public class Main extends JavaPlugin implements Listener {
         cmd = getCommand("bomberzombie");
         MonsterCommand zombieBomberCommand = new MonsterCommand();
         cmd.setExecutor(zombieBomberCommand);
-
-
-        Bukkit.getPluginManager().registerEvents(new VampiricLeechSkill(), this);
-        Bukkit.getPluginManager().registerEvents(new SoulVial(), this);
 
     }
 
