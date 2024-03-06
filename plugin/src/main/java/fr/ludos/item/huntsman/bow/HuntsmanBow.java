@@ -6,6 +6,9 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.List;
+
 import org.bukkit.ChatColor;
 
 import org.bukkit.event.EventHandler;
@@ -62,7 +65,7 @@ public class HuntsmanBow extends LevelItem<HuntsmanBowLevels> {
 		this(owner, HuntsmanBowLevels.BASE);
 	}
 	public HuntsmanBow(Player owner, HuntsmanBowLevels level) {
-		super(new ItemStack(Material.BOW), owner, level);
+		this(new ItemStack(Material.BOW), owner, level);
 	}
 
 	public HuntsmanBow(ItemStack item, Player owner) {
@@ -96,11 +99,6 @@ public class HuntsmanBow extends LevelItem<HuntsmanBowLevels> {
 		return HuntsmanBowEvents.getXpKey();
 	}
 
-
-	@Override
-	protected String getLore() {
-		return "";
-	}
 
 	@Override
 	protected String getName() {
@@ -140,7 +138,7 @@ public class HuntsmanBow extends LevelItem<HuntsmanBowLevels> {
 			return;
 		}
 
-	   ItemStack stack = new ItemStack(Material.BOOK);
+		ItemStack stack = new ItemStack(Material.BOOK);
 
 
 		HuntsmanBowLevels[] evolutions = getLevel().getEvolutions();

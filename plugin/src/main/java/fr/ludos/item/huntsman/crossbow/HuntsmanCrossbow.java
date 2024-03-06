@@ -2,6 +2,8 @@ package fr.ludos.item.huntsman.crossbow;
 
 import fr.ludos.item.SpecialItem;
 
+import java.util.List;
+
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -30,7 +32,7 @@ public class HuntsmanCrossbow extends SpecialItem {
 	}
 
 	@Override
-	public String getLore(){
+	public List<String> getLore(){
 		return null;
 	}
 }

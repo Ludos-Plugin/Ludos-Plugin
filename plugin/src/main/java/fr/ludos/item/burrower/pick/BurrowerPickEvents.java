@@ -1,39 +1,27 @@
 package fr.ludos.item.burrower.pick;
 
-import java.util.Collections;
-import java.util.Map;
+import javax.annotation.Nullable;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.Main;
-import fr.ludos.item.SpecialItem;
+import fr.ludos.item.ItemUtilities;
+import fr.ludos.item.LevelItemEvents;
 
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.Event.Result;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.inventory.Inventory;
 
 import fr.ludos.role.BurrowerRole;
-import fr.ludos.role.Role;
 
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 
-import org.bukkit.event.enchantment.EnchantItemEvent;
-
+import java.util.List;
 
 
 /**
@@ -59,21 +47,16 @@ import org.bukkit.event.enchantment.EnchantItemEvent;
  * @see java.util.Collections
  */
 
-public class BurrowerPickEvents implements Listener {
-
+public class BurrowerPickEvents extends LevelItemEvents<BurrowerPick, BurrowerPickLevels> {
 	private static final String OWNER_NAMESPACE_KEY = "ludos_miner_pickaxe_owner";
 	private static final String XP_NAMESPACE_KEY = "ludos_miner_pickaxe_xp";
 	private static final String LVL_NAMESPACE_KEY = "ludos_miner_pickaxe_lvl";
+	private static final String MODE_NAMESPACE_KEY = "ludos_miner_pickaxe_mode";
 
 	private static NamespacedKey ownerKey = null;
 	private static NamespacedKey xpKey = null;
 	private static NamespacedKey lvlKey = null;
-
-	private static Map<String, BurrowerPickLevels> deadPlayerLevels = Collections.emptyMap();
-
-	// private static final PotionEffect MINING_FATIGUE_EFFECT = new PotionEffect(PotionEffectType.SLOW_DIGGING, Integer.MAX_VALUE, 1);
-
-	private boolean isTwoByTwoModeEnabled = false;
+	private static NamespacedKey modeKey = null;
 
 
 	static NamespacedKey getOwnerKey() {
@@ -85,6 +68,9 @@ public class BurrowerPickEvents implements Listener {
 	static NamespacedKey getLvlKey() {
 		return lvlKey;
 	}
+	static NamespacedKey getModeKey() {
+		return modeKey;
+	}
 
 
 	public BurrowerPickEvents() {
@@ -92,183 +78,83 @@ public class BurrowerPickEvents implements Listener {
 		ownerKey = new NamespacedKey(plugin, OWNER_NAMESPACE_KEY);
 		xpKey = new NamespacedKey(plugin, XP_NAMESPACE_KEY);
 		lvlKey = new NamespacedKey(plugin, LVL_NAMESPACE_KEY);
+		modeKey = new NamespacedKey(plugin, MODE_NAMESPACE_KEY);
 	}
 
-
-
-	@EventHandler
-	public void onPlayerDropItem(PlayerDropItemEvent event) {
-		ItemStack item = event.getItemDrop().getItemStack();
-
-		try {
-			new BurrowerPick(item);
-			event.setCancelled(true);
-		} catch (IllegalArgumentException exception) {
-
-		}
-	}
 
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
-		Player player = event.getPlayer();
-		if (!player.isSneaking()) return;
-
-		if (event.getAction().toString().contains("RIGHT_CLICK")) {
-			toggleTwoByTwoMode(player);
+		Action action = event.getAction();
+		if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
+			return;
 		}
-	}
 
-	private void toggleTwoByTwoMode(Player player) {
-		// isTwoByTwoModeEnabled = !isTwoByTwoModeEnabled;
 
-		// if (isTwoByTwoModeEnabled) {
-		// 	player.addPotionEffect(MINING_FATIGUE_EFFECT);
-		// } else {
-		// 	player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
-		// }
+		Player player = event.getPlayer();
+		BurrowerPick pickaxe = getItem(player.getInventory().getItemInMainHand());
+		if (pickaxe == null) {
+			return;
+		}
+
+		if (player.hasCooldown(pickaxe.getStack().getType())) {
+			return;
+		}
+
+		pickaxe.toggleHammerMode();
+
+		player.setCooldown(pickaxe.getStack().getType(), 5);
 	}
 
 	@EventHandler
-	public void onBlockBreakMining(BlockBreakEvent event) {
+	public void onBlockBreak(BlockBreakEvent event) {
 		Player player = event.getPlayer();
-		// if (!player.isSneaking()) return;
-		isTwoByTwoModeEnabled = true;
-
 		ItemStack mainHandItem = player.getInventory().getItemInMainHand();
 
-		if (isTwoByTwoModeEnabled) {
-			BurrowerPick currentPick = SpecialItem.findIn(player.getInventory(), (item) -> new BurrowerPick(item));
-			Bukkit.broadcastMessage("la ça marche !!");
-			if (currentPick == null) return;
-			Bukkit.broadcastMessage("la aussi ça marche !!");
-			int radius = currentPick.getLevel().radius();
-
-			Block targetBlock = event.getBlock();
-			for (int xOffset = -radius; xOffset <= radius; xOffset++) {
-				for (int zOffset = -radius; zOffset <= radius; zOffset++) {
-					Block adjacentBlock = targetBlock.getRelative(xOffset, 0, zOffset);
-					if (player.hasPermission("burrower.pickaxe.break") && isBreakable(adjacentBlock.getType())) {
-						adjacentBlock.breakNaturally(mainHandItem);
-					}
-				}
-			}
-		}
-	}
-
-	private boolean isBreakable(Material material) {
-		return material.isBlock() && material != Material.BEDROCK && material != Material.BARRIER;
-	}
-
-
-	@EventHandler
-	public void onInventoryClickItem(InventoryClickEvent event) {
-		ItemStack item = event.getCurrentItem();
-
-		try {
-			new BurrowerPick(item);
-			if ( event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY || event.getInventory() != event.getClickedInventory() ) {
-				event.setResult(Result.DENY);
-			}
-		} catch (IllegalArgumentException exception) {
-
-		}
-
-	}
-
-	// @EventHandler
-	// public void onInventoryMoveItem(InventoryMoveItemEvent event) {
-	//     Bukkit.broadcastMessage(event.getDestination().toString());
-	//     ItemStack item = event.getItem();
-
-	//     Bukkit.broadcastMessage(item.toString());
-	//     BurrowerPick pick = BurrowerPick.getFrom(item);
-
-	//     if (pick != null && event.getDestination().getType() != InventoryType.PLAYER) {
-	//         event.setCancelled(true);
-	//     }
-	// }
-
-	@EventHandler
-	public void onItemSpawn(ItemSpawnEvent event) {
-		ItemStack item = event.getEntity().getItemStack();
-
-		try {
-			new BurrowerPick(item);
-			event.setCancelled(true);
-		} catch (IllegalArgumentException exception) {
-
-		}
-	}
-
-	@EventHandler
-	public void onBlockBreak(BlockBreakEvent event){
-		Player player = event.getPlayer();
-		ItemStack item = player.getInventory().getItemInMainHand();
-
-		try {
-			BurrowerPick pick = new BurrowerPick(item);
-			pick.awardBreak(player, event.getBlock());
-		} catch (IllegalArgumentException exception) {
-
-		}
-	}
-
-	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent event) {
-		actuatePickInventory(event.getPlayer());
-	}
-
-	@EventHandler
-	public void onPlayerDeath(PlayerDeathEvent event) {
-		Player player = event.getEntity();
-		if ( ! Role.isPlayerRole(player, BurrowerRole.id) ) {
+		BurrowerPick pick = getItem(mainHandItem);
+		if (pick == null) {
 			return;
 		}
 
-		BurrowerPick pick = SpecialItem.findIn(player.getInventory(), (item) -> new BurrowerPick(item));
-		if ( pick != null ) {
-			Integer index = pick.getLevel().index() - 1;
-			index = Math.max(0, index);
-			deadPlayerLevels.put( player.getName(), BurrowerPickLevels.values()[index] );
-		}
-	}
+		List<Block> lastTwoTargetBlocks = player.getLastTwoTargetBlocks(null, 100);
+		if (lastTwoTargetBlocks.size() != 2) return;
 
-	@EventHandler
-	public void onPlayerRespawn(PlayerRespawnEvent event)  {
-		actuatePickInventory(event.getPlayer());
-	}
+		Block targetBlock = lastTwoTargetBlocks.get(1);
+		Block adjacentBlock = lastTwoTargetBlocks.get(0);
 
 
-	private void actuatePickInventory(Player player) {
-		if ( ! Role.isPlayerRole(player, BurrowerRole.id) ) {
+		if (! pick.getHammerMode()) {
+			pick.awardBreak(player, targetBlock);
 			return;
 		}
 
-		Inventory inventory = player.getInventory();
-		if ( SpecialItem.containedIn(inventory, (stack) -> new BurrowerPick(stack)) ) {
-			return;
-		}
+		BlockFace face = targetBlock.getFace(adjacentBlock);
+		int radius = pick.getLevel().getRadius();
 
-		BurrowerPickLevels level = BurrowerPickLevels.WOODEN;
-		if (player != null && deadPlayerLevels.containsKey(player.getName())) {
-			level = deadPlayerLevels.get(player.getName());
-		}
-
-		inventory.addItem(
-			new BurrowerPick(player, level).getStack()
-		);
+		pick.breakRadius(targetBlock.getLocation(), face, radius);
 	}
 
-	@EventHandler
-	public void onEnchant(EnchantItemEvent event) {
-		ItemStack item = event.getItem();
+	@Override
+	protected String getRoleId() {
+		return BurrowerRole.id;
+	}
 
-		// Vérifie si l'arme est l'arme spécifique que vous voulez protéger du désenchantement
+	@Override
+	protected BurrowerPickLevels getDefaultLevel() {
+		return BurrowerPickLevels.WOODEN;
+	}
+
+	@Override
+	@Nullable
+	protected BurrowerPick getItem(ItemStack stack) {
 		try {
-			new BurrowerPick(item);
-			event.setCancelled(true);
-		} catch (IllegalArgumentException exception) {
-
+			BurrowerPick pick = new BurrowerPick(stack);
+			return pick;
+		} catch (IllegalArgumentException e) {
+			return null;
 		}
+	}
+	@Override
+	protected BurrowerPick createItem(Player owner, BurrowerPickLevels level) {
+		return new BurrowerPick(owner, level);
 	}
 }

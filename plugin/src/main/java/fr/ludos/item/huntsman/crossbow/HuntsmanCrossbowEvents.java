@@ -5,30 +5,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 
 import fr.ludos.Main;
-import fr.ludos.item.SpecialItem;
+import fr.ludos.item.SpecialItemEvents;
+import fr.ludos.role.HuntsmanRole;
 
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.Event.Result;
 import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Inventory;
+
+import javax.annotation.Nullable;
+
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 
-import fr.ludos.role.BurrowerRole;
-import fr.ludos.role.Role;
 
-
-public class HuntsmanCrossbowEvents implements Listener {
+public class HuntsmanCrossbowEvents extends SpecialItemEvents<HuntsmanCrossbow> {
 
 	private static final String OWNER_NAMESPACE_KEY = "ludos_archer_crossbow_owner";
 	private static final String XP_NAMESPACE_KEY = "ludos_archer_crossbow_xp";
@@ -58,12 +49,6 @@ public class HuntsmanCrossbowEvents implements Listener {
 		lvlKey = new NamespacedKey(plugin, LVL_NAMESPACE_KEY);
 	}
 
-
-	public void playerEventListener(Player player, PlayerDeathEvent event, ItemStack CrossBow) {
-		player.getInventory().removeItem(CrossBow);
-	}
-
-
 	@EventHandler
 	public void onShootArrow(EntityShootBowEvent event) {
 		if ( ! (event.getEntity() instanceof Player) ) {
@@ -89,79 +74,24 @@ public class HuntsmanCrossbowEvents implements Listener {
 		inventory.addItem(arrowItem);
 	}
 
-	@EventHandler
-	public void onPlayerDropItem(PlayerDropItemEvent event) {
-		ItemStack item = event.getItemDrop().getItemStack();
 
-		HuntsmanCrossbow bow = new HuntsmanCrossbow(item);
-		if ( bow != null ) {
-			event.setCancelled(true);
-		}
-	}
-	@EventHandler
-	public void onInventoryClickItem(InventoryClickEvent event) {
-		ItemStack item = event.getCurrentItem();
-
+	@Override
+	@Nullable
+	protected HuntsmanCrossbow getItem(ItemStack stack) {
 		try {
-			new HuntsmanCrossbow(item);
-			if ( event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY || event.getInventory() != event.getClickedInventory() ) {
-				event.setResult(Result.DENY);
-			}
-		} catch (IllegalArgumentException exception) {
-
-		}
-
-	}
-	// @EventHandler
-	// public void onInventoryMoveItem(InventoryMoveItemEvent event) {
-	//     Bukkit.broadcastMessage(event.getDestination().toString());
-	//     ItemStack item = event.getItem();
-
-	//     Bukkit.broadcastMessage(item.toString());
-	//     HuntsmanCrossbow bow = new HuntsmanCrossbow(item);
-
-	//     if (bow != null && event.getDestination().getType() != InventoryType.PLAYER) {
-	//         event.setCancelled(true);
-	//     }
-	// }
-
-	@EventHandler
-	public void onItemSpawn(ItemSpawnEvent event) {
-		ItemStack item = event.getEntity().getItemStack();
-
-		try {
-			new HuntsmanCrossbow(item);
-			event.setCancelled(true);
-		} catch (IllegalArgumentException exception) {
-
+			HuntsmanCrossbow bow = new HuntsmanCrossbow(stack);
+			return bow;
+		} catch (IllegalArgumentException e) {
+			return null;
 		}
 	}
-
-
-	@EventHandler
-	public void playerJoinTheGame(PlayerJoinEvent event) {
-		actuateCrossbowInventory(event.getPlayer());
+	@Override
+	protected HuntsmanCrossbow createItem(Player owner) {
+		return new HuntsmanCrossbow(owner);
 	}
 
-	@EventHandler
-	public void onPlayerRespawn(PlayerRespawnEvent event)  {
-		actuateCrossbowInventory(event.getPlayer());
+	@Override
+	protected String getRoleId() {
+		return HuntsmanRole.id;
 	}
-
-
-	private void actuateCrossbowInventory(Player player) {
-		if ( ! Role.isPlayerRole(player, BurrowerRole.id) ) {
-			return;
-		}
-
-		Inventory inventory = player.getInventory();
-		if ( SpecialItem.containedIn(inventory, (stack) -> new HuntsmanCrossbow(stack)) ) {
-			return;
-		}
-
-		inventory.addItem(
-			new HuntsmanCrossbow(player).getStack()
-		);
-	}
-
 }

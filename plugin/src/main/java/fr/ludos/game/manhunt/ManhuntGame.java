@@ -20,6 +20,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.scoreboard.Scoreboard;
 
 import fr.ludos.Main;
@@ -49,10 +50,13 @@ public class ManhuntGame extends Game {
 		this.scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
 		this.teamController = new ManhuntTeamController(this, builder.getPlayers(), builder.getPrey());
 
-		this.timer = new ManhuntTimer(this);
+		PluginManager manager = Bukkit.getPluginManager();
+
+		timer = new ManhuntTimer(this);
+		manager.registerEvents(timer, Main.getInstance());
 
 		compassEvents = new ManhuntCompassEvents();
-		Bukkit.getPluginManager().registerEvents(compassEvents, Main.getInstance());
+		manager.registerEvents(compassEvents, Main.getInstance());
 
 
 		Bukkit.broadcastMessage("The Game of Manhunt started");
@@ -65,6 +69,7 @@ public class ManhuntGame extends Game {
 		teamController.stop();
 
 		timer.stop();
+		HandlerList.unregisterAll((Listener)timer);
 
 		HandlerList.unregisterAll((Listener)compassEvents);
 
@@ -122,6 +127,9 @@ public class ManhuntGame extends Game {
 
 		@Nullable
 		public Player getPrey() {
+			if (prey == null) {
+				return null;
+			}
 			return Bukkit.getPlayerExact(prey);
 		}
 

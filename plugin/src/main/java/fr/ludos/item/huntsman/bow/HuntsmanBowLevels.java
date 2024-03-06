@@ -45,8 +45,6 @@ public enum HuntsmanBowLevels implements SpecialItemLevels {
 	}
 
 
-
-
 	@Nullable
 	public static HuntsmanBowLevels findByKey(int i) {
 		if ( i >= values.length ) {
@@ -55,19 +53,27 @@ public enum HuntsmanBowLevels implements SpecialItemLevels {
 		return values()[i];
 	}
 
-	@Nullable
-	public static HuntsmanBowLevels getNextLevel(HuntsmanBowLevels current) {
-		int currentIndex = current.index();
-		if ( currentIndex + 1 >= values.length ) {
-			return null;
-		}
-		return values()[currentIndex + 1];
-	}
 
 	public static enum LevelBranch {
 		NONE,
 		FIRE,
 		POISON,
 		SLOWNESS;
+	}
+
+	@Override
+	public HuntsmanBowLevels getPrevious() {
+		Integer index = index() - 1;
+		index = Math.max(0, index);
+		return values()[index];
+	}
+
+	@Override
+	public HuntsmanBowLevels getNext() {
+		int currentIndex = index();
+		if ( currentIndex + 1 >= values.length ) {
+			return this;
+		}
+		return values()[currentIndex + 1];
 	}
 }

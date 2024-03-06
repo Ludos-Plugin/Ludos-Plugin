@@ -9,6 +9,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
 
@@ -60,7 +62,10 @@ public abstract class SpecialItem {
 		return owner;
 	}
 
-	protected abstract String getLore();
+	protected List<String> getLore() {
+		return null;
+	}
+
 	protected abstract String getName();
 
 
@@ -71,7 +76,11 @@ public abstract class SpecialItem {
 		if (stack == null) {
 			throw new IllegalArgumentException();
 		}
-		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) {
+			throw new IllegalArgumentException();
+		}
+		PersistentDataContainer container = meta.getPersistentDataContainer();
 		if ( ! container.has(getOwnerKey(), PersistentDataType.STRING) ) {
 			throw new IllegalArgumentException();
 		}
@@ -84,15 +93,28 @@ public abstract class SpecialItem {
 		this.stack = stack;
 		this.owner = owner;
 
+		updateName();
 		ItemMeta meta = stack.getItemMeta();
 
-		meta.setDisplayName(ChatColor.RESET.toString() + ChatColor.BOLD + getName());
 		meta.setUnbreakable(true);
 		meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 		container.set(getOwnerKey(), PersistentDataType.STRING, owner.getUniqueId().toString());
 
+		stack.setItemMeta(meta);
+	}
+
+	public void updateName() {
+		ItemStack stack = getStack();
+		ItemMeta meta = stack.getItemMeta();
+		meta.setDisplayName(ChatColor.RESET.toString() + ChatColor.BOLD + getName());
+		stack.setItemMeta(meta);
+	}
+	public void updateLore() {
+		ItemStack stack = getStack();
+		ItemMeta meta = stack.getItemMeta();
+		meta.setLore(getLore());
 		stack.setItemMeta(meta);
 	}
 
@@ -107,11 +129,9 @@ public abstract class SpecialItem {
 			if (item == null) {
 				continue;
 			}
-			try {
-				constructor.apply(item);
+			T specialItem = constructor.apply(item);
+			if (specialItem != null) {
 				return true;
-			} catch (IllegalArgumentException e) {
-				continue;
 			}
 		}
 
@@ -130,11 +150,9 @@ public abstract class SpecialItem {
 			if (item == null) {
 				continue;
 			}
-			try {
-				T specialItem = constructor.apply(item);
+			T specialItem = constructor.apply(item);
+			if (specialItem != null) {
 				return specialItem;
-			} catch (IllegalArgumentException e) {
-				continue;
 			}
 		}
 

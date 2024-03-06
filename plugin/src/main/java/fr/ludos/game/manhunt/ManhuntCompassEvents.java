@@ -1,8 +1,33 @@
 package fr.ludos.game.manhunt;
 
-import org.bukkit.event.Listener;
+import javax.annotation.Nullable;
 
-public class ManhuntCompassEvents implements Listener {
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
+import fr.ludos.item.SpecialItemEvents;
+
+public class ManhuntCompassEvents extends SpecialItemEvents<ManhuntCompass> {
+
+	@Override
+	@Nullable
+	protected ManhuntCompass getItem(ItemStack stack) {
+		try {
+			// ManhuntCompass bow = new ManhuntCompass(stack);
+			return null;
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
+	}
+	@Override
+	protected ManhuntCompass createItem(Player owner) {
+		return new ManhuntCompass(owner);
+	}
+
+	@Override
+	protected String getRoleId() {
+		return null;
+	}
 
 	// @EventHandler
 	// public void handlePlayerDeath(PlayerDeathEvent event) {

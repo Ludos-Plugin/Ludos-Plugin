@@ -1,10 +1,12 @@
 package fr.ludos.role;
 
 import fr.ludos.Main;
+import fr.ludos.item.burrower.pick.BurrowerPick;
 import fr.ludos.item.burrower.pick.BurrowerPickEvents;
 import fr.ludos.item.burrower.digtool.BurrowingClawEvents;
 
 import org.bukkit.ChatColor;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -12,7 +14,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import java.util.ArrayList;
 import org.bukkit.generator.structure.StructureType;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -28,14 +29,21 @@ import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.StructureSearchResult;
 
+import java.util.Map;
+import java.util.ArrayList;
+
 public class BurrowerRole extends Role {
 
 	private final BurrowerPickEvents pickEvents;
 	private final BurrowingClawEvents clawEvents;
 
+
 	public BurrowerRole(Builder builder) {
 		super(builder);
 		PluginManager manager = Bukkit.getPluginManager();
+
+		startPassiveGain();
+		getAllBurrower();
 
 		pickEvents = new BurrowerPickEvents();
 		manager.registerEvents((Listener)pickEvents, Main.getInstance());
@@ -54,58 +62,76 @@ public class BurrowerRole extends Role {
 
 	public static final String id = "burrower";
 
+	public static ArrayList<Player> burrowers = new ArrayList<>();
 
-	private ArrayList<Player> radarPlayers = new ArrayList<>();
+	public ArrayList<Player> getAllBurrower(){
+		Map<String, String> playerRoles = Role.getPlayerRoles();
+
+		for (Map.Entry<String, String> entry : playerRoles.entrySet()) {
+			String playerName = entry.getKey();
+			String role = entry.getValue();
+
+			if (role != null && role.equals(id)) {
+				Player player = Bukkit.getPlayerExact(playerName);
+				burrowers.add(player);
+			}
+		}
+
+        return burrowers;
+	}
+
+	public boolean burrowerRole(Player player){
+		String role = Role.getPlayerRoles().get(player.getName());
+
+		if(role == null || !role.equals(id)){
+			return false;
+		}
+
+		return true;
+	}
 
 	@EventHandler
 	public void onPlayerChat(AsyncPlayerChatEvent event) {
 		Player player = event.getPlayer();
 		String message = event.getMessage();
 
-		if (message.startsWith("radar")) {
-			Bukkit.broadcastMessage("radar command");
-			onRadar(player);
+		if (message.startsWith("radar") && burrowerRole(player)) {
+			radar(player);
 		}
 	}
 
-	
+	public void radar(Player player) {
+		try {
+			int maxDistanceDetection = 200;
 
-	@EventHandler
-	public void onRadar(Player player) {
+			StructureSearchResult location = player.getWorld().locateNearestStructure(player.getLocation(), StructureType.MINESHAFT, maxDistanceDetection, false);
 
-		StructureSearchResult location = player.getWorld().locateNearestStructure(player.getLocation(), StructureType.MINESHAFT, 150, false);	
+			int distanceFromThePlayer = location.getLocation().getBlockZ() - player.getLocation().getBlockZ();
 
-		if (!radarPlayers.contains(player)) {
-			return;
-		}
+			if (distanceFromThePlayer < maxDistanceDetection){
 
-		if (location != null) {
-			player.sendMessage(ChatColor.GREEN + "Mineshaft détecté à " + location.getLocation());
-		} else {
-			player.sendMessage(ChatColor.RED + "Aucun mineshaft détecté.");
-		}
-	}
+				player.sendMessage(ChatColor.GREEN + "Mineshaft détecté à : " +
+					" x : " + location.getLocation().getX() +
+					", y : " + location.getLocation().getY() +
+					", z : " + location.getLocation().getZ());
 
-	@EventHandler
-	public void createAdvancedFurnace(CraftItemEvent event) {
-		Inventory inventory = event.getInventory();
-		Player player = (Player) event.getWhoClicked();
-		for (ItemStack item : inventory) {
-			if (item != null && item.getType() == Material.FURNACE) {
-				inventory.remove(item);
-				player.sendMessage(ChatColor.GREEN + "Furnace upgraded to Blast Furnace.");
-				return;
+			}else{
+				player.sendMessage(ChatColor.RED + "Aucun mineshaft détecté à proximité.");
 			}
+
+
+		} catch (Exception e) {
+
 		}
 	}
-	
+
 	@EventHandler
     public void onPrepareItemCraft(PrepareItemCraftEvent event) {
 		if ( ! Role.isPlayerRole(event.getView().getPlayer(), id) ) {
 			return;
 		}
 
-		
+
         Recipe recipe = event.getRecipe();
         if (recipe == null) {
 			return;
@@ -146,29 +172,24 @@ public class BurrowerRole extends Role {
 			public void run() {
 				giveRandomOreToPlayers();
 			}
-		}.runTaskTimer(Main.getInstance(), 0, 20 * 60 * 1); // 20 ticks * 60 seconds * 1 minutes
+		}.runTaskTimer(Main.getInstance(), 0, 20 * 600 * 1);
 	}
 
 	private void giveRandomOreToPlayers() {
-		// Player player;
-		// BurrowerPick currentPickBurrowerPick = SpecialItem.findIn(player.getInventory(), (item) -> new BurrowerPick(item));
 
-		// NamespacedKey  playerKey = currentPickBurrowerPick.getOwnerKey();
-		// Player player = getPlayerByNamespacedKey(playerKey);
+		for (Player player : burrowers) {
 
-		for (int i = 0; i < Bukkit.getOnlinePlayers().size(); i++) {
-			// player = (Player) Bukkit.getOnlinePlayers().toArray()[i];
-			// var randomOre = RandomOre();
-			// player.getInventory().addItem(new ItemStack(randomOre));
-			// if (randomOre != null) {
-			// 	ItemStack ore = new ItemStack(randomOre);
-			
-		
+			if (player != null){
+				var randomOre = RandomOre();
+				player.getInventory().addItem(new ItemStack(randomOre));
+			}
+
 		}
-		
+
 	}
+
 	private Material RandomOre() {
-		Material[] oresTypes  = { Material.COAL_ORE, Material.IRON_ORE, Material.GOLD_ORE, Material.DIAMOND_ORE,  Material.LAPIS_ORE };
+		Material[] oresTypes  = { Material.COAL, Material.IRON_INGOT, Material.GOLD_INGOT, Material.DIAMOND };
 		Material randomOre = oresTypes[(int) (Math.random() * oresTypes.length)];
 		return randomOre;
 	}

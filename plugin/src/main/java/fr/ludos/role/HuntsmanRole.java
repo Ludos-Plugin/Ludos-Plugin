@@ -16,6 +16,9 @@ public class HuntsmanRole extends Role {
 	// private final HuntsmanCrossbowEvents crossbowEvents;
 	// private final HuntsmanSpearEvents spearEvents;
 
+	public static final String id = "huntsman";
+
+
 	public HuntsmanRole(Builder builder) {
 		super(builder);
 		PluginManager manager = Bukkit.getPluginManager();
@@ -67,7 +70,7 @@ public class HuntsmanRole extends Role {
 
 		@Override
 		public String getId() {
-			return "huntsman";
+			return id;
 		}
 
 		@Override

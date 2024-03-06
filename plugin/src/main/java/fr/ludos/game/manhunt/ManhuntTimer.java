@@ -25,7 +25,7 @@ public class ManhuntTimer implements Listener {
     private boolean state = false;
     private long startTime;
     private BukkitTask task;
-	
+
     private long totalSeconds;
     private String formattedTime;
 
@@ -38,11 +38,12 @@ public class ManhuntTimer implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        start();
+        bossbar.addPlayer(event.getPlayer());
+        bossbar.setVisible(true);
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerQuitEvent event) {
+    public void onPlayerQuit(PlayerQuitEvent event) {
         if (Bukkit.getOnlinePlayers().size() == 0) {
             stop();
         }
@@ -69,16 +70,15 @@ public class ManhuntTimer implements Listener {
     }
 
     public void stop() {
-        if (!state) {
+        if (! state) {
             return;
         }
         state = false;
 
-        HandlerList.unregisterAll((Listener) this);
         task.cancel();
-		
+
 		bossbar.removeAll();
-		bossbar.setVisible(true);
+		bossbar.setVisible(false);
 
         Bukkit.broadcastMessage(ChatColor.GREEN + "Chrono terminé. Temps total : " + formattedTime);
     }

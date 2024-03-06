@@ -1,34 +1,22 @@
 package fr.ludos.item.huntsman.bow;
 
-import java.util.Collections;
-import java.util.Map;
-
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 
 import fr.ludos.Main;
-import fr.ludos.item.SpecialItem;
+import fr.ludos.item.LevelItemEvents;
 
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.Event.Result;
 import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
 
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 
-import fr.ludos.role.BurrowerRole;
-import fr.ludos.role.Role;
+import fr.ludos.role.HuntsmanRole;
+import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -37,7 +25,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 
-public class HuntsmanBowEvents implements Listener {
+public class HuntsmanBowEvents extends LevelItemEvents<HuntsmanBow, HuntsmanBowLevels> {
 
 	private static final String OWNER_NAMESPACE_KEY = "ludos_archer_bow_owner";
 	private static final String XP_NAMESPACE_KEY = "ludos_archer_bow_xp";
@@ -46,8 +34,6 @@ public class HuntsmanBowEvents implements Listener {
 	private static NamespacedKey ownerKey = null;
 	private static NamespacedKey xpKey = null;
 	private static NamespacedKey lvlKey = null;
-
-	private static Map<String, HuntsmanBowLevels> deadPlayerLevels = Collections.emptyMap();
 
 
 
@@ -70,14 +56,7 @@ public class HuntsmanBowEvents implements Listener {
 	}
 
 
-	public void playerEventListener(Player player, PlayerDeathEvent event, ItemStack CrossBow) {
-		player.getInventory().removeItem(CrossBow);
-	}
-
-
-	@EventHandler
 	public void poisonArrow1(Player player) {
-
 		Location eyeLocation = player.getEyeLocation();
 		World world = player.getWorld();
 
@@ -92,14 +71,13 @@ public class HuntsmanBowEvents implements Listener {
 	}
 
 
-// //Arrow arrowProjectile = (Arrow) event.getProjectile();
-//         arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
-//         if (arrowProjectile.isShotFromCrossbow()) {
-//             arrowProjectile.setGravity(false);
-//             arrowProjectile.setDamage(0.5);
-//         }
+		//Arrow arrowProjectile = (Arrow) event.getProjectile();
+        // arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
+        // if (arrowProjectile.isShotFromCrossbow()) {
+        //     arrowProjectile.setGravity(false);
+        //     arrowProjectile.setDamage(0.5);
+        // }
 
-	@EventHandler
 	public void poisonArrow2(Player player) {
 
 		Location eyeLocation = player.getEyeLocation();
@@ -109,12 +87,11 @@ public class HuntsmanBowEvents implements Listener {
 		poisonArrow.setShooter(player);
 		poisonArrow.setVelocity(eyeLocation.getDirection().multiply(2));
 
-		PotionEffect poisoneffect = new PotionEffect(PotionEffectType.POISON, 60, 2);
-		poisonArrow.addCustomEffect(poisoneffect, true);
+		PotionEffect poisonEffect = new PotionEffect(PotionEffectType.POISON, 60, 2);
+		poisonArrow.addCustomEffect(poisonEffect, true);
 
 	}
 
-	@EventHandler
 	public void fireArrow(Player player, int level) {
 
 		Location eyeLocation = player.getEyeLocation();
@@ -132,23 +109,22 @@ public class HuntsmanBowEvents implements Listener {
 		}
 		Player player = (Player) event.getEntity();
 
-		try {
-			HuntsmanBow bow = new HuntsmanBow(event.getBow());
+		HuntsmanBow bow = getItem(event.getBow());
+		if (bow == null) {
+			return;
+		}
 
-			Arrow arrowProjectile = (Arrow)event.getProjectile();
-			arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
-			updateArrowCount(player);
-			if (bow.getLevel().getType() == HuntsmanBowLevels.LevelBranch.POISON) {
+		Arrow arrowProjectile = (Arrow)event.getProjectile();
+		arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
+		updateArrowCount(player);
+		if (bow.getLevel().getType() == HuntsmanBowLevels.LevelBranch.POISON) {
 
-			}
-			if (bow.getLevel() == HuntsmanBowLevels.POISON1) {
-				poisonArrow1(player);
-			}
-			if (bow.getLevel() == HuntsmanBowLevels.POISON2) {
-				poisonArrow2(player);
-			}
-		} catch (Error e) {
-
+		}
+		if (bow.getLevel() == HuntsmanBowLevels.POISON1) {
+			poisonArrow1(player);
+		}
+		if (bow.getLevel() == HuntsmanBowLevels.POISON2) {
+			poisonArrow2(player);
 		}
 	}
 
@@ -160,99 +136,29 @@ public class HuntsmanBowEvents implements Listener {
 		inventory.addItem(arrowItem);
 	}
 
-	@EventHandler
-	public void onPlayerDropItem(PlayerDropItemEvent event) {
-		ItemStack item = event.getItemDrop().getItemStack();
-
-		HuntsmanBow bow = new HuntsmanBow(item);
-		if ( bow != null ) {
-			event.setCancelled(true);
-		}
+	@Override
+	protected String getRoleId() {
+		return HuntsmanRole.id;
 	}
-	@EventHandler
-	public void onInventoryClickItem(InventoryClickEvent event) {
-		ItemStack item = event.getCurrentItem();
 
+	@Override
+	@Nullable
+	protected HuntsmanBow getItem(ItemStack stack) {
 		try {
-			new HuntsmanBow(item);
-			if ( event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY || event.getInventory() != event.getClickedInventory() ) {
-				event.setResult(Result.DENY);
-			}
-		} catch (IllegalArgumentException exception) {
-
-		}
-
-	}
-	// @EventHandler
-	// public void onInventoryMoveItem(InventoryMoveItemEvent event) {
-	//     Bukkit.broadcastMessage(event.getDestination().toString());
-	//     ItemStack item = event.getItem();
-
-	//     Bukkit.broadcastMessage(item.toString());
-	//     HuntsmanBow bow = new HuntsmanBow(item);
-
-	//     if (bow != null && event.getDestination().getType() != InventoryType.PLAYER) {
-	//         event.setCancelled(true);
-	//     }
-	// }
-
-	@EventHandler
-	public void onItemSpawn(ItemSpawnEvent event) {
-		ItemStack item = event.getEntity().getItemStack();
-
-		try {
-			new HuntsmanBow(item);
-			event.setCancelled(true);
-		} catch (IllegalArgumentException exception) {
-
+			HuntsmanBow bow = new HuntsmanBow(stack);
+			return bow;
+		} catch (IllegalArgumentException e) {
+			return null;
 		}
 	}
 
-
-	@EventHandler
-	public void playerJoinTheGame(PlayerJoinEvent event) {
-		actuateBowInventory(event.getPlayer());
+	@Override
+	protected HuntsmanBow createItem(Player owner, HuntsmanBowLevels level) {
+		return new HuntsmanBow(owner, level);
 	}
-
-	@EventHandler
-	public void onPlayerDeath(PlayerDeathEvent event) {
-		Player player = event.getEntity();
-		if ( ! Role.isPlayerRole(player, BurrowerRole.id) ) {
-			return;
-		}
-
-		HuntsmanBow bow = SpecialItem.findIn(player.getInventory(), (item) -> new HuntsmanBow(item));
-		if ( bow != null ) {
-			Integer index = bow.getLevel().index() - 1;
-			index = Math.max(0, index);
-			deadPlayerLevels.put( player.getName(), HuntsmanBowLevels.values()[index] );
-		}
-	}
-
-	@EventHandler
-	public void onPlayerRespawn(PlayerRespawnEvent event)  {
-		actuateBowInventory(event.getPlayer());
-	}
-
-
-	private void actuateBowInventory(Player player) {
-		if ( ! Role.isPlayerRole(player, BurrowerRole.id) ) {
-			return;
-		}
-
-		Inventory inventory = player.getInventory();
-		if ( SpecialItem.containedIn(inventory, (stack) -> new HuntsmanBow(stack)) ) {
-			return;
-		}
-
-
-		HuntsmanBowLevels level = HuntsmanBowLevels.BASE;
-		if (player != null && deadPlayerLevels.containsKey(player.getName())) {
-			level = deadPlayerLevels.get(player.getName());
-		}
-		inventory.addItem(
-			new HuntsmanBow(player, level).getStack()
-		);
+	@Override
+	protected HuntsmanBowLevels getDefaultLevel() {
+		return HuntsmanBowLevels.BASE;
 	}
 
 }

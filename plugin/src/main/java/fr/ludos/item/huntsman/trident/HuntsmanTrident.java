@@ -2,6 +2,8 @@ package fr.ludos.item.huntsman.trident;
 
 import fr.ludos.item.SpecialItem;
 
+import java.util.List;
+
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -27,10 +29,5 @@ public class HuntsmanTrident extends SpecialItem {
 	@Override
 	protected String getName(){
 		return "Old Trident";
-	}
-
-	@Override
-	public String getLore(){
-		return null;
 	}
 }

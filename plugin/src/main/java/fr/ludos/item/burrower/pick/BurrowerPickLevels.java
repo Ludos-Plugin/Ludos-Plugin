@@ -14,20 +14,20 @@ import org.bukkit.enchantments.Enchantment;
 import fr.ludos.item.SpecialItemLevels;
 
 public enum BurrowerPickLevels implements SpecialItemLevels {
-	WOODEN      (Material.WOODEN_PICKAXE, 25, Collections.emptyMap(), 1),
-	STONE       (Material.STONE_PICKAXE, 37, Collections.emptyMap(), 1),
-	STONE1      (Material.STONE_PICKAXE, 55, new HashMap<Enchantment, Integer>(){{        put(Enchantment.DIG_SPEED, 1); }}, 1 ),
-	GOLDEN      (Material.GOLDEN_PICKAXE, 82, new HashMap<Enchantment, Integer>(){{       put(Enchantment.DIG_SPEED, 1); }}, 2 ),
-	GOLDEN1     (Material.GOLDEN_PICKAXE, 123, new HashMap<Enchantment, Integer>(){{      put(Enchantment.DIG_SPEED, 2); }}, 2 ),
-	IRON        (Material.IRON_PICKAXE, 184, new HashMap<Enchantment, Integer>(){{        put(Enchantment.DIG_SPEED, 2); }}, 2 ),
-	IRON1       (Material.IRON_PICKAXE, 276, new HashMap<Enchantment, Integer>(){{        put(Enchantment.DIG_SPEED, 3); }}, 2 ),
-	IRON2       (Material.IRON_PICKAXE, 414, new HashMap<Enchantment, Integer>(){{        put(Enchantment.DIG_SPEED, 3); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}, 2 ),
-	DIAMOND     (Material.DIAMOND_PICKAXE, 621, new HashMap<Enchantment, Integer>(){{     put(Enchantment.DIG_SPEED, 3); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}, 3 ),
-	DIAMOND1    (Material.DIAMOND_PICKAXE, 931, new HashMap<Enchantment, Integer>(){{     put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}, 3 ),
-	DIAMOND2    (Material.DIAMOND_PICKAXE, 1396, new HashMap<Enchantment, Integer>(){{    put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}, 3 ),
-	NETHERITE   (Material.NETHERITE_PICKAXE, 2094, new HashMap<Enchantment, Integer>(){{  put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}, 4 ),
-	NETHERITE1  (Material.NETHERITE_PICKAXE, 6238, new HashMap<Enchantment, Integer>(){{  put(Enchantment.DIG_SPEED, 5); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}, 4 ),
-	NETHERITE2  (Material.NETHERITE_PICKAXE, 10000, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 5); put(Enchantment.LOOT_BONUS_BLOCKS, 3);}}, 4 );
+	WOODEN      (Material.WOODEN_PICKAXE,    25,    1, Collections.emptyMap()),
+	STONE       (Material.STONE_PICKAXE,     37,    1, Collections.emptyMap()),
+	STONE1      (Material.STONE_PICKAXE,     55,    1, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 1); }}),
+	GOLDEN      (Material.GOLDEN_PICKAXE,    82,    1, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 1); }}),
+	GOLDEN1     (Material.GOLDEN_PICKAXE,    123,   1, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 2); }}),
+	IRON        (Material.IRON_PICKAXE,      184,   1, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 2); }}),
+	IRON1       (Material.IRON_PICKAXE,      276,   1, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 3); }}),
+	IRON2       (Material.IRON_PICKAXE,      414,   1, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 3); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
+	DIAMOND     (Material.DIAMOND_PICKAXE,   621,   2, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 3); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
+	DIAMOND1    (Material.DIAMOND_PICKAXE,   931,   2, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
+	DIAMOND2    (Material.DIAMOND_PICKAXE,   1396,  2, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
+	NETHERITE   (Material.NETHERITE_PICKAXE, 2094,  2, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
+	NETHERITE1  (Material.NETHERITE_PICKAXE, 6238,  2, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 5); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
+	NETHERITE2  (Material.NETHERITE_PICKAXE, 10000, 2, new HashMap<Enchantment, Integer>(){{ put(Enchantment.DIG_SPEED, 5); put(Enchantment.LOOT_BONUS_BLOCKS, 3);}});
 
 	private Material material;
 	private double xpThreshold;
@@ -51,16 +51,16 @@ public enum BurrowerPickLevels implements SpecialItemLevels {
 	public boolean isMax() {
 		return (index() + 1) >= values.length;
 	}
-	public int radius(){
+	public int getRadius(){
 		return radius;
 	}
 
 
-	private BurrowerPickLevels(Material material, double xpThreshold, Map<Enchantment, Integer> enchantments, int radius) {
+	private BurrowerPickLevels(Material material, double xpThreshold, int radius, Map<Enchantment, Integer> enchantments) {
 		this.material = material;
 		this.xpThreshold = xpThreshold;
-		this.enchantments = enchantments;
 		this.radius = radius;
+		this.enchantments = enchantments;
 	}
 
 
@@ -72,11 +72,18 @@ public enum BurrowerPickLevels implements SpecialItemLevels {
 		return values()[i];
 	}
 
-	@Nullable
-	public static BurrowerPickLevels getNextLevel(BurrowerPickLevels current) {
-		int currentIndex = current.index();
+	@Override
+	public BurrowerPickLevels getPrevious() {
+		Integer index = index() - 1;
+		index = Math.max(0, index);
+		return values()[index];
+	}
+
+	@Override
+	public BurrowerPickLevels getNext() {
+		int currentIndex = index();
 		if ( currentIndex + 1 >= values.length ) {
-			return null;
+			return this;
 		}
 		return values()[currentIndex + 1];
 	}

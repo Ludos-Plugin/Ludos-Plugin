@@ -8,7 +8,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -132,18 +134,9 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels> extends Specia
 
 		this.xp = value;
 		meta.getPersistentDataContainer().set(getXpKey(), PersistentDataType.DOUBLE, xp);
-
-		String xpFormatted = ChatColor.GRAY + "XP: " + ChatColor.YELLOW;
-
-		if ( level.isMax() ) {
-			xpFormatted += MAX_LVL_LABEL;
-		} else {
-			String xpRounded = Double.toString(Math.round(xp * 100.0) / 100.0);
-			xpFormatted += xpRounded + '/' + level.getXpThreshold();
-		}
-
-		meta.setLore(Arrays.asList(getLore(), xpFormatted));
 		getStack().setItemMeta(meta);
+
+		updateLore();
 	}
 
 	public void addXp(double xp) {
@@ -153,5 +146,24 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels> extends Specia
 
 		double newXp = this.xp + xp;
 		setXp(newXp);
+	}
+
+	@Override
+	public List<String> getLore() {
+		List<String> lore = super.getLore();
+		if (lore == null) {
+			lore = new ArrayList<String>();
+		}
+		String xpFormatted = ChatColor.GRAY + "XP: " + ChatColor.YELLOW;
+
+		if ( level.isMax() ) {
+			xpFormatted += MAX_LVL_LABEL;
+		} else {
+			String xpRounded = Double.toString(Math.round(xp * 100.0) / 100.0);
+			xpFormatted += xpRounded + '/' + level.getXpThreshold();
+		}
+
+		lore.add(xpFormatted);
+		return lore;
 	}
 }

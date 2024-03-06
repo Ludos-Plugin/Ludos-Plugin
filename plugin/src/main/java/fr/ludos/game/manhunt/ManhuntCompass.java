@@ -1,5 +1,8 @@
 package fr.ludos.game.manhunt;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -23,8 +26,8 @@ public class ManhuntCompass extends SpecialItem {
 	}
 
 	@Override
-	public String getLore() {
-		return "Toute les 3 min donne la position de la proie";
+	public List<String> getLore() {
+		return Arrays.asList("Toute les 3 min donne la position de la proie");
 	}
 
 	@Override

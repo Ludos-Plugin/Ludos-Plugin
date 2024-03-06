@@ -3,8 +3,9 @@ package fr.ludos.item.burrower.digtool;
 import org.bukkit.NamespacedKey;
 
 import fr.ludos.Main;
-
-import org.bukkit.event.Listener;
+import fr.ludos.item.ItemUtilities;
+import fr.ludos.item.SpecialItemEvents;
+import fr.ludos.role.BurrowerRole;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +20,17 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.event.block.Action;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 
 
@@ -49,26 +57,17 @@ import java.util.Map;
  * @see java.util.Collections
  */
 
-public class BurrowingClawEvents implements Listener {
-
+public class BurrowingClawEvents extends SpecialItemEvents<BurrowingClaw> {
 	private static final String OWNER_NAMESPACE_KEY = "ludos_miner_claw_owner";
 	private static final String USAGES_NAMESPACE_KEY = "ludos_miner_claw_usages";
 
 	private static NamespacedKey ownerKey = null;
 	private static NamespacedKey usagesKey = null;
 
-	private static Map<Player, Long> messageToggle = new HashMap<>();
+	// private static Map<Player, Long> messageToggle = new HashMap<>();
 
-	private static final int TUNNEL_LENGTH = 20;
+	// private final Map<Player, Integer> usages = new HashMap<>();
 
-	private final List<Block> tunnelBlocks = new ArrayList<>();
-    private Map<Block, Material> originalBlockTypes = new HashMap<>();
-
-	private final Map<Player, Long> cooldowns = new HashMap<>();
-	private final Map<Player, Integer> usages = new HashMap<>();
-
-	private static final int MAX_USAGES = 3;
-	private static final int COOLDOWN_SECONDS = 10;
 
 
 
@@ -88,7 +87,6 @@ public class BurrowingClawEvents implements Listener {
 
 
 	public static int counterSpell = 3;
-	private int range = 150;
 
 	public class BlockBreak {
 		Location location;
@@ -106,89 +104,69 @@ public class BurrowingClawEvents implements Listener {
 		player.getInventory().addItem(new BurrowingClaw(player).getStack());
 	}
 
-	@EventHandler
-	public void onPlayerInteract(PlayerInteractEvent event) {
-		Player player = event.getPlayer();
-		ItemStack mainItem = player.getInventory().getItemInMainHand();
-
-		try {
-			new BurrowingClaw(mainItem);
-		} catch (IllegalArgumentException e) {
-			return;
+	private void sendHUDIcon(Player player) {
+		if(player.hasPotionEffect(PotionEffectType.LUCK)){
+			player.removePotionEffect(PotionEffectType.LUCK);
+		}else{
+			player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, Integer.MAX_VALUE, 1, true, true));
 		}
-
-		if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			handleRightClick(player);
-		} else if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-			retractTunnel();
-		}
-	}
-
-	private void handleRightClick(Player player) {
-		long currentTime = System.currentTimeMillis();
-		if (!canUseClaw(player, currentTime)) {
-			return;
-		}
-
-		generateTunnel(player);
-		startCooldown(player, currentTime);
-		reduceUsage(player);
-	}
-
-	private boolean canUseClaw(Player player, long currentTime) {
-		long lastUse = cooldowns.getOrDefault(player, 0L);
-		return currentTime - lastUse >= COOLDOWN_SECONDS * 1000;
-	}
-
-	private void startCooldown(Player player, long currentTime) {
-		cooldowns.put(player, currentTime);
-	}
-
-	private void reduceUsage(Player player) {
-		int remainingUsages = usages.getOrDefault(player, MAX_USAGES);
-		if (remainingUsages > 0) {
-			usages.put(player, remainingUsages - 1);
-		}
-	}
-
-	private void generateTunnel(Player player) {
-		for (int i = 1; i <= TUNNEL_LENGTH; i++) {
-			generateBlock(player, i, -1);
-			// generateBlock(player, -i);
-		}
-	}
-
-    private void generateBlock(Player player, int xOffset, int yOffset) {
-        Location eyeLoc = player.getEyeLocation();
-        Vector direction = player.getLocation().getDirection();
-
-		
-        Location locXLocation = eyeLoc.clone().add(direction.clone().normalize().multiply(xOffset));
-        Location locYLocation = locXLocation.clone().add(0, yOffset, 0);
-
-        Block blockXBlock = locXLocation.getBlock();
-        tunnelBlocks.add(blockXBlock);
-        
-        Block blockYBlock = locYLocation.getBlock();
-        tunnelBlocks.add(blockYBlock);
-
-        originalBlockTypes.put(blockXBlock, blockXBlock.getType()); 
-        blockXBlock.setType(Material.AIR);
-        
-        originalBlockTypes.put(blockYBlock, blockYBlock.getType()); 
-        blockYBlock.setType(Material.AIR);
     }
 
-	private void retractTunnel() {
-        tunnelBlocks.forEach(block -> {
-            Material originalType = originalBlockTypes.get(block);
-            if (originalType != null) {
-                block.setType(originalType);
-            }
-        });
-        
-		Bukkit.broadcastMessage("Tunnel retracted");
-		Bukkit.broadcastMessage("Tunnel size: " + tunnelBlocks.size());
-		tunnelBlocks.clear();
+	@EventHandler
+	public void onPlayerInteract(PlayerInteractEvent event) {
+		if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+			return;
+		}
+
+
+		Player player = event.getPlayer();
+		ItemStack mainItem = event.getItem();
+
+		BurrowingClaw claw = getItem(mainItem);
+		if (claw == null) {
+			return;
+		}
+
+		if (player.hasCooldown(mainItem.getType())) {
+			return;
+		}
+
+		List<BlockState> playerBlocks = BurrowingClaw.tunnelBlocks.get(player);
+
+		sendHUDIcon(player);
+
+		if (playerBlocks != null) {
+			claw.revertTunnel(player);
+		} else {
+			claw.digTunnel(player);
+		}
+	}
+
+	// private void reduceUsage(Player player) {
+	// 	int remainingUsages = usages.getOrDefault(player, MAX_USAGES);
+	// 	if (remainingUsages > 0) {
+	// 		usages.put(player, remainingUsages - 1);
+	// 	}
+	// }
+
+
+	@Override
+	@Nullable
+	protected BurrowingClaw getItem(ItemStack stack) {
+		try {
+			BurrowingClaw bow = new BurrowingClaw(stack);
+			return bow;
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
+	}
+	@Override
+	protected BurrowingClaw createItem(Player owner) {
+		return new BurrowingClaw(owner);
+	}
+
+	@Override
+	protected String getRoleId() {
+		return BurrowerRole.id;
 	}
 }

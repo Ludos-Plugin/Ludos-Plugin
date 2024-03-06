@@ -28,7 +28,7 @@ public final class ManhuntTeamController extends TeamController implements Liste
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<Player> players, @Nullable Player prey) {
 		super(game.getScoreboard());
 		this.game = game;
-		
+
 
 		Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
 
@@ -64,7 +64,7 @@ public final class ManhuntTeamController extends TeamController implements Liste
 			hunter.setScoreboard(scoreboard);
 			hunter.sendMessage("You are a Hunter.");
 		}
-		
+
 		preyTeam.addEntry(prey.getName());
 		prey.setScoreboard(scoreboard);
 		prey.sendMessage("You are the Prey.");
@@ -94,8 +94,7 @@ public final class ManhuntTeamController extends TeamController implements Liste
 		if (
 			preyTeam.hasEntry(event.getEntity().getName())
 		) {
-			Bukkit.broadcastMessage(player.getName());
-			Bukkit.broadcastMessage("Prey Slain!");
+			Bukkit.broadcastMessage("Prey" + player.getName() + "Slain!");
 			preyTeam.removeEntry(player.getName());
 		}
 

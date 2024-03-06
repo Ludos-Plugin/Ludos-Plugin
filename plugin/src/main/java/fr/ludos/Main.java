@@ -69,11 +69,9 @@ public class Main extends JavaPlugin implements Listener {
 		cmd.setExecutor(zombieBomberCommand);
 	}
 
-	/**
-	 * Called when the plugin is disabled. Currently empty.
-	 */
-
 	@Override
-	public void onDisable() {}
+	public void onDisable() {
+		Game.stopGame();
+	}
 
 }
