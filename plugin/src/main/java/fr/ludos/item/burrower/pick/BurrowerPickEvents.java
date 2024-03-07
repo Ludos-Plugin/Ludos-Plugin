@@ -1,27 +1,25 @@
 package fr.ludos.item.burrower.pick;
 
-import javax.annotation.Nullable;
+import fr.ludos.Main;
+import fr.ludos.item.LevelItemEvents;
+import fr.ludos.role.BurrowerRole;
 
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-
-import fr.ludos.Main;
-import fr.ludos.item.ItemUtilities;
-import fr.ludos.item.LevelItemEvents;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerJoinEvent;
-
-import fr.ludos.role.BurrowerRole;
-
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+
 
 import java.util.List;
+import javax.annotation.Nullable;
 
 
 /**
@@ -106,6 +104,18 @@ public class BurrowerPickEvents extends LevelItemEvents<BurrowerPick, BurrowerPi
 	}
 
 	@EventHandler
+	public void onSwitchItem(PlayerItemHeldEvent event) {
+		Player player = event.getPlayer();
+
+		BurrowerPick pick = BurrowerPick.findIn(player.getInventory(), this::getItem);
+		if (pick == null) {
+			return;
+		}
+
+		pick.updateWielding(player.getInventory().getItem(event.getNewSlot()));
+	}
+
+	@EventHandler
 	public void onBlockBreak(BlockBreakEvent event) {
 		Player player = event.getPlayer();
 		ItemStack mainHandItem = player.getInventory().getItemInMainHand();
@@ -128,9 +138,8 @@ public class BurrowerPickEvents extends LevelItemEvents<BurrowerPick, BurrowerPi
 		}
 
 		BlockFace face = targetBlock.getFace(adjacentBlock);
-		int radius = pick.getLevel().getRadius();
 
-		pick.breakRadius(targetBlock.getLocation(), face, radius);
+		pick.breakRadius(targetBlock.getLocation(), face);
 	}
 
 	@Override

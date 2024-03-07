@@ -58,38 +58,25 @@ import java.util.Map;
  * @see java.util.Collections
  */
 
-public class BurrowingClaw extends SpecialItem {
+public class BurrowingShovel extends SpecialItem {
+
+	private static final int COOLDOWN_SECONDS = 20;
+	private static final int TUNNEL_LENGTH = 10;
 
 	public final static Map<Player, List<BlockState>> tunnelBlocks = new HashMap<>();
 
-	private int usages = 0;
 
-	private static final int TUNNEL_LENGTH = 20;
-	private static final int MAX_USAGES = 3;
-
-	public int getUsages() {
-		return usages;
-	}
-
-	public BurrowingClaw(ItemStack stack) throws IllegalArgumentException {
+	public BurrowingShovel(ItemStack stack) throws IllegalArgumentException {
 		super(stack);
-
-		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
-		if ( ! container.has(BurrowingClawEvents.getUsagesKey(), PersistentDataType.INTEGER) ) {
-			throw new IllegalArgumentException();
-		}
-
-		this.usages = getPersistentData(stack, BurrowingClawEvents.getUsagesKey(), PersistentDataType.INTEGER);
 	}
 
-	public BurrowingClaw(Player owner) {
-		this(new ItemStack(Material.RABBIT_FOOT), owner);
+	public BurrowingShovel(Player owner) {
+		this(new ItemStack(Material.IRON_SHOVEL), owner);
 	}
-	public BurrowingClaw(ItemStack stack, Player owner) {
+	public BurrowingShovel(ItemStack stack, Player owner) {
 		super(stack, owner);
-
-		setUsages(300);
 	}
+
 
 	public void digTunnel(Player player) {
 		List<Block> lastTwoTargetBlocks = player.getLastTwoTargetBlocks(null, 20);
@@ -107,10 +94,12 @@ public class BurrowingClaw extends SpecialItem {
 			currentLocation.add(face.getDirection().multiply(-1));
 		}
 
+		if (playerBlocks.size() == 0) {
+			return;
+		}
+
 		tunnelBlocks.put(player, playerBlocks);
 		player.setCooldown(getStack().getType(), 5);
-
-		// reduceUsage(player);
 	}
 
     private void tunnelBlock(Player player, Location location, List<BlockState> blockBuffer) {
@@ -144,29 +133,16 @@ public class BurrowingClaw extends SpecialItem {
 
 		tunnelBlocks.remove(player);
 
-		player.setCooldown(getStack().getType(), 600);
-	}
-
-	public void setUsages(int usages) {
-		ItemMeta meta = getStack().getItemMeta();
-
-		this.usages = usages;
-		meta.getPersistentDataContainer().set(BurrowingClawEvents.getUsagesKey(), PersistentDataType.INTEGER, usages);
-		getStack().setItemMeta(meta);
-	}
-
-
-	public void SetUsages(int usages) {
-
+		player.setCooldown(getStack().getType(), COOLDOWN_SECONDS * 20);
 	}
 
 	@Override
 	public NamespacedKey getOwnerKey() {
-		return BurrowingClawEvents.getOwnerKey();
+		return BurrowingShovelEvents.getOwnerKey();
 	}
 
 	@Override
 	protected String getName() {
-		return "Claw of Burrowing"; // TODO: Translate
+		return "Burrower's Shovel"; // TODO: Translate
 	}
 }

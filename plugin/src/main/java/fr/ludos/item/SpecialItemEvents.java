@@ -81,14 +81,14 @@ public abstract class SpecialItemEvents<T extends SpecialItem> implements Listen
 	}
 
 
-	private void updateItemInInventory(Player player) {
+	public void updateItemInInventory(Player player) {
         String roleId = getRoleId();
 		if ( roleId != null && ! Role.isPlayerRole(player, roleId) ) {
 			return;
 		}
 
 		Inventory inventory = player.getInventory();
-		if ( SpecialItem.containedIn(inventory, (item) -> getItem(item)) ) {
+		if ( SpecialItem.containedIn(inventory, this::getItem) ) {
 			return;
 		}
 

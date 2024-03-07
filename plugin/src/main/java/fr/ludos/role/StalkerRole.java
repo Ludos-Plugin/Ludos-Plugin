@@ -6,16 +6,6 @@ public class StalkerRole extends Role {
 		super(builder);
 	}
 
-	// @Override
-	// public void processCrafting(Player player) {}
-
-	// @Override
-	// public void processAbilities(Player player) {
-	//     // Passive Ability
-	//     utility.removeNameTag(player.getName());
-	//     // super.hidePlayerName();
-	// }
-
 
 	public static class Builder extends Role.Builder {
 

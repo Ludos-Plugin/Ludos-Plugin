@@ -25,7 +25,7 @@ public abstract class LevelItemEvents<T extends LevelItem<TLevels>, TLevels exte
 			return;
 		}
 
-		T specialItem = SpecialItem.findIn(player.getInventory(), (item) -> getItem(item));
+		T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
 		if ( specialItem == null ) {
 			return;
 		}

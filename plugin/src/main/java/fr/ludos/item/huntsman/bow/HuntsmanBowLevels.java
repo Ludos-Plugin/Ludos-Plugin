@@ -63,7 +63,7 @@ public enum HuntsmanBowLevels implements SpecialItemLevels {
 
 	@Override
 	public HuntsmanBowLevels getPrevious() {
-		Integer index = index() - 1;
+		int index = index() - 1;
 		index = Math.max(0, index);
 		return values()[index];
 	}

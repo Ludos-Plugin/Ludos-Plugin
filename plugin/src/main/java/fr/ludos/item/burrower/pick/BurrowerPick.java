@@ -1,28 +1,29 @@
 package fr.ludos.item.burrower.pick;
 
+import fr.ludos.item.LevelItem;
+import fr.ludos.item.ItemUtilities;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
 
-import org.bukkit.Bukkit;
+import org.apache.commons.lang3.function.TriFunction;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
-import fr.ludos.item.LevelItem;
 
-import fr.ludos.item.ItemUtilities;
-import fr.ludos.item.LevelItem;
 
 
 /**
@@ -104,31 +105,53 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	public void setHammerMode(Boolean value) {
 		ItemMeta meta = getStack().getItemMeta();
 
-		this.hammerMode = value;
+		hammerMode = value;
 		meta.getPersistentDataContainer().set(BurrowerPickEvents.getModeKey(), PersistentDataType.INTEGER, value ? 1 : 0);
 
 		getStack().setItemMeta(meta);
+
+		updateWielding();
 
 		updateLore();
 		updateName();
 	}
 
-	public void breakRadius(Location location, BlockFace face, Integer radius) {
-		BiFunction<Integer, Integer, Vector> vectorGetter =
-			face == BlockFace.EAST || face == BlockFace.WEST ? (x, y) -> new Vector(0, x, y) :
-			face == BlockFace.UP || face == BlockFace.DOWN ? (x, y) -> new Vector(x, 0, y) :
-			face == BlockFace.NORTH || face == BlockFace.SOUTH ? (x, y) -> new Vector(x, y, 0) :
-			(x, y) -> new Vector();
+	public void updateWielding() {
+		updateWielding(getOwner().getInventory().getItemInMainHand());
+	}
 
+	public void updateWielding(ItemStack item) {
+		Boolean isInHand = item.equals(getStack());
+		if (! hammerMode || ! isInHand) {
+			getOwner().removePotionEffect(PotionEffectType.SLOW_DIGGING);
+			return;
+		}
 
-		for (int xOffset = -radius; xOffset <= radius; xOffset++) {
-			for (int zOffset = -radius; zOffset <= radius; zOffset++) {
-				Vector vector = vectorGetter.apply(xOffset, zOffset);
-				Block block = location.getBlock().getRelative(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+		getOwner().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, Integer.MAX_VALUE, 0, false, false));
+	}
 
-				if (ItemUtilities.isBreakable(block) && block.isPreferredTool(getStack())) {
-					awardBreak(getOwner(), block);
-					block.breakNaturally(getStack());
+	public void breakRadius(Location location, BlockFace face) {
+		TriFunction<Integer, Integer, Integer, Vector> vectorGetter =
+			face == BlockFace.EAST || face == BlockFace.WEST ? (x, y, z) -> new Vector(z, x, y) :
+			face == BlockFace.UP || face == BlockFace.DOWN ? (x, y, z) -> new Vector(x, z, y) :
+			face == BlockFace.SOUTH || face == BlockFace.NORTH ? (x, y, z) -> new Vector(x, y, z) :
+			(x, y, z) -> new Vector();
+
+		Boolean isDepthAxisPositive = face == BlockFace.EAST || face == BlockFace.UP || face == BlockFace.SOUTH;
+
+		int radius = getLevel().getRadius();
+		int depth = getLevel().getDepth();
+
+		for (int depthOffset = 0; depthOffset <= depth; depthOffset++) {
+			for (int xOffset = -radius; xOffset <= radius; xOffset++) {
+				for (int yOffset = -radius; yOffset <= radius; yOffset++) {
+					Vector vector = vectorGetter.apply(xOffset, yOffset, isDepthAxisPositive ? -depthOffset : depthOffset);
+					Block block = location.getBlock().getRelative(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+
+					if (ItemUtilities.isBreakable(block) && block.isPreferredTool(getStack())) {
+						awardBreak(getOwner(), block);
+						block.breakNaturally(getStack());
+					}
 				}
 			}
 		}
@@ -164,7 +187,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		if (hammerMode == null) {
 			hammerMode = false;
 		}
-		return "Burrower's Pick (" + (hammerMode ? "Hammer" : "Pickaxe") + ")"; // TODO: Translate
+		return "Burrower's Pick (" + (hammerMode ? ChatColor.RED + "Hammer" : ChatColor.AQUA + "Pickaxe") + ChatColor.RESET.toString() + ChatColor.WHITE + ")"; // TODO: Translate
 	}
 	@Override
 	public List<String> getLore() {
@@ -173,11 +196,14 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 			lore = new ArrayList<String>();
 		}
 
-		Integer size = 1 + getLevel().getRadius() * 2;
+		int size = 1 + getLevel().getRadius() * 2;
+		int depth = getLevel().getDepth() + 1;
 		String modeFormatted = ChatColor.GRAY + "Mode: " + ChatColor.YELLOW + (hammerMode ? "Hammer Mode" : "Pickaxe Mode");
 		String sizeFormatted = ChatColor.GRAY + "Size: " + ChatColor.YELLOW + (size + "x" + size);
+		String depthFormatted = ChatColor.GRAY + "Depth: " + ChatColor.YELLOW + (depth);
 		lore.add(modeFormatted);
 		lore.add(sizeFormatted);
+		lore.add(depthFormatted);
 
 		return lore;
 	}
@@ -217,22 +243,23 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		setHammerMode(! hammerMode);
 
 		Player owner = getOwner();
-		Integer radius = 1 + getLevel().getRadius() * 2;
+		// int radius = 1 + getLevel().getRadius() * 2;
 
-		String pickModeTitle = hammerMode // TODO: Translate!
-			? ChatColor.GREEN + "Hammer"
-			: ChatColor.RED + "Pickaxe";
-		String pickModeSubtitle = hammerMode // TODO: Translate!
-			? radius + "x" + radius
-			: "";
+		// String pickModeTitle = hammerMode // TODO: Translate!
+		// 	? ChatColor.GREEN + "Hammer"
+		// 	: ChatColor.RED + "Pickaxe";
+		// String pickModeSubtitle = hammerMode // TODO: Translate!
+		// 	? radius + "x" + radius
+		// 	: "";
 
-		owner.sendTitle(pickModeTitle, pickModeSubtitle, 10, 20, 10);
+		// owner.sendTitle(pickModeTitle, pickModeSubtitle, 10, 20, 10);
 		owner.playSound(owner.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 0.25f, 1);
 	}
 
 
-	public static double getOreReward(Block ore){
-		switch (ore.getType()) {
+	public static double getOreReward(Block ore) {
+		Material material = ore.getType();
+		switch (material) {
 			case ANCIENT_DEBRIS:
 				return 60;
 			case EMERALD_ORE:
@@ -255,10 +282,8 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 				return 10;
 			case COPPER_ORE:
 				return 5;
-			case STONE:
-				return 1;
 			default:
-				return 0;
+				return material.getHardness();
 		}
 	}
 }

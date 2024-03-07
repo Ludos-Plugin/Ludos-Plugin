@@ -9,7 +9,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -108,7 +107,7 @@ public abstract class SpecialItem {
 	public void updateName() {
 		ItemStack stack = getStack();
 		ItemMeta meta = stack.getItemMeta();
-		meta.setDisplayName(ChatColor.RESET.toString() + ChatColor.BOLD + getName());
+		meta.setDisplayName(ChatColor.RESET.toString() + ChatColor.WHITE + getName());
 		stack.setItemMeta(meta);
 	}
 	public void updateLore() {

@@ -41,18 +41,6 @@ public class HuntsmanRole extends Role {
 		// HandlerList.unregisterAll(spearEvents);
 	}
 
-	// @EventHandler
-	// public void onPlayerRespawn(PlayerRespawnEvent event) {
-	//     ItemStack crossBowHunter = new ItemStack(Material.CROSSBOW, 1);
-	//     ItemMeta crossBowMeta = crossBowHunter.getItemMeta();
-	//     crossBowMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-	//     ItemStack arrow = new ItemStack(Material.ARROW, 1);
-	// }
-
-
-
-
-
 
 	// @EventHandler
 	// public void upgradeStuff(Player player) {

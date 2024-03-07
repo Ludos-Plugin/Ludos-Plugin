@@ -3,29 +3,20 @@ package fr.ludos.item.burrower.digtool;
 import org.bukkit.NamespacedKey;
 
 import fr.ludos.Main;
-import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.SpecialItemEvents;
 import fr.ludos.role.BurrowerRole;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.event.block.Action;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -57,16 +48,12 @@ import org.bukkit.potion.PotionEffectType;
  * @see java.util.Collections
  */
 
-public class BurrowingClawEvents extends SpecialItemEvents<BurrowingClaw> {
+public class BurrowingShovelEvents extends SpecialItemEvents<BurrowingShovel> {
 	private static final String OWNER_NAMESPACE_KEY = "ludos_miner_claw_owner";
 	private static final String USAGES_NAMESPACE_KEY = "ludos_miner_claw_usages";
 
 	private static NamespacedKey ownerKey = null;
 	private static NamespacedKey usagesKey = null;
-
-	// private static Map<Player, Long> messageToggle = new HashMap<>();
-
-	// private final Map<Player, Integer> usages = new HashMap<>();
 
 
 
@@ -79,7 +66,7 @@ public class BurrowingClawEvents extends SpecialItemEvents<BurrowingClaw> {
 	}
 
 
-	public BurrowingClawEvents() {
+	public BurrowingShovelEvents() {
 		Main plugin = Main.getInstance();
 		ownerKey = new NamespacedKey(plugin, OWNER_NAMESPACE_KEY);
 		usagesKey = new NamespacedKey(plugin, USAGES_NAMESPACE_KEY);
@@ -101,14 +88,14 @@ public class BurrowingClawEvents extends SpecialItemEvents<BurrowingClaw> {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-		player.getInventory().addItem(new BurrowingClaw(player).getStack());
+		player.getInventory().addItem(new BurrowingShovel(player).getStack());
 	}
 
-	private void sendHUDIcon(Player player) {
-		if(player.hasPotionEffect(PotionEffectType.LUCK)){
+	private void sendHUDIcon(Player player, Boolean hudActive) {
+		if (! hudActive){
 			player.removePotionEffect(PotionEffectType.LUCK);
-		}else{
-			player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, Integer.MAX_VALUE, 1, true, true));
+		} else {
+			player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, Integer.MAX_VALUE, 1, false, true));
 		}
     }
 
@@ -122,7 +109,7 @@ public class BurrowingClawEvents extends SpecialItemEvents<BurrowingClaw> {
 		Player player = event.getPlayer();
 		ItemStack mainItem = event.getItem();
 
-		BurrowingClaw claw = getItem(mainItem);
+		BurrowingShovel claw = getItem(mainItem);
 		if (claw == null) {
 			return;
 		}
@@ -131,13 +118,14 @@ public class BurrowingClawEvents extends SpecialItemEvents<BurrowingClaw> {
 			return;
 		}
 
-		List<BlockState> playerBlocks = BurrowingClaw.tunnelBlocks.get(player);
+		List<BlockState> playerBlocks = BurrowingShovel.tunnelBlocks.get(player);
 
-		sendHUDIcon(player);
 
 		if (playerBlocks != null) {
+			sendHUDIcon(player, false);
 			claw.revertTunnel(player);
 		} else {
+			sendHUDIcon(player, true);
 			claw.digTunnel(player);
 		}
 	}
@@ -152,17 +140,17 @@ public class BurrowingClawEvents extends SpecialItemEvents<BurrowingClaw> {
 
 	@Override
 	@Nullable
-	protected BurrowingClaw getItem(ItemStack stack) {
+	protected BurrowingShovel getItem(ItemStack stack) {
 		try {
-			BurrowingClaw bow = new BurrowingClaw(stack);
+			BurrowingShovel bow = new BurrowingShovel(stack);
 			return bow;
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
 	}
 	@Override
-	protected BurrowingClaw createItem(Player owner) {
-		return new BurrowingClaw(owner);
+	protected BurrowingShovel createItem(Player owner) {
+		return new BurrowingShovel(owner);
 	}
 
 	@Override

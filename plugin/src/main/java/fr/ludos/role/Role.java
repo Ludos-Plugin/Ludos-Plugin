@@ -2,12 +2,12 @@ package fr.ludos.role;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -27,16 +27,16 @@ public abstract class Role implements Listener {
 
 	private static final String rolesKey = "PlayerRoles";
 
+	public static Map<String, Builder> getRegistered() {
+		return registered;
+	}
 	private static Map<String, Builder> registered = new HashMap<String, Builder>();
+
+	public static Map<String, String> getPlayerRoles() {
+		return playerRoles;
+	}
 	private static Map<String, String> playerRoles = new HashMap<String, String>();
 
-
-	public static Map<String, Builder> getRegistered() {
-		return Role.registered;
-	}
-	public static Map<String, String> getPlayerRoles() {
-		return Role.playerRoles;
-	}
 
 	/**
 	 * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
@@ -65,6 +65,13 @@ public abstract class Role implements Listener {
 		Role.registered.put(constructor.getId(), constructor);
 	}
 
+	public static List<Player> getPlayersOfRole(String roleId) {
+		return Role.getPlayerRoles().entrySet().stream()
+			.filter(entry -> (entry.getValue().equals(roleId)))
+			.map(entry -> Bukkit.getPlayerExact(entry.getKey()))
+			.collect(Collectors.toList());
+	}
+
 	@Nullable
 	public static Builder getRole(HumanEntity player) {
 		return registered.getOrDefault(
@@ -83,7 +90,7 @@ public abstract class Role implements Listener {
 
 		playerRoles.put(player.getName(), roleId);
 		player.sendMessage("Your role is now " + roleId);
-		
+
 		Main main = Main.getInstance();
 		main.getConfig().set(rolesKey + '.' + player.getName(), roleId);
 		main.saveConfig();

@@ -1,24 +1,20 @@
 package fr.ludos.role;
 
 import fr.ludos.Main;
-import fr.ludos.item.burrower.pick.BurrowerPick;
 import fr.ludos.item.burrower.pick.BurrowerPickEvents;
-import fr.ludos.item.burrower.digtool.BurrowingClawEvents;
+import fr.ludos.item.burrower.digtool.BurrowingShovelEvents;
 
 import org.bukkit.ChatColor;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.generator.structure.StructureType;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.CraftingInventory;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -29,13 +25,17 @@ import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.StructureSearchResult;
 
-import java.util.Map;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class BurrowerRole extends Role {
 
 	private final BurrowerPickEvents pickEvents;
-	private final BurrowingClawEvents clawEvents;
+	private final BurrowingShovelEvents clawEvents;
+
+	public static final String id = "burrower";
+
+	public static List<Player> burrowers;
 
 
 	public BurrowerRole(Builder builder) {
@@ -43,13 +43,21 @@ public class BurrowerRole extends Role {
 		PluginManager manager = Bukkit.getPluginManager();
 
 		startPassiveGain();
-		getAllBurrower();
+		burrowers = Role.getPlayerRoles().entrySet().stream()
+			.filter(entry -> (entry.getValue().equals(id)))
+			.map(entry -> Bukkit.getPlayerExact(entry.getKey()))
+			.collect(Collectors.toList());
 
 		pickEvents = new BurrowerPickEvents();
 		manager.registerEvents((Listener)pickEvents, Main.getInstance());
 
-		clawEvents = new BurrowingClawEvents();
+		clawEvents = new BurrowingShovelEvents();
 		manager.registerEvents((Listener)clawEvents, Main.getInstance());
+
+		for (Player player : burrowers) {
+			pickEvents.updateItemInInventory(player);
+			clawEvents.updateItemInInventory(player);
+		}
 	}
 
 	@Override
@@ -60,42 +68,12 @@ public class BurrowerRole extends Role {
 		HandlerList.unregisterAll(clawEvents);
 	}
 
-	public static final String id = "burrower";
-
-	public static ArrayList<Player> burrowers = new ArrayList<>();
-
-	public ArrayList<Player> getAllBurrower(){
-		Map<String, String> playerRoles = Role.getPlayerRoles();
-
-		for (Map.Entry<String, String> entry : playerRoles.entrySet()) {
-			String playerName = entry.getKey();
-			String role = entry.getValue();
-
-			if (role != null && role.equals(id)) {
-				Player player = Bukkit.getPlayerExact(playerName);
-				burrowers.add(player);
-			}
-		}
-
-        return burrowers;
-	}
-
-	public boolean burrowerRole(Player player){
-		String role = Role.getPlayerRoles().get(player.getName());
-
-		if(role == null || !role.equals(id)){
-			return false;
-		}
-
-		return true;
-	}
-
 	@EventHandler
 	public void onPlayerChat(AsyncPlayerChatEvent event) {
 		Player player = event.getPlayer();
 		String message = event.getMessage();
 
-		if (message.startsWith("radar") && burrowerRole(player)) {
+		if (message.startsWith("radar") && Role.isPlayerRole(player, id)) {
 			radar(player);
 		}
 	}
@@ -108,14 +86,14 @@ public class BurrowerRole extends Role {
 
 			int distanceFromThePlayer = location.getLocation().getBlockZ() - player.getLocation().getBlockZ();
 
-			if (distanceFromThePlayer < maxDistanceDetection){
+			if (distanceFromThePlayer < maxDistanceDetection) {
 
 				player.sendMessage(ChatColor.GREEN + "Mineshaft détecté à : " +
 					" x : " + location.getLocation().getX() +
 					", y : " + location.getLocation().getY() +
 					", z : " + location.getLocation().getZ());
 
-			}else{
+			} else {
 				player.sendMessage(ChatColor.RED + "Aucun mineshaft détecté à proximité.");
 			}
 
@@ -176,16 +154,13 @@ public class BurrowerRole extends Role {
 	}
 
 	private void giveRandomOreToPlayers() {
-
 		for (Player player : burrowers) {
-
-			if (player != null){
-				var randomOre = RandomOre();
-				player.getInventory().addItem(new ItemStack(randomOre));
+			if (player == null) {
+				return;
 			}
-
+			var randomOre = RandomOre();
+			player.getInventory().addItem(new ItemStack(randomOre));
 		}
-
 	}
 
 	private Material RandomOre() {
