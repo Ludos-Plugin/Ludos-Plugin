@@ -19,12 +19,10 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.Bukkit;
 
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.StructureSearchResult;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class BurrowerRole extends Role {
 
@@ -35,7 +33,7 @@ public class BurrowerRole extends Role {
 
 	public static List<Player> burrowers;
 
-	private BukkitTask passiveResourcesTask;
+	// private BukkitTask passiveResourcesTask;
 
 
 	public BurrowerRole(Builder builder) {

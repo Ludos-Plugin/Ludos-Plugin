@@ -56,7 +56,7 @@ import java.util.UUID;
  * @see java.util.Collections
  */
 
-public abstract class LevelItem<TLevel extends SpecialItemLevels> extends SpecialItem {
+public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extends SpecialItem {
 	public static final String LEVEL = "level";
 	private NamespacedKey levelKey = new NamespacedKey(Main.getInstance(), LEVEL);
 
