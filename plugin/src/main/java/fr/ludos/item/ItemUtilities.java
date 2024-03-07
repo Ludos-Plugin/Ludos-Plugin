@@ -1,9 +1,6 @@
 package fr.ludos.item;
 
-import java.util.HashMap;
-
 import org.bukkit.block.Block;
-import org.bukkit.entity.HumanEntity;
 
 public class ItemUtilities {
 

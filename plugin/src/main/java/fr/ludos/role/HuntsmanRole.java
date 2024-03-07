@@ -1,9 +1,10 @@
 package fr.ludos.role;
 
-import fr.ludos.item.huntsman.bow.HuntsmanBowEvents;
-// import fr.ludos.item.huntsman.crossbow.HuntsmanCrossbowEvents;
-// import fr.ludos.item.huntsman.spear.HuntsmanSpearEvents;
+// import fr.ludos.item.huntsman.crossbow.HuntsmanCrossbow;
+// import fr.ludos.item.huntsman.spear.HuntsmanSpear;
 import fr.ludos.Main;
+import fr.ludos.item.huntsman.HuntsmanBow;
+
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.event.HandlerList;
@@ -12,9 +13,9 @@ import org.bukkit.plugin.PluginManager;
 
 public class HuntsmanRole extends Role {
 
-	private final HuntsmanBowEvents bowEvents;
-	// private final HuntsmanCrossbowEvents crossbowEvents;
-	// private final HuntsmanSpearEvents spearEvents;
+	private final HuntsmanBow.Events bowEvents;
+	// private final HuntsmanCrossbow.Events crossbowEvents;
+	// private final HuntsmanSpear.Events spearEvents;
 
 	public static final String id = "huntsman";
 
@@ -23,14 +24,14 @@ public class HuntsmanRole extends Role {
 		super(builder);
 		PluginManager manager = Bukkit.getPluginManager();
 
-		bowEvents = new HuntsmanBowEvents();
+		bowEvents = new HuntsmanBow.Events();
 		manager.registerEvents((Listener)bowEvents, Main.getInstance());
 
-		// bowEvents = new HuntsmanCrossbowEvents();
-		// manager.registerEvents((Listener)bowEvents, Main.getInstance());
+		// crossbowEvents = new HuntsmanCrossbow.Events();
+		// manager.registerEvents((Listener)crossbowEvents, Main.getInstance());
 
-		// bowEvents = new HuntsmanSpearEvents();
-		// manager.registerEvents((Listener)bowEvents, Main.getInstance());
+		// spearEvents = new HuntsmanSpear.Events();
+		// manager.registerEvents((Listener)spearEvents, Main.getInstance());
 	}
 
 	@Override

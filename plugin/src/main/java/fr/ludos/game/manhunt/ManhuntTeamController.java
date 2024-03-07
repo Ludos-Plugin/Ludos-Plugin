@@ -94,7 +94,7 @@ public final class ManhuntTeamController extends TeamController implements Liste
 		if (
 			preyTeam.hasEntry(event.getEntity().getName())
 		) {
-			Bukkit.broadcastMessage("Prey" + player.getName() + "Slain!");
+			Bukkit.broadcastMessage("Prey " + player.getName() + " Slain!");
 			preyTeam.removeEntry(player.getName());
 		}
 

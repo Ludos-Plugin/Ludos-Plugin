@@ -1,38 +1,36 @@
 package fr.ludos.game.manhunt;
 
-import java.util.Arrays;
-import java.util.List;
+import fr.ludos.item.SpecialItem;
 
-import org.bukkit.*;
+
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import org.bukkit.NamespacedKey;
+import java.util.List;
+import java.util.ArrayList;
+import javax.annotation.Nullable;
 
-import fr.ludos.Main;
-import fr.ludos.item.SpecialItem;
+
 
 public class ManhuntCompass extends SpecialItem {
-	private static final String OWNER_NAMESPACE_KEY = "ludos_hunter_compass_owner";
+
+	public ManhuntCompass(ItemStack item) {
+		super(item);
+	}
 
 	public ManhuntCompass(Player owner) {
 		super(new ItemStack(Material.COMPASS), owner);
 	}
 
-
-	@Override
-	public NamespacedKey getOwnerKey() {
-		return new NamespacedKey(Main.getInstance(), OWNER_NAMESPACE_KEY);
-	}
-
 	@Override
 	public List<String> getLore() {
-		return Arrays.asList("Toute les 3 min donne la position de la proie");
+		return new ArrayList<String>(){{ add("Every three minutes, the position of prey is revealed through the compass."); }};
 	}
 
 	@Override
 	public String getName() {
-		return "Boussole de Chasseur";
+		return "Hunter's Compass";
 	}
 
 	// @Nullable
@@ -40,4 +38,46 @@ public class ManhuntCompass extends SpecialItem {
 	// 	if ()
 
 	// }
+
+	public static class Events extends SpecialItem.Events<ManhuntCompass> {
+
+		public Events() {
+			super(null);
+		}
+
+		@Override
+		@Nullable
+		protected ManhuntCompass getItem(ItemStack stack) {
+			try {
+				ManhuntCompass compass = new ManhuntCompass(stack);
+				return compass;
+			} catch (IllegalArgumentException e) {
+				return null;
+			}
+		}
+		@Override
+		protected ManhuntCompass createItem(Player owner) {
+			return new ManhuntCompass(owner);
+		}
+
+		// @EventHandler
+		// public void handlePlayerDeath(PlayerDeathEvent event) {
+		//     Player player = event.getEntity();
+		//     ItemStack compass = ManhuntCompass.getPersistentCompass(player);
+		//     //pense pas forcément pertinant de préciser qe tu la perd si tu la regagne instannte quand tu respawn
+		//     if (compass != null) {
+		//         player.sendMessage(ChatColor.RED + "Votre Boussole Persistante a été détruite car vous êtes mort.");
+		//         ManhuntCompass.removePersistentCompass(player);
+		//     }
+		// }
+
+		// @EventHandler
+		// public void handlePlayerRespawn(PlayerRespawnEvent event) {
+		//     Player player = event.getPlayer();
+
+		//     if (ManhuntCompass.hasPersistentCompass(player)) {
+		//         player.sendMessage(ChatColor.GREEN + "Vous avez récupéré votre Boussole Persistante après la résurrection!");
+		//     }
+		// }
+	}
 }

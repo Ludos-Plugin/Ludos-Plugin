@@ -1,6 +1,8 @@
 package fr.ludos.item;
 
-import org.bukkit.persistence.*;
+import fr.ludos.Main;
+import fr.ludos.role.Role;
+
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -8,9 +10,27 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.Material;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.Event.Result;
+import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerDropItemEvent;
+
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+
+
 
 import java.util.List;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 
 
 /**
@@ -49,6 +69,9 @@ import java.util.function.Function;
 
 public abstract class SpecialItem {
 
+	public static final String OWNER = "owner";
+	private NamespacedKey ownerKey = new NamespacedKey(Main.getInstance(), OWNER);
+
 	private final ItemStack stack;
 
 	private final Player owner;
@@ -68,9 +91,6 @@ public abstract class SpecialItem {
 	protected abstract String getName();
 
 
-	public abstract NamespacedKey getOwnerKey();
-
-
 	public SpecialItem(ItemStack stack) throws IllegalArgumentException {
 		if (stack == null) {
 			throw new IllegalArgumentException();
@@ -80,15 +100,15 @@ public abstract class SpecialItem {
 			throw new IllegalArgumentException();
 		}
 		PersistentDataContainer container = meta.getPersistentDataContainer();
-		if ( ! container.has(getOwnerKey(), PersistentDataType.STRING) ) {
+		if ( ! container.has(ownerKey, PersistentDataType.STRING) ) {
 			throw new IllegalArgumentException();
 		}
 
 		this.stack = stack;
-		this.owner = LevelItem.getOwnerFromItem(stack, getOwnerKey());
+		this.owner = LevelItem.getOwnerFromItem(stack, ownerKey);
 	}
 
-	public SpecialItem(ItemStack stack, Player owner) {
+	protected SpecialItem(ItemStack stack, Player owner) {
 		this.stack = stack;
 		this.owner = owner;
 
@@ -99,7 +119,7 @@ public abstract class SpecialItem {
 		meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
-		container.set(getOwnerKey(), PersistentDataType.STRING, owner.getUniqueId().toString());
+		container.set(ownerKey, PersistentDataType.STRING, owner.getUniqueId().toString());
 
 		stack.setItemMeta(meta);
 	}
@@ -160,5 +180,83 @@ public abstract class SpecialItem {
 
 	protected static <T, Z> Z getPersistentData(ItemStack item, NamespacedKey key, PersistentDataType<T, Z> type) {
 		return item.getItemMeta().getPersistentDataContainer().get(key, type);
+	}
+
+
+
+	public static abstract class Events<T extends SpecialItem> implements Listener {
+		@Nullable
+		protected abstract T getItem(ItemStack stack);
+
+		protected abstract T createItem(Player owner);
+
+		protected final String roleId;
+
+		public Events(@Nullable String roleId) {
+			this.roleId = roleId;
+		}
+
+
+		@EventHandler
+		public void onPlayerDropItem(PlayerDropItemEvent event) {
+			ItemStack item = event.getItemDrop().getItemStack();
+
+			if (getItem(item) != null) {
+				event.setCancelled(true);
+			}
+		}
+
+		@EventHandler
+		public void onInventoryClickItem(InventoryClickEvent event) {
+			ItemStack item = event.getCursor();
+			if (item.getType() == Material.AIR) {
+				item = event.getCurrentItem();
+			}
+
+			if (getItem(item) == null) {
+				return;
+			}
+
+			if ( event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY && event.getInventory().getType() != InventoryType.PLAYER/*  || isAnotherInventory */ ) {
+				event.setResult(Result.DENY);
+			}
+		}
+
+		@EventHandler
+		public void onItemSpawn(ItemSpawnEvent event) {
+			ItemStack item = event.getEntity().getItemStack();
+
+			if (getItem(item) == null) {
+				return;
+			}
+
+			event.setCancelled(true);
+		}
+
+
+		@EventHandler
+		public void onPlayerJoin(PlayerJoinEvent event) {
+			updateItemInInventory(event.getPlayer());
+		}
+
+		@EventHandler
+		public void onPlayerRespawn(PlayerRespawnEvent event)  {
+			updateItemInInventory(event.getPlayer());
+		}
+
+
+		public void updateItemInInventory(Player player) {
+			if ( roleId != null && ! Role.isPlayerRole(player, roleId) ) {
+				return;
+			}
+
+			Inventory inventory = player.getInventory();
+			if ( SpecialItem.containedIn(inventory, this::getItem) ) {
+				return;
+			}
+
+			player.getInventory().addItem(createItem(player).getStack());
+		}
+
 	}
 }

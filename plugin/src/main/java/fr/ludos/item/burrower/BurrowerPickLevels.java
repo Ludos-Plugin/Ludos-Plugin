@@ -1,4 +1,4 @@
-package fr.ludos.item.burrower.pick;
+package fr.ludos.item.burrower;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,7 +13,7 @@ import org.bukkit.enchantments.Enchantment;
 
 import fr.ludos.item.SpecialItemLevels;
 
-public enum BurrowerPickLevels implements SpecialItemLevels {
+public enum BurrowerPickLevels implements SpecialItemLevels<BurrowerPickLevels> {
 	WOODEN      (Material.WOODEN_PICKAXE,    25,    1, 0, Collections.emptyMap()),
 	STONE       (Material.STONE_PICKAXE,     37,    1, 0, Collections.emptyMap()),
 	STONE1      (Material.STONE_PICKAXE,     55,    1, 0, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 1); }}),

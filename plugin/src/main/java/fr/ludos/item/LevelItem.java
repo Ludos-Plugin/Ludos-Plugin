@@ -1,15 +1,23 @@
 package fr.ludos.item;
 
 import org.bukkit.persistence.*;
+
+import fr.ludos.Main;
+import fr.ludos.role.Role;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,15 +57,16 @@ import java.util.UUID;
  */
 
 public abstract class LevelItem<TLevel extends SpecialItemLevels> extends SpecialItem {
+	public static final String LEVEL = "level";
+	private NamespacedKey levelKey = new NamespacedKey(Main.getInstance(), LEVEL);
+
+	public static final String XP = "xp";
+	private NamespacedKey xpKey = new NamespacedKey(Main.getInstance(), XP);
 
 	private static final String MAX_LVL_LABEL = "MAX";
 
 	private TLevel level;
 	private double xp;
-
-
-	public abstract NamespacedKey getLvlKey();
-	public abstract NamespacedKey getXpKey();
 
 
 	public TLevel getLevel() {
@@ -74,14 +83,14 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels> extends Specia
 
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 		if (
-			! container.has(getLvlKey(), PersistentDataType.INTEGER) ||
-			! container.has(getXpKey(), PersistentDataType.DOUBLE)
+			! container.has(levelKey, PersistentDataType.INTEGER) ||
+			! container.has(xpKey, PersistentDataType.DOUBLE)
 		) {
 			throw new IllegalArgumentException();
 		}
 
-		this.level = convertToLevel(getLvlFromItem(stack, getLvlKey()));
-		this.xp = getXpFromItem(stack, getXpKey());
+		this.level = convertToLevel(getLvlFromItem(stack, levelKey));
+		this.xp = getXpFromItem(stack, xpKey);
 	}
 
 	public LevelItem(ItemStack stack, Player owner, TLevel level) {
@@ -116,7 +125,7 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels> extends Specia
 		ItemMeta meta = getStack().getItemMeta();
 
 		this.level = level;
-		meta.getPersistentDataContainer().set(getLvlKey(), PersistentDataType.INTEGER, level.index());
+		meta.getPersistentDataContainer().set(levelKey, PersistentDataType.INTEGER, level.index());
 		getStack().setItemMeta(meta);
 	}
 
@@ -133,7 +142,7 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels> extends Specia
 		ItemMeta meta = getStack().getItemMeta();
 
 		this.xp = value;
-		meta.getPersistentDataContainer().set(getXpKey(), PersistentDataType.DOUBLE, xp);
+		meta.getPersistentDataContainer().set(xpKey, PersistentDataType.DOUBLE, xp);
 		getStack().setItemMeta(meta);
 
 		updateLore();
@@ -165,5 +174,45 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels> extends Specia
 
 		lore.add(xpFormatted);
 		return lore;
+	}
+
+
+	public static abstract class Events<T extends LevelItem<TLevels>, TLevels extends SpecialItemLevels<TLevels>> extends SpecialItem.Events<T> {
+
+		protected final TLevels baseLevel;
+
+		public Events(String roleId, TLevels baseLevel) {
+			super(roleId);
+			this.baseLevel = baseLevel;
+		}
+
+		private Map<String, TLevels> deadPlayerLevels = new HashMap<>();
+
+		protected abstract T createItem(Player owner, TLevels level);
+
+		@EventHandler
+		public void onPlayerDeath(PlayerDeathEvent event) {
+			Player player = event.getEntity();
+			if ( roleId != null && ! Role.isPlayerRole(player, roleId) ) {
+				return;
+			}
+
+			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
+			if ( specialItem == null ) {
+				return;
+			}
+
+			deadPlayerLevels.put( player.getName(), specialItem.getLevel().getPrevious() );
+		}
+
+		@Override
+		protected final T createItem(Player owner) {
+			TLevels level = baseLevel;
+			if (owner != null && deadPlayerLevels.containsKey(owner.getName())) {
+				level = deadPlayerLevels.get(owner.getName());
+			}
+
+			return createItem(owner, level);
+		}
 	}
 }

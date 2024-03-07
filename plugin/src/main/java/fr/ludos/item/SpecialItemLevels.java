@@ -1,9 +1,9 @@
 package fr.ludos.item;
 
-public interface SpecialItemLevels {
+public interface SpecialItemLevels<T extends SpecialItemLevels<T>> {
 	public int index();
 	public double getXpThreshold();
 	public boolean isMax();
-	public <T extends SpecialItemLevels> T getPrevious();
-	public <T extends SpecialItemLevels> T getNext();
+	public T getPrevious();
+	public T getNext();
 }

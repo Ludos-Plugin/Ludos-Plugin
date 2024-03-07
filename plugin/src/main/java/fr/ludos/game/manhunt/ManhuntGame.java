@@ -37,7 +37,7 @@ public class ManhuntGame extends Game {
 	private Scoreboard scoreboard;
 	private ManhuntTeamController teamController;
 
-	private ManhuntCompassEvents compassEvents;
+	private ManhuntCompass.Events compassEvents;
 	private ManhuntTimer timer;
 
 	public Scoreboard getScoreboard() {
@@ -55,7 +55,7 @@ public class ManhuntGame extends Game {
 		timer = new ManhuntTimer(this);
 		manager.registerEvents(timer, Main.getInstance());
 
-		compassEvents = new ManhuntCompassEvents();
+		compassEvents = new ManhuntCompass.Events();
 		manager.registerEvents(compassEvents, Main.getInstance());
 
 

@@ -1,8 +1,8 @@
 package fr.ludos.role;
 
 import fr.ludos.Main;
-import fr.ludos.item.burrower.pick.BurrowerPickEvents;
-import fr.ludos.item.burrower.digtool.BurrowingShovelEvents;
+import fr.ludos.item.burrower.BurrowerPick;
+import fr.ludos.item.burrower.BurrowerShovel;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -13,16 +13,14 @@ import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.generator.structure.StructureType;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.Bukkit;
 
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.StructureSearchResult;
 
 import java.util.List;
@@ -30,33 +28,39 @@ import java.util.stream.Collectors;
 
 public class BurrowerRole extends Role {
 
-	private final BurrowerPickEvents pickEvents;
-	private final BurrowingShovelEvents clawEvents;
+	private final BurrowerPick.Events pickEvents;
+	private final BurrowerShovel.Events shovelEvents;
 
 	public static final String id = "burrower";
 
 	public static List<Player> burrowers;
+
+	private BukkitTask passiveResourcesTask;
 
 
 	public BurrowerRole(Builder builder) {
 		super(builder);
 		PluginManager manager = Bukkit.getPluginManager();
 
-		startPassiveGain();
-		burrowers = Role.getPlayerRoles().entrySet().stream()
-			.filter(entry -> (entry.getValue().equals(id)))
-			.map(entry -> Bukkit.getPlayerExact(entry.getKey()))
-			.collect(Collectors.toList());
+		burrowers = Role.getPlayersOfRole(id);
 
-		pickEvents = new BurrowerPickEvents();
+		// passiveResourcesTask = new BukkitRunnable() {    // TODO: Quentin, quand cette tâche s'éxecute pour la première fois, elle remplace la pelle dans l'inventaire
+		// 	@Override									    // Le seul moyen de faire réapparaître la pelle est de déco reco
+		// 	public void run() {
+		// 		giveRandomOreToPlayers();
+		// 	}
+		// }.runTaskTimer(Main.getInstance(), 0, 20 * 600 * 1);
+
+
+		pickEvents = new BurrowerPick.Events();
 		manager.registerEvents((Listener)pickEvents, Main.getInstance());
 
-		clawEvents = new BurrowingShovelEvents();
-		manager.registerEvents((Listener)clawEvents, Main.getInstance());
+		shovelEvents = new BurrowerShovel.Events();
+		manager.registerEvents((Listener)shovelEvents, Main.getInstance());
 
 		for (Player player : burrowers) {
 			pickEvents.updateItemInInventory(player);
-			clawEvents.updateItemInInventory(player);
+			shovelEvents.updateItemInInventory(player);
 		}
 	}
 
@@ -64,8 +68,11 @@ public class BurrowerRole extends Role {
 	public void stop() {
 		super.stop();
 
+		// passiveResourcesTask.cancel();
+		// passiveResourcesTask = null;
+
 		HandlerList.unregisterAll(pickEvents);
-		HandlerList.unregisterAll(clawEvents);
+		HandlerList.unregisterAll(shovelEvents);
 	}
 
 	@EventHandler
@@ -122,6 +129,24 @@ public class BurrowerRole extends Role {
 		}
 	}
 
+	private void giveRandomOreToPlayers() {
+		for (Player player : burrowers) {
+			if (player == null) {
+				return;
+			}
+			Material randomOre = getRandomOre();
+			player.getInventory().addItem(new ItemStack(randomOre));
+		}
+	}
+
+	private Material getRandomOre() {
+		Material[] oresTypes  = { Material.COAL, Material.IRON_INGOT, Material.GOLD_INGOT, Material.DIAMOND };
+		Material randomOre = oresTypes[(int) (Math.random() * oresTypes.length)];
+		return randomOre;
+	}
+
+
+
 	public static class Builder extends Role.Builder {
 		@Override
 		public String getId() {
@@ -132,40 +157,5 @@ public class BurrowerRole extends Role {
 		public Role build(String gameId){
 			return new BurrowerRole(this);
 		}
-	}
-
-	public static Player getPlayerByNamespacedKey(NamespacedKey key) {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            PersistentDataContainer container = player.getPersistentDataContainer();
-            if (container.has(key, PersistentDataType.STRING)) {
-                return player;
-            }
-        }
-        return null;
-    }
-
-	public void startPassiveGain() {
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				giveRandomOreToPlayers();
-			}
-		}.runTaskTimer(Main.getInstance(), 0, 20 * 600 * 1);
-	}
-
-	private void giveRandomOreToPlayers() {
-		for (Player player : burrowers) {
-			if (player == null) {
-				return;
-			}
-			var randomOre = RandomOre();
-			player.getInventory().addItem(new ItemStack(randomOre));
-		}
-	}
-
-	private Material RandomOre() {
-		Material[] oresTypes  = { Material.COAL, Material.IRON_INGOT, Material.GOLD_INGOT, Material.DIAMOND };
-		Material randomOre = oresTypes[(int) (Math.random() * oresTypes.length)];
-		return randomOre;
 	}
 }

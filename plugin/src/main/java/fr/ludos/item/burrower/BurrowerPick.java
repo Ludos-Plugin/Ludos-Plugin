@@ -1,10 +1,9 @@
-package fr.ludos.item.burrower.pick;
+package fr.ludos.item.burrower;
 
+import fr.ludos.Main;
+import fr.ludos.role.BurrowerRole;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.ItemUtilities;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.lang3.function.TriFunction;
 import org.bukkit.ChatColor;
@@ -23,44 +22,22 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 
 
 
-/**
- * Pickaxe is a class that represents a special item, "Miner Pickaxe," in Minecraft.
- * This item allows the miner player to improve their own pickaxe based on the ores they collect.
- * <br><br>
- * Features:
- * <br><br>
- * - Provides methods to give a miner pickaxe to the player and level up the pickaxe based on XP.
- * <br><br>
- * - Automatically updates the pickaxe's material as it levels up.
- * <br><br>
- * - Defines an evolution path from wood to stone, iron, gold, and finally diamond pickaxe.
- * <br><br>
- * Usage:
- * <br><br>
- * - Call addPickaxeInventory(player) to give a miner pickaxe to the specified player.
- * <br><br>
- * - Call levelPickaxe(player, xp) with the XP gained from mining to level up the pickaxe.
- * <br><br>
- * Example:
- * <pre>{@code
- * Pickaxe pickaxe = new Pickaxe();
- * pickaxe.addPickaxeInventory(player);
- * pickaxe.levelPickaxe(player, xp);
- * }</pre>
- * <br><br>
- * @author feur25 & Ganon358
- * @version 1.0
- * @see org.bukkit.entity.Player
- * @see org.bukkit.inventory.ItemStack
- * @see org.bukkit.Material
- * @see org.bukkit.inventory.meta.ItemMeta
- * @see java.util.Collections
- */
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Nullable;
+
 
 public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
+	public static final String HAMMER_MODE = "mode";
+	private NamespacedKey modeKey = new NamespacedKey(Main.getInstance(), HAMMER_MODE);
 
 	private Boolean hammerMode = false;
 
@@ -70,12 +47,12 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 		if (
-			! container.has(BurrowerPickEvents.getModeKey(), PersistentDataType.INTEGER)
+			! container.has(modeKey, PersistentDataType.INTEGER)
 		) {
 			throw new IllegalArgumentException();
 		}
 
-		hammerMode = getHammerModeFromItem(stack, BurrowerPickEvents.getModeKey());
+		hammerMode = getHammerModeFromItem(stack, modeKey);
 	}
 
 	public BurrowerPick(Player owner) {
@@ -85,13 +62,13 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		this(new ItemStack(level.getMaterial()), owner, level);
 	}
 
-	public BurrowerPick(ItemStack item, Player owner) {
+	protected BurrowerPick(ItemStack item, Player owner) {
 		this(item, owner, BurrowerPickLevels.WOODEN);
 	}
-	public BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level) {
+	protected BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level) {
 		this(item, owner, level, 0);
 	}
-	public BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level, double xp) {
+	protected BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level, double xp) {
 		super(item, owner, level, xp);
 		setHammerMode(false);
 	}
@@ -106,7 +83,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		ItemMeta meta = getStack().getItemMeta();
 
 		hammerMode = value;
-		meta.getPersistentDataContainer().set(BurrowerPickEvents.getModeKey(), PersistentDataType.INTEGER, value ? 1 : 0);
+		meta.getPersistentDataContainer().set(modeKey, PersistentDataType.INTEGER, value ? 1 : 0);
 
 		getStack().setItemMeta(meta);
 
@@ -160,21 +137,6 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	@Override
 	public BurrowerPickLevels convertToLevel(int level) {
 		return BurrowerPickLevels.findByKey(level);
-	}
-
-	@Override
-	public NamespacedKey getOwnerKey() {
-		return BurrowerPickEvents.getOwnerKey();
-	}
-
-	@Override
-	public NamespacedKey getLvlKey() {
-		return BurrowerPickEvents.getLvlKey();
-	}
-
-	@Override
-	public NamespacedKey getXpKey() {
-		return BurrowerPickEvents.getXpKey();
 	}
 
 
@@ -284,6 +246,97 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 				return 5;
 			default:
 				return material.getHardness();
+		}
+	}
+
+
+	public static class Events extends LevelItem.Events<BurrowerPick, BurrowerPickLevels> {
+
+		public Events() {
+			super(BurrowerRole.id, BurrowerPickLevels.WOODEN);
+		}
+
+
+		@EventHandler
+		public void onPlayerInteract(PlayerInteractEvent event) {
+			Action action = event.getAction();
+			if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
+				return;
+			}
+
+
+			Player player = event.getPlayer();
+			BurrowerPick pickaxe = getItem(player.getInventory().getItemInMainHand());
+			if (pickaxe == null) {
+				return;
+			}
+
+			if (player.hasCooldown(pickaxe.getStack().getType())) {
+				return;
+			}
+
+			pickaxe.toggleHammerMode();
+
+			player.setCooldown(pickaxe.getStack().getType(), 5);
+		}
+
+		@EventHandler
+		public void onSwitchItem(PlayerItemHeldEvent event) {
+			Player player = event.getPlayer();
+
+			BurrowerPick pick = BurrowerPick.findIn(player.getInventory(), this::getItem);
+			if (pick == null) {
+				return;
+			}
+
+			ItemStack item = player.getInventory().getItem(event.getNewSlot());
+			if (item == null) {
+				return;
+			}
+
+			pick.updateWielding(item);
+		}
+
+		@EventHandler
+		public void onBlockBreak(BlockBreakEvent event) {
+			Player player = event.getPlayer();
+			ItemStack mainHandItem = player.getInventory().getItemInMainHand();
+
+			BurrowerPick pick = getItem(mainHandItem);
+			if (pick == null) {
+				return;
+			}
+
+			List<Block> lastTwoTargetBlocks = player.getLastTwoTargetBlocks(null, 100);
+			if (lastTwoTargetBlocks.size() != 2) return;
+
+			Block targetBlock = lastTwoTargetBlocks.get(1);
+			Block adjacentBlock = lastTwoTargetBlocks.get(0);
+
+
+			if (! pick.getHammerMode()) {
+				pick.awardBreak(player, targetBlock);
+				return;
+			}
+
+			BlockFace face = targetBlock.getFace(adjacentBlock);
+
+			pick.breakRadius(targetBlock.getLocation(), face);
+		}
+
+		@Override
+		@Nullable
+		protected BurrowerPick getItem(ItemStack stack) {
+			try {
+				BurrowerPick pick = new BurrowerPick(stack);
+				return pick;
+			} catch (IllegalArgumentException e) {
+				return null;
+			}
+		}
+		@Override
+		protected BurrowerPick createItem(Player owner, BurrowerPickLevels level) {
+			return new BurrowerPick(owner, level);
 		}
 	}
 }
