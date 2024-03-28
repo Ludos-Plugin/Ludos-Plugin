@@ -25,14 +25,17 @@ public abstract class Game implements Listener {
 
 	@Nullable
 	private static Game current = null;
-	public static final Map<String, Builder> registered = new HashMap<String, Builder>();
+	private static final Map<String, Builder> registered = new HashMap<String, Builder>();
 
 	public final Map<String, Role> activeRoles = new HashMap<String, Role>();
 
-	
+
 	@Nullable
 	public static Game getCurrent() {
 		return Game.current;
+	}
+	public static Map<String, Builder> getRegistered() {
+		return Game.registered;
 	}
 
 

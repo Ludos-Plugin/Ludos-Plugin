@@ -13,6 +13,7 @@ import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.NecromancerRole;
 import fr.ludos.role.StalkerRole;
+import fr.ludos.role.TrapperRole;
 import fr.ludos.game.Game;
 import fr.ludos.game.manhunt.ManhuntGame;
 /**
@@ -48,6 +49,7 @@ public class Main extends JavaPlugin implements Listener {
 		Role.registerRole(new NecromancerRole.Builder());
 		Role.registerRole(new StalkerRole.Builder());
 		Role.registerRole(new BurrowerRole.Builder());
+		Role.registerRole(new TrapperRole.Builder());
 
 
 		PluginCommand cmd = getCommand("play");

@@ -3,6 +3,7 @@ package fr.ludos.item;
 import fr.ludos.Main;
 import fr.ludos.role.Role;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -31,6 +32,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 
 /**
@@ -69,6 +71,9 @@ import javax.annotation.Nullable;
 
 public abstract class SpecialItem {
 
+	public static final String ID = "id";
+	private NamespacedKey idKey = new NamespacedKey(Main.getInstance(), ID);
+
 	public static final String OWNER = "owner";
 	private NamespacedKey ownerKey = new NamespacedKey(Main.getInstance(), OWNER);
 
@@ -88,24 +93,38 @@ public abstract class SpecialItem {
 		return null;
 	}
 
+	protected abstract String getId();
 	protected abstract String getName();
 
 
 	public SpecialItem(ItemStack stack) throws IllegalArgumentException {
 		if (stack == null) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Item Stack is null");
 		}
+		this.stack = stack;
+
 		ItemMeta meta = stack.getItemMeta();
 		if (meta == null) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("ItemStack has no Meta");
 		}
 		PersistentDataContainer container = meta.getPersistentDataContainer();
-		if ( ! container.has(ownerKey, PersistentDataType.STRING) ) {
-			throw new IllegalArgumentException();
+		if (! container.has(ownerKey, PersistentDataType.STRING) ) {
+			throw new IllegalArgumentException("Owner not found");
 		}
 
-		this.stack = stack;
-		this.owner = LevelItem.getOwnerFromItem(stack, ownerKey);
+		if (! container.has(idKey, PersistentDataType.STRING) ) {
+			throw new IllegalArgumentException("ID not found");
+		}
+		String id = container.get(idKey, PersistentDataType.STRING);
+		if (! id.equals(getId())) {
+			throw new IllegalArgumentException("Invalid ID (" + id + " instead of " + getId() + ")");
+		}
+
+		this.owner = Bukkit.getPlayer(
+			UUID.fromString(
+				getPersistentData(stack, ownerKey, PersistentDataType.STRING)
+			)
+		);;
 	}
 
 	protected SpecialItem(ItemStack stack, Player owner) {
@@ -120,6 +139,7 @@ public abstract class SpecialItem {
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 		container.set(ownerKey, PersistentDataType.STRING, owner.getUniqueId().toString());
+		container.set(idKey, PersistentDataType.STRING, getId());
 
 		stack.setItemMeta(meta);
 	}
@@ -139,7 +159,7 @@ public abstract class SpecialItem {
 
 	/**
 	 * @param inventory
-	 * @return true if the provided inventory contains a Burrowering Claw
+	 * @return true if the provided inventory contains a SpecialItem of type T
 	 */
 	public static <T extends SpecialItem> Boolean containedIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		ItemStack[] items = inventory.getContents();
@@ -160,7 +180,7 @@ public abstract class SpecialItem {
 
 	/**
 	 * @param inventory
-	 * @return true if the provided inventory contains a Burrower's pick
+	 * @return true if the provided inventory contains a SpecialItem of type T
 	 */
 	public static <T extends SpecialItem>T findIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		ItemStack[] items = inventory.getContents();
@@ -182,6 +202,9 @@ public abstract class SpecialItem {
 		return item.getItemMeta().getPersistentDataContainer().get(key, type);
 	}
 
+	public static <T extends SpecialItem> T addSpecialItem(Player player, Function<Player, T> constructor) {
+		return constructor.apply(player);
+	}
 
 
 	public static abstract class Events<T extends SpecialItem> implements Listener {
@@ -199,6 +222,10 @@ public abstract class SpecialItem {
 
 		@EventHandler
 		public void onPlayerDropItem(PlayerDropItemEvent event) {
+			if (roleId != null && ! Role.isPlayerRole(event.getPlayer(), roleId)) {
+				return;
+			}
+
 			ItemStack item = event.getItemDrop().getItemStack();
 
 			if (getItem(item) != null) {
@@ -208,6 +235,10 @@ public abstract class SpecialItem {
 
 		@EventHandler
 		public void onInventoryClickItem(InventoryClickEvent event) {
+			if (roleId != null && ! Role.isPlayerRole(event.getWhoClicked(), roleId)) {
+				return;
+			}
+
 			ItemStack item = event.getCursor();
 			if (item.getType() == Material.AIR) {
 				item = event.getCurrentItem();
@@ -246,12 +277,12 @@ public abstract class SpecialItem {
 
 
 		public void updateItemInInventory(Player player) {
-			if ( roleId != null && ! Role.isPlayerRole(player, roleId) ) {
+			if (roleId != null && ! Role.isPlayerRole(player, roleId)) {
 				return;
 			}
 
 			Inventory inventory = player.getInventory();
-			if ( SpecialItem.containedIn(inventory, this::getItem) ) {
+			if (SpecialItem.containedIn(inventory, this::getItem)) {
 				return;
 			}
 

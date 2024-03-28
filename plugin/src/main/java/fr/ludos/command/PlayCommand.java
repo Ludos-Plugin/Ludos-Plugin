@@ -18,27 +18,27 @@ public class PlayCommand implements TabExecutor {
 		if (args.length == 0) {
 			return false;
 		}
-		if ( ! Game.registered.containsKey(args[0]) ) {
+		if ( ! Game.getRegistered().containsKey(args[0]) ) {
 			return false;
 		}
 
-		return Game.registered.get(args[0])
+		return Game.getRegistered().get(args[0])
 			.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 	}
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 		if (args.length <= 1) {
-			return Game.registered.keySet().stream()
+			return Game.getRegistered().keySet().stream()
 				.sorted()
 				.collect(Collectors.toList());
 		}
 
 		String arg = args[0];
-		if ( ! Game.registered.containsKey(arg) ) {
+		if ( ! Game.getRegistered().containsKey(arg) ) {
 			return null;
 		}
-		return Game.registered.get(arg)
+		return Game.getRegistered().get(arg)
 			.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 	}
 
@@ -47,7 +47,7 @@ public class PlayCommand implements TabExecutor {
 		StringBuilder usage = new StringBuilder("/<command> ");
 
 		usage.append('<');
-		usage.append( Game.registered.keySet().stream()
+		usage.append( Game.getRegistered().keySet().stream()
 						.sorted()
 						.collect(Collectors.joining(" | ") ) );
 		usage.append('>');

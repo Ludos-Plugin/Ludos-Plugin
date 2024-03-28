@@ -24,9 +24,7 @@ public class RogueRole extends JavaPlugin {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if (sender instanceof Player) {
-			Player player = (Player) sender;
-
+		if (sender instanceof Player player) {
 			if (args.length == 1) {
 				Player target = Bukkit.getPlayer(args[0]);
 				if (target != null) {

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
-import java.util.UUID;
 
 
 /**
@@ -68,7 +67,6 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 	private TLevel level;
 	private double xp;
 
-
 	public TLevel getLevel() {
 		return level;
 	}
@@ -82,15 +80,15 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 		super(stack);
 
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
-		if (
-			! container.has(levelKey, PersistentDataType.INTEGER) ||
-			! container.has(xpKey, PersistentDataType.DOUBLE)
-		) {
-			throw new IllegalArgumentException();
+		if ( ! container.has(levelKey, PersistentDataType.INTEGER) ) {
+			throw new IllegalArgumentException("Level Not found");
+		}
+		if ( ! container.has(xpKey, PersistentDataType.DOUBLE) ) {
+			throw new IllegalArgumentException("XP not found");
 		}
 
-		this.level = convertToLevel(getLvlFromItem(stack, levelKey));
-		this.xp = getXpFromItem(stack, xpKey);
+		this.level = convertToLevel(getPersistentData(stack, levelKey, PersistentDataType.INTEGER));
+		this.xp = getPersistentData(stack, xpKey, PersistentDataType.DOUBLE);
 	}
 
 	public LevelItem(ItemStack stack, Player owner, TLevel level) {
@@ -105,22 +103,6 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 	}
 
 
-	protected static int getLvlFromItem(ItemStack item, NamespacedKey key) {
-		return getPersistentData(item, key, PersistentDataType.INTEGER);
-	}
-
-	protected static double getXpFromItem(ItemStack item, NamespacedKey key) {
-		return getPersistentData(item, key, PersistentDataType.DOUBLE);
-	}
-
-	protected static Player getOwnerFromItem(ItemStack item, NamespacedKey key) {
-		return Bukkit.getPlayer(
-			UUID.fromString(
-				getPersistentData(item, key, PersistentDataType.STRING)
-			)
-		);
-	}
-
 	public void setLvl(TLevel level) {
 		ItemMeta meta = getStack().getItemMeta();
 
@@ -129,7 +111,18 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 		getStack().setItemMeta(meta);
 	}
 
-	public abstract void addLvl();
+	public void addLvl() {
+		if (getLevel().isMax()) {
+			return;
+		}
+
+		setLvl(getLevel().getNext());
+		if (getOwner() != null) {
+			getOwner().sendMessage(ChatColor.GREEN + "Your " + getName() + ChatColor.RESET + ChatColor.GREEN + " has leveled up!"); // TODO: Translate
+		}
+
+		updateLore();
+	}
 
 	public void setXp(double value) {
 

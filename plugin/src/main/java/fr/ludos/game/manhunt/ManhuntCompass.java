@@ -24,6 +24,11 @@ public class ManhuntCompass extends SpecialItem {
 	}
 
 	@Override
+	public String getId() {
+		return "manhunt_compass";
+	}
+
+	@Override
 	public List<String> getLore() {
 		return new ArrayList<String>(){{ add("Every three minutes, the position of prey is revealed through the compass."); }};
 	}

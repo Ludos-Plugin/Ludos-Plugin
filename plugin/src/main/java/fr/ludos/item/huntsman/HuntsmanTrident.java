@@ -24,6 +24,11 @@ public class HuntsmanTrident extends SpecialItem {
 
 
 	@Override
+	public String getId() {
+		return "manhunt_huntsman_trident";
+	}
+
+	@Override
 	protected String getName(){
 		return "Old Trident";
 	}

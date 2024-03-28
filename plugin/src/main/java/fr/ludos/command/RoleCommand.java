@@ -117,13 +117,13 @@ public class RoleCommand implements TabExecutor {
 
 		StringBuilder usage = new StringBuilder("/<command> ");
 
-		// usage.append('<');
-		// usage.append( Stream.concat(Role.registered.keySet().stream(), Stream.of(randomRole))
-		//                 .sorted()
-		//                 .collect(Collectors.joining(" | ")) );
-		// usage.append('>');
+		usage.append('<');
+		usage.append( Role.getRegistered().keySet().stream()
+						.sorted()
+						.collect(Collectors.joining(" | ") ) );
+		usage.append('>');
 
-		// usage.append(' ');
+		usage.append(' ');
 
 		usage.append('[');
 		usage.append( Arrays.stream(RoleCommandOptions.values()).map(RoleCommandOptions::toString)

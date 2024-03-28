@@ -38,6 +38,7 @@ public class BurrowerShovel extends SpecialItem {
 	public BurrowerShovel(Player owner) {
 		this(new ItemStack(Material.IRON_SHOVEL), owner);
 	}
+
 	protected BurrowerShovel(ItemStack stack, Player owner) {
 		super(stack, owner);
 	}
@@ -125,6 +126,11 @@ public class BurrowerShovel extends SpecialItem {
 	}
 
 	@Override
+	public String getId() {
+		return "manhunt_burrower_shovel";
+	}
+
+	@Override
 	protected String getName() {
 		return "Burrower's Shovel"; // TODO: Translate
 	}
@@ -146,12 +152,6 @@ public class BurrowerShovel extends SpecialItem {
 				this.location = location;
 				this.material = material;
 			}
-		}
-
-		@EventHandler
-		public void onPlayerJoin(PlayerJoinEvent event) {
-			Player player = event.getPlayer();
-			player.getInventory().addItem(new BurrowerShovel(player).getStack());
 		}
 
 		@EventHandler

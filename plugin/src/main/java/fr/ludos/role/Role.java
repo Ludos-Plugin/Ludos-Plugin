@@ -69,6 +69,7 @@ public abstract class Role implements Listener {
 		return Role.getPlayerRoles().entrySet().stream()
 			.filter(entry -> (entry.getValue().equals(roleId)))
 			.map(entry -> Bukkit.getPlayerExact(entry.getKey()))
+			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
 	}
 

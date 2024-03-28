@@ -41,8 +41,7 @@ public class MonsterListener implements Listener {
 	@EventHandler
 	public void onEntityTarget(EntityTargetEvent event) {
 		if (event.getEntityType() == EntityType.ZOMBIE || event.getEntityType() == EntityType.SKELETON) {
-			if (event.getTarget() instanceof Player) {
-				Player targetPlayer = (Player) event.getTarget();
+			if (event.getTarget() instanceof Player targetPlayer) {
 				if (targetPlayer.equals(playerToIgnore)) {
 					event.setCancelled(true);
 				}

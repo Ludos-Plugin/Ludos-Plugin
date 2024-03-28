@@ -41,6 +41,10 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 	private Boolean hammerMode = false;
 
+	public Boolean getHammerMode() {
+		return hammerMode;
+	}
+
 
 	public BurrowerPick(ItemStack stack) throws IllegalArgumentException {
 		super(stack);
@@ -52,7 +56,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 			throw new IllegalArgumentException();
 		}
 
-		hammerMode = getHammerModeFromItem(stack, modeKey);
+		hammerMode = getPersistentData(stack, modeKey, PersistentDataType.INTEGER) == 1;
 	}
 
 	public BurrowerPick(Player owner) {
@@ -71,11 +75,6 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	protected BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level, double xp) {
 		super(item, owner, level, xp);
 		setHammerMode(false);
-	}
-
-
-	protected static Boolean getHammerModeFromItem(ItemStack item, NamespacedKey key) {
-		return getPersistentData(item, key, PersistentDataType.INTEGER) == 1;
 	}
 
 
@@ -134,41 +133,6 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		}
 	}
 
-	@Override
-	public BurrowerPickLevels convertToLevel(int level) {
-		return BurrowerPickLevels.findByKey(level);
-	}
-
-
-	public Boolean getHammerMode() {
-		return hammerMode;
-	}
-
-	@Override
-	protected String getName() {
-		if (hammerMode == null) {
-			hammerMode = false;
-		}
-		return "Burrower's Pick (" + (hammerMode ? ChatColor.RED + "Hammer" : ChatColor.AQUA + "Pickaxe") + ChatColor.RESET.toString() + ChatColor.WHITE + ")"; // TODO: Translate
-	}
-	@Override
-	public List<String> getLore() {
-		List<String> lore = super.getLore();
-		if (lore == null) {
-			lore = new ArrayList<String>();
-		}
-
-		int size = 1 + getLevel().getRadius() * 2;
-		int depth = getLevel().getDepth() + 1;
-		String modeFormatted = ChatColor.GRAY + "Mode: " + ChatColor.YELLOW + (hammerMode ? "Hammer Mode" : "Pickaxe Mode");
-		String sizeFormatted = ChatColor.GRAY + "Size: " + ChatColor.YELLOW + (size + "x" + size);
-		String depthFormatted = ChatColor.GRAY + "Depth: " + ChatColor.YELLOW + (depth);
-		lore.add(modeFormatted);
-		lore.add(sizeFormatted);
-		lore.add(depthFormatted);
-
-		return lore;
-	}
 
 	public void awardBreak(Player player, Block block) {
 		if (getOwner() != player) {
@@ -179,26 +143,6 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		if (oreXp != 0) {
 			addXp(oreXp);
 		}
-	}
-
-	public void addLvl() {
-		if (getLevel().isMax()) {
-			return;
-		}
-
-		setLvl(getLevel().getNext());
-		if (getOwner() != null) {
-			getOwner().sendMessage(ChatColor.GREEN + "Your pickaxe has leveled up!"); // TODO: Translate
-		}
-	}
-
-	@Override
-	public void setLvl(BurrowerPickLevels level) {
-		super.setLvl(level);
-		getStack().setType(level.getMaterial());
-		getStack().removeEnchantment(Enchantment.DIG_SPEED);
-		getStack().removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
-		getStack().addEnchantments(level.getEnchantments());
 	}
 
 	public void toggleHammerMode() {
@@ -248,6 +192,55 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 				return material.getHardness();
 		}
 	}
+
+
+
+	@Override
+	public String getId() {
+		return "manhunt_burrower_pick";
+	}
+
+	@Override
+	protected String getName() {
+		if (hammerMode == null) {
+			hammerMode = false;
+		}
+		return "Burrower's Pick (" + (hammerMode ? ChatColor.RED + "Hammer" : ChatColor.AQUA + "Pickaxe") + ChatColor.RESET.toString() + ChatColor.WHITE + ")"; // TODO: Translate
+	}
+
+	@Override
+	public List<String> getLore() {
+		List<String> lore = super.getLore();
+		if (lore == null) {
+			lore = new ArrayList<String>();
+		}
+
+		int size = 1 + getLevel().getRadius() * 2;
+		int depth = getLevel().getDepth() + 1;
+		String modeFormatted = ChatColor.GRAY + "Mode: " + ChatColor.YELLOW + (hammerMode ? "Hammer Mode" : "Pickaxe Mode");
+		String sizeFormatted = ChatColor.GRAY + "Size: " + ChatColor.YELLOW + (size + "x" + size);
+		String depthFormatted = ChatColor.GRAY + "Depth: " + ChatColor.YELLOW + (depth);
+		lore.add(modeFormatted);
+		lore.add(sizeFormatted);
+		lore.add(depthFormatted);
+
+		return lore;
+	}
+
+	@Override
+	public void setLvl(BurrowerPickLevels level) {
+		super.setLvl(level);
+		getStack().setType(level.getMaterial());
+		getStack().removeEnchantment(Enchantment.DIG_SPEED);
+		getStack().removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
+		getStack().addEnchantments(level.getEnchantments());
+	}
+
+	@Override
+	public BurrowerPickLevels convertToLevel(int level) {
+		return BurrowerPickLevels.findByKey(level);
+	}
+
 
 
 	public static class Events extends LevelItem.Events<BurrowerPick, BurrowerPickLevels> {
@@ -323,6 +316,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 			pick.breakRadius(targetBlock.getLocation(), face);
 		}
+
 
 		@Override
 		@Nullable
