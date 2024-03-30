@@ -44,11 +44,10 @@ public class TraderItemShop extends SpecialItem {
     public static void openShop(Player player) {
         Inventory inventory = Bukkit.createInventory(player, 9, "§6Trader Item Shop");
 
-        inventory.addItem(createItem(Material.DIAMOND_SWORD, "§6Diamond Sword", 10));
-        inventory.addItem(createItem(Material.DIAMOND_CHESTPLATE, "§6Diamond Chestplate", 20));
-        inventory.addItem(createItem(Material.DIAMOND_HELMET, "§6Diamond Helmet", 15));
-        inventory.addItem(createItem(Material.DIAMOND_LEGGINGS, "§6Diamond Leggings", 15));
-        inventory.addItem(createItem(Material.DIAMOND_BOOTS, "§6Diamond Boots", 10));
+        inventory.addItem(createItem(Material.ARMOR_STAND, "§6TntTrap", 10));
+        inventory.addItem(createItem(Material.ARMOR_STAND, "§6CobwebTrap", 15));
+        inventory.addItem(createItem(Material.ARMOR_STAND, "§6BoostTrap", 15));
+        inventory.addItem(createItem(Material.ARMOR_STAND, "§6GlowingTrap", 10));
 
         player.openInventory(inventory);
     }
@@ -67,7 +66,6 @@ public class TraderItemShop extends SpecialItem {
 		public Events() {
 			super(TrapperRole.id);
 		}
-
 
 		public void playerEventListener(Player player, PlayerDeathEvent event, ItemStack trident) {
 			player.getInventory().removeItem(trident);
@@ -100,8 +98,5 @@ public class TraderItemShop extends SpecialItem {
 		protected TraderItemShop createItem(Player owner) {
 			return new TraderItemShop(owner);
 		}
-
 	}
-
 }
-

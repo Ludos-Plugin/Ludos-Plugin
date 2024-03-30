@@ -98,7 +98,7 @@ public class ManhuntTimer implements Listener {
 		bossbar.setTitle(formattedTime);
 
         if (totalSeconds % 180 == 0 && totalSeconds != 0) {
-            Bukkit.broadcastMessage("Position du chassé " + "");
+            game.revealPrey();
         }
     }
 }

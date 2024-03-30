@@ -30,14 +30,15 @@ public class HuntsmanLevelSelector extends SpecialItem {
 
 		meta.setAuthor("");
 		meta.setTitle("Bow Evolution Grimoire");
+		ComponentBuilder builder = new ComponentBuilder();
 		for (HuntsmanBowBranches bookLevel : HuntsmanBowBranches.values()) {
-			ComponentBuilder builder = new ComponentBuilder()
+			builder
 				.event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/setbowbranch " + Integer.toString(bookLevel.index())))
 				.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(bookLevel.getDescription())))
-				.append(bookLevel.getName()).color(ChatColor.RED)
-				;
-			meta.spigot().addPage( builder.create() );
+				.append(bookLevel.getName())
+				.append("\n");
 		}
+		meta.spigot().addPage( builder.create() );
 
 		book.setItemMeta(meta);
 

@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -21,12 +22,21 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
+
+import com.google.common.base.Objects;
 
 import fr.ludos.Main;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.PlayCommandOptions;
 import fr.ludos.game.Game;
+
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.WorldBorder;
+
 
 public class ManhuntGame extends Game {
 
@@ -47,8 +57,10 @@ public class ManhuntGame extends Game {
 	protected ManhuntGame(Builder builder) {
 		super(builder);
 
+		Player prey = builder.getPrey();
+
 		this.scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
-		this.teamController = new ManhuntTeamController(this, builder.getPlayers(), builder.getPrey());
+		this.teamController = new ManhuntTeamController(this, builder.getPlayers(), prey);
 
 		PluginManager manager = Bukkit.getPluginManager();
 
@@ -59,7 +71,42 @@ public class ManhuntGame extends Game {
 		manager.registerEvents(compassEvents, Main.getInstance());
 
 
+		makeBorder(prey, 200);
+
+
 		Bukkit.broadcastMessage("The Game of Manhunt started");
+	}
+
+
+	public void revealPrey() {
+		Optional<Player> prey = teamController.preyTeam.getEntries().stream()
+			.map(Bukkit::getPlayerExact)
+			.findFirst();
+		if (prey.isEmpty()) {
+			return;
+		}
+
+		Location preyLocation = prey.get().getLocation();
+
+		for ( Player hunter : teamController.hunterTeam.getEntries().stream().map(Bukkit::getPlayerExact).collect(Collectors.toUnmodifiableSet()) ) {
+			hunter.setCompassTarget(preyLocation);
+		}
+
+		prey.get().addPotionEffect(PotionEffectType.GLOWING.createEffect(40, 0));
+		Bukkit.broadcastMessage("The Prey was revealed!\nThey are located at " + preyLocation.getBlockX() + " " + preyLocation.getBlockY() + " " + preyLocation.getBlockZ() + ".");
+	}
+
+
+	public void makeBorder(Player player, int size) {
+		for (World world : Bukkit.getWorlds()) {
+			makeBorder(world, player.getLocation(), size);
+		}
+	}
+
+	private void makeBorder(World world, Location center, int size) {
+		WorldBorder border = world.getWorldBorder();
+		border.setCenter(center);
+		border.setSize(size);
 	}
 
 	@Override
@@ -89,6 +136,12 @@ public class ManhuntGame extends Game {
 		// }
 	}
 
+	// TODO: make custom snare effect
+	// @EventHandler
+	// public void onPlayerSnared(PlayerSnaredEvent event) {
+
+	// }
+
 
 
 
@@ -103,9 +156,9 @@ public class ManhuntGame extends Game {
 		public Builder() {
 			Main main = Main.getInstance();
 
-
 			players = main.getConfig().getStringList(manhuntKey + '.' + playersKey).stream()
 				.collect(Collectors.toSet());
+
 			if (players.size() == 0) {
 				players = null;
 			}
@@ -145,6 +198,23 @@ public class ManhuntGame extends Game {
 		@Override
 		public String getId() {
 			return "manhunt";
+		}
+
+		public void gameHelp(CommandSender sender, Command command, String label, PlayCommandOptions option) {
+			switch ( option ) {
+				case config:
+					sender.sendMessage("Usage: /" + label + " config <config> [value]");
+					sender.sendMessage("Available configs:");
+					sender.sendMessage("  players [player1] [player2] ... [playerN]");
+					sender.sendMessage("  prey [player]");
+					break;
+				case start:
+					sender.sendMessage("Usage: /" + label + " start");
+					break;
+				case stop:
+					sender.sendMessage("Usage: /" + label + " stop");
+					break;
+			}
 		}
 
 		@Override

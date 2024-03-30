@@ -134,7 +134,7 @@ public class HuntsmanBow extends BranchItem<HuntsmanBowBranches> {
 
 			container.set(arrowTypeKey, PersistentDataType.INTEGER, branch.index());
 			container.set(arrowLevelKey, PersistentDataType.INTEGER, level);
-			branch.processShotArrow(arrowProjectile, player, level);
+			branch.processShotArrow(arrowProjectile, player, level, event);
 
 			updateArrowCount(player);
 		}
@@ -173,7 +173,7 @@ public class HuntsmanBow extends BranchItem<HuntsmanBowBranches> {
 			PersistentDataContainer container = arrow.getPersistentDataContainer();
 			if (container.has(arrowTypeKey, PersistentDataType.INTEGER) && container.has(arrowLevelKey, PersistentDataType.INTEGER)) {
 				HuntsmanBowBranches.values[container.get(arrowTypeKey, PersistentDataType.INTEGER)]
-					.processLandedArrow(arrow, player, container.get(arrowLevelKey, PersistentDataType.INTEGER), hitEntity);
+					.processLandedArrow(arrow, player, container.get(arrowLevelKey, PersistentDataType.INTEGER), event);
 			}
 
 		}

@@ -50,6 +50,7 @@ public abstract class Role implements Listener {
 		HandlerList.unregisterAll(this);
 	}
 
+
 	public static void loadConfigRoles() {
 		Main main = Main.getInstance();
 

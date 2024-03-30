@@ -120,7 +120,6 @@ public abstract class Game implements Listener {
 		public abstract boolean gameCommand(CommandSender sender, Command command, String label, String[] args, PlayCommandOptions option);
 		public abstract List<String> gameTabComplete(CommandSender sender, Command command, String label, String[] args, PlayCommandOptions option);
 
-
 		public abstract Game build();
 	}
 }

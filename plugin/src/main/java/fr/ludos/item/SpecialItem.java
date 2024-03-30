@@ -1,6 +1,7 @@
 package fr.ludos.item;
 
 import fr.ludos.Main;
+import fr.ludos.item.burrower.BurrowerShovel;
 import fr.ludos.role.Role;
 
 import org.bukkit.Bukkit;
@@ -14,8 +15,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.Material;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.entity.ItemSpawnEvent;
@@ -132,6 +134,7 @@ public abstract class SpecialItem {
 		this.owner = owner;
 
 		updateName();
+
 		ItemMeta meta = stack.getItemMeta();
 
 		meta.setUnbreakable(true);
@@ -217,6 +220,21 @@ public abstract class SpecialItem {
 
 		public Events(@Nullable String roleId) {
 			this.roleId = roleId;
+
+			Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
+
+			// TODO: add proper Player selection
+			if (roleId == null) {
+				return;
+			}
+			for (Player player : Role.getPlayersOfRole(roleId)) {
+				updateItemInInventory(player);
+			}
+		}
+
+		public void stop() {
+
+			HandlerList.unregisterAll(this);
 		}
 
 
@@ -282,11 +300,15 @@ public abstract class SpecialItem {
 			}
 
 			Inventory inventory = player.getInventory();
-			if (SpecialItem.containedIn(inventory, this::getItem)) {
+			if (T.containedIn(inventory, this::getItem)) {
 				return;
 			}
 
-			player.getInventory().addItem(createItem(player).getStack());
+			T item = createItem(player);
+			if (item == null) {
+				return;
+			}
+			player.getInventory().addItem(item.getStack());
 		}
 
 	}

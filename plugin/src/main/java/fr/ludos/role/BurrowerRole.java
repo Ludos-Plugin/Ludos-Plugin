@@ -51,15 +51,15 @@ public class BurrowerRole extends Role {
 
 
 		pickEvents = new BurrowerPick.Events();
-		manager.registerEvents((Listener)pickEvents, Main.getInstance());
+		// manager.registerEvents((Listener)pickEvents, Main.getInstance());
 
 		shovelEvents = new BurrowerShovel.Events();
-		manager.registerEvents((Listener)shovelEvents, Main.getInstance());
+		// manager.registerEvents((Listener)shovelEvents, Main.getInstance());
 
-		for (Player player : burrowers) {
-			pickEvents.updateItemInInventory(player);
-			shovelEvents.updateItemInInventory(player);
-		}
+		// for (Player player : burrowers) {
+		// 	pickEvents.updateItemInInventory(player);
+		// 	shovelEvents.updateItemInInventory(player);
+		// }
 	}
 
 	@Override

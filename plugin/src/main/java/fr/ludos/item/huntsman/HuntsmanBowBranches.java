@@ -8,17 +8,20 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.item.SpecialItemBranches;
+import net.md_5.bungee.api.ChatColor;
 
 import java.util.List;
 
 public enum HuntsmanBowBranches implements SpecialItemBranches<HuntsmanBowBranches> {
-	FLAME    ("Igniting", 200, "Igniting Description"),
-	WITHER   ("Rotting",  200, "Rotting Description"),
-	SLOWNESS ("Impeding", 200, "Impeding Description");
+	FLAME    (ChatColor.RED.toString() + ChatColor.ITALIC + "Igniting", 200, "Igniting Description"),
+	WITHER   (ChatColor.GRAY.toString() + ChatColor.ITALIC + "Rotting",  200, "Rotting Description"),
+	SLOWNESS (ChatColor.BLUE.toString() + ChatColor.ITALIC + "Impeding", 200, "Impeding Description");
 
 	private String name;
 	private double xpThreshold;
@@ -48,7 +51,7 @@ public enum HuntsmanBowBranches implements SpecialItemBranches<HuntsmanBowBranch
 		return level == 2;
 	}
 
-	public void processShotArrow(Arrow arrow, Player player, int level) {
+	public void processShotArrow(Arrow arrow, Player player, int level, EntityShootBowEvent event) {
 		switch (this) {
 			case FLAME:
 				arrow.setFireTicks(10000);
@@ -70,7 +73,7 @@ public enum HuntsmanBowBranches implements SpecialItemBranches<HuntsmanBowBranch
 				break;
 		}
 	}
-	public void processLandedArrow(Arrow arrow, Player player, int level, @Nullable Entity hitEntity) {
+	public void processLandedArrow(Arrow arrow, Player player, int level, ProjectileHitEvent event) {
 		boolean isAbilityEnabled = isMax(level) && ! player.hasCooldown(Material.ARROW);
 
 		switch (this) {
@@ -78,7 +81,7 @@ public enum HuntsmanBowBranches implements SpecialItemBranches<HuntsmanBowBranch
 				if (level == 0) {
 					break;
 				}
-				arrow.getLocation().getBlock().setType(Material.FIRE);
+				event.getHitBlock().getRelative(event.getHitBlockFace()).setType(Material.FIRE);
 
 				if (level > 1 && isAbilityEnabled) {
 					arrow.getWorld().createExplosion(arrow.getLocation(), 2, true, false, player);
@@ -93,7 +96,7 @@ public enum HuntsmanBowBranches implements SpecialItemBranches<HuntsmanBowBranch
 				break;
 			case SLOWNESS:
 				if (level > 1 && isAbilityEnabled) {
-					arrow.getLocation().getBlock().setType(Material.COBWEB);
+					event.getHitBlock().getRelative(event.getHitBlockFace()).setType(Material.COBWEB);
 				}
 				break;
 			default:

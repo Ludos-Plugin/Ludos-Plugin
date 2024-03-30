@@ -12,10 +12,12 @@ import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
+// import org.bukkit.util.Vector;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
+
+import fr.ludos.item.SpecialItem;
 
 class InnerTrapperTrap {
     public String name;
@@ -24,8 +26,34 @@ class InnerTrapperTrap {
     public int radius;
 }
 
-public class TrapperTrap {
+public class TrapperTrap extends SpecialItem {
+    
     private ArrayList<InnerTrapperTrap> trap = new ArrayList<>();
+
+    private String name = "§6TrapperTrap";
+
+    public TrapperTrap(ItemStack item) {
+        super(item);
+    }
+
+    @Override 
+    public String getId(){
+        return "trapper_trap";
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public void trapEntity(String name, int duration) {
+        InnerTrapperTrap innerTrap = getTrap(name);
+        for (Player player : innerTrap.world.getPlayers()) {
+            if (player.getLocation().distance(innerTrap.location) <= innerTrap.radius) {
+                this.trapEntity(name);
+            }
+        }
+    }
 
     public void addTrap(String name, Location loc, World world, int radius) {
         InnerTrapperTrap innerTrap = new InnerTrapperTrap();
@@ -97,5 +125,28 @@ public class TrapperTrap {
                 }
             }
         }
+    }
+
+    private void trapEntity(String name) {
+        switch (name) {
+            case "§6TntTrap":
+                trapTnt(getTrap(name).world, getTrap(name).location);
+                break;
+            case "§6CobwebTrap":
+                trapCobweb(name);
+                break;
+            case "§6BoostTrap":
+                trapBoost(name, 1, 1, 1);
+                break;
+            case "§6GlowingTrap":
+                trapGlowing(name, 1);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void trapActivate() {
+
     }
 }
