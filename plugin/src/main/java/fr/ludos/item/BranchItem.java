@@ -192,9 +192,11 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 
 		public Events(String roleId) {
 			super(roleId);
+
+			this.deadPlayerLevels = new HashMap<>();
 		}
 
-		private Map<String, int[]> deadPlayerLevels = new HashMap<>();
+		private Map<String, int[]> deadPlayerLevels;
 
 		@EventHandler
 		public void onPlayerDeath(PlayerDeathEvent event) {
@@ -219,7 +221,7 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 		@Override
 		protected final T createItem(Player owner) {
 			int[] levels = new int[getBranches().length];
-			if (owner != null && deadPlayerLevels.containsKey(owner.getName())) {
+			if (owner != null && deadPlayerLevels != null && deadPlayerLevels.containsKey(owner.getName())) {
 				levels = deadPlayerLevels.get(owner.getName());
 			}
 

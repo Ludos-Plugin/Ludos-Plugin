@@ -31,6 +31,8 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 
 
 
+import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -183,7 +185,7 @@ public abstract class SpecialItem {
 
 	/**
 	 * @param inventory
-	 * @return true if the provided inventory contains a SpecialItem of type T
+	 * @return The first Special Item of type T found in the inventory or null if there is none
 	 */
 	public static <T extends SpecialItem>T findIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		ItemStack[] items = inventory.getContents();
@@ -200,6 +202,30 @@ public abstract class SpecialItem {
 
 		return null;
 	}
+
+
+	/**
+	 * @param inventory
+	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
+	 */
+	public static <T extends SpecialItem> List<T> findAllIn(Inventory inventory, Function<ItemStack, T> constructor) {
+		ItemStack[] items = inventory.getContents();
+		ArrayList<T> results = new ArrayList<>();
+		for (int i = 0; i < items.length; i++) {
+			ItemStack item = items[i];
+			if (item == null) {
+				continue;
+			}
+			T specialItem = constructor.apply(item);
+			if (specialItem != null) {
+				results.add(specialItem);
+			}
+		}
+
+		return (List<T>) Collections.unmodifiableList(results);
+	}
+
+
 
 	protected static <T, Z> Z getPersistentData(ItemStack item, NamespacedKey key, PersistentDataType<T, Z> type) {
 		return item.getItemMeta().getPersistentDataContainer().get(key, type);

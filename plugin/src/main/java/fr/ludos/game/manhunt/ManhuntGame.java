@@ -21,12 +21,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.CompassMeta;
 import org.bukkit.plugin.PluginManager;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
-
-import com.google.common.base.Objects;
 
 import fr.ludos.Main;
 import fr.ludos.command.CommandUtility;
@@ -57,10 +56,8 @@ public class ManhuntGame extends Game {
 	protected ManhuntGame(Builder builder) {
 		super(builder);
 
-		Player prey = builder.getPrey();
-
 		this.scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
-		this.teamController = new ManhuntTeamController(this, builder.getPlayers(), prey);
+		this.teamController = new ManhuntTeamController(this, builder.getChosenPlayers(), builder.getChosenPrey());
 
 		PluginManager manager = Bukkit.getPluginManager();
 
@@ -71,37 +68,57 @@ public class ManhuntGame extends Game {
 		manager.registerEvents(compassEvents, Main.getInstance());
 
 
-		makeBorder(prey, 200);
+		Optional<Player> prey = teamController.getPrey();
+		if (prey.isEmpty()) {
+			stop();
+			return;
+		}
+		Set<Player> hunters = teamController.getHunters();
 
+		makeBorder(prey.get().getWorld(), prey.get().getLocation(), 200);
+		for (Player hunter : hunters) {
+			ManhuntCompass compass = ManhuntCompass.createItem(hunter);
+			hunter.getInventory().addItem(compass.getStack());
+		}
+
+		// DEBUG
+		// ManhuntCompass compass = ManhuntCompass.createItem(prey.get());
+		// prey.get().getInventory().addItem(compass.getStack());
 
 		Bukkit.broadcastMessage("The Game of Manhunt started");
 	}
 
 
 	public void revealPrey() {
-		Optional<Player> prey = teamController.preyTeam.getEntries().stream()
-			.map(Bukkit::getPlayerExact)
-			.findFirst();
+		Optional<Player> prey = teamController.getPrey();
 		if (prey.isEmpty()) {
 			return;
 		}
 
 		Location preyLocation = prey.get().getLocation();
 
-		for ( Player hunter : teamController.hunterTeam.getEntries().stream().map(Bukkit::getPlayerExact).collect(Collectors.toUnmodifiableSet()) ) {
-			hunter.setCompassTarget(preyLocation);
-		}
-
-		prey.get().addPotionEffect(PotionEffectType.GLOWING.createEffect(40, 0));
 		Bukkit.broadcastMessage("The Prey was revealed!\nThey are located at " + preyLocation.getBlockX() + " " + preyLocation.getBlockY() + " " + preyLocation.getBlockZ() + ".");
-	}
 
-
-	public void makeBorder(Player player, int size) {
-		for (World world : Bukkit.getWorlds()) {
-			makeBorder(world, player.getLocation(), size);
+		for (Player hunter : teamController.getHunters()) {
+			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), ManhuntCompass::getItem)) {
+				compass.setLocation(prey.get());
+			}
 		}
+
+		// DEBUG
+		// for (ManhuntCompass compass : ManhuntCompass.findAllIn(prey.get().getInventory(), ManhuntCompass::getItem)) {
+		// 	compass.setLocation(prey.get());
+		// }
+
+		prey.get().addPotionEffect(PotionEffectType.GLOWING.createEffect(100, 0));
 	}
+
+
+	// public void makeBorder(Player player, int size) {
+	// 	for (World world : Bukkit.getWorlds()) {
+	// 		makeBorder(world, player.getLocation(), size);
+	// 	}
+	// }
 
 	private void makeBorder(World world, Location center, int size) {
 		WorldBorder border = world.getWorldBorder();
@@ -167,7 +184,7 @@ public class ManhuntGame extends Game {
 
 
 		@Nullable
-		public Set<Player> getPlayers() {
+		public Set<Player> getChosenPlayers() {
 			if (players == null) {
 				return null;
 			}
@@ -179,12 +196,13 @@ public class ManhuntGame extends Game {
 		}
 
 		@Nullable
-		public Player getPrey() {
+		public Player getChosenPrey() {
 			if (prey == null) {
 				return null;
 			}
 			return Bukkit.getPlayerExact(prey);
 		}
+
 
 		public String getPlayersString() {
 			return players == null ? "All" : players.stream() // TODO: Translate
@@ -194,6 +212,7 @@ public class ManhuntGame extends Game {
 		public String getPreyString() {
 			return prey == null ? "Random" : prey; // TODO: Translate
 		}
+
 
 		@Override
 		public String getId() {

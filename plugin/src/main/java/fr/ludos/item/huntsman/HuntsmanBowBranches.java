@@ -3,6 +3,7 @@ package fr.ludos.item.huntsman;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
@@ -81,7 +82,14 @@ public enum HuntsmanBowBranches implements SpecialItemBranches<HuntsmanBowBranch
 				if (level == 0) {
 					break;
 				}
-				event.getHitBlock().getRelative(event.getHitBlockFace()).setType(Material.FIRE);
+
+				Block firedBlock;
+				if (event.getHitBlockFace() == null) {
+					firedBlock = event.getHitBlock();
+				} else {
+					firedBlock = event.getHitBlock().getRelative(event.getHitBlockFace());
+				}
+				firedBlock.setType(Material.FIRE);
 
 				if (level > 1 && isAbilityEnabled) {
 					arrow.getWorld().createExplosion(arrow.getLocation(), 2, true, false, player);
@@ -96,7 +104,13 @@ public enum HuntsmanBowBranches implements SpecialItemBranches<HuntsmanBowBranch
 				break;
 			case SLOWNESS:
 				if (level > 1 && isAbilityEnabled) {
-					event.getHitBlock().getRelative(event.getHitBlockFace()).setType(Material.COBWEB);
+					Block webbedBlock;
+					if (event.getHitBlockFace() == null) {
+						webbedBlock = event.getHitBlock();
+					} else {
+						webbedBlock = event.getHitBlock().getRelative(event.getHitBlockFace());
+					}
+					webbedBlock.setType(Material.COBWEB);
 				}
 				break;
 			default:

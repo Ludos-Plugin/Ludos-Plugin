@@ -2,10 +2,11 @@ package fr.ludos.game.manhunt;
 
 import fr.ludos.item.SpecialItem;
 
-
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.CompassMeta;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -20,7 +21,35 @@ public class ManhuntCompass extends SpecialItem {
 	}
 
 	public ManhuntCompass(Player owner) {
-		super(new ItemStack(Material.COMPASS), owner);
+		super(createItemStack(), owner);
+	}
+
+	private static ItemStack createItemStack() {
+		ItemStack stack = new ItemStack(Material.COMPASS);
+		CompassMeta meta = (CompassMeta) stack.getItemMeta();
+
+		meta.setLodestoneTracked(false);
+		meta.setLodestone(null);
+
+		stack.setItemMeta(meta);
+		return stack;
+	}
+
+	public void setLocation(Player prey) {
+		ItemStack stack = getStack();
+		CompassMeta meta = (CompassMeta) stack.getItemMeta();
+
+		meta.setLodestoneTracked(false);
+		meta.setLodestone(prey.getLocation());
+
+		stack.setItemMeta(meta);
+	}
+
+	public Location getLocation() {
+		ItemStack stack = getStack();
+		CompassMeta meta = (CompassMeta) stack.getItemMeta();
+
+		return meta.getLodestone();
 	}
 
 	@Override
@@ -38,11 +67,19 @@ public class ManhuntCompass extends SpecialItem {
 		return "Hunter's Compass";
 	}
 
-	// @Nullable
-	// public static ManhuntCompass getHunterCompass(ItemStack item) {
-	// 	if ()
+	@Nullable
+	public static ManhuntCompass getItem(ItemStack stack) {
+		try {
+			ManhuntCompass compass = new ManhuntCompass(stack);
+			return compass;
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
+	}
 
-	// }
+	public static ManhuntCompass createItem(Player owner) {
+		return new ManhuntCompass(owner);
+	}
 
 	public static class Events extends SpecialItem.Events<ManhuntCompass> {
 
@@ -53,23 +90,18 @@ public class ManhuntCompass extends SpecialItem {
 		@Override
 		@Nullable
 		protected ManhuntCompass getItem(ItemStack stack) {
-			try {
-				ManhuntCompass compass = new ManhuntCompass(stack);
-				return compass;
-			} catch (IllegalArgumentException e) {
-				return null;
-			}
+			return ManhuntCompass.getItem(stack);
 		}
-		@Override
+
 		protected ManhuntCompass createItem(Player owner) {
-			return new ManhuntCompass(owner);
+			return ManhuntCompass.createItem(owner);
 		}
 
 		// @EventHandler
 		// public void handlePlayerDeath(PlayerDeathEvent event) {
 		//     Player player = event.getEntity();
 		//     ItemStack compass = ManhuntCompass.getPersistentCompass(player);
-		//     //pense pas forcément pertinant de préciser qe tu la perd si tu la regagne instannte quand tu respawn
+
 		//     if (compass != null) {
 		//         player.sendMessage(ChatColor.RED + "Votre Boussole Persistante a été détruite car vous êtes mort.");
 		//         ManhuntCompass.removePersistentCompass(player);

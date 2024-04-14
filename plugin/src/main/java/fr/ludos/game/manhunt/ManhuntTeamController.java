@@ -2,6 +2,8 @@ package fr.ludos.game.manhunt;
 
 import org.bukkit.Bukkit;
 import org.bukkit.scoreboard.Team;
+
+
 import org.bukkit.ChatColor;
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
@@ -13,6 +15,8 @@ import fr.ludos.Main;
 import fr.ludos.game.Game;
 import fr.ludos.game.TeamController;
 
+import java.util.stream.Collectors;
+import java.util.Optional;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Random;
@@ -78,6 +82,16 @@ public final class ManhuntTeamController extends TeamController implements Liste
 
 		preyTeam.unregister();
 		hunterTeam.unregister();
+	}
+
+
+	public Set<Player> getHunters() {
+		return hunterTeam.getEntries().stream().map(Bukkit::getPlayerExact).collect(Collectors.toSet());
+	}
+	public Optional<Player> getPrey() {
+		return preyTeam.getEntries().stream()
+			.map(Bukkit::getPlayerExact)
+			.findFirst();
 	}
 
 

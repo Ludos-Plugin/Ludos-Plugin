@@ -97,7 +97,7 @@ public class ManhuntTimer implements Listener {
 		bossbar.setProgress(progress);
 		bossbar.setTitle(formattedTime);
 
-        if (totalSeconds % 180 == 0 && totalSeconds != 0) {
+        if (totalSeconds % revealSeconds == 0 && totalSeconds != 0) {
             game.revealPrey();
         }
     }
