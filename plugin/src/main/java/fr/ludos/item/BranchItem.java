@@ -5,6 +5,7 @@ import org.bukkit.persistence.*;
 import fr.ludos.Main;
 import fr.ludos.role.Role;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -72,7 +73,7 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 
 		this.branch = convertToBranch(getPersistentData(stack, branchKey, PersistentDataType.INTEGER));
 		this.branchLevels = getPersistentData(stack, levelsKey, PersistentDataType.INTEGER_ARRAY);
-		this.branchXps = getPersistentData(stack, xpKey, Test.DOUBLE_ARRAY);
+		this.branchXps = getPersistentData(stack, xpKey, DoubleArrayPersistentDataType.INSTANCE);
 	}
 
 	public BranchItem(ItemStack stack, Player owner, TBranches branch, int[] levels, double[] xps) {
@@ -86,14 +87,15 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 	public abstract TBranches convertToBranch(int levels);
 	protected abstract TBranches[] getBranches();
 
-	public void setBranch(TBranches level) {
+	public void setBranch(TBranches branch) {
 		ItemMeta meta = getStack().getItemMeta();
 
-		this.branch = level;
-		meta.getPersistentDataContainer().set(branchKey, PersistentDataType.INTEGER, level.index());
+		this.branch = branch;
+		meta.getPersistentDataContainer().set(branchKey, PersistentDataType.INTEGER, branch.index());
 		getStack().setItemMeta(meta);
 
 		updateLore();
+		updateName();
 	}
 
 
@@ -129,7 +131,7 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 		ItemMeta meta = getStack().getItemMeta();
 
 		branchXps = xps;
-		meta.getPersistentDataContainer().set(xpKey, Test.DOUBLE_ARRAY, branchXps);
+		meta.getPersistentDataContainer().set(xpKey, DoubleArrayPersistentDataType.INSTANCE, branchXps);
 		getStack().setItemMeta(meta);
 
 		updateLore();
@@ -156,7 +158,7 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 	}
 
 	@Override
-	public List<String> getLore() {
+	protected List<String> getLore() {
 		List<String> lore = super.getLore();
 		if (lore == null) {
 			lore = new ArrayList<String>();
@@ -172,7 +174,7 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 		if ( branch.isMax(currentLevel) ) {
 			xpFormatted += MAX_LVL_LABEL;
 		} else {
-			String xpRounded = Long.toString(Math.round(getCurrentBranchXp() * 100) / 100);
+			String xpRounded = Double.toString(Math.round(getCurrentBranchXp() * 100.0) / 100.0);
 			xpFormatted += xpRounded + '/' + branch.getXpThreshold();
 		}
 
@@ -194,6 +196,8 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 			super(roleId);
 
 			this.deadPlayerLevels = new HashMap<>();
+
+			updateAllInventories();
 		}
 
 		private Map<String, int[]> deadPlayerLevels;

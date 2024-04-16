@@ -6,6 +6,7 @@ import fr.ludos.item.LevelItem;
 import fr.ludos.item.ItemUtilities;
 
 import org.apache.commons.lang3.function.TriFunction;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -218,9 +219,11 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		int size = 1 + getLevel().getRadius() * 2;
 		int depth = getLevel().getDepth() + 1;
 		String modeFormatted = ChatColor.GRAY + "Mode: " + ChatColor.YELLOW + (hammerMode ? "Hammer Mode" : "Pickaxe Mode");
+		String hintFormatted = ChatColor.GRAY + "Press " + ChatColor.YELLOW + "Right Click (MB2) " + ChatColor.GRAY + "to Switch Mode";
 		String sizeFormatted = ChatColor.GRAY + "Size: " + ChatColor.YELLOW + (size + "x" + size);
 		String depthFormatted = ChatColor.GRAY + "Depth: " + ChatColor.YELLOW + (depth);
 		lore.add(modeFormatted);
+		lore.add(hintFormatted);
 		lore.add(sizeFormatted);
 		lore.add(depthFormatted);
 

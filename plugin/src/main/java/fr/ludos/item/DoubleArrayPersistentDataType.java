@@ -5,9 +5,9 @@ import java.util.Arrays;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 
-public class Test implements PersistentDataType<long[], double[]> {
+public class DoubleArrayPersistentDataType implements PersistentDataType<long[], double[]> {
 
-	public static Test DOUBLE_ARRAY = new Test();
+	public static DoubleArrayPersistentDataType INSTANCE = new DoubleArrayPersistentDataType();
 
 	@Override
 	public Class<long[]> getPrimitiveType() {

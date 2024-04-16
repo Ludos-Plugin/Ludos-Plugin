@@ -9,6 +9,7 @@ import fr.ludos.role.Role;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -17,6 +18,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.block.Action;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.LivingEntity;
@@ -59,6 +62,13 @@ public class HuntsmanBow extends BranchItem<HuntsmanBowBranches> {
 		super(new ItemStack(Material.BOW), owner, branch, levels, xps);
 	}
 
+	public void cycleBranch() {
+		setBranch(convertToBranch((getBranch().index() + 1) % HuntsmanBowBranches.values.length));
+
+		Player owner = getOwner();
+		owner.playSound(owner.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 0.25f, 1);
+	}
+
 	@Override
 	public HuntsmanBowBranches convertToBranch(int level) {
 		return HuntsmanBowBranches.findByKey(level);
@@ -77,7 +87,24 @@ public class HuntsmanBow extends BranchItem<HuntsmanBowBranches> {
 
 	@Override
 	protected String getName() {
-		return "Stolen Bow"; // TODO: Translate
+		HuntsmanBowBranches branch = getBranch();
+		if (branch == null) {
+			return null;
+		}
+		return "Stolen Bow (" + branch.getName() + ChatColor.RESET.toString() + ChatColor.WHITE + ")"; // TODO: Translate
+	}
+
+	@Override
+	protected List<String> getLore() {
+		List<String> lore = super.getLore();
+		if (lore == null) {
+			lore = new ArrayList<String>();
+		}
+
+		String hintFormatted = ChatColor.GRAY + "Press " + ChatColor.YELLOW + "Left Click (MB1) " + ChatColor.GRAY + "to Switch Mode";
+
+		lore.add(hintFormatted);
+		return lore;
 	}
 
 
@@ -176,6 +203,29 @@ public class HuntsmanBow extends BranchItem<HuntsmanBowBranches> {
 					.processLandedArrow(arrow, player, container.get(arrowLevelKey, PersistentDataType.INTEGER), event);
 			}
 
+		}
+
+		@EventHandler
+		public void onPlayerInteract(PlayerInteractEvent event) {
+			Action action = event.getAction();
+			if (action != Action.LEFT_CLICK_AIR && action != Action.LEFT_CLICK_BLOCK) {
+				return;
+			}
+
+
+			Player player = event.getPlayer();
+			HuntsmanBow bow = getItem(player.getInventory().getItemInMainHand());
+			if (bow == null) {
+				return;
+			}
+
+			if (player.hasCooldown(bow.getStack().getType())) {
+				return;
+			}
+
+			bow.cycleBranch();
+
+			player.setCooldown(bow.getStack().getType(), 5);
 		}
 
 		@EventHandler

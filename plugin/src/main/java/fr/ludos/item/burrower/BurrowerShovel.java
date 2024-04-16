@@ -141,6 +141,8 @@ public class BurrowerShovel extends SpecialItem {
 
 		public Events() {
 			super(BurrowerRole.id);
+
+			updateAllInventories();
 		}
 
 

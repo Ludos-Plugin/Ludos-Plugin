@@ -248,7 +248,13 @@ public abstract class SpecialItem {
 			this.roleId = roleId;
 
 			Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
+		}
 
+		public void stop() {
+			HandlerList.unregisterAll(this);
+		}
+
+		protected void updateAllInventories() {
 			// TODO: add proper Player selection
 			if (roleId == null) {
 				return;
@@ -257,12 +263,6 @@ public abstract class SpecialItem {
 				updateItemInInventory(player);
 			}
 		}
-
-		public void stop() {
-
-			HandlerList.unregisterAll(this);
-		}
-
 
 		@EventHandler
 		public void onPlayerDropItem(PlayerDropItemEvent event) {

@@ -65,6 +65,8 @@ public class TraderItemShop extends SpecialItem {
 
 		public Events() {
 			super(TrapperRole.id);
+
+			updateAllInventories();
 		}
 
 		public void playerEventListener(Player player, PlayerDeathEvent event, ItemStack trident) {

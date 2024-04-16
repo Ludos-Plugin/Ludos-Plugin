@@ -85,6 +85,8 @@ public class ManhuntCompass extends SpecialItem {
 
 		public Events() {
 			super(null);
+
+			updateAllInventories();
 		}
 
 		@Override

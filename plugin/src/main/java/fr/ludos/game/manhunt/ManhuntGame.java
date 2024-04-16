@@ -76,14 +76,12 @@ public class ManhuntGame extends Game {
 		Set<Player> hunters = teamController.getHunters();
 
 		makeBorder(prey.get().getWorld(), prey.get().getLocation(), 200);
-		for (Player hunter : hunters) {
-			ManhuntCompass compass = ManhuntCompass.createItem(hunter);
-			hunter.getInventory().addItem(compass.getStack());
-		}
 
+		for (Player hunter : hunters) {
+			compassEvents.updateItemInInventory(hunter);
+		}
 		// DEBUG
-		// ManhuntCompass compass = ManhuntCompass.createItem(prey.get());
-		// prey.get().getInventory().addItem(compass.getStack());
+		compassEvents.updateItemInInventory(prey.get());
 
 		Bukkit.broadcastMessage("The Game of Manhunt started");
 	}

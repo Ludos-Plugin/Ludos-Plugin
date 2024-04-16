@@ -176,7 +176,11 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 
 		public Events(String roleId, TLevels baseLevel) {
 			super(roleId);
+
 			this.baseLevel = baseLevel;
+			this.deadPlayerLevels = new HashMap<>();
+
+			updateAllInventories();
 		}
 
 		private Map<String, TLevels> deadPlayerLevels = new HashMap<>();
@@ -201,7 +205,7 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 		@Override
 		protected final T createItem(Player owner) {
 			TLevels level = baseLevel;
-			if (owner != null && deadPlayerLevels.containsKey(owner.getName())) {
+			if (owner != null && deadPlayerLevels != null && deadPlayerLevels.containsKey(owner.getName())) {
 				level = deadPlayerLevels.get(owner.getName());
 			}
 
