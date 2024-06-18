@@ -1,5 +1,7 @@
 package fr.ludos.role;
 
+import fr.ludos.game.Game;
+
 public class NecromancerRole extends Role {
 
 	public NecromancerRole(Builder builder) {
@@ -15,7 +17,7 @@ public class NecromancerRole extends Role {
 		}
 
 		@Override
-		public NecromancerRole build(String gameId) {
+		public NecromancerRole build(Game.Builder builder) {
 			return new NecromancerRole(this);
 		}
 	}

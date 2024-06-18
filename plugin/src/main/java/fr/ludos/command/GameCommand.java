@@ -11,7 +11,7 @@ import org.bukkit.command.TabExecutor;
 
 import fr.ludos.game.Game;
 
-public class PlayCommand implements TabExecutor {
+public class GameCommand implements TabExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -55,7 +55,7 @@ public class PlayCommand implements TabExecutor {
 		usage.append(' ');
 
 		usage.append('<');
-		usage.append( Arrays.stream(PlayCommandOptions.values()).map(PlayCommandOptions::toString)
+		usage.append( Arrays.stream(GameCommandOptions.values()).map(GameCommandOptions::toString)
 						.sorted()
 						.collect(Collectors.joining(" | ")) );
 		usage.append('>');

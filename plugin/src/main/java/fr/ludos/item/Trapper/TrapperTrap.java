@@ -1,152 +1,52 @@
-package fr.ludos.item.Trapper;
+package fr.ludos.item.trapper;
+
+import java.util.ArrayList;
 
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.entity.EntityType;
-import java.util.ArrayList;
-import org.bukkit.Material;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-
-import org.bukkit.entity.Item;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-// import org.bukkit.util.Vector;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.block.Action;
 
-import fr.ludos.item.SpecialItem;
+public class TrapperTrap {
+    public static final ArrayList<TrapperTrap> traps = new ArrayList<>();
 
-class InnerTrapperTrap {
-    public String name;
-    public Location location;
-    public World world;
-    public int radius;
-}
 
-public class TrapperTrap extends SpecialItem {
-    
-    private ArrayList<InnerTrapperTrap> trap = new ArrayList<>();
-
-    private String name = "§6TrapperTrap";
-
-    public TrapperTrap(ItemStack item) {
-        super(item);
+    private TrapperSnareDeviceBranches type;
+    public TrapperSnareDeviceBranches getType() {
+        return type;
     }
 
-    @Override 
-    public String getId(){
-        return "trapper_trap";
+    private Player owner;
+    public Player getOwner() {
+        return owner;
     }
 
-    @Override
-    public String getName() {
-        return name;
+    private Location location;
+    public Location getLocation() {
+        return location;
     }
 
-    public void trapEntity(String name, int duration) {
-        InnerTrapperTrap innerTrap = getTrap(name);
-        for (Player player : innerTrap.world.getPlayers()) {
-            if (player.getLocation().distance(innerTrap.location) <= innerTrap.radius) {
-                this.trapEntity(name);
-            }
+    private World world;
+    public World getWorld() {
+        return world;
+    }
+
+    private int radius;
+    public int getRadius() {
+        return radius;
+    }
+
+
+    public TrapperTrap(Player owner, Location location, World world, int radius) {
+        this.owner = owner;
+        this.location = location;
+        this.world = world;
+        this.radius = radius;
+    }
+
+
+    public void process(Player target) {
+        if (target.getLocation().distance(location) <= radius) {
+            type.executeEffect(target, this);
         }
-    }
-
-    public void addTrap(String name, Location loc, World world, int radius) {
-        InnerTrapperTrap innerTrap = new InnerTrapperTrap();
-        innerTrap.name = name;
-        innerTrap.location = loc;
-        innerTrap.world = world;
-        innerTrap.radius = radius;
-        this.trap.add(innerTrap);
-    }
-
-    public static void trapTnt(World world, Location loc) {
-        world.spawnEntity(loc, EntityType.PRIMED_TNT);
-    }
-
-    public InnerTrapperTrap getTrap(String name) {
-        for (InnerTrapperTrap innerTrap : this.trap) {
-            if (innerTrap.name.equals(name)) {
-                return innerTrap;
-            }
-        }
-        return null;
-    }
-
-    public void trapCobweb(String name) {
-        InnerTrapperTrap innerTrap = getTrap(name);
-        loop(innerTrap.radius, innerTrap, Material.COBWEB);
-    }
-
-    public void trapBoost(String name, int speed, int strength, int saturation) {
-        InnerTrapperTrap innerTrap = getTrap(name);
-        loop(innerTrap.radius, innerTrap, Material.BEACON);
-    }
-
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (event.getMaterial() == Material.STRING) {
-                trapThrowing(event.getPlayer().getName());
-            }
-        }
-    }
-
-    public void trapThrowing(String name){
-        // throwObject();
-    } 
-
-    public void throwObject(Player player, Material material) {
-        Item item = player.getWorld().dropItem(player.getEyeLocation(), new ItemStack(material));
-        item.setVelocity(player.getLocation().getDirection().multiply(2));
-    }
-
-    public void trapGlowing(String name, int duration) {
-        final Player targetPlayer = Bukkit.getPlayer(name);
-
-        if (targetPlayer == null || !targetPlayer.isOnline()) {
-            return;
-        }
-
-        targetPlayer.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, duration * 20, 1));
-    }
-
-    public void loop(int radius , InnerTrapperTrap innerTrap, Material material){
-        for (int x = -radius; x <= radius; x++) {
-            for (int y = -radius; y <= radius; y++) {
-                for (int z = -radius; z <= radius; z++) {
-                    if (innerTrap.location.getBlock().getRelative(x, y, z).getType().isAir()) {
-                        innerTrap.location.getBlock().getRelative(x, y, z).setType(material);
-                    }
-                }
-            }
-        }
-    }
-
-    private void trapEntity(String name) {
-        switch (name) {
-            case "§6TntTrap":
-                trapTnt(getTrap(name).world, getTrap(name).location);
-                break;
-            case "§6CobwebTrap":
-                trapCobweb(name);
-                break;
-            case "§6BoostTrap":
-                trapBoost(name, 1, 1, 1);
-                break;
-            case "§6GlowingTrap":
-                trapGlowing(name, 1);
-                break;
-            default:
-                break;
-        }
-    }
-
-    private void trapActivate() {
-
     }
 }

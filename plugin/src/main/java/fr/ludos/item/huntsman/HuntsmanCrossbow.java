@@ -46,8 +46,6 @@ public class HuntsmanCrossbow extends SpecialItem {
 
 		public Events() {
 			super(HuntsmanRole.id);
-
-			updateAllInventories();
 		}
 
 		@EventHandler

@@ -38,8 +38,6 @@ public class HuntsmanTrident extends SpecialItem {
 
 		public Events() {
 			super(HuntsmanRole.id);
-
-			updateAllInventories();
 		}
 
 

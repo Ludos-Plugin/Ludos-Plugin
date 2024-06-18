@@ -1,5 +1,7 @@
 package fr.ludos.role;
 
+import fr.ludos.game.Game;
+
 public class StalkerRole extends Role {
 
 	public StalkerRole(Builder builder) {
@@ -15,7 +17,7 @@ public class StalkerRole extends Role {
 		}
 
 		@Override
-		public StalkerRole build(String gameId) {
+		public StalkerRole build(Game.Builder builder) {
 			return new StalkerRole(this);
 		}
 	}

@@ -1,7 +1,9 @@
 package fr.ludos.game.manhunt;
 
+import fr.ludos.Main;
 import fr.ludos.item.SpecialItem;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -86,7 +88,7 @@ public class ManhuntCompass extends SpecialItem {
 		public Events() {
 			super(null);
 
-			updateAllInventories();
+			Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
 		}
 
 		@Override

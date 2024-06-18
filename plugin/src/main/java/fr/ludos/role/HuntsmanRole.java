@@ -2,12 +2,10 @@ package fr.ludos.role;
 
 // import fr.ludos.item.huntsman.crossbow.HuntsmanCrossbow;
 // import fr.ludos.item.huntsman.spear.HuntsmanSpear;
-import fr.ludos.Main;
+import fr.ludos.game.Game;
 // import fr.ludos.command.SetBowLevelCommand;
 import fr.ludos.item.huntsman.HuntsmanBow;
 // import fr.ludos.item.huntsman.HuntsmanLevelSelector;
-
-import org.bukkit.command.PluginCommand;
 
 
 public class HuntsmanRole extends Role {
@@ -52,7 +50,7 @@ public class HuntsmanRole extends Role {
 		}
 
 		@Override
-		public HuntsmanRole build(String gameId) {
+		public HuntsmanRole build(Game.Builder builder) {
 			return new HuntsmanRole(this);
 		}
 	}

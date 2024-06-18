@@ -1,13 +1,13 @@
 package fr.ludos.command;
 
-public enum PlayCommandOptions {
+public enum GameCommandOptions {
 	config ("config"),
 	start ("start"),
 	stop ("stop");
 
 	private String name;
 
-	private PlayCommandOptions(String name) {
+	private GameCommandOptions(String name) {
 		this.name = name;
 	}
 

@@ -2,39 +2,32 @@ package fr.ludos.game.manhunt;
 
 import org.bukkit.Bukkit;
 import org.bukkit.scoreboard.Team;
-
+import java.util.Random;
 
 import org.bukkit.ChatColor;
-import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.entity.Player;
 
-import fr.ludos.Main;
 import fr.ludos.game.Game;
 import fr.ludos.game.TeamController;
 
 import java.util.stream.Collectors;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Random;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
-public final class ManhuntTeamController extends TeamController implements Listener {
-	private ManhuntGame game;
+public final class ManhuntTeamController extends TeamController {
 	public Team hunterTeam;
 	public Team preyTeam;
 
 
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<Player> players, @Nullable Player prey) {
 		super(game.getScoreboard());
-		this.game = game;
-
-
-		Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
 
 		hunterTeam = scoreboard.getTeam("Hunters");
 		if (hunterTeam == null) {
@@ -50,6 +43,7 @@ public final class ManhuntTeamController extends TeamController implements Liste
 			preyTeam.setAllowFriendlyFire(false);
 		}
 
+
 		if (players == null) {
 			players = new HashSet<Player>();
 			players.addAll(Bukkit.getOnlinePlayers());
@@ -60,25 +54,23 @@ public final class ManhuntTeamController extends TeamController implements Liste
 			prey = playersArray[ new Random().nextInt(players.size()) ];
 		}
 		players.remove(prey);
-
+		if (prey == null) {
+			throw new IllegalArgumentException("Prey could not be selected");
+		}
 
 
 		for (Player hunter : players) {
 			hunterTeam.addEntry(hunter.getName());
 			hunter.setScoreboard(scoreboard);
-			hunter.sendMessage("You are a Hunter.");
 		}
 
 		preyTeam.addEntry(prey.getName());
 		prey.setScoreboard(scoreboard);
-		prey.sendMessage("You are the Prey.");
 	}
 
 	@Override
 	public void stop() {
 		super.stop();
-
-		HandlerList.unregisterAll(this);
 
 		preyTeam.unregister();
 		hunterTeam.unregister();
@@ -86,20 +78,22 @@ public final class ManhuntTeamController extends TeamController implements Liste
 
 
 	public Set<Player> getHunters() {
-		return hunterTeam.getEntries().stream().map(Bukkit::getPlayerExact).collect(Collectors.toSet());
+		return hunterTeam.getEntries().stream()
+			.map(Bukkit::getPlayerExact)
+			.filter(p -> p != null)
+			.collect(Collectors.toSet());
 	}
 	public Optional<Player> getPrey() {
 		return preyTeam.getEntries().stream()
 			.map(Bukkit::getPlayerExact)
+			.filter(p -> p != null)
 			.findFirst();
 	}
 
 
 	@Override
-	protected Team[] getTeams() {
-		return new Team[] {
-			hunterTeam, preyTeam
-		};
+	protected Collection<Team> getTeams() {
+		return List.of(hunterTeam, preyTeam);
 	}
 
 	@EventHandler
@@ -118,4 +112,29 @@ public final class ManhuntTeamController extends TeamController implements Liste
 		}
 	}
 
+	@Override
+	protected Collection<Player> getPlayers() {
+		Set<Player> hunters = getHunters();
+		Optional<Player> prey = getPrey();
+		if (prey.isPresent()) {
+			hunters.add(prey.get());
+		}
+
+		return hunters;
+	}
+
+	// @Override
+	// public void updatePlayerTeam(Player player) {
+	// 	String newPlayer = player.getName();
+	// 	if (! huntersBound && ! preyTeam.hasEntry(newPlayer) && ! hunterTeam.hasEntry(newPlayer)) {
+	// 		for (String hunterName : hunterTeam.getEntries()) {
+	// 			var teammate = Bukkit.getPlayerExact(hunterName);
+	// 			if (teammate == null) continue;
+
+	// 			player.setBedSpawnLocation(teammate.getLocation());
+	// 			player.teleport(teammate.getLocation());
+	// 		}
+	// 		hunterTeam.addEntry(newPlayer);
+	// 	}
+	// }
 }

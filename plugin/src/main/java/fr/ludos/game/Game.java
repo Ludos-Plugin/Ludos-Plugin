@@ -1,7 +1,7 @@
 package fr.ludos.game;
 
 import fr.ludos.Main;
-import fr.ludos.command.PlayCommandOptions;
+import fr.ludos.command.GameCommandOptions;
 import fr.ludos.role.Role;
 
 import org.bukkit.event.HandlerList;
@@ -30,6 +30,8 @@ public abstract class Game implements Listener {
 	public final Map<String, Role> activeRoles = new HashMap<String, Role>();
 
 
+	public abstract TeamController getTeamController();
+
 	@Nullable
 	public static Game getCurrent() {
 		return Game.current;
@@ -39,8 +41,8 @@ public abstract class Game implements Listener {
 	}
 
 
-	public static void registerGame(Builder constructor) {
-		Game.registered.put(constructor.getId(), constructor);
+	public static void registerGame(Builder builder) {
+		Game.registered.put(builder.getId(), builder);
 	}
 
 	public static void startGame(Builder builder) {
@@ -62,27 +64,35 @@ public abstract class Game implements Listener {
 		}
 	}
 
-	public Game(Builder gameBuilder) {
-		Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
-
+	protected void registerRoles(Builder gameBuilder) {
 		for (Role.Builder roleBuilder : Role.getRegistered().values()) {
-			activeRoles.put(roleBuilder.getId(), roleBuilder.build(gameBuilder.getId()));
+			activeRoles.put(roleBuilder.getId(), roleBuilder.build(gameBuilder));
 		}
 	}
 
-	public void stop() {
-		HandlerList.unregisterAll(this);
+	public Game(Builder gameBuilder) {
+		Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
+	}
 
+	protected void stopRoles() {
 		for (Role role : activeRoles.values()) {
 			role.stop();
 		}
 		activeRoles.clear();
 	}
 
+	public void stop() {
+		HandlerList.unregisterAll(this);
+	}
+
 
 
 	public static abstract class Builder implements TabExecutor {
 		public abstract String getId();
+
+		public String getConfigKey(String key) {
+			return getId() + '.' + key;
+		}
 
 		@Override
 		public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -91,10 +101,10 @@ public abstract class Game implements Listener {
 			}
 
 			String arg = args[0];
-			if ( ! EnumUtils.isValidEnum(PlayCommandOptions.class, arg) ) {
+			if ( ! EnumUtils.isValidEnum(GameCommandOptions.class, arg) ) {
 				return false;
 			}
-			PlayCommandOptions option = PlayCommandOptions.valueOf( arg );
+			GameCommandOptions option = GameCommandOptions.valueOf( arg );
 
 			return gameCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
 		}
@@ -102,23 +112,23 @@ public abstract class Game implements Listener {
 		@Override
 		public final List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			if (args.length < 2) {
-				return Arrays.stream(PlayCommandOptions.values())
-					.map(PlayCommandOptions::toString)
+				return Arrays.stream(GameCommandOptions.values())
+					.map(GameCommandOptions::toString)
 					.sorted()
 					.collect(Collectors.toList());
 			}
 
 			String arg = args[0];
-			if ( ! EnumUtils.isValidEnum(PlayCommandOptions.class, arg) ) {
+			if ( ! EnumUtils.isValidEnum(GameCommandOptions.class, arg) ) {
 				return null;
 			}
-			PlayCommandOptions option = PlayCommandOptions.valueOf( arg );
+			GameCommandOptions option = GameCommandOptions.valueOf( arg );
 
 			return gameTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
 		}
 
-		public abstract boolean gameCommand(CommandSender sender, Command command, String label, String[] args, PlayCommandOptions option);
-		public abstract List<String> gameTabComplete(CommandSender sender, Command command, String label, String[] args, PlayCommandOptions option);
+		public abstract boolean gameCommand(CommandSender sender, Command command, String label, String[] args, GameCommandOptions option);
+		public abstract List<String> gameTabComplete(CommandSender sender, Command command, String label, String[] args, GameCommandOptions option);
 
 		public abstract Game build();
 	}

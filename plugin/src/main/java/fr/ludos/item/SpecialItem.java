@@ -1,7 +1,6 @@
 package fr.ludos.item;
 
 import fr.ludos.Main;
-import fr.ludos.item.burrower.BurrowerShovel;
 import fr.ludos.role.Role;
 
 import org.bukkit.Bukkit;
@@ -15,7 +14,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.Material;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -252,6 +250,18 @@ public abstract class SpecialItem {
 
 		public void stop() {
 			HandlerList.unregisterAll(this);
+
+			removeFromAllInventories();
+		}
+
+		protected void removeFromAllInventories() {
+			for (Player player : Bukkit.getOnlinePlayers()) {
+				Inventory inventory = player.getInventory();
+				List<T> items = SpecialItem.findAllIn(inventory, this::getItem);
+				for(T item : items) {
+					inventory.remove(item.getStack());
+				}
+			}
 		}
 
 		protected void updateAllInventories() {

@@ -1,14 +1,12 @@
 package fr.ludos.role;
 
-import fr.ludos.Main;
+import fr.ludos.game.Game;
 import fr.ludos.item.burrower.BurrowerPick;
 import fr.ludos.item.burrower.BurrowerShovel;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.generator.structure.StructureType;
@@ -19,7 +17,6 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.Bukkit;
 
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.StructureSearchResult;
 
 import java.util.List;
@@ -38,7 +35,6 @@ public class BurrowerRole extends Role {
 
 	public BurrowerRole(Builder builder) {
 		super(builder);
-		PluginManager manager = Bukkit.getPluginManager();
 
 		burrowers = Role.getPlayersOfRole(id);
 
@@ -51,15 +47,8 @@ public class BurrowerRole extends Role {
 
 
 		pickEvents = new BurrowerPick.Events();
-		// manager.registerEvents((Listener)pickEvents, Main.getInstance());
 
 		shovelEvents = new BurrowerShovel.Events();
-		// manager.registerEvents((Listener)shovelEvents, Main.getInstance());
-
-		// for (Player player : burrowers) {
-		// 	pickEvents.updateItemInInventory(player);
-		// 	shovelEvents.updateItemInInventory(player);
-		// }
 	}
 
 	@Override
@@ -69,8 +58,8 @@ public class BurrowerRole extends Role {
 		// passiveResourcesTask.cancel();
 		// passiveResourcesTask = null;
 
-		HandlerList.unregisterAll(pickEvents);
-		HandlerList.unregisterAll(shovelEvents);
+		pickEvents.stop();
+		shovelEvents.stop();
 	}
 
 	@EventHandler
@@ -108,24 +97,24 @@ public class BurrowerRole extends Role {
 		}
 	}
 
-	@EventHandler
-    public void onPrepareItemCraft(PrepareItemCraftEvent event) {
-		if ( ! Role.isPlayerRole(event.getView().getPlayer(), id) ) {
-			return;
-		}
+	// @EventHandler
+    // public void onPrepareItemCraft(PrepareItemCraftEvent event) {
+	// 	if ( ! Role.isPlayerRole(event.getView().getPlayer(), id) ) {
+	// 		return;
+	// 	}
 
 
-        Recipe recipe = event.getRecipe();
-        if (recipe == null) {
-			return;
-        }
+    //     Recipe recipe = event.getRecipe();
+    //     if (recipe == null) {
+	// 		return;
+    //     }
 
-		ItemStack result = recipe.getResult();
-		if (result.getType() == Material.FURNACE) {
-			CraftingInventory craft = event.getInventory();
-			craft.setResult(new ItemStack(Material.BLAST_FURNACE));
-		}
-	}
+	// 	ItemStack result = recipe.getResult();
+	// 	if (result.getType() == Material.FURNACE) {
+	// 		CraftingInventory craft = event.getInventory();
+	// 		craft.setResult(new ItemStack(Material.BLAST_FURNACE));
+	// 	}
+	// }
 
 	private void giveRandomOreToPlayers() {
 		for (Player player : burrowers) {
@@ -152,7 +141,7 @@ public class BurrowerRole extends Role {
 		}
 
 		@Override
-		public Role build(String gameId){
+		public Role build(Game.Builder builder){
 			return new BurrowerRole(this);
 		}
 	}

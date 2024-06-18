@@ -2,7 +2,10 @@ package fr.ludos.game.manhunt;
 
 public enum ManhuntGameConfigs {
 	players ("players"),
-	prey ("prey");
+	prey ("prey"),
+	area ("area"),
+	location ("location"),
+	reveal ("reveal");
 
 	private String name;
 

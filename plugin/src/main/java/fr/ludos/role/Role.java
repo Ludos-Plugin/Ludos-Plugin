@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import fr.ludos.Main;
+import fr.ludos.game.Game;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -125,7 +126,7 @@ public abstract class Role implements Listener {
 	public static abstract class Builder {
 		public abstract String getId();
 
-		public abstract Role build(String gameId);
+		public abstract Role build(Game.Builder builder);
 	}
 
 }

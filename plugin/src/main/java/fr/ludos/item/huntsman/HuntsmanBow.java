@@ -1,15 +1,12 @@
 package fr.ludos.item.huntsman;
 
 import fr.ludos.Main;
-import fr.ludos.item.BranchItem;
-import fr.ludos.item.LevelItem;
+import fr.ludos.item.BranchLevelItem;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -35,8 +32,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-
-public class HuntsmanBow extends BranchItem<HuntsmanBowBranches> {
+public class HuntsmanBow extends BranchLevelItem<HuntsmanBowBranches> {
 
 	public HuntsmanBow(ItemStack stack) throws IllegalArgumentException {
 		super(stack);
@@ -60,13 +56,6 @@ public class HuntsmanBow extends BranchItem<HuntsmanBowBranches> {
 
 	protected HuntsmanBow(Player owner, HuntsmanBowBranches branch, int[] levels, double[] xps) {
 		super(new ItemStack(Material.BOW), owner, branch, levels, xps);
-	}
-
-	public void cycleBranch() {
-		setBranch(convertToBranch((getBranch().index() + 1) % HuntsmanBowBranches.values.length));
-
-		Player owner = getOwner();
-		owner.playSound(owner.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 0.25f, 1);
 	}
 
 	@Override
@@ -125,7 +114,7 @@ public class HuntsmanBow extends BranchItem<HuntsmanBowBranches> {
 
 
 
-	public static class Events extends BranchItem.Events<HuntsmanBow, HuntsmanBowBranches> {
+	public static class Events extends BranchLevelItem.Events<HuntsmanBow, HuntsmanBowBranches> {
 
 		public static final String ARROW_TYPE = "arrow_type";
 		public final NamespacedKey arrowTypeKey = new NamespacedKey(Main.getInstance(), ARROW_TYPE);
@@ -133,9 +122,13 @@ public class HuntsmanBow extends BranchItem<HuntsmanBowBranches> {
 		public static final String ARROW_LEVEL = "arrow_level";
 		public final NamespacedKey arrowLevelKey = new NamespacedKey(Main.getInstance(), ARROW_LEVEL);
 
+		// private BukkitTask saturationTask;
+
 
 		public Events() {
 			super(HuntsmanRole.id);
+
+			updateAllInventories();
 		}
 
 
@@ -151,6 +144,8 @@ public class HuntsmanBow extends BranchItem<HuntsmanBowBranches> {
 				return;
 			}
 
+			updateArrowCount(player);
+
 			Arrow arrowProjectile = (Arrow) event.getProjectile();
 			arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
 
@@ -159,11 +154,13 @@ public class HuntsmanBow extends BranchItem<HuntsmanBowBranches> {
 
 			int level = bow.getCurrentBranchLevel();
 
-			container.set(arrowTypeKey, PersistentDataType.INTEGER, branch.index());
-			container.set(arrowLevelKey, PersistentDataType.INTEGER, level);
-			branch.processShotArrow(arrowProjectile, player, level, event);
+			if (! player.hasCooldown(Material.ARROW))  {
+				container.set(arrowTypeKey, PersistentDataType.INTEGER, branch.index());
+				container.set(arrowLevelKey, PersistentDataType.INTEGER, level);
+				branch.processShotArrow(arrowProjectile, player, level, event);
 
-			updateArrowCount(player);
+				player.setCooldown(Material.ARROW, 200);
+			}
 		}
 
 		@EventHandler

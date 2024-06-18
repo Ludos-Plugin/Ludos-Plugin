@@ -6,9 +6,8 @@ main: fr.ludos.Main
 
 
 commands:
-   play:
+   game:
       description: "The main Ludos command"
    role:
       description: "Pick a role to use when playing a Ludos game"
    bomberzombie:
-   setbowbranch:

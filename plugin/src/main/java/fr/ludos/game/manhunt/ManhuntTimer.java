@@ -7,9 +7,9 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -17,19 +17,22 @@ import fr.ludos.Main;
 
 public class ManhuntTimer implements Listener {
 
-	private static final int revealSeconds = 180;
+	private int revealSeconds = 180;
     private ManhuntGame game;
 	private BossBar bossbar;
 
-    private boolean state = false;
-    private long startTime;
+    private boolean isStarted = false;
+    private boolean isRunning = false;
+
     private BukkitTask task;
 
     private long totalSeconds;
     private String formattedTime;
 
-    public ManhuntTimer(ManhuntGame game) {
+    public ManhuntTimer(ManhuntGame game, int revealSeconds) {
         this.game = game;
+        this.revealSeconds = revealSeconds;
+
 		bossbar = Bukkit.createBossBar("Timer", BarColor.RED, BarStyle.SEGMENTED_12);
 
         start();
@@ -41,52 +44,68 @@ public class ManhuntTimer implements Listener {
         bossbar.setVisible(true);
     }
 
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        if (Bukkit.getOnlinePlayers().size() == 0) {
-            stop();
-        }
-    }
-
     private void start() {
-        if (state) {
+        if (isStarted) {
             return;
         }
-        state = true;
+        isStarted = true;
+        resume();
+
+        Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
 
 		for (Player player : Bukkit.getOnlinePlayers()) {
-			bossbar.addPlayer(player);
+            bossbar.addPlayer(player);
 		}
 		bossbar.setVisible(true);
 
-        startTime = System.currentTimeMillis();
-        task = new BukkitRunnable() {
-            @Override
-            public void run() {
-                update();
-            }
-        }.runTaskTimer(Main.getInstance(), 0, 20);
     }
 
     public void stop() {
-        if (! state) {
+        if (! isStarted) {
             return;
         }
-        state = false;
-
-        task.cancel();
+        pause();
+        isStarted = false;
 
 		bossbar.removeAll();
 		bossbar.setVisible(false);
 
-        Bukkit.broadcastMessage(ChatColor.GREEN + "Chrono terminé. Temps total : " + formattedTime);
+		HandlerList.unregisterAll(this);
+
+        Bukkit.broadcastMessage(ChatColor.GREEN + "Timer ended. Final Time : " + formattedTime);
     }
 
-    private void update() {
-        long currentTime = System.currentTimeMillis();
-        long elapsedTime = currentTime - startTime;
+    public void resume() {
+        if (! isStarted || isRunning) {
+            return;
+        }
+        isRunning = true;
 
-        totalSeconds = elapsedTime / 1000;
+        task = new BukkitRunnable() {
+            @Override
+            public void run() {
+                addSecond();
+            }
+        }.runTaskTimer(Main.getInstance(), 20, 20);
+    }
+
+    public void pause() {
+        if (! isStarted || ! isRunning) {
+            return;
+        }
+        isRunning = false;
+
+        if (task != null) {
+            task.cancel();
+        }
+        task = null;
+    }
+
+
+
+    private void addSecond() {
+        totalSeconds += 1;
+
         long hours = totalSeconds / 3600;
         long minutes = totalSeconds % 3600 / 60;
         long seconds = totalSeconds % 60;

@@ -5,6 +5,4 @@ public interface SpecialItemBranches<T extends SpecialItemBranches<T>> {
 	public String getDescription();
 
 	public int index();
-	public double getXpThreshold();
-	public boolean isMax(int level);
 }

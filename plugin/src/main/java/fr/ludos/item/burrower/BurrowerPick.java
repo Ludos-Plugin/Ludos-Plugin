@@ -6,7 +6,6 @@ import fr.ludos.item.LevelItem;
 import fr.ludos.item.ItemUtilities;
 
 import org.apache.commons.lang3.function.TriFunction;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -250,6 +249,8 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 		public Events() {
 			super(BurrowerRole.id, BurrowerPickLevels.WOODEN);
+
+			updateAllInventories();
 		}
 
 
