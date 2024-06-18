@@ -46,10 +46,10 @@ public class Main extends JavaPlugin implements Listener {
 		Game.registerGame(new ManhuntGame.Builder());
 
 		Role.registerRole(new HuntsmanRole.Builder());
-		Role.registerRole(new NecromancerRole.Builder());
-		Role.registerRole(new StalkerRole.Builder());
 		Role.registerRole(new BurrowerRole.Builder());
 		Role.registerRole(new TrapperRole.Builder());
+		// Role.registerRole(new NecromancerRole.Builder());
+		// Role.registerRole(new StalkerRole.Builder());
 
 
 		PluginCommand cmd = getCommand("game");
