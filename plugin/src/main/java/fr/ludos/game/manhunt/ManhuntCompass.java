@@ -56,7 +56,7 @@ public class ManhuntCompass extends SpecialItem {
 
 	@Override
 	public String getId() {
-		return "manhunt_compass";
+		return "manhuntCompass";
 	}
 
 	@Override

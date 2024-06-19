@@ -197,7 +197,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 	@Override
 	public String getId() {
-		return "manhunt_burrower_pick";
+		return "manhuntBurrowerPick";
 	}
 
 	@Override

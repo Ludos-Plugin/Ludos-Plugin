@@ -14,63 +14,72 @@ import net.md_5.bungee.api.ChatColor;
 public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSnareDeviceBranches> {
 	BOOSTING (ChatColor.GREEN.toString() + ChatColor.ITALIC + "BOOSTING", "BOOSTING Description") {
 		@Override
-		public void createTrap(Player owner, Block block) {
-			TrapperTrap boostingTrap = new TrapperTrap(owner, block.getLocation(), block.getWorld(), 5);
-			TrapperTrap.traps.add(boostingTrap);
-
-			block.getLocation().getBlock().setType(Material.COARSE_DIRT);
+		public TrapperTrap createTrap(Player owner, Block block) {
+			block.getLocation().getBlock().setType(Material.OAK_LEAVES);
+			owner.sendMessage("Trap placed !");
+			return new TrapperTrap(owner, block.getLocation(), block.getWorld(), this);
 		}
 
 		@Override
-		public void executeEffect(Player target, TrapperTrap info) {
+		public Boolean executeEffect(Player target, TrapperTrap info) {
+			if (target.getLocation().distance(info.getLocation()) >= 5) return false;
+			if (info.getLocation().getBlock().getType() != Material.OAK_LEAVES) return true;
+
 			info.getOwner().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 5, 1));
 			info.getOwner().sendMessage("Trap triggered !");
 
-			// this.getWorld().getBlockAt(getLocation()).setType(Material.COBWEB);
-			if (info.getLocation().getBlock().getType() == Material.COARSE_DIRT) {
-				info.getLocation().getBlock().setType(Material.AIR);
-			}
+			info.getWorld().getBlockAt(info.getLocation()).setType(Material.AIR);
+
+			return true;
 		}
 	},
 
 
 	REVEALING (ChatColor.GOLD.toString() + ChatColor.ITALIC + "REVEALING", "REVEALING Description") {
 		@Override
-		public void createTrap(Player owner, Block block) {
-			TrapperTrap revealingTrap = new TrapperTrap(owner, block.getLocation(), block.getWorld(), 3);
-			TrapperTrap.traps.add(revealingTrap);
+		public TrapperTrap createTrap(Player owner, Block block) {
+			block.getLocation().getBlock().setType(Material.SUNFLOWER);
+			owner.sendMessage("Trap placed !");
+			return new TrapperTrap(owner, block.getLocation(), block.getWorld(), this);
 		}
 
 		@Override
-		public void executeEffect(Player target, TrapperTrap info) {
-            target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 400, 1));
+		public Boolean executeEffect(Player target, TrapperTrap info) {
+			if (target.getLocation().distance(info.getLocation()) >= 3) return false;
+            if (info.getLocation().getBlock().getType() != Material.SUNFLOWER) return true;
+
             info.getOwner().sendMessage("Trap triggered !");
+            target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 400, 1));
 
-            if (info.getLocation().getBlock().getType() == Material.SUNFLOWER) {
-                info.getLocation().getBlock().setType(Material.AIR);
-            }
+			info.getLocation().getBlock().setType(Material.AIR);
 
-            // TODO Evoyer un event au plugin pour notifier que le joueur a été révélé et declencher le reveal de la position du joueur
+            // TODO Envoyer un event au plugin pour notifier que le joueur a été révélé et declencher le reveal de la position du joueur
             //Bukkit.getServer().getPluginManager().callEvent()
+
+			return true;
 		}
 	},
 
 
 	SLOWING	(ChatColor.BLUE.toString() + ChatColor.ITALIC + "SLOWING", "SLOWING Description") {
 		@Override
-		public void createTrap(Player owner, Block block) {
-			TrapperTrap slowingTrap = new TrapperTrap(owner, block.getLocation(), block.getWorld(), 7);
-			TrapperTrap.traps.add(slowingTrap);
+		public TrapperTrap createTrap(Player owner, Block block) {
+			block.getLocation().getBlock().setType(Material.COARSE_DIRT);
+			owner.sendMessage("Trap placed !");
+			return new TrapperTrap(owner, block.getLocation(), block.getWorld(), this);
 		}
 
 		@Override
-		public void executeEffect(Player target, TrapperTrap info) {
+		public Boolean executeEffect(Player target, TrapperTrap info) {
+			if (target.getLocation().distance(info.getLocation()) >= 7) return false;
+			if (info.getLocation().getBlock().getType() != Material.COARSE_DIRT) return true;
+
             target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, 1));
             info.getOwner().sendMessage("Trap triggered !");
 
-            if (info.getLocation().getBlock().getType() == Material.COBWEB) {
-                info.getLocation().getBlock().setType(Material.AIR);
-            }
+			info.getLocation().getBlock().setType(Material.COBWEB);
+
+			return true;
 		}
 	};
 
@@ -107,6 +116,6 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		return ArrayUtils.indexOf(values(), this);
 	}
 
-	public abstract void createTrap(Player owner, Block block);
-	public abstract void executeEffect(Player target, TrapperTrap info);
+	public abstract TrapperTrap createTrap(Player owner, Block block);
+	public abstract Boolean executeEffect(Player target, TrapperTrap info);
 }

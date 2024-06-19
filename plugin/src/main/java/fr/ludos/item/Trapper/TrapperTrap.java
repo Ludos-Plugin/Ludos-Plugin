@@ -7,8 +7,6 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 public class TrapperTrap {
-    public static final ArrayList<TrapperTrap> traps = new ArrayList<>();
-
 
     private TrapperSnareDeviceBranches type;
     public TrapperSnareDeviceBranches getType() {
@@ -30,23 +28,16 @@ public class TrapperTrap {
         return world;
     }
 
-    private int radius;
-    public int getRadius() {
-        return radius;
-    }
 
-
-    public TrapperTrap(Player owner, Location location, World world, int radius) {
+    public TrapperTrap(Player owner, Location location, World world, TrapperSnareDeviceBranches type) {
         this.owner = owner;
         this.location = location;
         this.world = world;
-        this.radius = radius;
+        this.type = type;
     }
 
 
     public void process(Player target) {
-        if (target.getLocation().distance(location) <= radius) {
-            type.executeEffect(target, this);
-        }
+        type.executeEffect(target, this);
     }
 }

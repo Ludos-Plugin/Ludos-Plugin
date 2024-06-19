@@ -127,7 +127,7 @@ public class BurrowerShovel extends SpecialItem {
 
 	@Override
 	public String getId() {
-		return "manhunt_burrower_shovel";
+		return "manhuntBurrowerShovel";
 	}
 
 	@Override

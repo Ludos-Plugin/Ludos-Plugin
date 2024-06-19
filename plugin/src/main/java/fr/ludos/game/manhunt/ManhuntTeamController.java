@@ -60,6 +60,7 @@ public final class ManhuntTeamController extends TeamController {
 
 
 		for (Player hunter : players) {
+			if (hunter == null) continue;
 			hunterTeam.addEntry(hunter.getName());
 			hunter.setScoreboard(scoreboard);
 		}

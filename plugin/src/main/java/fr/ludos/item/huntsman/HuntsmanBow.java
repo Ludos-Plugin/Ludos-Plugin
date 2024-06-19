@@ -71,16 +71,12 @@ public class HuntsmanBow extends BranchLevelItem<HuntsmanBowBranches> {
 
 	@Override
 	public String getId() {
-		return "manhunt_huntsman_bow";
+		return "manhuntHuntsmanBow";
 	}
 
 	@Override
 	protected String getName() {
-		HuntsmanBowBranches branch = getBranch();
-		if (branch == null) {
-			return null;
-		}
-		return "Stolen Bow (" + branch.getName() + ChatColor.RESET.toString() + ChatColor.WHITE + ")"; // TODO: Translate
+		return "Stolen Bow " + getBranchAnnotation(); // TODO: Translate
 	}
 
 	@Override

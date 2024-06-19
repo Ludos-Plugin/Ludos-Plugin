@@ -1,5 +1,8 @@
 package fr.ludos.item.trapper;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -43,13 +46,13 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
     @Override
     public String getId(){
-        return "trapper_snare";
+        return "trapperSnareGrimoire";
     }
 
 
     @Override
     protected String getName() {
-        return "Snare Grimoire";
+        return "Snare Grimoire " + getBranchAnnotation();
     }
 
 
@@ -85,6 +88,8 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 	public static class Events extends SpecialItem.Events<TrapperSnareDevice> {
 
+		public final ArrayList<TrapperTrap> traps = new ArrayList<>();
+
 		public Events() {
 			super(TrapperRole.id);
 
@@ -94,23 +99,27 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 				@Override
 				public void run() {
 					var game = Game.getCurrent();
-					if (game == null) {
-						return;
-					}
+					if (game == null) return;
 
-					for (TrapperTrap trap : TrapperTrap.traps) {
+					Set<TrapperTrap> trapsToRemove = new HashSet<>();
+					for (TrapperTrap trap : traps) {
 						Set<Player> targetedPlayers = game.getTeamController().getEnemies(trap.getOwner());
 						for (Player targetedPlayer : targetedPlayers) {
-
-							if (targetedPlayer.getLocation().distance(trap.getLocation()) < trap.getRadius() ) {
-								trap.process(targetedPlayer);
-								TrapperTrap.traps.remove(trap);
+							if (trap.getType().executeEffect(targetedPlayer, trap)) {
+								trapsToRemove.add(trap);
 							}
-
 						}
 					}
+					traps.removeAll(trapsToRemove);
 				}
 			}.runTaskTimer(Main.getInstance(), 0, 1);
+		}
+
+		@Override
+		public void stop() {
+			super.stop();
+
+			traps.clear();
 		}
 
 
@@ -144,7 +153,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 			}
 			else if (action == Action.RIGHT_CLICK_BLOCK) {
 				Block block = event.getClickedBlock().getRelative(event.getBlockFace());
-				snareDevice.getBranch().createTrap(player, block);
+				traps.add(snareDevice.getBranch().createTrap(player, block));
 			}
 			else {
 				player.sendMessage("You must click on a block to place a trap."); // TODO: Translate

@@ -3,6 +3,7 @@ package fr.ludos.role;
 import fr.ludos.game.Game;
 
 public class StalkerRole extends Role {
+	public static final String id = "stalker";
 
 	public StalkerRole(Builder builder) {
 		super(builder);
@@ -13,7 +14,7 @@ public class StalkerRole extends Role {
 
 		@Override
 		public String getId() {
-			return "stalker";
+			return id;
 		}
 
 		@Override

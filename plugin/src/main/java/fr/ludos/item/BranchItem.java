@@ -3,6 +3,7 @@ package fr.ludos.item;
 import org.bukkit.persistence.*;
 
 import fr.ludos.Main;
+import fr.ludos.item.huntsman.HuntsmanBowBranches;
 
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
@@ -65,6 +66,13 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 
 		updateLore();
 		updateName();
+	}
+
+	protected String getBranchAnnotation() {
+		TBranches branch = getBranch();
+		if (branch == null) return null;
+
+		return "(" + branch.getName() + ChatColor.RESET.toString() + ChatColor.WHITE + ")";
 	}
 
 	@Override

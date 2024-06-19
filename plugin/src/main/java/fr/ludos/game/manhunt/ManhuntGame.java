@@ -38,12 +38,11 @@ import org.bukkit.WorldBorder;
 
 
 public class ManhuntGame extends Game {
-	public static final String manhuntKey = "Manhunt";
-	public static final String playersKey = "Players";
-	public static final String preyKey = "Prey";
-	public static final String areaKey = "Area";
-	public static final String locationKey = "Location";
-	public static final String revealKey = "Reveal";
+	public static final String playersKey = "players";
+	public static final String preyKey = "prey";
+	public static final String areaKey = "area";
+	public static final String locationKey = "location";
+	public static final String revealKey = "reveal";
 
 	private Scoreboard scoreboard;
 	public Scoreboard getScoreboard() {
@@ -208,11 +207,6 @@ public class ManhuntGame extends Game {
 			}
 		}
 
-		// DEBUG
-		// for (ManhuntCompass compass : ManhuntCompass.findAllIn(prey.get().getInventory(), ManhuntCompass::getItem)) {
-		// 	compass.setLocation(prey.get());
-		// }
-
 		prey.get().addPotionEffect(PotionEffectType.GLOWING.createEffect(100, 0));
 	}
 
@@ -291,10 +285,10 @@ public class ManhuntGame extends Game {
 
 			players = main.getConfig().getStringList(getConfigKey(playersKey)).stream()
 				.collect(Collectors.toSet());
-
 			if (players.size() == 0) {
 				players = null;
 			}
+
 			prey = main.getConfig().getString(getConfigKey(preyKey), null);
 
 			String areaString = main.getConfig().getString(getConfigKey(areaKey), ManhuntAreaOptions.medium.getName());
@@ -322,6 +316,7 @@ public class ManhuntGame extends Game {
 			return new HashSet<Player>(
 				players.stream()
 					.map(Bukkit::getPlayerExact)
+					.filter(p -> p != null)
 					.collect(Collectors.toSet())
 			);
 		}
@@ -507,7 +502,7 @@ public class ManhuntGame extends Game {
 
 				area = areaOption;
 
-				main.getConfig().set(getConfigKey(areaKey), area);
+				main.getConfig().set(getConfigKey(areaKey), area.getName());
 				main.saveConfig();
 
 				sender.sendMessage("Game area set to " + area); // TODO: Translate
@@ -528,7 +523,7 @@ public class ManhuntGame extends Game {
 
 				location = locationOption;
 
-				main.getConfig().set(getConfigKey(locationKey), location);
+				main.getConfig().set(getConfigKey(locationKey), location.getName());
 				main.saveConfig();
 
 				sender.sendMessage("Game location set to " + location); // TODO: Translate
@@ -549,7 +544,7 @@ public class ManhuntGame extends Game {
 
 				reveal = revealOption;
 
-				main.getConfig().set(getConfigKey(revealKey), reveal);
+				main.getConfig().set(getConfigKey(revealKey), reveal.getName());
 				main.saveConfig();
 
 				sender.sendMessage("Prey Reveal Frequency set to " + reveal); // TODO: Translate
@@ -565,31 +560,28 @@ public class ManhuntGame extends Game {
 			switch ( config ) {
 			case players:
 				// Options are : any enumeration of players, or all players
-
 				if ( args.length == 1 ) {
 					allPlayers.add(allOption);
 				}
 				return allPlayers;
+
 			case prey:
 				// Options are : any single player, or a random player
+				allPlayers.add(randomOption);
+				return allPlayers;
 
-				if ( args.length == 1 ) {
-					allPlayers.add(randomOption);
-					return allPlayers;
-				}
-				return null;
 			case area:
 				// Options are : large, medium, small
-
 				return areaOptions;
+
 			case location:
 				// Options are : random, here
-
 				return locationOptions;
+
 			case reveal:
 				// Options are : short, medium, long
-
 				return revealOptions;
+
 			}
 
 			return null;

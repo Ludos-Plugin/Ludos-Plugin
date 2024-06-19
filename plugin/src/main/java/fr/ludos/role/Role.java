@@ -26,7 +26,7 @@ import org.bukkit.entity.Player;
  */
 public abstract class Role implements Listener {
 
-	private static final String rolesKey = "PlayerRoles";
+	private static final String rolesKey = "playerRoles";
 
 	public static Map<String, Builder> getRegistered() {
 		return registered;

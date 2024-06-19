@@ -28,7 +28,7 @@ public class HuntsmanCrossbow extends SpecialItem {
 
 	@Override
 	public String getId() {
-		return "manhunt_huntsman_crossbow";
+		return "manhuntHuntsmanCrossbow";
 	}
 
 	@Override
