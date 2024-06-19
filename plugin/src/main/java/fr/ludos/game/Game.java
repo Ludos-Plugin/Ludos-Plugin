@@ -7,6 +7,7 @@ import fr.ludos.role.Role;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -29,8 +30,6 @@ public abstract class Game implements Listener {
 
 	public final Map<String, Role> activeRoles = new HashMap<String, Role>();
 
-
-	public abstract TeamController getTeamController();
 
 	@Nullable
 	public static Game getCurrent() {
@@ -85,6 +84,8 @@ public abstract class Game implements Listener {
 		HandlerList.unregisterAll(this);
 	}
 
+	public abstract TeamController getTeamController();
+	public abstract Boolean canPlayerHaveRole(Player player, String roleId);
 
 
 	public static abstract class Builder implements TabExecutor {

@@ -1,6 +1,7 @@
 package fr.ludos.item;
 
 import fr.ludos.Main;
+import fr.ludos.game.Game;
 import fr.ludos.role.Role;
 
 import org.bukkit.Bukkit;
@@ -331,6 +332,11 @@ public abstract class SpecialItem {
 
 
 		public void updateItemInInventory(Player player) {
+			var currentGame = Game.getCurrent();
+			if (currentGame == null || ! currentGame.canPlayerHaveRole(player, roleId)) {
+				return;
+			}
+
 			if (roleId != null && ! Role.isPlayerRole(player, roleId)) {
 				return;
 			}

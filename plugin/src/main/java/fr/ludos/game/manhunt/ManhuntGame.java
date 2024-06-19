@@ -30,6 +30,7 @@ import fr.ludos.Main;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.GameCommandOptions;
 import fr.ludos.game.Game;
+import fr.ludos.game.TeamController;
 import net.md_5.bungee.api.ChatColor;
 
 import org.bukkit.Location;
@@ -183,7 +184,7 @@ public class ManhuntGame extends Game {
 		while (location.getBlock().isLiquid() && retries < 50);
 
 		if (retries == 0) {
-			Bukkit.broadcastMessage("HOLY SHIT 50 TRIES WT F");
+			Bukkit.broadcastMessage("Could not find valid play area");
 		}
 
 		location.setY(location.getY() + 1);
@@ -241,6 +242,15 @@ public class ManhuntGame extends Game {
 			timer.pause();
 		}
     }
+
+	@Override
+	public Boolean canPlayerHaveRole(Player player, String roleId) {
+		// if (teamController.preyTeam.getEntries().contains(player.getName())) {
+		// 	return false;
+		// }
+
+		return true;
+	}
 
     public static class Builder extends Game.Builder {
         private static final String allOption = "all";
