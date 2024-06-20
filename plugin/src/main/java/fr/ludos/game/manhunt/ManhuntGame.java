@@ -291,17 +291,17 @@ public class ManhuntGame extends Game {
 
 			prey = main.getConfig().getString(getConfigKey(preyKey), null);
 
-			String areaString = main.getConfig().getString(getConfigKey(areaKey), ManhuntAreaOptions.medium.getName());
+			String areaString = main.getConfig().getString(getConfigKey(areaKey));
 			area = EnumUtils.isValidEnum(ManhuntAreaOptions.class, areaString)
 				? ManhuntAreaOptions.valueOf( areaString )
 				: ManhuntAreaOptions.medium;
 
-			String locationString = main.getConfig().getString(getConfigKey(locationKey), ManhuntLocationOptions.random.getName());
+			String locationString = main.getConfig().getString(getConfigKey(locationKey));
 			location = EnumUtils.isValidEnum(ManhuntLocationOptions.class, locationString)
 				? ManhuntLocationOptions.valueOf( locationString )
 				: ManhuntLocationOptions.random;
 
-			String revealString = main.getConfig().getString(getConfigKey(revealKey), ManhuntRevealOptions.medium.getName());
+			String revealString = main.getConfig().getString(getConfigKey(revealKey));
 			reveal = EnumUtils.isValidEnum(ManhuntRevealOptions.class, revealString)
 				? ManhuntRevealOptions.valueOf( revealString )
 				: ManhuntRevealOptions.medium;
