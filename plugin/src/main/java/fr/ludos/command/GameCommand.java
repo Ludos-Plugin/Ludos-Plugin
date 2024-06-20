@@ -15,14 +15,12 @@ public class GameCommand implements TabExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if (args.length == 0) {
-			return false;
-		}
-		if ( ! Game.getRegistered().containsKey(args[0]) ) {
-			return false;
-		}
+		if (args.length == 0) return false;
 
-		return Game.getRegistered().get(args[0])
+		String gameString = args[0].toLowerCase();
+		if (! Game.getRegistered().containsKey(gameString)) return false;
+
+		return Game.getRegistered().get(gameString)
 			.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 	}
 
@@ -34,11 +32,10 @@ public class GameCommand implements TabExecutor {
 				.collect(Collectors.toList());
 		}
 
-		String arg = args[0];
-		if ( ! Game.getRegistered().containsKey(arg) ) {
-			return null;
-		}
-		return Game.getRegistered().get(arg)
+		String gameString = args[0].toLowerCase();
+		if (! Game.getRegistered().containsKey(gameString)) return null;
+
+		return Game.getRegistered().get(gameString)
 			.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 	}
 

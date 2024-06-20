@@ -3,7 +3,7 @@ package fr.ludos.item;
 import org.bukkit.persistence.*;
 
 import fr.ludos.Main;
-import fr.ludos.item.huntsman.HuntsmanBowBranches;
+import fr.ludos.item.huntsman.HuntsmanCrossbowBranches;
 
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;

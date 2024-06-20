@@ -19,13 +19,12 @@ public class RoleCommand implements TabExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if (args.length == 0) {
-			return false;
-		}
-		if ( ! EnumUtils.isValidEnum(RoleCommandOptions.class, args[0]) ) {
-			return false;
-		}
-		RoleCommandOptions config = RoleCommandOptions.valueOf( args[0] );
+		if (args.length == 0) return false;
+
+		String roleString = args[0].toLowerCase();
+		if ( ! EnumUtils.isValidEnum(RoleCommandOptions.class, roleString) ) return false;
+
+		RoleCommandOptions config = RoleCommandOptions.valueOf( roleString );
 
 		return handleConfigsCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), config);
 	}
@@ -37,10 +36,11 @@ public class RoleCommand implements TabExecutor {
 				.sorted()
 				.collect(Collectors.toList());
 		}
-		if ( ! EnumUtils.isValidEnum(RoleCommandOptions.class, args[0]) ) {
-			return null;
-		}
-		RoleCommandOptions config = RoleCommandOptions.valueOf( args[0] );
+
+		String optionString = args[0].toLowerCase();
+		if (! EnumUtils.isValidEnum(RoleCommandOptions.class, optionString)) return null;
+
+		RoleCommandOptions config = RoleCommandOptions.valueOf( optionString );
 
 		return handleConfigsTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length), config);
 	}
@@ -60,9 +60,7 @@ public class RoleCommand implements TabExecutor {
 				return true;
 			case reset:
 				Player removeTarget = CommandUtility.getPlayerFromArgsOrSender(args, 0, sender);
-				if (removeTarget == null) {
-					return false;
-				}
+				if (removeTarget == null) return false;
 
 				Role.removeRole(removeTarget);
 				if ( removeTarget != sender ) {
@@ -71,20 +69,17 @@ public class RoleCommand implements TabExecutor {
 
 				return true;
 			case set:
-				if (args.length == 0) {
-					return false;
-				}
-				if ( ! Role.getRegistered().containsKey(args[0]) ) {
-					return false;
-				}
-				Player setTarget = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
-				if (setTarget == null) {
-					return false;
-				}
+				if (args.length == 0) return false;
 
-				Role.setRole(setTarget, args[0]);
-				if ( setTarget != sender ) {
-					sender.sendMessage("The role of Player " + setTarget.getName() + " is now " + args[0]);
+				String roleString = args[0].toLowerCase();
+				if (! Role.getRegistered().containsKey(roleString)) return false;
+
+				Player setTarget = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
+				if (setTarget == null) return false;
+
+				Role.setRole(setTarget, roleString);
+				if (setTarget != sender) {
+					sender.sendMessage("The role of Player " + setTarget.getName() + " is now " + roleString);
 				}
 
 				return true;

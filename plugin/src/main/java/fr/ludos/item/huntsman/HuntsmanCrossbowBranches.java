@@ -7,7 +7,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.potion.PotionEffect;
@@ -18,15 +18,15 @@ import net.md_5.bungee.api.ChatColor;
 
 import java.util.List;
 
-public enum HuntsmanBowBranches implements SpecialItemLevelBranches<HuntsmanBowBranches> {
+public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<HuntsmanCrossbowBranches> {
 	FLAME (ChatColor.RED.toString() + ChatColor.ITALIC + "Igniting", 200, "Igniting Description") {
 		@Override
-		public void processShotArrow(Arrow arrow, Player player, int level, EntityShootBowEvent event) {
+		public void processShotArrow(Arrow arrow, HumanEntity player, int level, EntityShootBowEvent event) {
 			arrow.setFireTicks(10000);
 		}
 
 		@Override
-		public void processLandedArrow(Arrow arrow, Player player, int level, ProjectileHitEvent event) {
+		public void processLandedArrow(Arrow arrow, HumanEntity player, int level, ProjectileHitEvent event) {
 			if (level == 0) {
 				return;
 			}
@@ -48,7 +48,7 @@ public enum HuntsmanBowBranches implements SpecialItemLevelBranches<HuntsmanBowB
 
 	WITHER (ChatColor.GRAY.toString() + ChatColor.ITALIC + "Rotting",  200, "Rotting Description") {
 		@Override
-		public void processShotArrow(Arrow arrow, Player player, int level, EntityShootBowEvent event) {
+		public void processShotArrow(Arrow arrow, HumanEntity player, int level, EntityShootBowEvent event) {
 			int poisonDuration = 20 * 3;
 			int poisonAmplifier = level > 0 ? 1 : 2;
 			PotionEffect poisonEffect = new PotionEffect(PotionEffectType.POISON, poisonDuration, poisonAmplifier);
@@ -56,7 +56,7 @@ public enum HuntsmanBowBranches implements SpecialItemLevelBranches<HuntsmanBowB
 		}
 
 		@Override
-		public void processLandedArrow(Arrow arrow, Player player, int level, ProjectileHitEvent event) {
+		public void processLandedArrow(Arrow arrow, HumanEntity player, int level, ProjectileHitEvent event) {
 			if (level > 1 && isMax(level)) {
 				AreaEffectCloud effect = (AreaEffectCloud) arrow.getWorld().spawnEntity(arrow.getLocation(), EntityType.AREA_EFFECT_CLOUD);
 				effect.addCustomEffect(PotionEffectType.WITHER.createEffect(60, 1), false);
@@ -68,7 +68,7 @@ public enum HuntsmanBowBranches implements SpecialItemLevelBranches<HuntsmanBowB
 
 	SLOWNESS (ChatColor.BLUE.toString() + ChatColor.ITALIC + "Impeding", 200, "Impeding Description") {
 		@Override
-		public void processShotArrow(Arrow arrow, Player player, int level, EntityShootBowEvent event) {
+		public void processShotArrow(Arrow arrow, HumanEntity player, int level, EntityShootBowEvent event) {
 			int slowAmplifier = level > 0 ? 0 : 1;
 
 			PotionEffect slowEffect = new PotionEffect(PotionEffectType.SLOW, 20 * 3, slowAmplifier);
@@ -76,7 +76,7 @@ public enum HuntsmanBowBranches implements SpecialItemLevelBranches<HuntsmanBowB
 		}
 
 		@Override
-		public void processLandedArrow(Arrow arrow, Player player, int level, ProjectileHitEvent event) {
+		public void processLandedArrow(Arrow arrow, HumanEntity player, int level, ProjectileHitEvent event) {
 			if (level > 1 && isMax(level)) {
 				Block webbedBlock;
 				if (event.getHitBlockFace() == null) {
@@ -90,7 +90,7 @@ public enum HuntsmanBowBranches implements SpecialItemLevelBranches<HuntsmanBowB
 		}
 	};
 
-	public final static HuntsmanBowBranches[] values = HuntsmanBowBranches.values();
+	public final static HuntsmanCrossbowBranches[] values = HuntsmanCrossbowBranches.values();
 
 	private String name;
 	public String getName() {
@@ -102,8 +102,8 @@ public enum HuntsmanBowBranches implements SpecialItemLevelBranches<HuntsmanBowB
 		return xpThreshold;
 	}
 
-	private List<HuntsmanBowBranches> evolutions;
-	public List<HuntsmanBowBranches> getEvolutions() {
+	private List<HuntsmanCrossbowBranches> evolutions;
+	public List<HuntsmanCrossbowBranches> getEvolutions() {
 		return evolutions;
 	}
 
@@ -113,7 +113,7 @@ public enum HuntsmanBowBranches implements SpecialItemLevelBranches<HuntsmanBowB
 	}
 
 
-	private HuntsmanBowBranches(String name, double xpThreshold, String description) {
+	private HuntsmanCrossbowBranches(String name, double xpThreshold, String description) {
 		this.name = name;
 		this.xpThreshold = xpThreshold;
 		this.description = description;
@@ -121,7 +121,7 @@ public enum HuntsmanBowBranches implements SpecialItemLevelBranches<HuntsmanBowB
 
 
 	@Nullable
-	public static HuntsmanBowBranches findByKey(int i) {
+	public static HuntsmanCrossbowBranches findByKey(int i) {
 		if ( i >= values.length ) {
 			return null;
 		}
@@ -137,6 +137,6 @@ public enum HuntsmanBowBranches implements SpecialItemLevelBranches<HuntsmanBowB
 		return level == 2;
 	}
 
-	public abstract void processShotArrow(Arrow arrow, Player player, int level, EntityShootBowEvent event);
-	public abstract void processLandedArrow(Arrow arrow, Player player, int level, ProjectileHitEvent event);
+	public abstract void processShotArrow(Arrow arrow, HumanEntity player, int level, EntityShootBowEvent event);
+	public abstract void processLandedArrow(Arrow arrow, HumanEntity player, int level, ProjectileHitEvent event);
 }
