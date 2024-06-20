@@ -97,14 +97,14 @@ public class ManhuntGame extends Game {
 		prey.getInventory().clear();
 		prey.setGameMode(GameMode.SURVIVAL);
 
-		prey.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 600, 0, false, false));
-		prey.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 600, 1, false, false));
-		prey.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 800, 0, false, false));
-		prey.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 600, 99, false, false));
+		prey.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
+		prey.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 30, 1, false, false));
+		prey.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 20 * 40, 0, false, true));
+		prey.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 20 * 30, 99, false, false));
 
 		Set<Player> hunters = teamController.getHunters();
 		for (Player hunter : hunters) {
-			hunter.sendTitle("You are a " + ChatColor.RED + "Hunter", "Go and seek the Prey", 10, 70, 20);
+			hunter.sendTitle("You are a " + ChatColor.RED + "Hunter", "Go and seek " + ChatColor.BLUE + prey.getName(), 10, 70, 20);
 
 			hunter.teleport(getGroundedLocationAround(prey.getLocation(), (int)(areaRadius * 0.3), (int)(areaRadius * 0.8)));
 			hunter.setBedSpawnLocation(hunter.getLocation(), true);
@@ -112,9 +112,10 @@ public class ManhuntGame extends Game {
 			hunter.getInventory().clear();
 			hunter.setGameMode(GameMode.SURVIVAL);
 
-			hunter.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 600, 0, false, false));
-			hunter.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 600, 99, false, false));
-			hunter.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 600, 99, false, false));
+			hunter.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
+			hunter.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 20 * 30, 99, false, false));
+			hunter.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 20 * 30, 99, false, false));
+
 			compassEvents.updateItemInInventory(hunter);
 		}
 
@@ -232,7 +233,7 @@ public class ManhuntGame extends Game {
 			prey = Optional.empty();
 		}
 
-		if (hunters.size() == 0 && prey.isEmpty()) {
+		if (hunters.isEmpty() && prey.isEmpty()) {
 			timer.pause();
 		}
     }
@@ -262,7 +263,7 @@ public class ManhuntGame extends Game {
 
 
         private String prey = null;
-        private Set<String> players = null;
+        private final Set<String> players;
 
         private ManhuntAreaOptions area = ManhuntAreaOptions.medium;
 		public ManhuntAreaOptions getArea() {
@@ -285,9 +286,6 @@ public class ManhuntGame extends Game {
 
 			players = main.getConfig().getStringList(getConfigKey(playersKey)).stream()
 				.collect(Collectors.toSet());
-			if (players.size() == 0) {
-				players = null;
-			}
 
 			prey = main.getConfig().getString(getConfigKey(preyKey), null);
 
@@ -310,9 +308,8 @@ public class ManhuntGame extends Game {
 
 		@Nullable
 		public Set<Player> getChosenPlayers() {
-			if (players == null) {
-				return null;
-			}
+			if (players.isEmpty()) return null;
+
 			return new HashSet<Player>(
 				players.stream()
 					.map(Bukkit::getPlayerExact)
@@ -333,7 +330,7 @@ public class ManhuntGame extends Game {
 
 
 		public String getPlayersString() {
-			return players == null ? "All" : players.stream() // TODO: Translate
+			return players.isEmpty() ? "All" : players.stream() // TODO: Translate
 				.collect(Collectors.joining(" "));
 		}
 
@@ -352,7 +349,7 @@ public class ManhuntGame extends Game {
 			case config:
 				sender.sendMessage("Usage: /" + label + " config <config> [value]");
 				sender.sendMessage("Available configs:");
-				sender.sendMessage("  players [player1] [player2] ... [playerN]");
+				sender.sendMessage("  players [player1] [player2] ...");
 				sender.sendMessage("  prey [player]");
 				sender.sendMessage("  area <large|medium|small>");
 				sender.sendMessage("  location <random|here>");
@@ -436,7 +433,7 @@ public class ManhuntGame extends Game {
 
 				if ( args[0].equalsIgnoreCase(allOption) ) {
 					// Reset to default option
-					players = null;
+					players.clear();
 
 					main.getConfig().set(getConfigKey(playersKey), null);
 					main.saveConfig();
@@ -445,12 +442,9 @@ public class ManhuntGame extends Game {
 					return true;
 				}
 
-				players = new HashSet<String>();
+				players.clear();
 				for ( int i = 0; i < args.length; i++) {
 					players.add(args[i]);
-				}
-				if (players.isEmpty()) {
-					players = null;
 				}
 
 				main.getConfig().set(getConfigKey(playersKey), players.stream().collect(Collectors.toList()));

@@ -71,7 +71,7 @@ public class NecroticAuraSkill {
 
 				livingEntity.damage(AURA_DAMAGE);
 
-				livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 60, 1));
+				livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 20 * 3, 1));
 			}
 		}
 

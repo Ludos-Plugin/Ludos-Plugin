@@ -136,7 +136,7 @@ public class ZombieBomber {
 
 				NecromancerMonsterController.controlZombie(zombie, summoner, 10, 20);
 
-				zombie.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 120, 2));
+				zombie.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 6, 2));
 			}
 
 		}.runTaskTimer(plugin, 100L, 100L);

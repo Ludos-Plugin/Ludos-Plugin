@@ -2,12 +2,10 @@ package fr.ludos.item.trapper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Item;
@@ -17,8 +15,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import fr.ludos.Main;
@@ -60,16 +56,6 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
     public void throwObject(Player player, Material material) {
         Item item = player.getWorld().dropItem(player.getEyeLocation(), new ItemStack(material));
         item.setVelocity(player.getLocation().getDirection().multiply(2));
-    }
-
-    public void trapGlowing(String name, int duration) {
-        final Player targetPlayer = Bukkit.getPlayer(name);
-
-        if (targetPlayer == null || !targetPlayer.isOnline()) {
-            return;
-        }
-
-        targetPlayer.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, duration * 20, 1));
     }
 
 	@Nullable

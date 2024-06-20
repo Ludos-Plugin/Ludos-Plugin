@@ -186,7 +186,7 @@ public class HuntsmanBow extends BranchLevelItem<HuntsmanBowBranches> {
 				}
 
 				Player shooterPlayer = player;
-				shooterPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 50, 2));
+				shooterPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, (int)(20 * 2.5), 2));
 			}
 
 

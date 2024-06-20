@@ -49,7 +49,7 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
             if (info.getLocation().getBlock().getType() != Material.SUNFLOWER) return true;
 
             info.getOwner().sendMessage("Trap triggered !");
-            target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 400, 1));
+            target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 20, 1));
 
 			info.getLocation().getBlock().setType(Material.AIR);
 
@@ -74,7 +74,7 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 			if (target.getLocation().distance(info.getLocation()) >= 7) return false;
 			if (info.getLocation().getBlock().getType() != Material.COARSE_DIRT) return true;
 
-            target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, 1));
+            target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 10, 1));
             info.getOwner().sendMessage("Trap triggered !");
 
 			info.getLocation().getBlock().setType(Material.COBWEB);

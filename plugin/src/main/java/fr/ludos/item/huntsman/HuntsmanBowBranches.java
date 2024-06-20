@@ -49,7 +49,7 @@ public enum HuntsmanBowBranches implements SpecialItemLevelBranches<HuntsmanBowB
 	WITHER (ChatColor.GRAY.toString() + ChatColor.ITALIC + "Rotting",  200, "Rotting Description") {
 		@Override
 		public void processShotArrow(Arrow arrow, Player player, int level, EntityShootBowEvent event) {
-			int poisonDuration = 60;
+			int poisonDuration = 20 * 3;
 			int poisonAmplifier = level > 0 ? 1 : 2;
 			PotionEffect poisonEffect = new PotionEffect(PotionEffectType.POISON, poisonDuration, poisonAmplifier);
 			arrow.addCustomEffect(poisonEffect, true);
@@ -69,10 +69,9 @@ public enum HuntsmanBowBranches implements SpecialItemLevelBranches<HuntsmanBowB
 	SLOWNESS (ChatColor.BLUE.toString() + ChatColor.ITALIC + "Impeding", 200, "Impeding Description") {
 		@Override
 		public void processShotArrow(Arrow arrow, Player player, int level, EntityShootBowEvent event) {
-			int slowDuration = 60;
 			int slowAmplifier = level > 0 ? 0 : 1;
 
-			PotionEffect slowEffect = new PotionEffect(PotionEffectType.SLOW, slowDuration, slowAmplifier);
+			PotionEffect slowEffect = new PotionEffect(PotionEffectType.SLOW, 20 * 3, slowAmplifier);
 			arrow.addCustomEffect(slowEffect, true);
 		}
 
