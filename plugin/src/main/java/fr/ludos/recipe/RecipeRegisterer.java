@@ -1,6 +1,6 @@
 package fr.ludos.recipe;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
 
 public abstract class RecipeRegisterer {
 
@@ -8,7 +8,7 @@ public abstract class RecipeRegisterer {
 		recipe.Register();
 	}
 
-	public RecipeRegisterer(Main plugin) {}
+	public RecipeRegisterer(Ludos plugin) {}
 
 
 	public abstract void Register();

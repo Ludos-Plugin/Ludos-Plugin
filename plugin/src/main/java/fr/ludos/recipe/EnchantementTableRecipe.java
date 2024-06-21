@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
 
 import org.bukkit.inventory.ShapedRecipe;
 
@@ -16,7 +16,7 @@ public class EnchantementTableRecipe extends RecipeRegisterer {
 	private static NamespacedKey recipeKey = null;
 
 
-	public EnchantementTableRecipe(Main plugin) {
+	public EnchantementTableRecipe(Ludos plugin) {
 		super(plugin);
 
 		recipeKey = new NamespacedKey(plugin, RECIPE_NAMESPACE_KEY);

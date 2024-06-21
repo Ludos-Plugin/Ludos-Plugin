@@ -1,9 +1,12 @@
 package fr.ludos.item.huntsman;
 
 import fr.ludos.role.HuntsmanRole;
+import fr.ludos.role.Role;
+import fr.ludos.game.Game;
 import fr.ludos.item.SpecialItem;
 
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -36,8 +39,8 @@ public class HuntsmanTrident extends SpecialItem {
 
 	public static class Events extends SpecialItem.Events<HuntsmanTrident> {
 
-		public Events() {
-			super(HuntsmanRole.id);
+		public Events(Game game) {
+			super(game);
 		}
 
 
@@ -56,11 +59,13 @@ public class HuntsmanTrident extends SpecialItem {
 				return null;
 			}
 		}
-
 		@Override
 		protected HuntsmanTrident createItem(Player owner) {
 			return new HuntsmanTrident(owner);
 		}
-
+		@Override
+		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+			return Role.isPlayerRole(owner, HuntsmanRole.id);
+		}
 	}
 }

@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
 
 import org.bukkit.inventory.ShapelessRecipe;
 
@@ -15,7 +15,7 @@ public class GoldenAppleRecipe extends RecipeRegisterer {
 	private static NamespacedKey recipeKey = null;
 
 
-	public GoldenAppleRecipe(Main plugin) {
+	public GoldenAppleRecipe(Ludos plugin) {
 		super(plugin);
 
 		recipeKey = new NamespacedKey(plugin, RECIPE_NAMESPACE_KEY);

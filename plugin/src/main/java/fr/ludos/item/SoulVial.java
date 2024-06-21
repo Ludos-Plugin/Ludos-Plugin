@@ -23,54 +23,6 @@ import org.bukkit.ChatColor;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * SoulVial is a class that represents a special item, "Soul Vial," in Minecraft.
- * This item allows the necromancer player to collect souls from defeated monsters.
- * The Soul Vial changes color based on the number of souls collected and displays the soul count.
- * Souls can be used for various in-game mechanics or abilities.
- * <br><br>
- * Features:
- * <br><br>
- * - Provides a method to get the Soul Vial item for a specific player.
- * <br><br>
- * - Automatically increases the soul count when the player kills a monster.
- * <br><br>
- * - Bottle interaction, which allow to choose any effect, this enchantment increase in furthermore
- * <br><br>
- * Usage:
- * <br><br>
- * - Call getSoulVial(player) to obtain the Soul Vial ItemStack for a given player.
- * <br><br>
- * - Souls are automatically added when the player kills a monster, triggering the onEntityDeath event.
- * <br><br>
- * - The Soul Vial's appearance reflects the soul count, and lore displays the current soul count.
- * <br><br>
- * - Call openEffectSelectionMenu (player), open a new menu which allows you to choose a potion effect based on your soul counter
- * <br><br>
- * Example:
- * <br><br>
- * <pre>{@code
- * SoulVial.getSoulVial(player);
- * }</pre> --> Returns the Soul Vial ItemStack for the specified player.
- * <br><br>
- * @author feur25
- * @version 1.0
- * @see org.bukkit.entity.Player
- * @see org.bukkit.inventory.ItemStack
- * @see org.bukkit.event.Listener
- * @see org.bukkit.event.entity.EntityDeathEvent
- * @see org.bukkit.Color
- * @see org.bukkit.Material
- * @see org.bukkit.entity.EntityType
- * @see org.bukkit.event.EventHandler
- * @see org.bukkit.inventory.meta.ItemMeta
- * @see org.bukkit.inventory.meta.LeatherArmorMeta
- * @see net.md_5.bungee.api.ChatColor
- * @see java.util.HashMap
- * @see java.util.Map
- */
-
-
 public class SoulVial implements Listener {
 
 	private static final String SOUL_VIAL_NAME = "Soul Vial";

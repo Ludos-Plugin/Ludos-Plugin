@@ -2,8 +2,8 @@ package fr.ludos.item;
 
 import org.bukkit.persistence.*;
 
-import fr.ludos.Main;
-import fr.ludos.item.huntsman.HuntsmanCrossbowBranches;
+import fr.ludos.Ludos;
+import fr.ludos.game.Game;
 
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
@@ -19,7 +19,7 @@ import java.util.List;
 
 public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches>> extends SpecialItem {
 	public static final String BRANCH = "branch";
-	private NamespacedKey branchKey = new NamespacedKey(Main.getInstance(), BRANCH);
+	private NamespacedKey branchKey = new NamespacedKey(Ludos.getInstance(), BRANCH);
 
 
 	private TBranches branch;
@@ -91,8 +91,8 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 
 	public static abstract class Events<T extends BranchItem<TBranches>, TBranches extends SpecialItemBranches<TBranches>> extends SpecialItem.Events<T> {
 
-		public Events(String roleId) {
-			super(roleId);
+		public Events(Game game) {
+			super(game);
 		}
 
 

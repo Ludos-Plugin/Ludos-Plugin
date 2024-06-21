@@ -7,40 +7,28 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.command.GameCommand;
 import fr.ludos.command.RoleCommand;
-import fr.ludos.command.MonsterCommand;
 import fr.ludos.role.Role;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.HuntsmanRole;
-import fr.ludos.role.NecromancerRole;
-import fr.ludos.role.StalkerRole;
 import fr.ludos.role.TrapperRole;
 import fr.ludos.game.Game;
 import fr.ludos.game.manhunt.ManhuntGame;
-/**
- * Main is the main class of the Bukkit plugin, responsible for handling plugin initialization and events.
- * It registers commands, listeners, and initializes game-related components.
- */
 
-public class Main extends JavaPlugin implements Listener {
+public class Ludos extends JavaPlugin implements Listener {
 
 	public static final String namespace = "ludos";
 
-	private static Main instance;
-
-	public static Main getInstance() {
+	private static Ludos instance;
+	public static Ludos getInstance() {
 		return instance;
 	}
 
-
-	/**
-	 * Called when the plugin is enabled. Registers commands, listeners, and initializes game-related components.
-	 */
 
 	@Override
 	public void onEnable() {
 
 		instance = this;
-		Role.loadConfigRoles();
+		Role.loadConfigRoles(this);
 
 
 		Game.registerGame(new ManhuntGame.Builder());
@@ -48,8 +36,6 @@ public class Main extends JavaPlugin implements Listener {
 		Role.registerRole(new HuntsmanRole.Builder());
 		Role.registerRole(new BurrowerRole.Builder());
 		Role.registerRole(new TrapperRole.Builder());
-		// Role.registerRole(new NecromancerRole.Builder());
-		// Role.registerRole(new StalkerRole.Builder());
 
 
 		PluginCommand cmd = getCommand("game");
@@ -63,17 +49,10 @@ public class Main extends JavaPlugin implements Listener {
 		cmd.setExecutor(roleCommand);
 		cmd.setTabCompleter(roleCommand);
 		cmd.setUsage(roleCommand.getUsage());
-
-
-
-		cmd = getCommand("bomberzombie");
-		MonsterCommand zombieBomberCommand = new MonsterCommand();
-		cmd.setExecutor(zombieBomberCommand);
 	}
 
 	@Override
 	public void onDisable() {
 		Game.stopGame();
 	}
-
 }

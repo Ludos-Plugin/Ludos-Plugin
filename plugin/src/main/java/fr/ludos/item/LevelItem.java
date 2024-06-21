@@ -2,8 +2,8 @@ package fr.ludos.item;
 
 import org.bukkit.persistence.*;
 
-import fr.ludos.Main;
-import fr.ludos.role.Role;
+import fr.ludos.Ludos;
+import fr.ludos.game.Game;
 
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
@@ -13,53 +13,17 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
-
-/**
- * Pickaxe is a class that represents a special item, "Miner Pickaxe," in Minecraft.
- * This item allows the miner player to improve their own pickaxe based on the ores they collect.
- * <br><br>
- * Features:
- * <br><br>
- * - Provides methods to give a miner pickaxe to the player and level up the pickaxe based on XP.
- * <br><br>
- * - Automatically updates the pickaxe's material as it levels up.
- * <br><br>
- * - Defines an evolution path from wood to stone, iron, gold, and finally diamond pickaxe.
- * <br><br>
- * Usage:
- * <br><br>
- * - Call addPickaxeInventory(player) to give a miner pickaxe to the specified player.
- * <br><br>
- * - Call levelPickaxe(player, xp) with the XP gained from mining to level up the pickaxe.
- * <br><br>
- * Example:
- * <pre>{@code
- * Pickaxe pickaxe = new Pickaxe();
- * pickaxe.addPickaxeInventory(player);
- * pickaxe.levelPickaxe(player, xp);
- * }</pre>
- * <br><br>
- * @author feur25 & Ganon358
- * @version 1.0
- * @see org.bukkit.entity.Player
- * @see org.bukkit.inventory.ItemStack
- * @see org.bukkit.Material
- * @see org.bukkit.inventory.meta.ItemMeta
- * @see java.util.Collections
- */
-
 public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extends SpecialItem {
 	public static final String LEVEL = "level";
-	private NamespacedKey levelKey = new NamespacedKey(Main.getInstance(), LEVEL);
+	private NamespacedKey levelKey = new NamespacedKey(Ludos.getInstance(), LEVEL);
 
 	public static final String XP = "xp";
-	private NamespacedKey xpKey = new NamespacedKey(Main.getInstance(), XP);
+	private NamespacedKey xpKey = new NamespacedKey(Ludos.getInstance(), XP);
 
 	private static final String MAX_LVL_LABEL = "MAX";
 
@@ -172,26 +136,23 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 	public static abstract class Events<T extends LevelItem<TLevels>, TLevels extends SpecialItemLevels<TLevels>> extends SpecialItem.Events<T> {
 
 		protected final TLevels baseLevel;
+		private Map<String, TLevels> deadPlayerLevels = new HashMap<>();
 
-		public Events(String roleId, TLevels baseLevel) {
-			super(roleId);
+
+		public Events(Game game, TLevels baseLevel) {
+			super(game);
 
 			this.baseLevel = baseLevel;
 			this.deadPlayerLevels = new HashMap<>();
-
-			updateAllInventories();
 		}
 
-		private Map<String, TLevels> deadPlayerLevels = new HashMap<>();
 
 		protected abstract T createItem(Player owner, TLevels level);
 
 		@EventHandler
 		public void onPlayerDeath(PlayerDeathEvent event) {
 			Player player = event.getEntity();
-			if ( roleId != null && ! Role.isPlayerRole(player, roleId) ) {
-				return;
-			}
+			if (! canPlayerHaveItem(player)) return;
 
 			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
 			if ( specialItem == null ) {

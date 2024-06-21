@@ -1,18 +1,14 @@
 package fr.ludos.role;
 
 import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.checkerframework.common.value.qual.ArrayLen;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.EventHandler;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.item.trapper.TrapperSnareDevice;
 
@@ -23,10 +19,10 @@ public class TrapperRole extends Role {
 	private static final ArrayList<Player> sneakingPlayers = new ArrayList<>();
 	private final TrapperSnareDevice.Events snareEvents;
 
-	public TrapperRole(Builder builder) {
-		super(builder);
+	public TrapperRole(Builder builder, Game game) {
+		super(builder, game);
 
-		snareEvents = new TrapperSnareDevice.Events();
+		snareEvents = new TrapperSnareDevice.Events(game);
 
 		new BukkitRunnable() {
             @Override
@@ -35,7 +31,7 @@ public class TrapperRole extends Role {
 					sneakingPlayer.addPotionEffect(PotionEffectType.INVISIBILITY.createEffect(4, 0));
 				}
             }
-        }.runTaskTimer(Main.getInstance(), 0, 1);
+        }.runTaskTimer(Ludos.getInstance(), 0, 1);
 	}
 
 	@Override
@@ -102,8 +98,8 @@ public class TrapperRole extends Role {
 		}
 
 		@Override
-		public Role build(Game.Builder builder) {
-			return new TrapperRole(this);
+		public Role build(Game.Builder builder, Game game) {
+			return new TrapperRole(this, game);
 		}
 	}
 }

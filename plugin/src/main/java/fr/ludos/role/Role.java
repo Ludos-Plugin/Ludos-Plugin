@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 
 import org.bukkit.Bukkit;
@@ -43,8 +43,8 @@ public abstract class Role implements Listener {
 	 * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
 	 * It contains configuration for the Role itself.
 	 */
-	public Role(Builder builder) {
-		Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
+	public Role(Builder builder, Game game) {
+		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
 	}
 
 	public void stop() {
@@ -52,14 +52,12 @@ public abstract class Role implements Listener {
 	}
 
 
-	public static void loadConfigRoles() {
-		Main main = Main.getInstance();
-
-		ConfigurationSection rolesSection = main.getConfig().getConfigurationSection(rolesKey);
+	public static void loadConfigRoles(Ludos plugin) {
+		ConfigurationSection rolesSection = plugin.getConfig().getConfigurationSection(rolesKey);
 		if (rolesSection != null) {
 			playerRoles = rolesSection.getKeys(false).stream()
 				.filter(Objects::nonNull)
-				.collect(Collectors.toMap((s) -> s, (s) -> main.getConfig().getString(rolesKey + '.' + s)));
+				.collect(Collectors.toMap((s) -> s, (s) -> plugin.getConfig().getString(rolesKey + '.' + s)));
 		}
 	}
 
@@ -77,8 +75,7 @@ public abstract class Role implements Listener {
 
 	@Nullable
 	public static Builder getRole(HumanEntity player) {
-		return registered.getOrDefault(
-			playerRoles.getOrDefault(player.getName(), ""), null);
+		return registered.getOrDefault(playerRoles.getOrDefault(player.getName(), ""), null);
 	}
 
 	public static boolean isPlayerRole(HumanEntity player, String role) {
@@ -94,7 +91,7 @@ public abstract class Role implements Listener {
 		playerRoles.put(player.getName(), roleId);
 		player.sendMessage("Your role is now " + roleId);
 
-		Main main = Main.getInstance();
+		Ludos main = Ludos.getInstance();
 		main.getConfig().set(rolesKey + '.' + player.getName(), roleId);
 		main.saveConfig();
 
@@ -108,7 +105,7 @@ public abstract class Role implements Listener {
 		playerRoles.remove(player.getName());
 		player.sendMessage("Your role is now randomly chosen");
 
-		Main main = Main.getInstance();
+		Ludos main = Ludos.getInstance();
 		main.getConfig().set(rolesKey + '.' + player.getName(), null);
 		main.saveConfig();
 	}
@@ -126,7 +123,6 @@ public abstract class Role implements Listener {
 	public static abstract class Builder {
 		public abstract String getId();
 
-		public abstract Role build(Game.Builder builder);
+		public abstract Role build(Game.Builder builder, Game game);
 	}
-
 }

@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,7 +18,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.item.BranchItem;
 import fr.ludos.item.SpecialItem;
@@ -67,19 +68,27 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 			return null;
 		}
 	}
-
 	public static TrapperSnareDevice createItem(Player owner) {
 		return new TrapperSnareDevice(owner);
 	}
+
+	@Override
+	public TrapperSnareDeviceBranches convertToBranch(int level) {
+		return TrapperSnareDeviceBranches.findByKey(level);
+	}
+	@Override
+	protected TrapperSnareDeviceBranches[] getBranches() {
+		return TrapperSnareDeviceBranches.values;
+	}
+
+
 
 	public static class Events extends SpecialItem.Events<TrapperSnareDevice> {
 
 		public final ArrayList<TrapperTrap> traps = new ArrayList<>();
 
-		public Events() {
-			super(TrapperRole.id);
-
-			updateAllInventories();
+		public Events(Game game) {
+			super(game);
 
 			new BukkitRunnable() {
 				@Override
@@ -98,7 +107,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 					}
 					traps.removeAll(trapsToRemove);
 				}
-			}.runTaskTimer(Main.getInstance(), 0, 1);
+			}.runTaskTimer(Ludos.getInstance(), 0, 1);
 		}
 
 		@Override
@@ -150,9 +159,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 		@EventHandler
 		public void onItemDrop(PlayerDropItemEvent event) {
-			if (! Role.isPlayerRole(event.getPlayer(), roleId)) {
-				return;
-			}
+			if (! canPlayerHaveItem(event.getPlayer())) return;
 
 			if (event.getItemDrop().getItemStack().getType() == Material.ARROW) {
 				event.setCancelled(true);
@@ -170,16 +177,9 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		protected TrapperSnareDevice createItem(Player owner) {
 			return TrapperSnareDevice.createItem(owner);
 		}
-
-	}
-
-	@Override
-	public TrapperSnareDeviceBranches convertToBranch(int level) {
-		return TrapperSnareDeviceBranches.findByKey(level);
-	}
-
-	@Override
-	protected TrapperSnareDeviceBranches[] getBranches() {
-		return TrapperSnareDeviceBranches.values;
+		@Override
+		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+			return Role.isPlayerRole(owner, TrapperRole.id);
+		}
 	}
 }

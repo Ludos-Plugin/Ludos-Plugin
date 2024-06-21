@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -26,15 +27,17 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Scoreboard;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.GameCommandOptions;
 import fr.ludos.game.Game;
-import fr.ludos.game.TeamController;
 import net.md_5.bungee.api.ChatColor;
 
 import org.bukkit.Location;
 import org.bukkit.WorldBorder;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.advancement.AdvancementProgress;
+import org.bukkit.attribute.Attribute;
 
 
 public class ManhuntGame extends Game {
@@ -72,7 +75,6 @@ public class ManhuntGame extends Game {
 		this.teamController = new ManhuntTeamController(this, builder.getChosenPlayers(), builder.getChosenPrey());
 
 		timer = new ManhuntTimer(this, builder.reveal.getDuration());
-		compassEvents = new ManhuntCompass.Events();
 
 
 		Optional<Player> nullablePrey = teamController.getPrey();
@@ -87,38 +89,57 @@ public class ManhuntGame extends Game {
 
 		ManhuntLocationOptions locationOption = builder.getLocation();
 
+
+
 		prey.sendTitle("You are the " + ChatColor.BLUE + "Prey", "Run for your life", 10, 70, 20);
 
+		Location fallbackLocation = prey.getLocation();
 		if (locationOption == ManhuntLocationOptions.random) {
-			prey.teleport(getGroundedLocationAround(prey.getLocation(), 300, 2500));
-			prey.setBedSpawnLocation(prey.getLocation(), true);
+			prey.teleport(getGroundedLocationAround(prey.getLocation(), 300, 2500, fallbackLocation));
+			fallbackLocation = prey.getLocation();
 		}
+		prey.setBedSpawnLocation(prey.getLocation(), true);
 
 		prey.getInventory().clear();
 		prey.setGameMode(GameMode.SURVIVAL);
 
+		prey.setHealth(prey.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 		prey.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
 		prey.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 30, 1, false, false));
 		prey.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 20 * 40, 0, false, true));
-		prey.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 20 * 30, 99, false, false));
+
+		Iterator<Advancement> iterator = Bukkit.getServer().advancementIterator();
+		while (iterator.hasNext()) {
+			AdvancementProgress progress = prey.getAdvancementProgress(iterator.next());
+			for (String criteria : progress.getAwardedCriteria())
+			progress.revokeCriteria(criteria);
+		}
+
+
 
 		Set<Player> hunters = teamController.getHunters();
 		for (Player hunter : hunters) {
 			hunter.sendTitle("You are a " + ChatColor.RED + "Hunter", "Go and seek " + ChatColor.BLUE + prey.getName(), 10, 70, 20);
 
-			hunter.teleport(getGroundedLocationAround(prey.getLocation(), (int)(areaRadius * 0.3), (int)(areaRadius * 0.8)));
+			hunter.teleport(getGroundedLocationAround(prey.getLocation(), (int)(areaRadius * 0.3), (int)(areaRadius * 0.7), fallbackLocation));
+			fallbackLocation = hunter.getLocation();
 			hunter.setBedSpawnLocation(hunter.getLocation(), true);
 
 			hunter.getInventory().clear();
 			hunter.setGameMode(GameMode.SURVIVAL);
 
+			hunter.setHealth(hunter.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 			hunter.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
-			hunter.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 20 * 30, 99, false, false));
-			hunter.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 20 * 30, 99, false, false));
 
-			compassEvents.updateItemInInventory(hunter);
+			iterator = Bukkit.getServer().advancementIterator();
+			while (iterator.hasNext()) {
+				AdvancementProgress progress = hunter.getAdvancementProgress(iterator.next());
+				for (String criteria : progress.getAwardedCriteria())
+                progress.revokeCriteria(criteria);
+			}
 		}
 
+		prey.getWorld().setTime(1000);
 
 		border = prey.getWorld().getWorldBorder();
 		borderResetCenter = border.getCenter();
@@ -128,7 +149,7 @@ public class ManhuntGame extends Game {
 		border.setSize(areaDiameter, 10);
 
 
-		registerRoles(builder);
+		compassEvents = new ManhuntCompass.Events(this);
 
 		Bukkit.broadcastMessage("The Game of Manhunt started");
 
@@ -140,34 +161,27 @@ public class ManhuntGame extends Game {
 				}
 				prey.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 1, 0, true, false));
             }
-        }.runTaskTimer(Main.getInstance(), 400, 400);
+        }.runTaskTimer(Ludos.getInstance(), 400, 400);
 	}
 
 	@Override
 	public void stop() {
 		super.stop();
 
-		teamController.stop();
-		timer.stop();
-
 		border.setSize(borderResetSize, 0);
 		border.setCenter(borderResetCenter);
 
+		teamController.stop();
+		timer.stop();
+		compassEvents.stop();
 		saturationTask.cancel();
-		new BukkitRunnable() {
-            @Override
-            public void run() {
-				compassEvents.stop();
-				stopRoles();
 
-				Bukkit.broadcastMessage("The Game of Manhunt ended");
-            }
-        }.runTaskLater(Main.getInstance(), 2);
+		Bukkit.broadcastMessage("The Game of Manhunt ended");
 	}
 
 
 
-	private Location getGroundedLocationAround(Location searchOrigin, int min, int max) {
+	private Location getGroundedLocationAround(Location searchOrigin, int min, int max, Location fallback) {
 		Random rand = new Random();
 
 		int retries = 0;
@@ -175,8 +189,8 @@ public class ManhuntGame extends Game {
 		Location location;
 		do {
 			location = searchOrigin;
-			location.setX(searchOrigin.getX() + rand.nextInt(min, max + 1) * (rand.nextBoolean() ? 1 : -1));
-			location.setZ(searchOrigin.getZ() + rand.nextInt(min, max + 1) * (rand.nextBoolean() ? 1 : -1));
+			location.setX(searchOrigin.getBlockX() + rand.nextInt(min, max + 1) * (rand.nextBoolean() ? 1 : -1) + 0.5);
+			location.setZ(searchOrigin.getBlockZ() + rand.nextInt(min, max + 1) * (rand.nextBoolean() ? 1 : -1) + 0.5);
 			location.setY(location.getWorld().getHighestBlockYAt(location));
 
 			retries++;
@@ -185,10 +199,10 @@ public class ManhuntGame extends Game {
 
 		if (retries == 0) {
 			Bukkit.broadcastMessage("Could not find valid play area");
+			return fallback;
 		}
 
 		location.setY(location.getY() + 1);
-
 		return location;
 	}
 
@@ -252,13 +266,13 @@ public class ManhuntGame extends Game {
         private static final String randomOption = "random";
 
         public static final List<String> areaOptions = Arrays.stream(ManhuntAreaOptions.values())
-			.map(v -> v.getName())
+			.map(v -> v.toString())
 			.collect(Collectors.toList());
         public static final List<String> locationOptions = Arrays.stream(ManhuntLocationOptions.values())
-			.map(v -> v.getName())
+			.map(v -> v.toString())
 			.collect(Collectors.toList());
         public static final List<String> revealOptions = Arrays.stream(ManhuntRevealOptions.values())
-			.map(v -> v.getName())
+			.map(v -> v.toString())
 			.collect(Collectors.toList());
 
 
@@ -275,14 +289,14 @@ public class ManhuntGame extends Game {
 			return location;
 		}
 
-        private ManhuntRevealOptions reveal = ManhuntRevealOptions.medium;
+        private ManhuntRevealOptions reveal = ManhuntRevealOptions.regular;
 		public ManhuntRevealOptions getReveal() {
 			return reveal;
 		}
 
 
 		public Builder() {
-			Main main = Main.getInstance();
+			Ludos main = Ludos.getInstance();
 
 			players = main.getConfig().getStringList(getConfigKey(playersKey)).stream()
 				.collect(Collectors.toSet());
@@ -302,7 +316,7 @@ public class ManhuntGame extends Game {
 			String revealString = main.getConfig().getString(getConfigKey(revealKey));
 			reveal = EnumUtils.isValidEnum(ManhuntRevealOptions.class, revealString)
 				? ManhuntRevealOptions.valueOf( revealString )
-				: ManhuntRevealOptions.medium;
+				: ManhuntRevealOptions.regular;
 		}
 
 
@@ -422,7 +436,7 @@ public class ManhuntGame extends Game {
 		}
 
 		private boolean handleConfigsCommand(CommandSender sender, Command command, String label, String[] args, ManhuntGameConfigs config) {
-			Main main = Main.getInstance();
+			Ludos main = Ludos.getInstance();
 			switch ( config ) {
 			case players:
 				if ( args.length == 0 ) {
@@ -484,7 +498,7 @@ public class ManhuntGame extends Game {
 			case area:
 				if ( args.length == 0 ) {
 					// Field is left empty, send the current config
-					sender.sendMessage( area.getName() );
+					sender.sendMessage( area.toString() );
 					return true;
 				}
 
@@ -496,7 +510,7 @@ public class ManhuntGame extends Game {
 
 				area = areaOption;
 
-				main.getConfig().set(getConfigKey(areaKey), area.getName());
+				main.getConfig().set(getConfigKey(areaKey), area.toString());
 				main.saveConfig();
 
 				sender.sendMessage("Game area set to " + area); // TODO: Translate
@@ -505,7 +519,7 @@ public class ManhuntGame extends Game {
 			case location:
 				if ( args.length == 0 ) {
 					// Field is left empty, send the current config
-					sender.sendMessage( location.getName() );
+					sender.sendMessage( location.toString() );
 					return true;
 				}
 
@@ -517,7 +531,7 @@ public class ManhuntGame extends Game {
 
 				location = locationOption;
 
-				main.getConfig().set(getConfigKey(locationKey), location.getName());
+				main.getConfig().set(getConfigKey(locationKey), location.toString());
 				main.saveConfig();
 
 				sender.sendMessage("Game location set to " + location); // TODO: Translate
@@ -526,7 +540,7 @@ public class ManhuntGame extends Game {
 			case reveal:
 				if ( args.length == 0 ) {
 					// Field is left empty, send the current config
-					sender.sendMessage( reveal.getName() );
+					sender.sendMessage( reveal.toString() );
 					return true;
 				}
 
@@ -538,7 +552,7 @@ public class ManhuntGame extends Game {
 
 				reveal = revealOption;
 
-				main.getConfig().set(getConfigKey(revealKey), reveal.getName());
+				main.getConfig().set(getConfigKey(revealKey), reveal.toString());
 				main.saveConfig();
 
 				sender.sendMessage("Prey Reveal Frequency set to " + reveal); // TODO: Translate

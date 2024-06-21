@@ -7,8 +7,10 @@ import java.util.Random;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.entity.Player;
 
+import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.game.TeamController;
 
@@ -93,35 +95,39 @@ public final class ManhuntTeamController extends TeamController {
 
 
 	@Override
-	protected Collection<Team> getTeams() {
+	public Collection<Team> getTeams() {
 		return List.of(hunterTeam, preyTeam);
 	}
-
-	@EventHandler
-	public void onPlayerDeath(PlayerDeathEvent event) {
-		Player player = event.getEntity();
-		if (
-			preyTeam.hasEntry(event.getEntity().getName())
-		) {
-			Bukkit.broadcastMessage("Prey " + player.getName() + " Slain!");
-			preyTeam.removeEntry(player.getName());
-		}
-
-		if ( preyTeam.getSize() == 0 ) {
-			Bukkit.broadcastMessage("All Prey Dead! End of Game!");
-			Game.stopGame();
-		}
-	}
-
 	@Override
-	protected Collection<Player> getPlayers() {
+	public Collection<Player> getPlayers() {
 		Set<Player> hunters = getHunters();
+
 		Optional<Player> prey = getPrey();
 		if (prey.isPresent()) {
 			hunters.add(prey.get());
 		}
 
 		return hunters;
+	}
+
+
+	@EventHandler
+	public void onPlayerDeath(PlayerDeathEvent event) {
+		Player player = event.getEntity();
+		if (preyTeam.hasEntry(event.getEntity().getName())) {
+			Bukkit.broadcastMessage("Prey " + player.getName() + " Slain!"); // TODO: Translate
+			preyTeam.removeEntry(player.getName());
+		}
+
+		if (preyTeam.getSize() == 0) {
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					Bukkit.broadcastMessage("All Prey Dead! End of Game!"); // TODO: Translate
+					Game.stopGame();
+				}
+			}.runTaskLater(Ludos.getInstance(), 0);
+		}
 	}
 
 	// @Override

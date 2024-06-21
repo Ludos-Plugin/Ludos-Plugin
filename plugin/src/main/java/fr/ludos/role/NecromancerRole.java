@@ -4,8 +4,8 @@ import fr.ludos.game.Game;
 
 public class NecromancerRole extends Role {
 
-	public NecromancerRole(Builder builder) {
-		super(builder);
+	public NecromancerRole(Builder builder, Game game) {
+		super(builder, game);
 	}
 
 
@@ -17,8 +17,8 @@ public class NecromancerRole extends Role {
 		}
 
 		@Override
-		public NecromancerRole build(Game.Builder builder) {
-			return new NecromancerRole(this);
+		public NecromancerRole build(Game.Builder builder, Game game) {
+			return new NecromancerRole(this, game);
 		}
 	}
 }

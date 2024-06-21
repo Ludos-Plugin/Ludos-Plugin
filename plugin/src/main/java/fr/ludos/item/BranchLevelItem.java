@@ -2,8 +2,8 @@ package fr.ludos.item;
 
 import org.bukkit.persistence.*;
 
-import fr.ludos.Main;
-import fr.ludos.role.Role;
+import fr.ludos.Ludos;
+import fr.ludos.game.Game;
 
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
@@ -29,10 +29,10 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 
 
 	public static final String LEVELS = "levels";
-	private NamespacedKey levelsKey = new NamespacedKey(Main.getInstance(), LEVELS);
+	private NamespacedKey levelsKey = new NamespacedKey(Ludos.getInstance(), LEVELS);
 
 	public static final String XP = "xp";
-	private NamespacedKey xpKey = new NamespacedKey(Main.getInstance(), XP);
+	private NamespacedKey xpKey = new NamespacedKey(Ludos.getInstance(), XP);
 
 	private static final String MAX_LVL_LABEL = "MAX";
 
@@ -166,8 +166,8 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 
 	public static abstract class Events<T extends BranchLevelItem<TBranches>, TBranches extends SpecialItemLevelBranches<TBranches>> extends BranchItem.Events<T, TBranches> {
 
-		public Events(String roleId) {
-			super(roleId);
+		public Events(Game game) {
+			super(game);
 
 			this.deadPlayerLevels = new HashMap<>();
 		}
@@ -177,9 +177,7 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 		@EventHandler
 		public void onPlayerDeath(PlayerDeathEvent event) {
 			Player player = event.getEntity();
-			if ( roleId != null && ! Role.isPlayerRole(player, roleId) ) {
-				return;
-			}
+			if (! canPlayerHaveItem(player)) return;
 
 			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
 			if ( specialItem == null ) {

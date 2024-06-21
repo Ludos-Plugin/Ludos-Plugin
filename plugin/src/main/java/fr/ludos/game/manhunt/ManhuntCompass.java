@@ -1,11 +1,11 @@
 package fr.ludos.game.manhunt;
 
-import fr.ludos.Main;
+import fr.ludos.game.Game;
 import fr.ludos.item.SpecialItem;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
@@ -85,10 +85,8 @@ public class ManhuntCompass extends SpecialItem {
 
 	public static class Events extends SpecialItem.Events<ManhuntCompass> {
 
-		public Events() {
-			super(null);
-
-			Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
+		public Events(Game game) {
+			super(game);
 		}
 
 		@Override
@@ -99,6 +97,12 @@ public class ManhuntCompass extends SpecialItem {
 
 		protected ManhuntCompass createItem(Player owner) {
 			return ManhuntCompass.createItem(owner);
+		}
+
+		@Override
+		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+			if (! (game instanceof ManhuntGame manhunt)) return false;
+			return manhunt.getTeamController().hunterTeam.hasEntry(owner.getName());
 		}
 
 		// @EventHandler

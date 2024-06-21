@@ -6,16 +6,7 @@ import fr.ludos.item.burrower.BurrowerShovel;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.generator.structure.StructureType;
-import org.bukkit.Material;
-import org.bukkit.inventory.CraftingInventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.Bukkit;
 
 import org.bukkit.util.StructureSearchResult;
 
@@ -33,12 +24,12 @@ public class BurrowerRole extends Role {
 	// private BukkitTask passiveResourcesTask;
 
 
-	public BurrowerRole(Builder builder) {
-		super(builder);
+	public BurrowerRole(Builder builder, Game game) {
+		super(builder, game);
 
 		burrowers = Role.getPlayersOfRole(id);
 
-		// passiveResourcesTask = new BukkitRunnable() {    // TODO: Quentin, quand cette tâche s'éxecute pour la première fois, elle remplace la pelle dans l'inventaire
+		// passiveResourcesTask = new BukkitRunnable() {    // FIXME: Quentin, quand cette tâche s'éxecute pour la première fois, elle remplace la pelle dans l'inventaire
 		// 	@Override									    // Le seul moyen de faire réapparaître la pelle est de déco reco
 		// 	public void run() {
 		// 		giveRandomOreToPlayers();
@@ -46,9 +37,8 @@ public class BurrowerRole extends Role {
 		// }.runTaskTimer(Main.getInstance(), 0, 20 * 600 * 1);
 
 
-		pickEvents = new BurrowerPick.Events();
-
-		shovelEvents = new BurrowerShovel.Events();
+		pickEvents = new BurrowerPick.Events(game);
+		shovelEvents = new BurrowerShovel.Events(game);
 	}
 
 	@Override
@@ -62,15 +52,15 @@ public class BurrowerRole extends Role {
 		shovelEvents.stop();
 	}
 
-	@EventHandler
-	public void onPlayerChat(AsyncPlayerChatEvent event) {
-		Player player = event.getPlayer();
-		String message = event.getMessage();
+	// @EventHandler
+	// public void onPlayerChat(AsyncPlayerChatEvent event) {
+	// 	Player player = event.getPlayer();
+	// 	String message = event.getMessage();
 
-		if (message.startsWith("radar") && Role.isPlayerRole(player, id)) {
-			radar(player);
-		}
-	}
+	// 	if (message.startsWith("radar") && Role.isPlayerRole(player, id)) {
+	// 		radar(player);
+	// 	}
+	// }
 
 	public void radar(Player player) {
 		try {
@@ -116,21 +106,21 @@ public class BurrowerRole extends Role {
 	// 	}
 	// }
 
-	private void giveRandomOreToPlayers() {
-		for (Player player : burrowers) {
-			if (player == null) {
-				return;
-			}
-			Material randomOre = getRandomOre();
-			player.getInventory().addItem(new ItemStack(randomOre));
-		}
-	}
+	// private void giveRandomOreToPlayers() {
+	// 	for (Player player : burrowers) {
+	// 		if (player == null) {
+	// 			return;
+	// 		}
+	// 		Material randomOre = getRandomOre();
+	// 		player.getInventory().addItem(new ItemStack(randomOre));
+	// 	}
+	// }
 
-	private Material getRandomOre() {
-		Material[] oresTypes  = { Material.COAL, Material.IRON_INGOT, Material.GOLD_INGOT, Material.DIAMOND };
-		Material randomOre = oresTypes[(int) (Math.random() * oresTypes.length)];
-		return randomOre;
-	}
+	// private Material getRandomOre() {
+	// 	Material[] oresTypes  = { Material.COAL, Material.IRON_INGOT, Material.GOLD_INGOT, Material.DIAMOND };
+	// 	Material randomOre = oresTypes[(int) (Math.random() * oresTypes.length)];
+	// 	return randomOre;
+	// }
 
 
 
@@ -141,8 +131,8 @@ public class BurrowerRole extends Role {
 		}
 
 		@Override
-		public Role build(Game.Builder builder){
-			return new BurrowerRole(this);
+		public Role build(Game.Builder builder, Game game){
+			return new BurrowerRole(this, game);
 		}
 	}
 }

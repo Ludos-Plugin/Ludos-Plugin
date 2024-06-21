@@ -1,7 +1,5 @@
 package fr.ludos.item.trapper;
 
-import java.util.ArrayList;
-
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;

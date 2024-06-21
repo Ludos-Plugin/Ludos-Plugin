@@ -1,7 +1,9 @@
 package fr.ludos.item.burrower;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
+import fr.ludos.game.Game;
 import fr.ludos.role.BurrowerRole;
+import fr.ludos.role.Role;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.ItemUtilities;
 
@@ -14,6 +16,7 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -28,16 +31,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 
-
-
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 
-
 public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	public static final String HAMMER_MODE = "mode";
-	private NamespacedKey modeKey = new NamespacedKey(Main.getInstance(), HAMMER_MODE);
+	private NamespacedKey modeKey = new NamespacedKey(Ludos.getInstance(), HAMMER_MODE);
 
 	private Boolean hammerMode = false;
 
@@ -247,10 +247,8 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 	public static class Events extends LevelItem.Events<BurrowerPick, BurrowerPickLevels> {
 
-		public Events() {
-			super(BurrowerRole.id, BurrowerPickLevels.WOODEN);
-
-			updateAllInventories();
+		public Events(Game game) {
+			super(game, BurrowerPickLevels.WOODEN);
 		}
 
 
@@ -335,6 +333,10 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		@Override
 		protected BurrowerPick createItem(Player owner, BurrowerPickLevels level) {
 			return new BurrowerPick(owner, level);
+		}
+		@Override
+		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+			return Role.isPlayerRole(owner, BurrowerRole.id);
 		}
 	}
 }

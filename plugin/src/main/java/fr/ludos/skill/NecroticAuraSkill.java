@@ -1,5 +1,3 @@
-// NecroticAuraSkill.java
-
 package fr.ludos.skill;
 
 import org.bukkit.Bukkit;
@@ -9,7 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
 
 import org.bukkit.entity.Entity;
 
@@ -46,7 +44,7 @@ import org.bukkit.entity.Entity;
  * @see org.bukkit.potion.PotionEffect
  * @see org.bukkit.potion.PotionEffectType
  * @see org.bukkit.entity.Entity
- * @see fr.ludos.Main
+ * @see fr.ludos.Ludos
  */
 
 public class NecroticAuraSkill {
@@ -62,7 +60,7 @@ public class NecroticAuraSkill {
 	 * @param prey      The player being prey.
 	 */
 
-	public static void activateNecroticAura(Main plugin, Player necromancer, Player prey) {
+	public static void activateNecroticAura(Ludos plugin, Player necromancer, Player prey) {
 
 		// Apply damage and potion effect
 		for (Entity entity : necromancer.getNearbyEntities(AURA_RADIUS, AURA_RADIUS, AURA_RADIUS)) {

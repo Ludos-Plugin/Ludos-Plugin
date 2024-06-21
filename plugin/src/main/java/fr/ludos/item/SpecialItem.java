@@ -1,12 +1,12 @@
 package fr.ludos.item;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
 import fr.ludos.game.Game;
-import fr.ludos.role.Role;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -37,67 +37,23 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-
-/**
- * Pickaxe is a class that represents a special item, "Miner Pickaxe," in Minecraft.
- * This item allows the miner player to improve their own pickaxe based on the ores they collect.
- * <br><br>
- * Features:
- * <br><br>
- * - Provides methods to give a miner pickaxe to the player and level up the pickaxe based on XP.
- * <br><br>
- * - Automatically updates the pickaxe's material as it levels up.
- * <br><br>
- * - Defines an evolution path from wood to stone, iron, gold, and finally diamond pickaxe.
- * <br><br>
- * Usage:
- * <br><br>
- * - Call addPickaxeInventory(player) to give a miner pickaxe to the specified player.
- * <br><br>
- * - Call levelPickaxe(player, xp) with the XP gained from mining to level up the pickaxe.
- * <br><br>
- * Example:
- * <pre>{@code
- * Pickaxe pickaxe = new Pickaxe();
- * pickaxe.addPickaxeInventory(player);
- * pickaxe.levelPickaxe(player, xp);
- * }</pre>
- * <br><br>
- * @author feur25 & Ganon358
- * @version 1.0
- * @see org.bukkit.entity.Player
- * @see org.bukkit.inventory.ItemStack
- * @see org.bukkit.Material
- * @see org.bukkit.inventory.meta.ItemMeta
- * @see java.util.Collections
- */
-
 public abstract class SpecialItem {
 
 	public static final String ID = "id";
-	private NamespacedKey idKey = new NamespacedKey(Main.getInstance(), ID);
+	private NamespacedKey idKey = new NamespacedKey(Ludos.getInstance(), ID);
 
 	public static final String OWNER = "owner";
-	private NamespacedKey ownerKey = new NamespacedKey(Main.getInstance(), OWNER);
+	private NamespacedKey ownerKey = new NamespacedKey(Ludos.getInstance(), OWNER);
 
 	private final ItemStack stack;
-
-	private final Player owner;
-
 	public ItemStack getStack() {
 		return stack;
 	}
 
+	private final Player owner;
 	public Player getOwner() {
 		return owner;
 	}
-
-	protected List<String> getLore() {
-		return null;
-	}
-
-	protected abstract String getId();
-	protected abstract String getName();
 
 
 	public SpecialItem(ItemStack stack) throws IllegalArgumentException {
@@ -127,7 +83,7 @@ public abstract class SpecialItem {
 			UUID.fromString(
 				getPersistentData(stack, ownerKey, PersistentDataType.STRING)
 			)
-		);;
+		);
 	}
 
 	protected SpecialItem(ItemStack stack, Player owner) {
@@ -147,6 +103,15 @@ public abstract class SpecialItem {
 
 		stack.setItemMeta(meta);
 	}
+
+
+	protected List<String> getLore() {
+		return null;
+	}
+
+	protected abstract String getId();
+	protected abstract String getName();
+
 
 	public void updateName() {
 		ItemStack stack = getStack();
@@ -236,17 +201,13 @@ public abstract class SpecialItem {
 
 
 	public static abstract class Events<T extends SpecialItem> implements Listener {
-		@Nullable
-		protected abstract T getItem(ItemStack stack);
+		public final Game game;
 
-		protected abstract T createItem(Player owner);
+		public Events(Game game) {
+			this.game = game;
+			Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
 
-		protected final String roleId;
-
-		public Events(@Nullable String roleId) {
-			this.roleId = roleId;
-
-			Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
+			updateAllInventories();
 		}
 
 		public void stop() {
@@ -254,6 +215,14 @@ public abstract class SpecialItem {
 
 			removeFromAllInventories();
 		}
+
+
+		@Nullable
+		protected abstract T getItem(ItemStack stack);
+		protected abstract T createItem(Player owner);
+
+		protected abstract Boolean canPlayerHaveItem(HumanEntity owner);
+
 
 		protected void removeFromAllInventories() {
 			for (Player player : Bukkit.getOnlinePlayers()) {
@@ -266,20 +235,16 @@ public abstract class SpecialItem {
 		}
 
 		protected void updateAllInventories() {
-			// TODO: add proper Player selection
-			if (roleId == null) {
-				return;
-			}
-			for (Player player : Role.getPlayersOfRole(roleId)) {
-				updateItemInInventory(player);
+			for (Player player : game.getTeamController().getPlayers()) {
+				if (canPlayerHaveItem(player)) {
+					updateItemInInventory(player);
+				}
 			}
 		}
 
 		@EventHandler
 		public void onPlayerDropItem(PlayerDropItemEvent event) {
-			if (roleId != null && ! Role.isPlayerRole(event.getPlayer(), roleId)) {
-				return;
-			}
+			if (! canPlayerHaveItem(event.getPlayer())) return;
 
 			ItemStack item = event.getItemDrop().getItemStack();
 
@@ -290,20 +255,16 @@ public abstract class SpecialItem {
 
 		@EventHandler
 		public void onInventoryClickItem(InventoryClickEvent event) {
-			if (roleId != null && ! Role.isPlayerRole(event.getWhoClicked(), roleId)) {
-				return;
-			}
+			if (! canPlayerHaveItem(event.getWhoClicked())) return;
 
 			ItemStack item = event.getCursor();
-			if (item.getType() == Material.AIR) {
+			if (item.getType().isAir()) {
 				item = event.getCurrentItem();
 			}
 
-			if (getItem(item) == null) {
-				return;
-			}
+			if (getItem(item) == null) return;
 
-			if ( event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY && event.getInventory().getType() != InventoryType.PLAYER/*  || isAnotherInventory */ ) {
+			if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY && event.getInventory().getType() != InventoryType.PLAYER) {
 				event.setResult(Result.DENY);
 			}
 		}
@@ -312,9 +273,7 @@ public abstract class SpecialItem {
 		public void onItemSpawn(ItemSpawnEvent event) {
 			ItemStack item = event.getEntity().getItemStack();
 
-			if (getItem(item) == null) {
-				return;
-			}
+			if (getItem(item) == null) return;
 
 			event.setCancelled(true);
 		}
@@ -332,26 +291,15 @@ public abstract class SpecialItem {
 
 
 		public void updateItemInInventory(Player player) {
-			var currentGame = Game.getCurrent();
-			// if (currentGame == null || ! currentGame.canPlayerHaveRole(player, roleId)) {
-			// 	return;
-			// }
-
-			if (roleId != null && ! Role.isPlayerRole(player, roleId)) {
-				return;
-			}
+			if (! canPlayerHaveItem(player)) return;
 
 			Inventory inventory = player.getInventory();
-			if (T.containedIn(inventory, this::getItem)) {
-				return;
-			}
+			if (T.containedIn(inventory, this::getItem)) return;
 
 			T item = createItem(player);
-			if (item == null) {
-				return;
-			}
+			if (item == null) return;
+
 			player.getInventory().addItem(item.getStack());
 		}
-
 	}
 }

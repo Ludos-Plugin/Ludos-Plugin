@@ -3,6 +3,7 @@ package fr.ludos.command;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -18,6 +19,11 @@ public class GameCommand implements TabExecutor {
 		if (args.length == 0) return false;
 
 		String gameString = args[0].toLowerCase();
+		if (gameString.equals(GameCommandOptions.stop.toString())) {
+			Game.stopGame();
+			return true;
+		}
+
 		if (! Game.getRegistered().containsKey(gameString)) return false;
 
 		return Game.getRegistered().get(gameString)
@@ -27,9 +33,11 @@ public class GameCommand implements TabExecutor {
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 		if (args.length <= 1) {
-			return Game.getRegistered().keySet().stream()
-				.sorted()
-				.collect(Collectors.toList());
+			return Stream.concat(
+					Game.getRegistered().keySet().stream().sorted(),
+					Stream.of(GameCommandOptions.stop.name()) // option to stop the current game without specifying the game id
+				)
+				.collect(Collectors.toList() );
 		}
 
 		String gameString = args[0].toLowerCase();
@@ -44,17 +52,19 @@ public class GameCommand implements TabExecutor {
 		StringBuilder usage = new StringBuilder("/<command> ");
 
 		usage.append('<');
-		usage.append( Game.getRegistered().keySet().stream()
-						.sorted()
-						.collect(Collectors.joining(" | ") ) );
+		usage.append( Stream.concat(
+				Game.getRegistered().keySet().stream().sorted(),
+				Stream.of(GameCommandOptions.stop.name()) // option to stop the current game without specifying the game id
+			)
+			.collect(Collectors.joining(" | ")) );
 		usage.append('>');
 
 		usage.append(' ');
 
 		usage.append('<');
 		usage.append( Arrays.stream(GameCommandOptions.values()).map(GameCommandOptions::toString)
-						.sorted()
-						.collect(Collectors.joining(" | ")) );
+			.sorted()
+			.collect(Collectors.joining(" | ")) );
 		usage.append('>');
 
 		usage.append(' ');

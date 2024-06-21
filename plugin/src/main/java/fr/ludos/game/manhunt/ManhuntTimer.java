@@ -13,7 +13,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
 
 public class ManhuntTimer implements Listener {
 
@@ -45,13 +45,12 @@ public class ManhuntTimer implements Listener {
     }
 
     private void start() {
-        if (isStarted) {
-            return;
-        }
+        if (isStarted) return;
+
         isStarted = true;
         resume();
 
-        Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
+        Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
 
 		for (Player player : Bukkit.getOnlinePlayers()) {
             bossbar.addPlayer(player);
@@ -61,9 +60,8 @@ public class ManhuntTimer implements Listener {
     }
 
     public void stop() {
-        if (! isStarted) {
-            return;
-        }
+        if (! isStarted) return;
+
         pause();
         isStarted = false;
 
@@ -76,9 +74,8 @@ public class ManhuntTimer implements Listener {
     }
 
     public void resume() {
-        if (! isStarted || isRunning) {
-            return;
-        }
+        if (! isStarted || isRunning) return;
+
         isRunning = true;
 
         task = new BukkitRunnable() {
@@ -86,18 +83,15 @@ public class ManhuntTimer implements Listener {
             public void run() {
                 addSecond();
             }
-        }.runTaskTimer(Main.getInstance(), 20, 20);
+        }.runTaskTimer(Ludos.getInstance(), 20, 20);
     }
 
     public void pause() {
-        if (! isStarted || ! isRunning) {
-            return;
-        }
+        if (! isStarted || ! isRunning) return;
+
         isRunning = false;
 
-        if (task != null) {
-            task.cancel();
-        }
+        if (task != null) task.cancel();
         task = null;
     }
 

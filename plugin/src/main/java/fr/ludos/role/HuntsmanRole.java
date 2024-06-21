@@ -1,7 +1,6 @@
 package fr.ludos.role;
 
 import org.bukkit.Material;
-import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -14,13 +13,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
-// import fr.ludos.item.huntsman.crossbow.HuntsmanStBow;
-// import fr.ludos.item.huntsman.spear.HuntsmanSpear;
 import fr.ludos.game.Game;
 import fr.ludos.item.huntsman.HuntsmanBow;
-// import fr.ludos.command.SetBowLevelCommand;
 import fr.ludos.item.huntsman.HuntsmanCrossbow;
-// import fr.ludos.item.huntsman.HuntsmanLevelSelector;
 
 
 public class HuntsmanRole extends Role {
@@ -30,11 +25,11 @@ public class HuntsmanRole extends Role {
 	private final HuntsmanCrossbow.Events crossbowEvents;
 
 
-	public HuntsmanRole(Builder builder) {
-		super(builder);
+	public HuntsmanRole(Builder builder, Game game) {
+		super(builder, game);
 
-		bowEvents = new HuntsmanBow.Events();
-		crossbowEvents = new HuntsmanCrossbow.Events();
+		bowEvents = new HuntsmanBow.Events(game);
+		crossbowEvents = new HuntsmanCrossbow.Events(game);
 
 		for (Player huntsman : Role.getPlayersOfRole(id)) {
 			updateArrowCount(huntsman);
@@ -86,8 +81,8 @@ public class HuntsmanRole extends Role {
 		}
 
 		@Override
-		public HuntsmanRole build(Game.Builder builder) {
-			return new HuntsmanRole(this);
+		public HuntsmanRole build(Game.Builder builder, Game game) {
+			return new HuntsmanRole(this, game);
 		}
 	}
 }

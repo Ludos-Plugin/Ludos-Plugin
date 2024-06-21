@@ -1,6 +1,7 @@
 package fr.ludos.item.huntsman;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
+import fr.ludos.game.Game;
 import fr.ludos.item.BranchLevelItem;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
@@ -112,18 +113,16 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 	public static class Events extends BranchLevelItem.Events<HuntsmanCrossbow, HuntsmanCrossbowBranches> {
 
 		public static final String ARROW_TYPE = "arrow_type";
-		public final NamespacedKey arrowTypeKey = new NamespacedKey(Main.getInstance(), ARROW_TYPE);
+		public final NamespacedKey arrowTypeKey = new NamespacedKey(Ludos.getInstance(), ARROW_TYPE);
 
 		public static final String ARROW_LEVEL = "arrow_level";
-		public final NamespacedKey arrowLevelKey = new NamespacedKey(Main.getInstance(), ARROW_LEVEL);
+		public final NamespacedKey arrowLevelKey = new NamespacedKey(Ludos.getInstance(), ARROW_LEVEL);
 
 		// private BukkitTask saturationTask;
 
 
-		public Events() {
-			super(HuntsmanRole.id);
-
-			updateAllInventories();
+		public Events(Game game) {
+			super(game);
 		}
 
 
@@ -143,14 +142,14 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 
 			int level = crossbow.getCurrentBranchLevel();
 
-			if (! player.hasCooldown(Material.ARROW))  {
+			if (! player.hasCooldown(Material.CROSSBOW))  {
 				container.set(arrowTypeKey, PersistentDataType.INTEGER, branch.index());
 				container.set(arrowLevelKey, PersistentDataType.INTEGER, level);
 				arrowProjectile.setGravity(false);
-				arrowProjectile.setDamage(2.5);
+				arrowProjectile.setDamage(4);
 				branch.processShotArrow(arrowProjectile, player, level, event);
 
-				player.setCooldown(Material.ARROW, 200);
+				player.setCooldown(Material.CROSSBOW, 200);
 			}
 		}
 
@@ -187,52 +186,48 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 		@EventHandler
 		public void onPlayerInteract(PlayerInteractEvent event) {
 			Action action = event.getAction();
-			if (action != Action.LEFT_CLICK_AIR && action != Action.LEFT_CLICK_BLOCK) {
-				return;
-			}
-
+			if (action != Action.LEFT_CLICK_AIR && action != Action.LEFT_CLICK_BLOCK) return;
 
 			Player player = event.getPlayer();
+
 			HuntsmanCrossbow crossbow = getItem(player.getInventory().getItemInMainHand());
-			if (crossbow == null) {
-				return;
+			if (crossbow == null) return;
+
+			if (! player.hasCooldown(crossbow.getStack().getType())) {
+				crossbow.cycleBranch();
+
+				player.setCooldown(crossbow.getStack().getType(), 5);
 			}
-
-			if (player.hasCooldown(crossbow.getStack().getType())) {
-				return;
-			}
-
-			crossbow.cycleBranch();
-
-			player.setCooldown(crossbow.getStack().getType(), 5);
 		}
 
 		@EventHandler
 		public void onItemDrop(PlayerDropItemEvent event) {
-			if (! Role.isPlayerRole(event.getPlayer(), roleId)) {
-				return;
-			}
+			if (! canPlayerHaveItem(event.getPlayer())) return;
 
 			if (event.getItemDrop().getItemStack().getType() == Material.ARROW) {
 				event.setCancelled(true);
 			}
 		}
 
+
 		@Override
 		protected HuntsmanCrossbowBranches[] getBranches() {
 			return HuntsmanCrossbowBranches.values;
 		}
+
 
 		@Override
 		@Nullable
 		protected HuntsmanCrossbow getItem(ItemStack stack) {
 			return HuntsmanCrossbow.getItem(stack);
 		}
-
 		@Override
 		protected HuntsmanCrossbow createItem(Player owner, int[] levels) {
 			return HuntsmanCrossbow.createItem(owner, levels);
 		}
-
+		@Override
+		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+			return Role.isPlayerRole(owner, HuntsmanRole.id);
+		}
 	}
 }

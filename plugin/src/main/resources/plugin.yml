@@ -2,12 +2,11 @@ name : Ludos
 version: "1.0"
 api: test
 api-version: 1.19
-main: fr.ludos.Main
+main: fr.ludos.Ludos
 
 
 commands:
    game:
-      description: "The main Ludos command"
+      description: "The Main Ludos command"
    role:
       description: "Pick a role to use when playing a Ludos game"
-   bomberzombie:

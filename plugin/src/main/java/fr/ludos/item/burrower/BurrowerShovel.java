@@ -1,7 +1,9 @@
 package fr.ludos.item.burrower;
 
 import fr.ludos.role.BurrowerRole;
+import fr.ludos.role.Role;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.game.Game;
 import fr.ludos.item.ItemUtilities;
 
 import org.bukkit.Location;
@@ -9,10 +11,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -21,7 +23,6 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
-
 
 public class BurrowerShovel extends SpecialItem {
 
@@ -139,10 +140,8 @@ public class BurrowerShovel extends SpecialItem {
 
 	public static class Events extends SpecialItem.Events<BurrowerShovel> {
 
-		public Events() {
-			super(BurrowerRole.id);
-
-			updateAllInventories();
+		public Events(Game game) {
+			super(game);
 		}
 
 
@@ -192,6 +191,10 @@ public class BurrowerShovel extends SpecialItem {
 		@Override
 		protected BurrowerShovel createItem(Player owner) {
 			return new BurrowerShovel(owner);
+		}
+		@Override
+		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+			return Role.isPlayerRole(owner, BurrowerRole.id);
 		}
 	}
 }

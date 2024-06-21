@@ -12,7 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
 
 public abstract class TeamController implements Listener {
 
@@ -21,7 +21,7 @@ public abstract class TeamController implements Listener {
 
 	public TeamController(Scoreboard scoreboard) {
 		this.scoreboard = scoreboard;
-		Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
+		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
 	}
 
 	public void stop() {
@@ -29,8 +29,8 @@ public abstract class TeamController implements Listener {
 	}
 
 
-	protected abstract Collection<Player> getPlayers();
-	protected abstract Collection<Team> getTeams();
+	public abstract Collection<Player> getPlayers();
+	public abstract Collection<Team> getTeams();
 
 	public boolean areAllies(HumanEntity player1, HumanEntity player2) {
 		var player1Team = scoreboard.getEntryTeam(player1.getName());

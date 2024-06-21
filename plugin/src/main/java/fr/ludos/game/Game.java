@@ -1,6 +1,6 @@
 package fr.ludos.game;
 
-import fr.ludos.Main;
+import fr.ludos.Ludos;
 import fr.ludos.command.GameCommandOptions;
 import fr.ludos.role.Role;
 
@@ -21,41 +21,61 @@ import java.util.stream.Collectors;
 import java.util.HashMap;
 import javax.annotation.Nullable;
 
-
 public abstract class Game implements Listener {
 
 	@Nullable
 	private static Game current = null;
-	private static final Map<String, Builder> registered = new HashMap<String, Builder>();
-
-	public final Map<String, Role> activeRoles = new HashMap<String, Role>();
-
-
 	@Nullable
 	public static Game getCurrent() {
-		return Game.current;
-	}
-	public static Map<String, Builder> getRegistered() {
-		return Game.registered;
+		return current;
 	}
 
+	private static final Map<String, Builder> registered = new HashMap<String, Builder>();
+	public static Map<String, Builder> getRegistered() {
+		return registered;
+	}
+
+	private final Map<String, Role> activeRoles = new HashMap<String, Role>();
+	public Map<String, Role> getActiveRoles() {
+		return activeRoles;
+	}
+
+
+	public Game(Builder gameBuilder) {
+		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
+	}
+
+	public void stop() {
+		HandlerList.unregisterAll(this);
+
+		for (Role role : activeRoles.values()) {
+			role.stop();
+		}
+		activeRoles.clear();
+	}
+
+	public abstract TeamController getTeamController();
+	public abstract Boolean canPlayerHaveRole(Player player, String roleId);
 
 	public static void registerGame(Builder builder) {
-		Game.registered.put(builder.getId(), builder);
+		registered.put(builder.getId(), builder);
 	}
 
-	public static void startGame(Builder builder) {
+	public static void startGame(Builder gameBuilder) {
 		stopGame();
 
-		current = builder.build();
+		current = gameBuilder.build();
+
+		for (Role.Builder roleBuilder : Role.getRegistered().values()) {
+			current.activeRoles.put(roleBuilder.getId(), roleBuilder.build(gameBuilder, current));
+		}
 	}
 	public static void startGame(String id) {
-		if ( ! registered.containsKey(id) ) {
-			return;
-		}
+		if (! registered.containsKey(id)) return;
 
 		startGame(registered.get(id));
 	}
+
 	public static void stopGame() {
 		if (current != null) {
 			current.stop();
@@ -63,29 +83,6 @@ public abstract class Game implements Listener {
 		}
 	}
 
-	protected void registerRoles(Builder gameBuilder) {
-		for (Role.Builder roleBuilder : Role.getRegistered().values()) {
-			activeRoles.put(roleBuilder.getId(), roleBuilder.build(gameBuilder));
-		}
-	}
-
-	public Game(Builder gameBuilder) {
-		Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
-	}
-
-	protected void stopRoles() {
-		for (Role role : activeRoles.values()) {
-			role.stop();
-		}
-		activeRoles.clear();
-	}
-
-	public void stop() {
-		HandlerList.unregisterAll(this);
-	}
-
-	public abstract TeamController getTeamController();
-	public abstract Boolean canPlayerHaveRole(Player player, String roleId);
 
 
 	public static abstract class Builder implements TabExecutor {
