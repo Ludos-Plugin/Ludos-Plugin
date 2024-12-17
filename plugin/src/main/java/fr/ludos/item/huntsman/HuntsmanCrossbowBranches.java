@@ -4,7 +4,9 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -38,24 +40,24 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 	},
 
 
-	// WITHER (ChatColor.GRAY.toString() + ChatColor.ITALIC + "Rotting",  200, "Rotting Description") {
-	// 	@Override
-	// 	public void processShotArrow(Arrow arrow, HumanEntity player, int level, EntityShootBowEvent event) {
-	// 		int poisonDuration = 20 * 3;
-	// 		int poisonAmplifier = level > 0 ? 1 : 2;
-	// 		PotionEffect poisonEffect = new PotionEffect(PotionEffectType.POISON, poisonDuration, poisonAmplifier);
-	// 		arrow.addCustomEffect(poisonEffect, true);
-	// 	}
+	WITHER (ChatColor.GRAY.toString() + ChatColor.ITALIC + "Rotting",  200, "Rotting Description") {
+		@Override
+		public void processShotArrow(Arrow arrow, HumanEntity player, int level, EntityShootBowEvent event) {
+			int poisonDuration = 20 * 3;
+			int poisonAmplifier = level > 0 ? 1 : 2;
+			PotionEffect poisonEffect = new PotionEffect(PotionEffectType.POISON, poisonDuration, poisonAmplifier);
+			arrow.addCustomEffect(poisonEffect, true);
+		}
 
-	// 	@Override
-	// 	public void processLandedArrow(Arrow arrow, HumanEntity player, int level, ProjectileHitEvent event) {
-	// 		if (level > 1 && isMax(level)) {
-	// 			AreaEffectCloud effect = (AreaEffectCloud) arrow.getWorld().spawnEntity(arrow.getLocation(), EntityType.AREA_EFFECT_CLOUD);
-	// 			effect.addCustomEffect(PotionEffectType.WITHER.createEffect(60, 1), false);
-	// 			effect.setDuration(40);
-	// 		}
-	// 	}
-	// },
+		@Override
+		public void processLandedArrow(Arrow arrow, HumanEntity player, int level, ProjectileHitEvent event) {
+			if (level > 1 && isMax(level)) {
+				AreaEffectCloud effect = (AreaEffectCloud) arrow.getWorld().spawnEntity(arrow.getLocation(), EntityType.AREA_EFFECT_CLOUD);
+				effect.addCustomEffect(PotionEffectType.WITHER.createEffect(60, 1), false);
+				effect.setDuration(40);
+			}
+		}
+	},
 
 
 	SLOWNESS (ChatColor.BLUE.toString() + ChatColor.ITALIC + "Impeding", 200, "Impeding Description") {
