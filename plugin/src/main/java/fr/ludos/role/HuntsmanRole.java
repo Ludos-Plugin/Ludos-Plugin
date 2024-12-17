@@ -30,6 +30,13 @@ public class HuntsmanRole extends Role {
 
 		bowEvents = new HuntsmanBow.Events(game);
 		crossbowEvents = new HuntsmanCrossbow.Events(game);
+	}
+
+	@Override
+	public void start() {
+		super.start();
+		bowEvents.start();
+		crossbowEvents.start();
 
 		for (Player huntsman : Role.getPlayersOfRole(id)) {
 			updateArrowCount(huntsman);

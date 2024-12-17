@@ -151,8 +151,6 @@ public class ManhuntGame extends Game {
 
 		compassEvents = new ManhuntCompass.Events(this);
 
-		Bukkit.broadcastMessage("The Game of Manhunt started");
-
 		saturationTask = new BukkitRunnable() {
             @Override
             public void run() {
@@ -162,6 +160,18 @@ public class ManhuntGame extends Game {
 				prey.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 1, 0, true, false));
             }
         }.runTaskTimer(Ludos.getInstance(), 400, 400);
+
+	}
+
+
+	@Override
+	public void start() {
+		super.start();
+
+		compassEvents.start();
+
+
+		Bukkit.broadcastMessage("The Game of Manhunt started");
 	}
 
 	@Override

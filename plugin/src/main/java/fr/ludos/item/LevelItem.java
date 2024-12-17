@@ -5,6 +5,7 @@ import org.bukkit.persistence.*;
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -141,6 +142,9 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 
 		public Events(Game game, TLevels baseLevel) {
 			super(game);
+			if (baseLevel == null) {
+				throw new IllegalArgumentException("Base level cannot be null");
+			}
 
 			this.baseLevel = baseLevel;
 			this.deadPlayerLevels = new HashMap<>();
@@ -164,9 +168,11 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 
 		@Override
 		protected final T createItem(Player owner) {
-			TLevels level = baseLevel;
+			TLevels level = this.baseLevel;
+
 			if (owner != null && deadPlayerLevels != null && deadPlayerLevels.containsKey(owner.getName())) {
-				level = deadPlayerLevels.get(owner.getName());
+				TLevels deadLevels = deadPlayerLevels.get(owner.getName());
+				level = deadLevels != null ? deadLevels : level;
 			}
 
 			return createItem(owner, level);

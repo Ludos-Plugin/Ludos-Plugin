@@ -27,6 +27,18 @@ public class BurrowerRole extends Role {
 	public BurrowerRole(Builder builder, Game game) {
 		super(builder, game);
 
+
+		pickEvents = new BurrowerPick.Events(game);
+		shovelEvents = new BurrowerShovel.Events(game);
+	}
+
+	@Override
+	public void start() {
+		super.start();
+
+		pickEvents.start();
+		shovelEvents.start();
+
 		burrowers = Role.getPlayersOfRole(id);
 
 		// passiveResourcesTask = new BukkitRunnable() {    // FIXME: Quentin, quand cette tâche s'éxecute pour la première fois, elle remplace la pelle dans l'inventaire
@@ -35,10 +47,6 @@ public class BurrowerRole extends Role {
 		// 		giveRandomOreToPlayers();
 		// 	}
 		// }.runTaskTimer(Main.getInstance(), 0, 20 * 600 * 1);
-
-
-		pickEvents = new BurrowerPick.Events(game);
-		shovelEvents = new BurrowerShovel.Events(game);
 	}
 
 	@Override

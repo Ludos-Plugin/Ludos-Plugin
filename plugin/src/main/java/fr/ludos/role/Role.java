@@ -44,6 +44,9 @@ public abstract class Role implements Listener {
 	 * It contains configuration for the Role itself.
 	 */
 	public Role(Builder builder, Game game) {
+	}
+
+	public void start() {
 		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
 	}
 

@@ -35,6 +35,13 @@ public class TrapperRole extends Role {
 	}
 
 	@Override
+	public void start() {
+		super.start();
+
+		snareEvents.start();
+	}
+
+	@Override
 	public void stop() {
 		super.stop();
 

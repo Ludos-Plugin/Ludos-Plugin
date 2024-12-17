@@ -40,9 +40,24 @@ public abstract class Game implements Listener {
 		return activeRoles;
 	}
 
+	private Builder gameBuilder;
+	protected Builder getGameBuilder() {
+		return gameBuilder;
+	}
+
 
 	public Game(Builder gameBuilder) {
+		this.gameBuilder = gameBuilder;
+	}
+
+	public void start() {
 		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
+
+		for (Role.Builder roleBuilder : Role.getRegistered().values()) {
+			Role role = roleBuilder.build(gameBuilder, current);
+			activeRoles.put(roleBuilder.getId(), role);
+			role.start();
+		}
 	}
 
 	public void stop() {
@@ -65,10 +80,10 @@ public abstract class Game implements Listener {
 		stopGame();
 
 		current = gameBuilder.build();
-
-		for (Role.Builder roleBuilder : Role.getRegistered().values()) {
-			current.activeRoles.put(roleBuilder.getId(), roleBuilder.build(gameBuilder, current));
+		if (current != null) {
+			current.start();
 		}
+
 	}
 	public static void startGame(String id) {
 		if (! registered.containsKey(id)) return;

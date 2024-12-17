@@ -205,7 +205,11 @@ public abstract class SpecialItem {
 
 		public Events(Game game) {
 			this.game = game;
-			Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
+		}
+
+		public void start() {
+			Ludos plugin = Ludos.getInstance();
+			Bukkit.getPluginManager().registerEvents(this, plugin);
 
 			updateAllInventories();
 		}
