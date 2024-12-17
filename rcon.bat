@@ -1,0 +1,1 @@
+docker exec -i ludos-server rcon-cli
