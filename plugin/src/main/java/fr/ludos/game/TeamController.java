@@ -35,7 +35,7 @@ public abstract class TeamController implements Listener {
 	public boolean areAllies(HumanEntity player1, HumanEntity player2) {
 		var player1Team = scoreboard.getEntryTeam(player1.getName());
 		var player2Team = scoreboard.getEntryTeam(player2.getName());
-		var res = player1Team.equals(player2Team);
+		var res = player1Team != null && player1Team.equals(player2Team);
 		return res;
 	}
 
