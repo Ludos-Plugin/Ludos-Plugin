@@ -6,22 +6,22 @@ import org.bukkit.entity.Player;
 
 public class TrapperTrap {
 
-    private TrapperSnareDeviceBranches type;
+    private final TrapperSnareDeviceBranches type;
     public TrapperSnareDeviceBranches getType() {
         return type;
     }
 
-    private Player owner;
+    private final Player owner;
     public Player getOwner() {
         return owner;
     }
 
-    private Location location;
+    private final Location location;
     public Location getLocation() {
         return location;
     }
 
-    private World world;
+    private final World world;
     public World getWorld() {
         return world;
     }

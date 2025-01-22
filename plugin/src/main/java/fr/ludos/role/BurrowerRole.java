@@ -11,7 +11,6 @@ import org.bukkit.generator.structure.StructureType;
 
 import org.bukkit.util.StructureSearchResult;
 
-import java.util.List;
 import java.util.Map;
 
 public class BurrowerRole extends Role {

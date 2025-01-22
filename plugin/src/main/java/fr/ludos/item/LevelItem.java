@@ -5,7 +5,6 @@ import org.bukkit.persistence.*;
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -21,10 +20,10 @@ import java.util.List;
 
 public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extends SpecialItem {
 	public static final String LEVEL = "level";
-	private NamespacedKey levelKey = new NamespacedKey(Ludos.getInstance(), LEVEL);
+	private final NamespacedKey levelKey = new NamespacedKey(Ludos.getInstance(), LEVEL);
 
 	public static final String XP = "xp";
-	private NamespacedKey xpKey = new NamespacedKey(Ludos.getInstance(), XP);
+	private final NamespacedKey xpKey = new NamespacedKey(Ludos.getInstance(), XP);
 
 	private static final String MAX_LVL_LABEL = "MAX";
 

@@ -86,12 +86,16 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 
 	public final static TrapperSnareDeviceBranches[] values = TrapperSnareDeviceBranches.values();
 
-	private String name;
+	private final String name;
+
+	@Override
 	public String getName() {
 		return name;
 	}
 
-	private String description;
+	private final String description;
+
+	@Override
 	public String getDescription() {
 		return description;
 	}
@@ -111,7 +115,7 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		return values[i];
 	}
 
-
+	@Override
 	public int index() {
 		return ArrayUtils.indexOf(values(), this);
 	}

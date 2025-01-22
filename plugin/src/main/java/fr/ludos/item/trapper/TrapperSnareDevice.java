@@ -40,8 +40,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 	}
 
 
-
-    @Override
+	@Override
     public String getId(){
         return "trapperSnareGrimoire";
     }
@@ -143,15 +142,18 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
             }
 
             Action action = event.getAction();
-			if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
-				snareDevice.cycleBranch();
-			}
-			else if (action == Action.RIGHT_CLICK_BLOCK) {
-				Block block = event.getClickedBlock().getRelative(event.getBlockFace());
-				traps.add(snareDevice.getBranch().createTrap(player, block));
-			}
-			else {
-				player.sendMessage("You must click on a block to place a trap."); // TODO: Translate
+			switch (action) {
+				case LEFT_CLICK_AIR, LEFT_CLICK_BLOCK -> snareDevice.cycleBranch();
+				case RIGHT_CLICK_BLOCK -> {
+					Block clickedBlock = event.getClickedBlock();
+					if (clickedBlock != null) {
+						Block block = clickedBlock.getRelative(event.getBlockFace());
+						traps.add(snareDevice.getBranch().createTrap(player, block));
+					} else {
+						player.sendMessage("You must click on a block to place a trap."); // TODO: Translate
+					}
+				}
+				default -> player.sendMessage("You must click on a block to place a trap."); // TODO: Translate
 			}
 
 			player.setCooldown(snareDevice.getStack().getType(), 5);
