@@ -1,9 +1,9 @@
 package fr.ludos.game.manhunt;
 
 public enum ManhuntRevealOptions {
-	frequent (40),
-	regular (180),
-	infrequent (360);
+	often (40),
+	occasional (180),
+	rare (360);
 
 	private int duration;
 	public int getDuration() {

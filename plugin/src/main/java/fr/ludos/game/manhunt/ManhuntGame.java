@@ -301,7 +301,7 @@ public class ManhuntGame extends Game {
 			return location;
 		}
 
-        private ManhuntRevealOptions reveal = ManhuntRevealOptions.regular;
+		private ManhuntRevealOptions reveal = ManhuntRevealOptions.occasional;
 		public ManhuntRevealOptions getReveal() {
 			return reveal;
 		}
@@ -328,7 +328,7 @@ public class ManhuntGame extends Game {
 			String revealString = main.getConfig().getString(getConfigKey(revealKey));
 			reveal = EnumUtils.isValidEnum(ManhuntRevealOptions.class, revealString)
 				? ManhuntRevealOptions.valueOf( revealString )
-				: ManhuntRevealOptions.regular;
+				: ManhuntRevealOptions.occasional;
 		}
 
 
