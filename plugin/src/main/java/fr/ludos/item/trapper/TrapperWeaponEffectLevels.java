@@ -1,3 +1,5 @@
+package fr.ludos.item.trapper;
+
 //package fr.ludos.item.Trapper;
 // // import org.bukkit.Bukkit;
 // // import org.bukkit.block.Block;
