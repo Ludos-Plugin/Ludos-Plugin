@@ -101,6 +101,13 @@ public class ManhuntGame extends Game {
 
 		prey.sendTitle("You are the " + ChatColor.BLUE + "Prey", "Run for your life", 10, 70, 20);
 
+		border = prey.getWorld().getWorldBorder();
+		borderResetCenter = border.getCenter();
+		borderResetSize = border.getSize();
+
+		border.setSize(areaDiameter, 3);
+		border.setCenter(location);
+
 		prey.teleport(location);
 		prey.setBedSpawnLocation(location, true);
 
@@ -139,13 +146,6 @@ public class ManhuntGame extends Game {
 				progress.revokeCriteria(criteria);
 			}
 		}
-
-		border = prey.getWorld().getWorldBorder();
-		borderResetCenter = border.getCenter();
-		borderResetSize = border.getSize();
-
-		border.setCenter(location);
-		border.setSize(areaDiameter, 3);
 	}
 
 	@Override
@@ -222,7 +222,7 @@ public class ManhuntGame extends Game {
 
 		if (retries == 0) {
 			Bukkit.broadcastMessage("Could not find valid play area");
-			return fallback;
+			return fallback.clone();
 		}
 
 		location.setY(location.getY() + 1);
