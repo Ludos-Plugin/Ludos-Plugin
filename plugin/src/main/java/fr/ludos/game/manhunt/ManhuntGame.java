@@ -60,8 +60,12 @@ public class ManhuntGame extends Game {
 		return this.teamController;
 	}
 
-	private ManhuntCompass.Events compassEvents;
-	private ManhuntTimer timer;
+	private final ManhuntCompass.Events compassEvents;
+	private final ManhuntTimer timer;
+
+	private final Builder builder;
+	private final Player prey;
+	private final Set<Player> hunters;
 
 	private WorldBorder border;
 	private Location borderResetCenter;
@@ -73,36 +77,33 @@ public class ManhuntGame extends Game {
 	protected ManhuntGame(Builder builder) {
 		super(builder);
 
+		this.builder = builder;
+
 		this.scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
 		this.teamController = new ManhuntTeamController(this, builder.getChosenPlayers(), builder.getChosenPrey());
-
-		timer = new ManhuntTimer(this, builder.reveal.getDuration());
 
 
 		Optional<Player> nullablePrey = teamController.getPrey();
 		if (nullablePrey.isEmpty()) {
-			stop();
-			return;
+			throw new IllegalArgumentException("No players were found");
 		}
-		Player prey = nullablePrey.get();
+		prey = nullablePrey.get();
+		hunters = teamController.getHunters();
 
-		int areaDiameter = builder.getArea().getSize();
+
+		timer = new ManhuntTimer(this, builder.reveal.getDuration());
+		compassEvents = new ManhuntCompass.Events(this);
+	}
+
+	private void setGameArea(Player prey, Set<Player> hunters, int areaDiameter, Location location) {
 		int areaRadius = areaDiameter / 2;
-
-		ManhuntLocationOptions locationOption = builder.getLocation();
-
 
 
 		prey.sendTitle("You are the " + ChatColor.BLUE + "Prey", "Run for your life", 10, 70, 20);
 
-		Location fallbackLocation = prey.getLocation();
-		if (locationOption == ManhuntLocationOptions.random) {
-			prey.teleport(getGroundedLocationAround(prey.getLocation(), 300, 2500, fallbackLocation));
-			fallbackLocation = prey.getLocation();
-		}
-		prey.setBedSpawnLocation(prey.getLocation(), true);
+		prey.teleport(location);
+		prey.setBedSpawnLocation(location, true);
 
-		prey.getInventory().clear();
 		prey.setGameMode(GameMode.SURVIVAL);
 
 		prey.setHealth(prey.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
@@ -110,48 +111,67 @@ public class ManhuntGame extends Game {
 		prey.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 30, 1, false, false));
 		prey.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 20 * 40, 0, false, true));
 
+
 		Iterator<Advancement> iterator = Bukkit.getServer().advancementIterator();
-		while (iterator.hasNext()) {
-			AdvancementProgress progress = prey.getAdvancementProgress(iterator.next());
+		for (Advancement advancement = iterator.next(); iterator.hasNext(); advancement = iterator.next()) {
+			AdvancementProgress progress = prey.getAdvancementProgress(advancement);
 			for (String criteria : progress.getAwardedCriteria())
 			progress.revokeCriteria(criteria);
 		}
 
 
-
-		Set<Player> hunters = teamController.getHunters();
 		for (Player hunter : hunters) {
 			hunter.sendTitle("You are a " + ChatColor.RED + "Hunter", "Go and seek " + ChatColor.BLUE + prey.getName(), 10, 70, 20);
 
-			hunter.teleport(getGroundedLocationAround(prey.getLocation(), (int)(areaRadius * 0.3), (int)(areaRadius * 0.7), fallbackLocation));
-			fallbackLocation = hunter.getLocation();
-			hunter.setBedSpawnLocation(hunter.getLocation(), true);
+			Location hunterLocation = getGroundedLocationAround(location, (int)(areaRadius * 0.3), (int)(areaRadius * 0.7), location);
+			hunter.teleport(hunterLocation);
+			hunter.setBedSpawnLocation(hunterLocation, true);
 
-			hunter.getInventory().clear();
 			hunter.setGameMode(GameMode.SURVIVAL);
 
 			hunter.setHealth(hunter.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 			hunter.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
 
 			iterator = Bukkit.getServer().advancementIterator();
-			while (iterator.hasNext()) {
-				AdvancementProgress progress = hunter.getAdvancementProgress(iterator.next());
+			for (Advancement advancement = iterator.next(); iterator.hasNext(); advancement = iterator.next()) {
+				AdvancementProgress progress = hunter.getAdvancementProgress(advancement);
 				for (String criteria : progress.getAwardedCriteria())
 				progress.revokeCriteria(criteria);
 			}
 		}
 
-		prey.getWorld().setTime(1000);
-
 		border = prey.getWorld().getWorldBorder();
 		borderResetCenter = border.getCenter();
 		borderResetSize = border.getSize();
 
-		border.setCenter(prey.getLocation());
-		border.setSize(areaDiameter, 10);
+		border.setCenter(location);
+		border.setSize(areaDiameter, 3);
+	}
+
+	@Override
+	protected void onInit() {
+		prey.getInventory().clear();
+		for (Player hunter : hunters) {
+			hunter.getInventory().clear();
+		}
+	}
+
+	@Override
+	protected void onStart() {
+		int areaDiameter = builder.getArea().getSize();
+
+		ManhuntLocationOptions locationOption = builder.getLocation();
+		Location gameLocation = prey.getLocation();
+		if (locationOption == ManhuntLocationOptions.random) {
+			gameLocation = getGroundedLocationAround(gameLocation, 300, 2500, gameLocation);
+		}
+
+		setGameArea(prey, hunters, areaDiameter, gameLocation);
+		prey.getWorld().setTime(1000);
 
 
-		compassEvents = new ManhuntCompass.Events(this);
+		compassEvents.start();
+		timer.start();
 
 		saturationTask = new BukkitRunnable() {
 			@Override
@@ -163,29 +183,20 @@ public class ManhuntGame extends Game {
 			}
 		}.runTaskTimer(Ludos.getInstance(), 400, 400);
 
-	}
-
-
-	@Override
-	public void start() {
-		super.start();
-
-		compassEvents.start();
-
 
 		Bukkit.broadcastMessage("The Game of Manhunt started");
 	}
 
 	@Override
-	public void stop() {
-		super.stop();
-
+	protected void onStop() {
 		border.setSize(borderResetSize, 0);
 		border.setCenter(borderResetCenter);
 
 		teamController.stop();
-		timer.stop();
+
 		compassEvents.stop();
+		timer.stop();
+
 		saturationTask.cancel();
 
 		Bukkit.broadcastMessage("The Game of Manhunt ended");

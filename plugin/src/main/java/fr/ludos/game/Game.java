@@ -30,6 +30,8 @@ public abstract class Game implements Listener {
 		return current;
 	}
 
+	private boolean started = false;
+
 	private static final Map<String, Builder> registered = new HashMap<String, Builder>();
 	public static Map<String, Builder> getRegistered() {
 		return registered;
@@ -46,11 +48,18 @@ public abstract class Game implements Listener {
 	}
 
 
+
+
 	public Game(Builder gameBuilder) {
 		this.gameBuilder = gameBuilder;
 	}
 
-	public void start() {
+	public final void start() {
+		if (started) return;
+		started = true;
+
+		onInit();
+
 		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
 
 		for (Role.Builder roleBuilder : Role.getRegistered().values()) {
@@ -58,16 +67,26 @@ public abstract class Game implements Listener {
 			activeRoles.put(roleBuilder.getId(), role);
 			role.start();
 		}
-	}
 
-	public void stop() {
+		onStart();
+	}
+	protected void onInit() { }
+	protected void onStart() { }
+
+	public final void stop() {
+		if (! started) return;
+		started = false;
+
 		HandlerList.unregisterAll(this);
 
 		for (Role role : activeRoles.values()) {
 			role.stop();
 		}
 		activeRoles.clear();
+
+		onStop();
 	}
+	protected void onStop() { }
 
 	public abstract TeamController getTeamController();
 	public abstract Boolean canPlayerHaveRole(Player player, String roleId);

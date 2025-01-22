@@ -56,6 +56,8 @@ public abstract class Role implements Listener {
 		}
 		started = true;
 
+		onInit();
+
 		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
 
 		for (SpecialItem.Events<?> events : itemEvents.values()) {
@@ -64,6 +66,7 @@ public abstract class Role implements Listener {
 
 		onStart();
 	}
+	protected void onInit() { }
 	protected void onStart() { }
 
 
