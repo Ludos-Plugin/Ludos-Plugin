@@ -1,5 +1,7 @@
 package fr.ludos.role;
 
+import java.util.Map;
+
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.HumanEntity;
@@ -14,6 +16,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
 import fr.ludos.game.Game;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.item.huntsman.HuntsmanBow;
 import fr.ludos.item.huntsman.HuntsmanCrossbow;
 
@@ -21,33 +24,27 @@ import fr.ludos.item.huntsman.HuntsmanCrossbow;
 public class HuntsmanRole extends Role {
 	public static final String id = "huntsman";
 
-	private final HuntsmanBow.Events bowEvents;
-	private final HuntsmanCrossbow.Events crossbowEvents;
-
 
 	public HuntsmanRole(Builder builder, Game game) {
 		super(builder, game);
-
-		bowEvents = new HuntsmanBow.Events(game);
-		crossbowEvents = new HuntsmanCrossbow.Events(game);
 	}
 
 	@Override
-	public void start() {
-		super.start();
-		bowEvents.start();
-		crossbowEvents.start();
-
+	protected void onStart() {
 		for (Player huntsman : Role.getPlayersOfRole(id)) {
 			updateArrowCount(huntsman);
 		}
 	}
 
 	@Override
-	public void stop() {
-		super.stop();
-		bowEvents.stop();
-		crossbowEvents.stop();
+	protected Map<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
+		switch (builder.getId()) {
+			default:
+				return Map.of(
+					"bow", new HuntsmanBow.Events(game),
+					"crossbow", new HuntsmanCrossbow.Events(game)
+				);
+		}
 	}
 
 

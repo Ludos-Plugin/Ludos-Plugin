@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.item.SpecialItem;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -25,8 +26,8 @@ import org.bukkit.entity.Player;
  * It contains events and Data.
  */
 public abstract class Role implements Listener {
-
 	private static final String rolesKey = "playerRoles";
+	private boolean started = false;
 
 	public static Map<String, Builder> getRegistered() {
 		return registered;
@@ -39,21 +40,51 @@ public abstract class Role implements Listener {
 	private static Map<String, String> playerRoles = new HashMap<String, String>();
 
 
+	private final Map<String, SpecialItem.Events<?>> itemEvents;
+
 	/**
 	 * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
 	 * It contains configuration for the Role itself.
 	 */
 	public Role(Builder builder, Game game) {
+		itemEvents = createItemEvents(builder, game);
 	}
 
-	public void start() {
+	public final void start() {
+		if (started) {
+			return;
+		}
+		started = true;
+
 		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
-	}
 
-	public void stop() {
+		for (SpecialItem.Events<?> events : itemEvents.values()) {
+			events.start();
+		}
+
+		onStart();
+	}
+	protected void onStart() { }
+
+
+	public final void stop() {
+		if (!started) {
+			return;
+		}
+		started = false;
+
 		HandlerList.unregisterAll(this);
-	}
 
+		for (SpecialItem.Events<?> events : itemEvents.values()) {
+			events.stop();
+		}
+
+		onStop();
+	}
+	protected void onStop() { }
+
+
+	protected abstract Map<String, SpecialItem.Events<?>> createItemEvents(Builder builder, Game game);
 
 	public static void loadConfigRoles(Ludos plugin) {
 		ConfigurationSection rolesSection = plugin.getConfig().getConfigurationSection(rolesKey);
@@ -115,7 +146,7 @@ public abstract class Role implements Listener {
 
 
 	// public Role() {
-	//     Bukkit.getPluginManager().registerEvents((Listener)this, Main.getInstance());
+	// 	Bukkit.getPluginManager().registerEvents((Listener)this, Main.getInstance());
 	// }
 
 

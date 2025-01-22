@@ -41,6 +41,8 @@ import org.bukkit.attribute.Attribute;
 
 
 public class ManhuntGame extends Game {
+	public static final String id = "manhunt";
+
 	public static final String playersKey = "players";
 	public static final String preyKey = "prey";
 	public static final String areaKey = "area";
@@ -135,7 +137,7 @@ public class ManhuntGame extends Game {
 			while (iterator.hasNext()) {
 				AdvancementProgress progress = hunter.getAdvancementProgress(iterator.next());
 				for (String criteria : progress.getAwardedCriteria())
-                progress.revokeCriteria(criteria);
+				progress.revokeCriteria(criteria);
 			}
 		}
 
@@ -152,14 +154,14 @@ public class ManhuntGame extends Game {
 		compassEvents = new ManhuntCompass.Events(this);
 
 		saturationTask = new BukkitRunnable() {
-            @Override
-            public void run() {
+			@Override
+			public void run() {
 				for (Player hunter : hunters) {
 					hunter.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 1, 0, true, false));
 				}
 				prey.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 1, 0, true, false));
-            }
-        }.runTaskTimer(Ludos.getInstance(), 400, 400);
+			}
+		}.runTaskTimer(Ludos.getInstance(), 400, 400);
 
 	}
 
@@ -365,7 +367,7 @@ public class ManhuntGame extends Game {
 
 		@Override
 		public String getId() {
-			return "manhunt";
+			return id;
 		}
 
 		public void gameHelp(CommandSender sender, Command command, String label, GameCommandOptions option) {

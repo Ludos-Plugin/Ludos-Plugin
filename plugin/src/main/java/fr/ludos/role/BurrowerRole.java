@@ -1,6 +1,7 @@
 package fr.ludos.role;
 
 import fr.ludos.game.Game;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.item.burrower.BurrowerPick;
 import fr.ludos.item.burrower.BurrowerShovel;
 
@@ -11,35 +12,24 @@ import org.bukkit.generator.structure.StructureType;
 import org.bukkit.util.StructureSearchResult;
 
 import java.util.List;
+import java.util.Map;
 
 public class BurrowerRole extends Role {
-
-	private final BurrowerPick.Events pickEvents;
-	private final BurrowerShovel.Events shovelEvents;
-
 	public static final String id = "burrower";
 
-	public static List<Player> burrowers;
+
+	// public static List<Player> burrowers;
 
 	// private BukkitTask passiveResourcesTask;
 
 
 	public BurrowerRole(Builder builder, Game game) {
 		super(builder, game);
-
-
-		pickEvents = new BurrowerPick.Events(game);
-		shovelEvents = new BurrowerShovel.Events(game);
 	}
 
 	@Override
-	public void start() {
-		super.start();
-
-		pickEvents.start();
-		shovelEvents.start();
-
-		burrowers = Role.getPlayersOfRole(id);
+	protected void onStart() {
+		// burrowers = Role.getPlayersOfRole(id);
 
 		// passiveResourcesTask = new BukkitRunnable() {    // FIXME: Quentin, quand cette tâche s'éxecute pour la première fois, elle remplace la pelle dans l'inventaire
 		// 	@Override									    // Le seul moyen de faire réapparaître la pelle est de déco reco
@@ -50,14 +40,17 @@ public class BurrowerRole extends Role {
 	}
 
 	@Override
-	public void stop() {
-		super.stop();
-
+	public void onStop() {
 		// passiveResourcesTask.cancel();
 		// passiveResourcesTask = null;
+	}
 
-		pickEvents.stop();
-		shovelEvents.stop();
+	@Override
+	protected Map<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
+		return Map.of(
+			"pick", new BurrowerPick.Events(game),
+			"shovel", new BurrowerShovel.Events(game)
+		);
 	}
 
 	// @EventHandler

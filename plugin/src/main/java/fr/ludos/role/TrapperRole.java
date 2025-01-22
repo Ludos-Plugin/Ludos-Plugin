@@ -1,8 +1,11 @@
 package fr.ludos.role;
 
 import java.util.ArrayList;
+import java.util.Map;
+
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.entity.Player;
@@ -10,6 +13,7 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.item.trapper.TrapperSnareDevice;
 
 
@@ -17,35 +21,39 @@ public class TrapperRole extends Role {
 	public static final String id = "trapper";
 
 	private static final ArrayList<Player> sneakingPlayers = new ArrayList<>();
-	private final TrapperSnareDevice.Events snareEvents;
+
+	private BukkitTask invisibilityTask;
+
 
 	public TrapperRole(Builder builder, Game game) {
 		super(builder, game);
+	}
 
-		snareEvents = new TrapperSnareDevice.Events(game);
-
-		new BukkitRunnable() {
-            @Override
-            public void run() {
+	@Override
+	protected void onStart() {
+		invisibilityTask = new BukkitRunnable() {
+			@Override
+			public void run() {
 				for (Player sneakingPlayer : sneakingPlayers) {
 					sneakingPlayer.addPotionEffect(PotionEffectType.INVISIBILITY.createEffect(4, 0));
 				}
-            }
-        }.runTaskTimer(Ludos.getInstance(), 0, 1);
+			}
+		}.runTaskTimer(Ludos.getInstance(), 0, 1);
 	}
 
 	@Override
-	public void start() {
-		super.start();
+	protected void onStop() {
+		sneakingPlayers.clear();
 
-		snareEvents.start();
+		invisibilityTask.cancel();
+		invisibilityTask = null;
 	}
 
 	@Override
-	public void stop() {
-		super.stop();
-
-		snareEvents.stop();
+	protected Map<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
+		return Map.of(
+			"snare", new TrapperSnareDevice.Events(game)
+		);
 	}
 
 
