@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.potion.PotionEffect;
@@ -250,19 +251,24 @@ public class ManhuntGame extends Game {
 		prey.get().addPotionEffect(PotionEffectType.GLOWING.createEffect(100, 0));
 	}
 
+	@EventHandler
+	public void onPlayerDeath(PlayerDeathEvent event) {
+		Utility.onDeathSpectate(event.getEntity(), 5);
+	}
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
+
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent event) {
 		var hunters = teamController.getHunters();
 		var prey = teamController.getPrey();
 
 		if (hunters.size() > 0 || ! prey.isEmpty()) {
 			timer.resume();
 		}
-    }
+	}
 
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent event) {
 		var hunters = teamController.getHunters();
 		if (hunters.contains(event.getPlayer())) {
 			hunters.remove(event.getPlayer());
@@ -275,7 +281,7 @@ public class ManhuntGame extends Game {
 		if (hunters.isEmpty() && prey.isEmpty()) {
 			timer.pause();
 		}
-    }
+	}
 
 	@Override
 	public Boolean canPlayerHaveRole(Player player, String roleId) {
@@ -286,30 +292,30 @@ public class ManhuntGame extends Game {
 		return true;
 	}
 
-    public static class Builder extends Game.Builder {
-        private static final String allOption = "all";
-        private static final String randomOption = "random";
+	public static class Builder extends Game.Builder {
+		private static final String allOption = "all";
+		private static final String randomOption = "random";
 
-        public static final List<String> areaOptions = Arrays.stream(ManhuntAreaOptions.values())
+		public static final List<String> areaOptions = Arrays.stream(ManhuntAreaOptions.values())
 			.map(v -> v.toString())
 			.collect(Collectors.toList());
-        public static final List<String> locationOptions = Arrays.stream(ManhuntLocationOptions.values())
+		public static final List<String> locationOptions = Arrays.stream(ManhuntLocationOptions.values())
 			.map(v -> v.toString())
 			.collect(Collectors.toList());
-        public static final List<String> revealOptions = Arrays.stream(ManhuntRevealOptions.values())
+		public static final List<String> revealOptions = Arrays.stream(ManhuntRevealOptions.values())
 			.map(v -> v.toString())
 			.collect(Collectors.toList());
 
 
-        private String prey = null;
-        private final Set<String> players;
+		private String prey = null;
+		private final Set<String> players;
 
-        private ManhuntAreaOptions area = ManhuntAreaOptions.medium;
+		private ManhuntAreaOptions area = ManhuntAreaOptions.medium;
 		public ManhuntAreaOptions getArea() {
 			return area;
 		}
 
-        private ManhuntLocationOptions location = ManhuntLocationOptions.random;
+		private ManhuntLocationOptions location = ManhuntLocationOptions.random;
 		public ManhuntLocationOptions getLocation() {
 			return location;
 		}
