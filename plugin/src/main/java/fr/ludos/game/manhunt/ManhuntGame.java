@@ -251,11 +251,6 @@ public class ManhuntGame extends Game {
 		prey.get().addPotionEffect(PotionEffectType.GLOWING.createEffect(100, 0));
 	}
 
-	@EventHandler
-	public void onPlayerDeath(PlayerDeathEvent event) {
-		Utility.onDeathSpectate(event.getEntity(), 5);
-	}
-
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {

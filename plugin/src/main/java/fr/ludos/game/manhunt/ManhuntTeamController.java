@@ -11,6 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.entity.Player;
 
 import fr.ludos.Ludos;
+import fr.ludos.Utility;
 import fr.ludos.game.Game;
 import fr.ludos.game.TeamController;
 
@@ -114,10 +115,13 @@ public final class ManhuntTeamController extends TeamController {
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player player = event.getEntity();
-		if (preyTeam.hasEntry(event.getEntity().getName())) {
-			Bukkit.broadcastMessage("Prey " + player.getName() + " Slain!"); // TODO: Translate
-			preyTeam.removeEntry(player.getName());
+		if (! preyTeam.hasEntry(event.getEntity().getName())) {
+			Utility.onDeathSpectate(event.getEntity(), 5);
+			return;
 		}
+
+		Bukkit.broadcastMessage("Prey " + player.getName() + " Slain!"); // TODO: Translate
+		preyTeam.removeEntry(player.getName());
 
 		if (preyTeam.getSize() == 0) {
 			new BukkitRunnable() {
