@@ -20,7 +20,7 @@ public class GameCommand implements TabExecutor {
 
 		String gameString = args[0].toLowerCase();
 		if (gameString.equals(GameCommandOptions.stop.toString())) {
-			Game.stopGame();
+			Game.stopCurrentGame();
 			return true;
 		}
 

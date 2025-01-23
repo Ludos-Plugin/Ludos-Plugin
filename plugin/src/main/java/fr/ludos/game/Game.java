@@ -58,6 +58,10 @@ public abstract class Game implements Listener {
 		if (started) return;
 		started = true;
 
+		stopCurrentGame();
+		current = this;
+
+
 		onInit();
 
 		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
@@ -77,6 +81,7 @@ public abstract class Game implements Listener {
 		if (! started) return;
 		started = false;
 
+
 		HandlerList.unregisterAll(this);
 
 		for (Role role : activeRoles.values()) {
@@ -95,22 +100,14 @@ public abstract class Game implements Listener {
 		registered.put(builder.getId(), builder);
 	}
 
-	public static void startGame(Builder gameBuilder) {
-		stopGame();
-
-		current = gameBuilder.build();
-		if (current != null) {
-			current.start();
-		}
-
-	}
 	public static void startGame(String id) {
 		if (! registered.containsKey(id)) return;
 
-		startGame(registered.get(id));
+		Game game = registered.get(id).build();
+		game.start();
 	}
 
-	public static void stopGame() {
+	public static void stopCurrentGame() {
 		if (current != null) {
 			current.stop();
 			current = null;

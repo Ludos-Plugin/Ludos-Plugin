@@ -124,7 +124,7 @@ public final class ManhuntTeamController extends TeamController {
 				@Override
 				public void run() {
 					Bukkit.broadcastMessage("All Prey Dead! End of Game!"); // TODO: Translate
-					Game.stopGame();
+					Game.stopCurrentGame();
 				}
 			}.runTaskLater(Ludos.getInstance(), 0);
 		}

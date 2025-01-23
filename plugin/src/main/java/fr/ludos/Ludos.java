@@ -53,6 +53,6 @@ public class Ludos extends JavaPlugin implements Listener {
 
 	@Override
 	public void onDisable() {
-		Game.stopGame();
+		Game.stopCurrentGame();
 	}
 }

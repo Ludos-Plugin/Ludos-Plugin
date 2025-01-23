@@ -148,11 +148,6 @@ public abstract class Role implements Listener {
 	}
 
 
-	// public Role() {
-	// 	Bukkit.getPluginManager().registerEvents((Listener)this, Main.getInstance());
-	// }
-
-
 	/**
 	 * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
 	 * It contains configuration for the Role itself.

@@ -151,7 +151,7 @@ public class ManhuntGame extends Game {
 
 
 
-		int limit = 200;
+		int limit = 0;
 
 		EntityType[] animals = {
 			EntityType.COW,
@@ -425,10 +425,10 @@ public class ManhuntGame extends Game {
 
 				return handleConfigsCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), config);
 			case start:
-				Game.startGame(this);
+				build().start();
 				break;
 			case stop:
-				Game.stopGame();
+				Game.stopCurrentGame();
 				break;
 			}
 
