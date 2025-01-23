@@ -5,6 +5,7 @@ import fr.ludos.game.Game;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -37,12 +38,13 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 public abstract class SpecialItem {
-
 	public static final String ID = "id";
 	private NamespacedKey idKey = new NamespacedKey(Ludos.getInstance(), ID);
 
 	public static final String OWNER = "owner";
 	private NamespacedKey ownerKey = new NamespacedKey(Ludos.getInstance(), OWNER);
+
+	public static final int USAGE_COOLDOWN = 5;
 
 	private final ItemStack stack;
 	public ItemStack getStack() {
@@ -123,6 +125,21 @@ public abstract class SpecialItem {
 		ItemMeta meta = stack.getItemMeta();
 		meta.setLore(getLore());
 		stack.setItemMeta(meta);
+	}
+
+	protected final boolean refreshUseCooldown() {
+		Player owner = getOwner();
+		Material itemType = getStack().getType();
+
+		int cooldown = owner.getCooldown(itemType);
+		if (cooldown > 0 && cooldown <= USAGE_COOLDOWN) {
+			return false;
+		}
+		if (cooldown == 0) {
+			owner.setCooldown(itemType, USAGE_COOLDOWN);
+		}
+		return true;
+
 	}
 
 	/**

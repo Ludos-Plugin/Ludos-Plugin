@@ -41,22 +41,22 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 
 	@Override
-    public String getId(){
-        return "trapperSnareGrimoire";
-    }
+	public String getId(){
+		return "trapperSnareGrimoire";
+	}
 
 
-    @Override
-    protected String getName() {
-        return "Snare Grimoire " + getBranchAnnotation();
-    }
+	@Override
+	protected String getName() {
+		return "Snare Grimoire " + getBranchAnnotation();
+	}
 
 
 
-    public void throwObject(Player player, Material material) {
-        Item item = player.getWorld().dropItem(player.getEyeLocation(), new ItemStack(material));
-        item.setVelocity(player.getLocation().getDirection().multiply(2));
-    }
+	public void throwObject(Player player, Material material) {
+		Item item = player.getWorld().dropItem(player.getEyeLocation(), new ItemStack(material));
+		item.setVelocity(player.getLocation().getDirection().multiply(2));
+	}
 
 	@Nullable
 	public static TrapperSnareDevice getItem(ItemStack stack) {
@@ -117,31 +117,34 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		}
 
 
-        public void loop(int radius, TrapperTrap innerTrap, Material material) {
-            for (int x = -radius; x <= radius; x++) {
-                for (int y = -radius; y <= radius; y++) {
-                    for (int z = -radius; z <= radius; z++) {
-                        if (innerTrap.getLocation().getBlock().getRelative(x, y, z).getType().isAir()) {
-                            innerTrap.getLocation().getBlock().getRelative(x, y, z).setType(material);
-                        }
-                    }
-                }
-            }
-        }
+		public void loop(int radius, TrapperTrap innerTrap, Material material) {
+			for (int x = -radius; x <= radius; x++) {
+				for (int y = -radius; y <= radius; y++) {
+					for (int z = -radius; z <= radius; z++) {
+						if (innerTrap.getLocation().getBlock().getRelative(x, y, z).getType().isAir()) {
+							innerTrap.getLocation().getBlock().getRelative(x, y, z).setType(material);
+						}
+					}
+				}
+			}
+		}
 
 		@EventHandler
 		public void onPlayerInteract(PlayerInteractEvent event) {
-            Player player = event.getPlayer();
-            TrapperSnareDevice snareDevice = getItem(player.getInventory().getItemInMainHand());
-            if (snareDevice == null) {
-                return;
-            }
+			Player player = event.getPlayer();
+			TrapperSnareDevice snareDevice = getItem(player.getInventory().getItemInMainHand());
+			if (snareDevice == null) {
+				return;
+			}
 
-            if (player.hasCooldown(snareDevice.getStack().getType())) {
-                return;
-            }
 
-            Action action = event.getAction();
+			if (! snareDevice.refreshUseCooldown()) {
+				return;
+			}
+			event.setCancelled(true);
+
+
+			Action action = event.getAction();
 			switch (action) {
 				case LEFT_CLICK_AIR, LEFT_CLICK_BLOCK -> snareDevice.cycleBranch();
 				case RIGHT_CLICK_BLOCK -> {
@@ -155,8 +158,6 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 				}
 				default -> player.sendMessage("You must click on a block to place a trap."); // TODO: Translate
 			}
-
-			player.setCooldown(snareDevice.getStack().getType(), 5);
 		}
 
 		@EventHandler

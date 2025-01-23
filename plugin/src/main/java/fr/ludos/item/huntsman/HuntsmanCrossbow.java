@@ -193,11 +193,12 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 			HuntsmanCrossbow crossbow = getItem(player.getInventory().getItemInMainHand());
 			if (crossbow == null) return;
 
-			if (! player.hasCooldown(crossbow.getStack().getType())) {
-				crossbow.cycleBranch();
-
-				player.setCooldown(crossbow.getStack().getType(), 5);
+			if (! crossbow.refreshUseCooldown()) {
+				return;
 			}
+			event.setCancelled(true);
+
+			crossbow.cycleBranch();
 		}
 
 		@EventHandler
