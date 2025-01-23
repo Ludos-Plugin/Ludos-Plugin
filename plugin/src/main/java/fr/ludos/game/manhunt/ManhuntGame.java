@@ -28,12 +28,14 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Scoreboard;
 
 import fr.ludos.Ludos;
+import fr.ludos.Utility;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.GameCommandOptions;
 import fr.ludos.game.Game;
 import net.md_5.bungee.api.ChatColor;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
@@ -96,28 +98,19 @@ public class ManhuntGame extends Game {
 	}
 
 	private void setGameArea(Player prey, Set<Player> hunters, int areaDiameter, Location location) {
+		World world = prey.getWorld();
 		int areaRadius = areaDiameter / 2;
-
 
 		prey.sendTitle("You are the " + ChatColor.BLUE + "Prey", "Run for your life", 10, 70, 20);
 
-		border = prey.getWorld().getWorldBorder();
-		borderResetCenter = border.getCenter();
-		borderResetSize = border.getSize();
-
-		border.setSize(areaDiameter, 3);
-		border.setCenter(location);
-
 		prey.teleport(location);
 		prey.setBedSpawnLocation(location, true);
-
 		prey.setGameMode(GameMode.SURVIVAL);
-
 		prey.setHealth(prey.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+
 		prey.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
 		prey.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 30, 1, false, false));
 		prey.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 20 * 40, 0, false, true));
-
 
 		Iterator<Advancement> iterator = Bukkit.getServer().advancementIterator();
 		for (Advancement advancement = iterator.next(); iterator.hasNext(); advancement = iterator.next()) {
@@ -130,13 +123,12 @@ public class ManhuntGame extends Game {
 		for (Player hunter : hunters) {
 			hunter.sendTitle("You are a " + ChatColor.RED + "Hunter", "Go and seek " + ChatColor.BLUE + prey.getName(), 10, 70, 20);
 
-			Location hunterLocation = getGroundedLocationAround(location, (int)(areaRadius * 0.3), (int)(areaRadius * 0.7), location);
+			Location hunterLocation = Utility.getGroundedLocationAround(location, (int)(areaRadius * 0.3), (int)(areaRadius * 0.7), location);
 			hunter.teleport(hunterLocation);
 			hunter.setBedSpawnLocation(hunterLocation, true);
-
 			hunter.setGameMode(GameMode.SURVIVAL);
-
 			hunter.setHealth(hunter.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+
 			hunter.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
 
 			iterator = Bukkit.getServer().advancementIterator();
@@ -146,6 +138,15 @@ public class ManhuntGame extends Game {
 				progress.revokeCriteria(criteria);
 			}
 		}
+
+
+		border = world.getWorldBorder();
+		borderResetCenter = border.getCenter();
+		borderResetSize = border.getSize();
+
+		border.setCenter(location);
+		border.setSize(areaDiameter, 3);
+
 	}
 
 	@Override
@@ -163,7 +164,7 @@ public class ManhuntGame extends Game {
 		ManhuntLocationOptions locationOption = builder.getLocation();
 		Location gameLocation = prey.getLocation();
 		if (locationOption == ManhuntLocationOptions.random) {
-			gameLocation = getGroundedLocationAround(gameLocation, 300, 2500, gameLocation);
+			gameLocation = Utility.getGroundedLocationAround(gameLocation, 300, 2500, gameLocation);
 		}
 
 		setGameArea(prey, hunters, areaDiameter, gameLocation);
@@ -202,32 +203,6 @@ public class ManhuntGame extends Game {
 		Bukkit.broadcastMessage("The Game of Manhunt ended");
 	}
 
-
-
-	private Location getGroundedLocationAround(Location searchOrigin, int min, int max, Location fallback) {
-		Random rand = new Random();
-
-		int retries = 0;
-
-		Location location;
-		do {
-			location = searchOrigin;
-			location.setX(searchOrigin.getBlockX() + rand.nextInt(min, max + 1) * (rand.nextBoolean() ? 1 : -1) + 0.5);
-			location.setZ(searchOrigin.getBlockZ() + rand.nextInt(min, max + 1) * (rand.nextBoolean() ? 1 : -1) + 0.5);
-			location.setY(location.getWorld().getHighestBlockYAt(location));
-
-			retries++;
-		}
-		while (location.getBlock().isLiquid() && retries < 50);
-
-		if (retries == 0) {
-			Bukkit.broadcastMessage("Could not find valid play area");
-			return fallback.clone();
-		}
-
-		location.setY(location.getY() + 1);
-		return location;
-	}
 
 	public void revealPrey() {
 		Optional<Player> prey = teamController.getPrey();

@@ -1,5 +1,7 @@
 package fr.ludos;
 
+import java.util.Random;
+
 import org.bukkit.*;
 
 
@@ -11,6 +13,32 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 
 public class Utility {
+
+	public static Location getGroundedLocationAround(Location searchOrigin, int min, int max, Location fallback) {
+		return getGroundedLocationAround(searchOrigin, min, max, fallback, 0);
+	}
+
+	public static Location getGroundedLocationAround(Location searchOrigin, int min, int max, Location fallback, int retries) {
+		Random rand = new Random();
+
+		Location location = searchOrigin.clone();
+		do {
+			location.setX(searchOrigin.getBlockX() + rand.nextInt(min, max + 1) * (rand.nextBoolean() ? 1 : -1) + 0.5);
+			location.setZ(searchOrigin.getBlockZ() + rand.nextInt(min, max + 1) * (rand.nextBoolean() ? 1 : -1) + 0.5);
+			location.setY(location.getWorld().getHighestBlockYAt(location));
+
+			retries--;
+		}
+		while (location.getBlock().isLiquid() && retries >= 0);
+
+		if (retries == 0) {
+			Bukkit.broadcastMessage("Could not find valid play area");
+			return fallback.clone();
+		}
+
+		location.setY(location.getY() + 1);
+		return location;
+	}
 
 	public static void respawnPlayer(Player player) {
 		PacketContainer packet = ProtocolLibrary.getProtocolManager()
