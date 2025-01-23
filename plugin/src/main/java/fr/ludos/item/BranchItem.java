@@ -66,6 +66,8 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 
 		updateLore();
 		updateName();
+
+		branch.onSwitchBranch(this);
 	}
 
 	protected String getBranchAnnotation() {

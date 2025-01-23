@@ -13,6 +13,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import fr.ludos.item.BranchItem;
 import fr.ludos.item.SpecialItemLevelBranches;
 import net.md_5.bungee.api.ChatColor;
 
@@ -37,6 +38,11 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 				arrow.getWorld().createExplosion(arrow.getLocation(), 2, true, false, null);
 			}
 		}
+
+		@Override
+		public void onSwitchBranch(BranchItem<HuntsmanCrossbowBranches> item) {
+
+		}
 	},
 
 
@@ -56,6 +62,11 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 				effect.addCustomEffect(PotionEffectType.WITHER.createEffect(60, 1), false);
 				effect.setDuration(40);
 			}
+		}
+
+		@Override
+		public void onSwitchBranch(BranchItem<HuntsmanCrossbowBranches> item) {
+
 		}
 	},
 
@@ -94,6 +105,11 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 				}
 				}
 			}
+		}
+
+		@Override
+		public void onSwitchBranch(BranchItem<HuntsmanCrossbowBranches> item) {
+
 		}
 	};
 
