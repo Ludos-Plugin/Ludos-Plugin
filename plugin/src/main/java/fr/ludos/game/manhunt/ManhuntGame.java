@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.List;
 import javax.annotation.Nullable;
 
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -147,6 +148,32 @@ public class ManhuntGame extends Game {
 		border.setCenter(location);
 		border.setSize(areaDiameter, 3);
 
+
+
+		int limit = 200;
+
+		EntityType[] animals = {
+			EntityType.COW,
+			EntityType.SHEEP,
+			EntityType.PIG,
+			EntityType.CHICKEN,
+		};
+
+		Random random = new Random();
+
+
+		for (int i = 0; i < limit; i++) {
+			int x = location.getBlockX() + random.nextInt(areaRadius * 2) - areaRadius;
+			int z = location.getBlockZ() + random.nextInt(areaRadius * 2) - areaRadius;
+
+			Location spawnLocation = new Location(world, x, world.getHighestBlockYAt(x, z) + 2, z);
+			EntityType animal = animals[random.nextInt(animals.length)];
+
+			Bukkit.broadcastMessage(animal.toString());
+			Bukkit.broadcastMessage(spawnLocation.toString());
+
+			world.spawnEntity(spawnLocation, animal);
+		}
 	}
 
 	@Override
