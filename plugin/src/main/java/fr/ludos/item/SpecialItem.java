@@ -43,10 +43,10 @@ public abstract class SpecialItem {
 	public Game getGame() { return game; }
 
 	public static final String ID = "id";
-	private NamespacedKey idKey = new NamespacedKey(getGame().getPlugin(), ID);
+	private final NamespacedKey idKey;
 
 	public static final String OWNER = "owner";
-	private NamespacedKey ownerKey = new NamespacedKey(getGame().getPlugin(), OWNER);
+	private final NamespacedKey ownerKey;
 
 	public static final int USAGE_COOLDOWN = 5;
 
@@ -73,6 +73,10 @@ public abstract class SpecialItem {
 		if (meta == null) {
 			throw new IllegalArgumentException("ItemStack has no Meta");
 		}
+
+		this.idKey = new NamespacedKey(game.getPlugin(), ID);
+		this.ownerKey = new NamespacedKey(game.getPlugin(), OWNER);
+
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 		if (! container.has(ownerKey, PersistentDataType.STRING) ) {
 			throw new IllegalArgumentException("Owner not found");
@@ -97,6 +101,9 @@ public abstract class SpecialItem {
 		this.game = game;
 		this.stack = stack;
 		this.owner = owner;
+
+		this.idKey = new NamespacedKey(game.getPlugin(), ID);
+		this.ownerKey = new NamespacedKey(game.getPlugin(), OWNER);
 
 		updateName();
 

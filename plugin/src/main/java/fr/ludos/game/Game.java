@@ -51,8 +51,8 @@ public abstract class Game implements Listener {
 		return builder.getPlugin();
 	}
 
-	public Game(Builder gameBuilder) {
-		this.builder = gameBuilder;
+	public Game(Builder builder) {
+		this.builder = builder;
 	}
 
 	public final void start() {
@@ -68,7 +68,7 @@ public abstract class Game implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, getPlugin());
 
 		for (Role.Builder roleBuilder : Role.getRegistered().values()) {
-			Role role = roleBuilder.build(builder, current);
+			Role role = roleBuilder.build(this);
 			activeRoles.put(roleBuilder.getId(), role);
 			role.start();
 		}

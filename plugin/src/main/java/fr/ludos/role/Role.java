@@ -176,6 +176,6 @@ public abstract class Role implements Listener {
 			this.plugin = plugin;
 		}
 
-		public abstract Role build(Game.Builder builder, Game game);
+		public abstract Role build(Game game);
 	}
 }

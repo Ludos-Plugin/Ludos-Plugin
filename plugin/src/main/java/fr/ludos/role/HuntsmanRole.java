@@ -90,7 +90,7 @@ public class HuntsmanRole extends Role {
 
 
 		@Override
-		public HuntsmanRole build(Game.Builder builder, Game game) {
+		public HuntsmanRole build(Game game) {
 			return new HuntsmanRole(this, game);
 		}
 	}

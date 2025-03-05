@@ -20,7 +20,7 @@ import java.util.List;
 public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches>> extends SpecialItem {
 
 	public static final String BRANCH = "branch";
-	private NamespacedKey branchKey = new NamespacedKey(getGame().getPlugin(), BRANCH);
+	private final NamespacedKey branchKey;
 
 
 	private TBranches branch;
@@ -33,6 +33,8 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 	public BranchItem(ItemStack stack, Game game) throws IllegalArgumentException {
 		super(stack, game);
 
+		branchKey = new NamespacedKey(game.getPlugin(), BRANCH);
+
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 		if ( ! container.has(branchKey, PersistentDataType.INTEGER) ) {
 			throw new IllegalArgumentException("Branch Not found");
@@ -43,6 +45,9 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 
 	public BranchItem(ItemStack stack, Player owner, TBranches branch, Game game) {
 		super(stack, owner, game);
+
+		branchKey = new NamespacedKey(getGame().getPlugin(), BRANCH);
+
 		setBranch(branch);
 	}
 

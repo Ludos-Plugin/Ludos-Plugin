@@ -47,18 +47,21 @@ public final class ManhuntTeamController extends TeamController {
 
 
 		if (players == null) {
-			players = new HashSet<>();
-			players.addAll(Bukkit.getOnlinePlayers());
+			players = new HashSet<>(Bukkit.getOnlinePlayers());
 		}
 
 		if (prey == null) {
-			Player[] playersArray = new Player[players.size()];
+			Player[] playersArray = players.toArray(new Player[players.size()]);
+			Bukkit.broadcastMessage("Players: " + playersArray);
+
 			prey = playersArray[ new Random().nextInt(players.size()) ];
+			Bukkit.broadcastMessage("Prey: " + prey);
 		}
-		players.remove(prey);
+
 		if (prey == null) {
 			throw new IllegalArgumentException("Prey could not be selected");
 		}
+		players.remove(prey);
 
 
 		for (Player hunter : players) {

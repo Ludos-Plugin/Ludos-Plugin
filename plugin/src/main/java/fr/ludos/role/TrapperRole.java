@@ -85,7 +85,7 @@ public class TrapperRole extends Role {
 		}
 
 		@Override
-		public Role build(Game.Builder builder, Game game) {
+		public Role build(Game game) {
 			return new TrapperRole(this, game);
 		}
 	}

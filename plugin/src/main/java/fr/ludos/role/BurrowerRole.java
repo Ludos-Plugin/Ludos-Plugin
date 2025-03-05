@@ -136,7 +136,7 @@ public class BurrowerRole extends Role {
 		}
 
 		@Override
-		public Role build(Game.Builder builder, Game game){
+		public Role build(Game game){
 			return new BurrowerRole(this, game);
 		}
 	}

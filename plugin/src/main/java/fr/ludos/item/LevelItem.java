@@ -22,13 +22,14 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 
 	public LevelItem(ItemStack stack, Player owner, Game game) {
 		super(stack, owner, game);
+		this.levelKey = new NamespacedKey(game.getPlugin(), LEVEL);
+		this.xpKey = new NamespacedKey(game.getPlugin(), XP);
 	}
 
 	public static final String LEVEL = "level";
-	private final NamespacedKey levelKey = new NamespacedKey(getGame().getPlugin(), LEVEL);
-
 	public static final String XP = "xp";
-	private final NamespacedKey xpKey = new NamespacedKey(getGame().getPlugin(), XP);
+	private final NamespacedKey levelKey;
+	private final NamespacedKey xpKey;
 
 	private static final String MAX_LVL_LABEL = "MAX";
 
@@ -46,6 +47,8 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 
 	public LevelItem(ItemStack stack, Game game) throws IllegalArgumentException {
 		super(stack, game);
+		this.levelKey = new NamespacedKey(game.getPlugin(), LEVEL);
+		this.xpKey = new NamespacedKey(game.getPlugin(), XP);
 
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 		if ( ! container.has(levelKey, PersistentDataType.INTEGER) ) {
@@ -65,6 +68,9 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 
 	public LevelItem(ItemStack stack, Player owner, TLevel level, double xp, Game game) {
 		super(stack, owner, game);
+
+		this.levelKey = new NamespacedKey(game.getPlugin(), LEVEL);
+		this.xpKey = new NamespacedKey(game.getPlugin(), XP);
 
 		setLvl(level);
 		setXp(xp);
