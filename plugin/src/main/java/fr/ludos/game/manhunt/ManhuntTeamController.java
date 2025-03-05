@@ -52,10 +52,7 @@ public final class ManhuntTeamController extends TeamController {
 
 		if (prey == null) {
 			Player[] playersArray = players.toArray(new Player[players.size()]);
-			Bukkit.broadcastMessage("Players: " + playersArray);
-
 			prey = playersArray[ new Random().nextInt(players.size()) ];
-			Bukkit.broadcastMessage("Prey: " + prey);
 		}
 
 		if (prey == null) {
