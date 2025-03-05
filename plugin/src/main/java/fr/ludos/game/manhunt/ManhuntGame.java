@@ -62,6 +62,14 @@ public class ManhuntGame extends Game {
 	public static final String revealKey = "reveal";
 	public static final String revealPath = id + '.' + revealKey;
 
+	public static final String borderWorldUUIDKey = "borderWorldUUID";
+	public static final String borderWorldUUIDPath = id + '.' + borderWorldUUIDKey;
+	public static final String borderLocationKey = "borderLocation";
+	public static final String borderLocationPath = id + '.' + borderLocationKey;
+	public static final String borderSizeKey = "borderSize";
+	public static final String borderSizePath = id + '.' + borderSizeKey;
+
+
 	private final Scoreboard scoreboard;
 	public Scoreboard getScoreboard() {
 		return this.scoreboard;
@@ -81,10 +89,38 @@ public class ManhuntGame extends Game {
 	private final Set<Player> hunters;
 
 	private WorldBorder border;
-	private Location borderResetCenter;
-	private double borderResetSize;
 
 	private BukkitTask saturationTask;
+
+	@Nullable
+	public static UUID getBorderWorldUID(Ludos plugin) {
+		String value = plugin.getConfig().getString(borderLocationPath);
+
+		if (value == null) return null;
+		return UUID.fromString(value);
+	}
+	@Nullable
+	public static Location getBorderLocation(Ludos plugin) {
+		return plugin.getConfig().getLocation(borderLocationPath);
+	}
+	public static double getBorderSize(Ludos plugin) {
+		return plugin.getConfig().getDouble(borderSizePath);
+	}
+	public static void setCachedBorder(World world, Ludos plugin) {
+		if (world == null) {
+			plugin.getConfig().set(borderWorldUUIDPath, null);
+			plugin.getConfig().set(borderLocationPath, null);
+			plugin.getConfig().set(borderSizePath, null);
+			plugin.saveConfig();
+			return;
+		}
+
+		WorldBorder border = world.getWorldBorder();
+		plugin.getConfig().set(borderWorldUUIDPath, world.getUID().toString());
+		plugin.getConfig().set(borderLocationPath, border.getCenter());
+		plugin.getConfig().set(borderSizePath, border.getSize());
+		plugin.saveConfig();
+	}
 
 
 	protected ManhuntGame(Builder builder) {
@@ -151,13 +187,11 @@ public class ManhuntGame extends Game {
 		}
 
 
-		border = world.getWorldBorder();
-		borderResetCenter = border.getCenter();
-		borderResetSize = border.getSize();
+		setCachedBorder(world, getPlugin());
 
+		border = world.getWorldBorder();
 		border.setCenter(location);
 		border.setSize(areaDiameter, 3);
-
 
 
 		int limit = 0;
@@ -227,9 +261,6 @@ public class ManhuntGame extends Game {
 
 	@Override
 	protected void onStop() {
-		border.setSize(borderResetSize, 0);
-		border.setCenter(borderResetCenter);
-
 		teamController.stop();
 
 		compassEvents.stop();
@@ -370,6 +401,18 @@ public class ManhuntGame extends Game {
 
 		public Builder(Ludos plugin) {
 			super( plugin );
+
+			Location location = ManhuntGame.getBorderLocation(plugin);
+			if (location == null) return;
+			World world = Bukkit.getWorld(ManhuntGame.getBorderWorldUID(plugin));
+			if (world == null) return;
+
+			double size = ManhuntGame.getBorderSize(plugin);
+			WorldBorder border = world.getWorldBorder();
+			border.setCenter(location);
+			border.setSize(size, 0);
+
+			ManhuntGame.setCachedBorder(null, plugin);
 		}
 
 
