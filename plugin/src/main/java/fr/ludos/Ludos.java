@@ -18,24 +18,19 @@ public class Ludos extends JavaPlugin implements Listener {
 
 	public static final String namespace = "ludos";
 
-	private static Ludos instance;
-	public static Ludos getInstance() {
-		return instance;
+	public Ludos() {
 	}
-
 
 	@Override
 	public void onEnable() {
-
-		instance = this;
 		Role.loadConfigRoles(this);
 
 
 		Game.registerGame(new ManhuntGame.Builder(this));
 
-		Role.registerRole(new HuntsmanRole.Builder());
-		Role.registerRole(new BurrowerRole.Builder());
-		Role.registerRole(new TrapperRole.Builder());
+		Role.registerRole(new HuntsmanRole.Builder(this));
+		Role.registerRole(new BurrowerRole.Builder(this));
+		Role.registerRole(new TrapperRole.Builder(this));
 
 
 		PluginCommand cmd = getCommand("game");
@@ -45,7 +40,7 @@ public class Ludos extends JavaPlugin implements Listener {
 		cmd.setUsage(gameCommand.getUsage());
 
 		cmd = getCommand("role");
-		RoleCommand roleCommand = new RoleCommand();
+		RoleCommand roleCommand = new RoleCommand(this);
 		cmd.setExecutor(roleCommand);
 		cmd.setTabCompleter(roleCommand);
 		cmd.setUsage(roleCommand.getUsage());

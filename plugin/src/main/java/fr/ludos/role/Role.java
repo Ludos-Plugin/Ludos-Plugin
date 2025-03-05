@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 
@@ -40,6 +41,20 @@ public abstract class Role implements Listener {
 	private static Map<String, String> playerRoles = new HashMap<String, String>();
 
 
+	private final Game game;
+	public Game getGame() {
+		return game;
+	}
+
+	private final Builder builder;
+	public Builder getBuilder() {
+		return builder;
+	}
+
+	public Ludos getPlugin() {
+		return game.getPlugin();
+	}
+
 	private final Map<String, SpecialItem.Events<?>> itemEvents;
 
 	/**
@@ -47,18 +62,19 @@ public abstract class Role implements Listener {
 	 * It contains configuration for the Role itself.
 	 */
 	public Role(Builder builder, Game game) {
+		this.game = game;
+		this.builder = builder;
 		itemEvents = createItemEvents(builder, game);
 	}
 
 	public final void start() {
-		if (started) {
-			return;
-		}
+		if (started) return;
+
 		started = true;
 
 		onInit();
 
-		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
+		Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
 
 		for (SpecialItem.Events<?> events : itemEvents.values()) {
 			events.start();
@@ -117,10 +133,10 @@ public abstract class Role implements Listener {
 
 	public static boolean isPlayerRole(HumanEntity player, String role) {
 		Builder currentRole = getRole(player);
-		return (currentRole != null && currentRole.getId() == role);
+		return (currentRole != null && currentRole.getId().equals(role));
 	}
 
-	public static void setRole(HumanEntity player, String roleId) {
+	public static void setRole(HumanEntity player, String roleId, JavaPlugin plugin) {
 		if ( playerRoles.containsKey(player.getName()) && playerRoles.get(player.getName()).equalsIgnoreCase(roleId) ) {
 			return;
 		}
@@ -128,13 +144,12 @@ public abstract class Role implements Listener {
 		playerRoles.put(player.getName(), roleId);
 		player.sendMessage("Your role is now " + roleId);
 
-		Ludos main = Ludos.getInstance();
-		main.getConfig().set(rolesKey + '.' + player.getName(), roleId);
-		main.saveConfig();
+		plugin.getConfig().set(rolesKey + '.' + player.getName(), roleId);
+		plugin.saveConfig();
 
 	}
 
-	public static void removeRole(Player player) {
+	public static void removeRole(Player player, JavaPlugin plugin) {
 		if ( ! playerRoles.containsKey(player.getName()) ) {
 			return;
 		}
@@ -142,9 +157,8 @@ public abstract class Role implements Listener {
 		playerRoles.remove(player.getName());
 		player.sendMessage("Your role is now randomly chosen");
 
-		Ludos main = Ludos.getInstance();
-		main.getConfig().set(rolesKey + '.' + player.getName(), null);
-		main.saveConfig();
+		plugin.getConfig().set(rolesKey + '.' + player.getName(), null);
+		plugin.saveConfig();
 	}
 
 
@@ -153,7 +167,14 @@ public abstract class Role implements Listener {
 	 * It contains configuration for the Role itself.
 	 */
 	public static abstract class Builder {
+		private final Ludos plugin;
+		public Ludos getPlugin() { return plugin; }
+
 		public abstract String getId();
+
+		public Builder(Ludos plugin) {
+			this.plugin = plugin;
+		}
 
 		public abstract Role build(Game.Builder builder, Game game);
 	}

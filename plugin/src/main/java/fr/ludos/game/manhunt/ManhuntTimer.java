@@ -13,8 +13,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import fr.ludos.Ludos;
-
 public class ManhuntTimer implements Listener {
 
 	private int revealSeconds = 180;
@@ -48,7 +46,7 @@ public class ManhuntTimer implements Listener {
 		isStarted = true;
 		resume();
 
-		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
+		Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
 
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			bossbar.addPlayer(player);
@@ -81,7 +79,7 @@ public class ManhuntTimer implements Listener {
 			public void run() {
 				addSecond();
 			}
-		}.runTaskTimer(Ludos.getInstance(), 20, 20);
+		}.runTaskTimer(game.getPlugin(), 20, 20);
 	}
 
 	public void pause() {

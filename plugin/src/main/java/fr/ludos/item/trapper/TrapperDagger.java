@@ -19,12 +19,11 @@ import org.bukkit.potion.PotionEffectType;
 
 public class TrapperDagger extends SpecialItem {
 
-	public TrapperDagger(ItemStack stack) {
-		super(stack);
-
+	public TrapperDagger(ItemStack stack, Game game) {
+		super(stack, game);
 	}
-	public TrapperDagger(Player owner) {
-		super(new ItemStack(Material.STONE_SWORD), owner);
+	public TrapperDagger(Player owner, Game game) {
+		super(new ItemStack(Material.STONE_SWORD), owner, game);
 	}
 
 	@Override
@@ -39,16 +38,16 @@ public class TrapperDagger extends SpecialItem {
 
 
 	@Nullable
-	public static TrapperDagger getItem(ItemStack stack) {
+	public static TrapperDagger getItem(ItemStack stack, Game game) {
 		try {
-			TrapperDagger dagger = new TrapperDagger(stack);
+			TrapperDagger dagger = new TrapperDagger(stack, game);
 			return dagger;
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
 	}
-	public static TrapperDagger createItem(Player owner) {
-		return new TrapperDagger(owner);
+	public static TrapperDagger createItem(Player owner, Game game) {
+		return new TrapperDagger(owner, game);
 	}
 
 
@@ -59,32 +58,29 @@ public class TrapperDagger extends SpecialItem {
 
 
 		@EventHandler
-		public void OnPlayerOnImpactDagger(EntityDamageByEntityEvent event) {
-			if (! (event.getDamager() instanceof Player attacker)) return;
-			if (! (event.getEntity() instanceof Player victim)) return;
+		public void onPlayerImpactDagger(EntityDamageByEntityEvent event) {
+			if (event.getDamager() instanceof Player && event.getEntity() instanceof Player) {
+				Player attacker = (Player) event.getDamager();
+				Player victim = (Player) event.getEntity();
 
-			TrapperDagger dagger = getItem(attacker.getInventory().getItemInMainHand());
-			if (dagger == null) {
-				return;
+				TrapperDagger dagger = getItem(attacker.getInventory().getItemInMainHand(), game);
+				if (dagger == null) {
+					return;
+				}
+				victim.addPotionEffect(PotionEffectType.POISON.createEffect(60, 1));
 			}
-
-			victim.addPotionEffect(PotionEffectType.POISON.createEffect(60, 1));
 		}
 
-		// @EventHandler
-		// public void EmissiveParticules(){
-
-		// }
 
 		@Override
 		@Nullable
-		protected TrapperDagger getItem(ItemStack stack) {
-			return TrapperDagger.getItem(stack);
+		protected TrapperDagger getItem(ItemStack stack, Game game) {
+			return TrapperDagger.getItem(stack, game);
 		}
 
 		@Override
-		protected TrapperDagger createItem(Player owner) {
-			return TrapperDagger.createItem(owner);
+		protected TrapperDagger createItem(Player owner, Game game) {
+			return TrapperDagger.createItem(owner, game);
 		}
 
 		@Override

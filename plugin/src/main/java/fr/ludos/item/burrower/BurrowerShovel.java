@@ -32,16 +32,16 @@ public class BurrowerShovel extends SpecialItem {
 	private final static Map<Player, List<BlockState>> tunnelBlocks = new HashMap<>();
 
 
-	public BurrowerShovel(ItemStack stack) throws IllegalArgumentException {
-		super(stack);
+	public BurrowerShovel(ItemStack stack, Game game) throws IllegalArgumentException {
+		super(stack, game);
 	}
 
-	public BurrowerShovel(Player owner) {
-		this(new ItemStack(Material.IRON_SHOVEL), owner);
+	public BurrowerShovel(Player owner, Game game) {
+		this(new ItemStack(Material.IRON_SHOVEL), owner, game);
 	}
 
-	protected BurrowerShovel(ItemStack stack, Player owner) {
-		super(stack, owner);
+	protected BurrowerShovel(ItemStack stack, Player owner, Game game) {
+		super(stack, owner, game);
 	}
 
 	public void useAbility() {
@@ -163,7 +163,7 @@ public class BurrowerShovel extends SpecialItem {
 
 			ItemStack mainItem = event.getItem();
 
-			BurrowerShovel shovel = getItem(mainItem);
+			BurrowerShovel shovel = getItem(mainItem, game);
 			if (shovel == null) {
 				return;
 			}
@@ -180,17 +180,17 @@ public class BurrowerShovel extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected BurrowerShovel getItem(ItemStack stack) {
+		protected BurrowerShovel getItem(ItemStack stack, Game game) {
 			try {
-				BurrowerShovel shovel = new BurrowerShovel(stack);
+				BurrowerShovel shovel = new BurrowerShovel(stack, game);
 				return shovel;
 			} catch (IllegalArgumentException e) {
 				return null;
 			}
 		}
 		@Override
-		protected BurrowerShovel createItem(Player owner) {
-			return new BurrowerShovel(owner);
+		protected BurrowerShovel createItem(Player owner, Game game) {
+			return new BurrowerShovel(owner, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {

@@ -15,6 +15,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
+import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.item.huntsman.HuntsmanBow;
@@ -78,11 +79,15 @@ public class HuntsmanRole extends Role {
 
 
 	public static class Builder extends Role.Builder {
-
 		@Override
 		public String getId() {
 			return id;
 		}
+
+		public Builder(Ludos plugin) {
+			super(plugin);
+		}
+
 
 		@Override
 		public HuntsmanRole build(Game.Builder builder, Game game) {

@@ -32,23 +32,27 @@ public abstract class Game implements Listener {
 
 	private boolean started = false;
 
-	private static final Map<String, Builder> registered = new HashMap<String, Builder>();
+	private static final Map<String, Builder> registered = new HashMap<>();
 	public static Map<String, Builder> getRegistered() {
 		return registered;
 	}
 
-	private final Map<String, Role> activeRoles = new HashMap<String, Role>();
+	private final Map<String, Role> activeRoles = new HashMap<>();
 	public Map<String, Role> getActiveRoles() {
 		return activeRoles;
 	}
 
-	private final Builder gameBuilder;
-	protected Builder getGameBuilder() {
-		return gameBuilder;
+	private final Builder builder;
+	protected Builder getBuilder() {
+		return builder;
+	}
+
+	public Ludos getPlugin() {
+		return builder.getPlugin();
 	}
 
 	public Game(Builder gameBuilder) {
-		this.gameBuilder = gameBuilder;
+		this.builder = gameBuilder;
 	}
 
 	public final void start() {
@@ -61,10 +65,10 @@ public abstract class Game implements Listener {
 
 		onInit();
 
-		Bukkit.getPluginManager().registerEvents(this, this.gameBuilder.getPlugin());
+		Bukkit.getPluginManager().registerEvents(this, getPlugin());
 
 		for (Role.Builder roleBuilder : Role.getRegistered().values()) {
-			Role role = roleBuilder.build(gameBuilder, current);
+			Role role = roleBuilder.build(builder, current);
 			activeRoles.put(roleBuilder.getId(), role);
 			role.start();
 		}
@@ -118,10 +122,6 @@ public abstract class Game implements Listener {
 		}
 
 		public abstract String getId();
-
-		public String getConfigKey(String key) {
-			return getId() + '.' + key;
-		}
 
 		@Override
 		public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

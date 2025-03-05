@@ -10,7 +10,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.entity.Player;
 
-import fr.ludos.Ludos;
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
 import fr.ludos.game.TeamController;
@@ -30,7 +29,7 @@ public final class ManhuntTeamController extends TeamController {
 
 
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<Player> players, @Nullable Player prey) {
-		super(game.getScoreboard());
+		super(game, game.getScoreboard());
 
 		hunterTeam = scoreboard.getTeam("Hunters");
 		if (hunterTeam == null) {
@@ -48,12 +47,12 @@ public final class ManhuntTeamController extends TeamController {
 
 
 		if (players == null) {
-			players = new HashSet<Player>();
+			players = new HashSet<>();
 			players.addAll(Bukkit.getOnlinePlayers());
 		}
 
 		if (prey == null) {
-			Player[] playersArray = players.toArray( new Player[players.size()] );
+			Player[] playersArray = new Player[players.size()];
 			prey = playersArray[ new Random().nextInt(players.size()) ];
 		}
 		players.remove(prey);
@@ -116,7 +115,7 @@ public final class ManhuntTeamController extends TeamController {
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player player = event.getEntity();
 		if (! preyTeam.hasEntry(event.getEntity().getName())) {
-			Utility.onDeathSpectate(event.getEntity(), 5);
+			Utility.onDeathSpectate(event.getEntity(), 5, game.getPlugin());
 			return;
 		}
 
@@ -130,7 +129,7 @@ public final class ManhuntTeamController extends TeamController {
 					Bukkit.broadcastMessage("All Prey Dead! End of Game!"); // TODO: Translate
 					Game.stopCurrentGame();
 				}
-			}.runTaskLater(Ludos.getInstance(), 0);
+			}.runTaskLater(game.getPlugin(), 0);
 		}
 	}
 

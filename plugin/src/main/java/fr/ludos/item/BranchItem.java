@@ -18,8 +18,9 @@ import java.util.List;
 
 
 public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches>> extends SpecialItem {
+
 	public static final String BRANCH = "branch";
-	private NamespacedKey branchKey = new NamespacedKey(Ludos.getInstance(), BRANCH);
+	private NamespacedKey branchKey = new NamespacedKey(getGame().getPlugin(), BRANCH);
 
 
 	private TBranches branch;
@@ -29,8 +30,8 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 	}
 
 
-	public BranchItem(ItemStack stack) throws IllegalArgumentException {
-		super(stack);
+	public BranchItem(ItemStack stack, Game game) throws IllegalArgumentException {
+		super(stack, game);
 
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 		if ( ! container.has(branchKey, PersistentDataType.INTEGER) ) {
@@ -40,8 +41,8 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 		this.branch = convertToBranch(getPersistentData(stack, branchKey, PersistentDataType.INTEGER));
 	}
 
-	public BranchItem(ItemStack stack, Player owner, TBranches branch) {
-		super(stack, owner);
+	public BranchItem(ItemStack stack, Player owner, TBranches branch, Game game) {
+		super(stack, owner, game);
 		setBranch(branch);
 	}
 
@@ -96,7 +97,6 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 		public Events(Game game) {
 			super(game);
 		}
-
 
 		protected abstract TBranches[] getBranches();
 	}

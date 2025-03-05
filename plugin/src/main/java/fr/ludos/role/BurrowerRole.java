@@ -1,5 +1,6 @@
 package fr.ludos.role;
 
+import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.item.burrower.BurrowerPick;
@@ -128,6 +129,10 @@ public class BurrowerRole extends Role {
 		@Override
 		public String getId() {
 			return id;
+		}
+
+		public Builder(Ludos plugin) {
+			super(plugin);
 		}
 
 		@Override

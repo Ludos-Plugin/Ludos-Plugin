@@ -12,16 +12,16 @@ import org.bukkit.event.Listener;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import fr.ludos.Ludos;
-
 public abstract class TeamController implements Listener {
 
-	protected Scoreboard scoreboard;
+	protected final Game game;
+	protected final Scoreboard scoreboard;
 
 
-	public TeamController(Scoreboard scoreboard) {
+	public TeamController(Game game, Scoreboard scoreboard) {
+		this.game = game;
 		this.scoreboard = scoreboard;
-		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
+		Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
 	}
 
 	public void stop() {

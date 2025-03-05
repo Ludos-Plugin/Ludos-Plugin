@@ -34,28 +34,28 @@ import javax.annotation.Nullable;
 
 public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> {
 
-	public HuntsmanCrossbow(ItemStack stack) throws IllegalArgumentException {
-		super(stack);
+	public HuntsmanCrossbow(ItemStack stack, Game game) throws IllegalArgumentException {
+		super(stack, game);
 	}
 
 
-	public HuntsmanCrossbow(Player owner) {
-		this(owner, HuntsmanCrossbowBranches.FLAME);
+	public HuntsmanCrossbow(Player owner, Game game) {
+		this(owner, HuntsmanCrossbowBranches.FLAME, game);
 	}
-	protected HuntsmanCrossbow(Player owner, int[] levels) {
-		this(owner, HuntsmanCrossbowBranches.FLAME, levels);
-	}
-
-	protected HuntsmanCrossbow(Player owner, HuntsmanCrossbowBranches branch) {
-		this(owner, branch, new int[HuntsmanCrossbowBranches.values.length]);
+	protected HuntsmanCrossbow(Player owner, int[] levels, Game game) {
+		this(owner, HuntsmanCrossbowBranches.FLAME, levels, game);
 	}
 
-	protected HuntsmanCrossbow(Player owner, HuntsmanCrossbowBranches branch, int[] levels) {
-		this(owner, branch, levels, new double[levels.length]);
+	protected HuntsmanCrossbow(Player owner, HuntsmanCrossbowBranches branch, Game game) {
+		this(owner, branch, new int[HuntsmanCrossbowBranches.values.length], game);
 	}
 
-	protected HuntsmanCrossbow(Player owner, HuntsmanCrossbowBranches branch, int[] levels, double[] xps) {
-		super(new ItemStack(Material.CROSSBOW), owner, branch, levels, xps);
+	protected HuntsmanCrossbow(Player owner, HuntsmanCrossbowBranches branch, int[] levels, Game game) {
+		this(owner, branch, levels, new double[levels.length], game);
+	}
+
+	protected HuntsmanCrossbow(Player owner, HuntsmanCrossbowBranches branch, int[] levels, double[] xps, Game game) {
+		super(new ItemStack(Material.CROSSBOW), owner, branch, levels, xps, game);
 	}
 
 	@Override
@@ -94,17 +94,17 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 
 
 	@Nullable
-	public static HuntsmanCrossbow getItem(ItemStack stack) {
+	public static HuntsmanCrossbow getItem(ItemStack stack, Game game) {
 		try {
-			HuntsmanCrossbow bow = new HuntsmanCrossbow(stack);
+			HuntsmanCrossbow bow = new HuntsmanCrossbow(stack, game);
 			return bow;
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
 	}
 
-	public static HuntsmanCrossbow createItem(Player owner, int[] levels) {
-		return new HuntsmanCrossbow(owner, levels);
+	public static HuntsmanCrossbow createItem(Player owner, int[] levels, Game game) {
+		return new HuntsmanCrossbow(owner, levels, game);
 	}
 
 
@@ -112,11 +112,12 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 
 	public static class Events extends BranchLevelItem.Events<HuntsmanCrossbow, HuntsmanCrossbowBranches> {
 
+
 		public static final String ARROW_TYPE = "arrow_type";
-		public final NamespacedKey arrowTypeKey = new NamespacedKey(Ludos.getInstance(), ARROW_TYPE);
+		public final NamespacedKey arrowTypeKey = new NamespacedKey(game.getPlugin(), ARROW_TYPE);
 
 		public static final String ARROW_LEVEL = "arrow_level";
-		public final NamespacedKey arrowLevelKey = new NamespacedKey(Ludos.getInstance(), ARROW_LEVEL);
+		public final NamespacedKey arrowLevelKey = new NamespacedKey(game.getPlugin(), ARROW_LEVEL);
 
 		// private BukkitTask saturationTask;
 
@@ -131,7 +132,7 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 			LivingEntity entity = event.getEntity();
 			if (! (entity instanceof HumanEntity player)) return;
 
-			HuntsmanCrossbow crossbow = getItem(event.getBow());
+			HuntsmanCrossbow crossbow = getItem(event.getBow(), game);
 			if (crossbow == null) return;
 
 			Arrow arrowProjectile = (Arrow) event.getProjectile();
@@ -161,7 +162,7 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 			ProjectileSource source = arrowProjectile.getShooter();
 			if (! (source instanceof Player player)) return;
 
-			HuntsmanCrossbow crossbow = HuntsmanCrossbow.findIn(player.getInventory(), HuntsmanCrossbow::getItem);
+			HuntsmanCrossbow crossbow = HuntsmanCrossbow.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
 			if (crossbow == null) return;
 
 
@@ -190,7 +191,7 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 
 			Player player = event.getPlayer();
 
-			HuntsmanCrossbow crossbow = getItem(player.getInventory().getItemInMainHand());
+			HuntsmanCrossbow crossbow = getItem(player.getInventory().getItemInMainHand(), game);
 			if (crossbow == null) return;
 
 			if (! crossbow.refreshUseCooldown()) {
@@ -219,12 +220,12 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 
 		@Override
 		@Nullable
-		protected HuntsmanCrossbow getItem(ItemStack stack) {
-			return HuntsmanCrossbow.getItem(stack);
+		protected HuntsmanCrossbow getItem(ItemStack stack, Game game) {
+			return HuntsmanCrossbow.getItem(stack, game);
 		}
 		@Override
-		protected HuntsmanCrossbow createItem(Player owner, int[] levels) {
-			return HuntsmanCrossbow.createItem(owner, levels);
+		protected HuntsmanCrossbow createItem(Player owner, int[] levels, Game game) {
+			return HuntsmanCrossbow.createItem(owner, levels, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {

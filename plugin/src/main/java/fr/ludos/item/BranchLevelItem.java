@@ -22,17 +22,18 @@ import java.util.List;
 
 
 public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches<TBranches>> extends BranchItem<TBranches> {
-	public BranchLevelItem(ItemStack stack, Player owner, TBranches branch) {
-		super(stack, owner, branch);
+	public BranchLevelItem(ItemStack stack, Player owner, TBranches branch, Game game) {
+		super(stack, owner, branch, game);
+
 		//TODO Auto-generated constructor stub
 	}
 
 
 	public static final String LEVELS = "levels";
-	private NamespacedKey levelsKey = new NamespacedKey(Ludos.getInstance(), LEVELS);
+	private NamespacedKey levelsKey = new NamespacedKey(getGame().getPlugin(), LEVELS);
 
 	public static final String XP = "xp";
-	private NamespacedKey xpKey = new NamespacedKey(Ludos.getInstance(), XP);
+	private NamespacedKey xpKey = new NamespacedKey(getGame().getPlugin(), XP);
 
 	private static final String MAX_LVL_LABEL = "MAX";
 
@@ -55,8 +56,8 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 	}
 
 
-	public BranchLevelItem(ItemStack stack) throws IllegalArgumentException {
-		super(stack);
+	public BranchLevelItem(ItemStack stack, Game game) throws IllegalArgumentException {
+		super(stack, game);
 
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 		if ( ! container.has(levelsKey, PersistentDataType.INTEGER_ARRAY) ) {
@@ -70,8 +71,8 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 		this.branchXps = getPersistentData(stack, xpKey, DoubleArrayPersistentDataType.INSTANCE);
 	}
 
-	public BranchLevelItem(ItemStack stack, Player owner, TBranches branch, int[] levels, double[] xps) {
-		super(stack, owner, branch);
+	public BranchLevelItem(ItemStack stack, Player owner, TBranches branch, int[] levels, double[] xps, Game game) {
+		super(stack, owner, branch, game);
 		setXps(xps);
 		setLvls(levels);
 	}
@@ -179,7 +180,7 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 			Player player = event.getEntity();
 			if (! canPlayerHaveItem(player)) return;
 
-			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
+			T specialItem = SpecialItem.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
 			if ( specialItem == null ) {
 				return;
 			}
@@ -190,16 +191,16 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 		}
 
 		protected abstract TBranches[] getBranches();
-		protected abstract T createItem(Player owner, int[] levels);
+		protected abstract T createItem(Player owner, int[] levels, Game game);
 
 		@Override
-		protected final T createItem(Player owner) {
+		protected final T createItem(Player owner, Game game) {
 			int[] levels = new int[getBranches().length];
 			if (owner != null && deadPlayerLevels != null && deadPlayerLevels.containsKey(owner.getName())) {
 				levels = deadPlayerLevels.get(owner.getName());
 			}
 
-			return createItem(owner, levels);
+			return createItem(owner, levels, game);
 		}
 	}
 }

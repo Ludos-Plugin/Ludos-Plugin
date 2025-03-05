@@ -5,6 +5,7 @@ import java.util.Random;
 import org.bukkit.*;
 
 
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -49,7 +50,7 @@ public class Utility {
 		ProtocolLibrary.getProtocolManager().receiveClientPacket(player, packet);
 	}
 
-	public static void onDeathSpectate(Player player, float spectateSeconds) {
+	public static void onDeathSpectate(Player player, float spectateSeconds, JavaPlugin plugin) {
 		Location deathLocation = player.getLocation().clone();
 
 		try {
@@ -62,7 +63,7 @@ public class Utility {
 			player.setGameMode(GameMode.SPECTATOR);
 			new BukkitRunnable() {
 				public void run() { player.teleport(deathLocation); }
-			}.runTaskLater(Ludos.getInstance(), 1);
+			}.runTaskLater(plugin, 1);
 
 			new BukkitRunnable() {
 				public void run() {
@@ -71,7 +72,7 @@ public class Utility {
 						player.teleport(player.getBedSpawnLocation());
 					}
 				}
-			}.runTaskLater(Ludos.getInstance(), (long)(20 * spectateSeconds));
+			}.runTaskLater(plugin, (long)(20 * spectateSeconds));
 		}
 	}
 }

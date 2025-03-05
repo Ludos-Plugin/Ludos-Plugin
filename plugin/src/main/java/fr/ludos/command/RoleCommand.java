@@ -1,6 +1,7 @@
 package fr.ludos.command;
 
 
+import fr.ludos.Ludos;
 import fr.ludos.role.Role;
 
 import java.util.Arrays;
@@ -12,10 +13,18 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class RoleCommand implements TabExecutor {
 
 	private static final String randomRole = "random";
+	private final Ludos plugin;
+
+
+	public RoleCommand(Ludos plugin) {
+		this.plugin = plugin;
+	}
+
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -62,7 +71,7 @@ public class RoleCommand implements TabExecutor {
 				Player removeTarget = CommandUtility.getPlayerFromArgsOrSender(args, 0, sender);
 				if (removeTarget == null) return false;
 
-				Role.removeRole(removeTarget);
+				Role.removeRole(removeTarget, plugin);
 				if ( removeTarget != sender ) {
 					sender.sendMessage("The role of Player " + removeTarget.getName() + " is now randomly chosen");
 				}
@@ -77,7 +86,7 @@ public class RoleCommand implements TabExecutor {
 				Player setTarget = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
 				if (setTarget == null) return false;
 
-				Role.setRole(setTarget, roleString);
+				Role.setRole(setTarget, roleString, plugin);
 				if (setTarget != sender) {
 					sender.sendMessage("The role of Player " + setTarget.getName() + " is now " + roleString);
 				}

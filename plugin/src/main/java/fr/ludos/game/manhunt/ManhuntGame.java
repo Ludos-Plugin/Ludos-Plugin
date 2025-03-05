@@ -11,6 +11,7 @@ import org.apache.commons.lang3.EnumUtils;
 import java.util.stream.Collectors;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.UUID;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
@@ -20,7 +21,6 @@ import javax.annotation.Nullable;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.potion.PotionEffect;
@@ -28,6 +28,8 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.Ludos;
 import fr.ludos.Utility;
@@ -44,14 +46,21 @@ import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.attribute.Attribute;
 
 
+
 public class ManhuntGame extends Game {
 	public static final String id = "manhunt";
 
 	public static final String playersKey = "players";
+	public static final String playersPath = id + '.' + playersKey;
 	public static final String preyKey = "prey";
+	public static final String preyPath = id + '.' + preyKey;
+
 	public static final String areaKey = "area";
+	public static final String areaPath = id + '.' + areaKey;
 	public static final String locationKey = "location";
+	public static final String locationPath = id + '.' + locationKey;
 	public static final String revealKey = "reveal";
+	public static final String revealPath = id + '.' + revealKey;
 
 	private final Scoreboard scoreboard;
 	public Scoreboard getScoreboard() {
@@ -210,7 +219,7 @@ public class ManhuntGame extends Game {
 				}
 				prey.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 1, 0, true, false));
 			}
-		}.runTaskTimer(this.getGameBuilder().getPlugin(), 400, 400);
+		}.runTaskTimer(getPlugin(), 400, 400);
 
 
 		Bukkit.broadcastMessage("The Game of Manhunt started");
@@ -243,7 +252,7 @@ public class ManhuntGame extends Game {
 		Bukkit.broadcastMessage("The Prey was revealed!\nThey are located at " + ChatColor.RED + "X:" + preyLocation.getBlockX() + ChatColor.GREEN + " Y:" + preyLocation.getBlockY() + ChatColor.BLUE + " Z:" + preyLocation.getBlockZ() + ".");
 
 		for (Player hunter : teamController.getHunters()) {
-			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), ManhuntCompass::getItem)) {
+			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), (ItemStack stack) -> ManhuntCompass.getItem(stack, this))) {
 				compass.setLocation(prey.get());
 			}
 		}
@@ -303,65 +312,61 @@ public class ManhuntGame extends Game {
 
 
 
-		private final String namespacedPreyKey = getConfigKey(preyKey);
 		public String getPreyName() {
-			return getPlugin().getConfig().getString(namespacedPreyKey);
+			return getPlugin().getConfig().getString(preyPath);
 		}
 		public void setPreyName(String prey) {
 			String value = prey == null ? null : prey;
-			getPlugin().getConfig().set(namespacedPreyKey, value);
+			getPlugin().getConfig().set(preyPath, value);
 			getPlugin().saveConfig();
 		}
 
-		private final String namespacedPlayersKey = getConfigKey(playersKey);
 		public Set<String> getPlayerNames() {
-			return getPlugin().getConfig().getStringList(namespacedPlayersKey).stream()
+			return getPlugin().getConfig().getStringList(playersPath).stream()
 				.collect(Collectors.toSet());
 		}
 		public void setPlayerNames(Set<String> players) {
 			List<String> value = players == null ? null : players.stream().collect(Collectors.toList());
-			getPlugin().getConfig().set(namespacedPlayersKey, value);
+			getPlugin().getConfig().set(playersPath, value);
 			getPlugin().saveConfig();
 		}
 
-		private final String namespacedAreaKey = getConfigKey(areaKey);
 		public ManhuntAreaOptions getArea() {
-			String areaString = getPlugin().getConfig().getString(namespacedAreaKey);
+			String areaString = getPlugin().getConfig().getString(areaPath);
 			return EnumUtils.isValidEnum(ManhuntAreaOptions.class, areaString)
 				? ManhuntAreaOptions.valueOf( areaString )
 				: ManhuntAreaOptions.medium;
 		}
 		public void setArea(ManhuntAreaOptions area) {
 			String value = area == null ? null : area.toString();
-			getPlugin().getConfig().set(namespacedAreaKey, value);
+			getPlugin().getConfig().set(areaPath, value);
 			getPlugin().saveConfig();
 		}
 
-		private final String namespacedLocationKey = getConfigKey(locationKey);
 		public ManhuntLocationOptions getLocation() {
-			String locationString = getPlugin().getConfig().getString(namespacedLocationKey);
+			String locationString = getPlugin().getConfig().getString(locationPath);
 			return EnumUtils.isValidEnum(ManhuntLocationOptions.class, locationString)
 				? ManhuntLocationOptions.valueOf( locationString )
 				: ManhuntLocationOptions.random;
 		}
 		public void setLocation(ManhuntLocationOptions location) {
 			String value = location == null ? null : location.toString();
-			getPlugin().getConfig().set(namespacedLocationKey, value);
+			getPlugin().getConfig().set(locationPath, value);
 			getPlugin().saveConfig();
 		}
 
-		private final String namespacedRevealKey = getConfigKey(revealKey);
 		public ManhuntRevealOptions getReveal() {
-			String revealString = getPlugin().getConfig().getString(namespacedRevealKey);
+			String revealString = getPlugin().getConfig().getString(revealPath);
 			return EnumUtils.isValidEnum(ManhuntRevealOptions.class, revealString)
 				? ManhuntRevealOptions.valueOf( revealString )
 				: ManhuntRevealOptions.occasional;
 		}
 		public void setReveal(ManhuntRevealOptions reveal) {
 			String value = reveal == null ? null : reveal.toString();
-			getPlugin().getConfig().set(namespacedRevealKey, value);
+			getPlugin().getConfig().set(revealPath, value);
 			getPlugin().saveConfig();
 		}
+
 
 		public Builder(Ludos plugin) {
 			super( plugin );

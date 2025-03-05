@@ -37,17 +37,16 @@ import javax.annotation.Nullable;
 
 public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	public static final String HAMMER_MODE = "mode";
-	private NamespacedKey modeKey = new NamespacedKey(Ludos.getInstance(), HAMMER_MODE);
+	private NamespacedKey modeKey = new NamespacedKey(getGame().getPlugin(), HAMMER_MODE);
 
 	private Boolean hammerMode = false;
-
 	public Boolean getHammerMode() {
 		return hammerMode;
 	}
 
 
-	public BurrowerPick(ItemStack stack) throws IllegalArgumentException {
-		super(stack);
+	public BurrowerPick(ItemStack stack, Game game) throws IllegalArgumentException {
+		super(stack, game);
 
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 		if (
@@ -59,21 +58,21 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		hammerMode = getPersistentData(stack, modeKey, PersistentDataType.INTEGER) == 1;
 	}
 
-	public BurrowerPick(Player owner) {
-		this(owner, BurrowerPickLevels.WOODEN);
+	public BurrowerPick(Player owner, Game game) {
+		this(owner, BurrowerPickLevels.WOODEN, game);
 	}
-	public BurrowerPick(Player owner, BurrowerPickLevels level) {
-		this(new ItemStack(level.getMaterial()), owner, level);
+	public BurrowerPick(Player owner, BurrowerPickLevels level, Game game) {
+		this(new ItemStack(level.getMaterial()), owner, level, game);
 	}
 
-	protected BurrowerPick(ItemStack item, Player owner) {
-		this(item, owner, BurrowerPickLevels.WOODEN);
+	protected BurrowerPick(ItemStack item, Player owner, Game game) {
+		this(item, owner, BurrowerPickLevels.WOODEN, game);
 	}
-	protected BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level) {
-		this(item, owner, level, 0);
+	protected BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level, Game game) {
+		this(item, owner, level, 0, game);
 	}
-	protected BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level, double xp) {
-		super(item, owner, level, xp);
+	protected BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level, double xp, Game game) {
+		super(item, owner, level, xp, game);
 		setHammerMode(false);
 	}
 
@@ -251,7 +250,6 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 			super(game, BurrowerPickLevels.WOODEN);
 		}
 
-
 		@EventHandler
 		public void onPlayerInteract(PlayerInteractEvent event) {
 			Action action = event.getAction();
@@ -261,7 +259,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 
 			Player player = event.getPlayer();
-			BurrowerPick pickaxe = getItem(player.getInventory().getItemInMainHand());
+			BurrowerPick pickaxe = getItem(player.getInventory().getItemInMainHand(), game);
 			if (pickaxe == null) {
 				return;
 			}
@@ -279,7 +277,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		public void onSwitchItem(PlayerItemHeldEvent event) {
 			Player player = event.getPlayer();
 
-			BurrowerPick pick = BurrowerPick.findIn(player.getInventory(), this::getItem);
+			BurrowerPick pick = BurrowerPick.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
 			if (pick == null) {
 				return;
 			}
@@ -297,7 +295,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 			Player player = event.getPlayer();
 			ItemStack mainHandItem = player.getInventory().getItemInMainHand();
 
-			BurrowerPick pick = getItem(mainHandItem);
+			BurrowerPick pick = getItem(mainHandItem, game);
 			if (pick == null) {
 				return;
 			}
@@ -322,17 +320,17 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 		@Override
 		@Nullable
-		protected BurrowerPick getItem(ItemStack stack) {
+		protected BurrowerPick getItem(ItemStack stack, Game game) {
 			try {
-				BurrowerPick pick = new BurrowerPick(stack);
+				BurrowerPick pick = new BurrowerPick(stack, game);
 				return pick;
 			} catch (IllegalArgumentException e) {
 				return null;
 			}
 		}
 		@Override
-		protected BurrowerPick createItem(Player owner, BurrowerPickLevels level) {
-			return new BurrowerPick(owner, level);
+		protected BurrowerPick createItem(Player owner, BurrowerPickLevels level, Game game) {
+			return new BurrowerPick(owner, level, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {

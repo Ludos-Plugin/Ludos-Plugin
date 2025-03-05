@@ -18,12 +18,12 @@ import javax.annotation.Nullable;
 
 public class ManhuntCompass extends SpecialItem {
 
-	public ManhuntCompass(ItemStack item) {
-		super(item);
+	public ManhuntCompass(ItemStack item, Game game) {
+		super(item, game);
 	}
 
-	public ManhuntCompass(Player owner) {
-		super(createItemStack(), owner);
+	public ManhuntCompass(Player owner, Game game) {
+		super(createItemStack(), owner, game);
 	}
 
 	private static ItemStack createItemStack() {
@@ -70,17 +70,17 @@ public class ManhuntCompass extends SpecialItem {
 	}
 
 	@Nullable
-	public static ManhuntCompass getItem(ItemStack stack) {
+	public static ManhuntCompass getItem(ItemStack stack, Game game) {
 		try {
-			ManhuntCompass compass = new ManhuntCompass(stack);
+			ManhuntCompass compass = new ManhuntCompass(stack, game);
 			return compass;
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
 	}
 
-	public static ManhuntCompass createItem(Player owner) {
-		return new ManhuntCompass(owner);
+	public static ManhuntCompass createItem(Player owner, Game game) {
+		return new ManhuntCompass(owner, game);
 	}
 
 	public static class Events extends SpecialItem.Events<ManhuntCompass> {
@@ -91,12 +91,12 @@ public class ManhuntCompass extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected ManhuntCompass getItem(ItemStack stack) {
-			return ManhuntCompass.getItem(stack);
+		protected ManhuntCompass getItem(ItemStack stack, Game game) {
+			return ManhuntCompass.getItem(stack, game);
 		}
 
-		protected ManhuntCompass createItem(Player owner) {
-			return ManhuntCompass.createItem(owner);
+		protected ManhuntCompass createItem(Player owner, Game game) {
+			return ManhuntCompass.createItem(owner, game);
 		}
 
 		@Override

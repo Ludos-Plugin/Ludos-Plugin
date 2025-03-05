@@ -15,14 +15,14 @@ import javax.annotation.Nullable;
 
 
 public class HuntsmanTrident extends SpecialItem {
-	public HuntsmanTrident(ItemStack stack){
-		super(stack);
+	public HuntsmanTrident(ItemStack stack, Game game) {
+		super(stack, game);
 	}
-	public HuntsmanTrident(Player owner){
-		super(new ItemStack(Material.TRIDENT), owner);
+	public HuntsmanTrident(Player owner, Game game) {
+		super(new ItemStack(Material.TRIDENT), owner, game);
 	}
-	public HuntsmanTrident(ItemStack item, Player owner) {
-		super(item, owner);
+	public HuntsmanTrident(ItemStack item, Player owner, Game game) {
+		super(item, owner, game);
 	}
 
 
@@ -51,17 +51,17 @@ public class HuntsmanTrident extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected HuntsmanTrident getItem(ItemStack stack) {
+		protected HuntsmanTrident getItem(ItemStack stack, Game game) {
 			try {
-				HuntsmanTrident bow = new HuntsmanTrident(stack);
+				HuntsmanTrident bow = new HuntsmanTrident(stack, game);
 				return bow;
 			} catch (IllegalArgumentException e) {
 				return null;
 			}
 		}
 		@Override
-		protected HuntsmanTrident createItem(Player owner) {
-			return new HuntsmanTrident(owner);
+		protected HuntsmanTrident createItem(Player owner, Game game) {
+			return new HuntsmanTrident(owner, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {

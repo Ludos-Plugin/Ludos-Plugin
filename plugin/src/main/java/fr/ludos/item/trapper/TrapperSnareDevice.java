@@ -27,16 +27,16 @@ import fr.ludos.role.TrapperRole;
 
 public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
-	public TrapperSnareDevice(ItemStack stack) throws IllegalArgumentException {
-		super(stack);
+	public TrapperSnareDevice(ItemStack stack, Game game) throws IllegalArgumentException {
+		super(stack, game);
 	}
 
-	public TrapperSnareDevice(Player owner) {
-		this(owner, TrapperSnareDeviceBranches.REVEALING);
+	public TrapperSnareDevice(Player owner, Game game) {
+		this(owner, TrapperSnareDeviceBranches.REVEALING, game);
 	}
 
-	protected TrapperSnareDevice(Player owner, TrapperSnareDeviceBranches branch) {
-		super(new ItemStack(Material.ENCHANTED_BOOK), owner, branch);
+	protected TrapperSnareDevice(Player owner, TrapperSnareDeviceBranches branch, Game game) {
+		super(new ItemStack(Material.ENCHANTED_BOOK), owner, branch, game);
 	}
 
 
@@ -59,16 +59,16 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 	}
 
 	@Nullable
-	public static TrapperSnareDevice getItem(ItemStack stack) {
+	public static TrapperSnareDevice getItem(ItemStack stack, Game game) {
 		try {
-			TrapperSnareDevice snareDevice = new TrapperSnareDevice(stack);
+			TrapperSnareDevice snareDevice = new TrapperSnareDevice(stack, game);
 			return snareDevice;
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
 	}
-	public static TrapperSnareDevice createItem(Player owner) {
-		return new TrapperSnareDevice(owner);
+	public static TrapperSnareDevice createItem(Player owner, Game game) {
+		return new TrapperSnareDevice(owner, game);
 	}
 
 	@Override
@@ -106,7 +106,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 					}
 					traps.removeAll(trapsToRemove);
 				}
-			}.runTaskTimer(Ludos.getInstance(), 0, 1);
+			}.runTaskTimer(game.getPlugin(), 0, 1);
 		}
 
 		@Override
@@ -132,7 +132,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		@EventHandler
 		public void onPlayerInteract(PlayerInteractEvent event) {
 			Player player = event.getPlayer();
-			TrapperSnareDevice snareDevice = getItem(player.getInventory().getItemInMainHand());
+			TrapperSnareDevice snareDevice = getItem(player.getInventory().getItemInMainHand(), game);
 			if (snareDevice == null) {
 				return;
 			}
@@ -172,13 +172,13 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 		@Override
 		@Nullable
-		protected TrapperSnareDevice getItem(ItemStack stack) {
-			return TrapperSnareDevice.getItem(stack);
+		protected TrapperSnareDevice getItem(ItemStack stack, Game game) {
+			return TrapperSnareDevice.getItem(stack, game);
 		}
 
 		@Override
-		protected TrapperSnareDevice createItem(Player owner) {
-			return TrapperSnareDevice.createItem(owner);
+		protected TrapperSnareDevice createItem(Player owner, Game game) {
+			return TrapperSnareDevice.createItem(owner, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {

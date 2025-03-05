@@ -19,11 +19,16 @@ import java.util.Map;
 import java.util.List;
 
 public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extends SpecialItem {
+
+	public LevelItem(ItemStack stack, Player owner, Game game) {
+		super(stack, owner, game);
+	}
+
 	public static final String LEVEL = "level";
-	private final NamespacedKey levelKey = new NamespacedKey(Ludos.getInstance(), LEVEL);
+	private final NamespacedKey levelKey = new NamespacedKey(getGame().getPlugin(), LEVEL);
 
 	public static final String XP = "xp";
-	private final NamespacedKey xpKey = new NamespacedKey(Ludos.getInstance(), XP);
+	private final NamespacedKey xpKey = new NamespacedKey(getGame().getPlugin(), XP);
 
 	private static final String MAX_LVL_LABEL = "MAX";
 
@@ -39,8 +44,8 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 
 	public abstract TLevel convertToLevel(int level);
 
-	public LevelItem(ItemStack stack) throws IllegalArgumentException {
-		super(stack);
+	public LevelItem(ItemStack stack, Game game) throws IllegalArgumentException {
+		super(stack, game);
 
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 		if ( ! container.has(levelKey, PersistentDataType.INTEGER) ) {
@@ -54,12 +59,12 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 		this.xp = getPersistentData(stack, xpKey, PersistentDataType.DOUBLE);
 	}
 
-	public LevelItem(ItemStack stack, Player owner, TLevel level) {
-		this(stack, owner, level, 0);
+	public LevelItem(ItemStack stack, Player owner, TLevel level, Game game) {
+		this(stack, owner, level, 0, game);
 	}
 
-	public LevelItem(ItemStack stack, Player owner, TLevel level, double xp) {
-		super(stack, owner);
+	public LevelItem(ItemStack stack, Player owner, TLevel level, double xp, Game game) {
+		super(stack, owner, game);
 
 		setLvl(level);
 		setXp(xp);
@@ -150,14 +155,14 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 		}
 
 
-		protected abstract T createItem(Player owner, TLevels level);
+		protected abstract T createItem(Player owner, TLevels level, Game game);
 
 		@EventHandler
 		public void onPlayerDeath(PlayerDeathEvent event) {
 			Player player = event.getEntity();
 			if (! canPlayerHaveItem(player)) return;
 
-			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
+			T specialItem = SpecialItem.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
 			if ( specialItem == null ) {
 				return;
 			}
@@ -166,7 +171,7 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 		}
 
 		@Override
-		protected final T createItem(Player owner) {
+		protected final T createItem(Player owner, Game game) {
 			TLevels level = this.baseLevel;
 
 			if (owner != null && deadPlayerLevels != null && deadPlayerLevels.containsKey(owner.getName())) {
@@ -174,7 +179,7 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 				level = deadLevels != null ? deadLevels : level;
 			}
 
-			return createItem(owner, level);
+			return createItem(owner, level, game);
 		}
 	}
 }

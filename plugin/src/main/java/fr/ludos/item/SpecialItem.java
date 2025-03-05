@@ -38,11 +38,15 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 public abstract class SpecialItem {
+
+	private final Game game;
+	public Game getGame() { return game; }
+
 	public static final String ID = "id";
-	private NamespacedKey idKey = new NamespacedKey(Ludos.getInstance(), ID);
+	private NamespacedKey idKey = new NamespacedKey(getGame().getPlugin(), ID);
 
 	public static final String OWNER = "owner";
-	private NamespacedKey ownerKey = new NamespacedKey(Ludos.getInstance(), OWNER);
+	private NamespacedKey ownerKey = new NamespacedKey(getGame().getPlugin(), OWNER);
 
 	public static final int USAGE_COOLDOWN = 5;
 
@@ -57,7 +61,9 @@ public abstract class SpecialItem {
 	}
 
 
-	public SpecialItem(ItemStack stack) throws IllegalArgumentException {
+	public SpecialItem(ItemStack stack, Game game) throws IllegalArgumentException {
+		this.game = game;
+
 		if (stack == null) {
 			throw new IllegalArgumentException("Item Stack is null");
 		}
@@ -87,7 +93,8 @@ public abstract class SpecialItem {
 		);
 	}
 
-	protected SpecialItem(ItemStack stack, Player owner) {
+	protected SpecialItem(ItemStack stack, Player owner, Game game) {
+		this.game = game;
 		this.stack = stack;
 		this.owner = owner;
 
@@ -224,8 +231,7 @@ public abstract class SpecialItem {
 		}
 
 		public void start() {
-			Ludos plugin = Ludos.getInstance();
-			Bukkit.getPluginManager().registerEvents(this, plugin);
+			Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
 
 			updateAllInventories();
 		}
@@ -238,8 +244,8 @@ public abstract class SpecialItem {
 
 
 		@Nullable
-		protected abstract T getItem(ItemStack stack);
-		protected abstract T createItem(Player owner);
+		protected abstract T getItem(ItemStack stack, Game game);
+		protected abstract T createItem(Player owner, Game game);
 
 		protected abstract Boolean canPlayerHaveItem(HumanEntity owner);
 
@@ -247,7 +253,7 @@ public abstract class SpecialItem {
 		protected void removeFromAllInventories() {
 			for (Player player : Bukkit.getOnlinePlayers()) {
 				Inventory inventory = player.getInventory();
-				List<T> items = SpecialItem.findAllIn(inventory, this::getItem);
+				List<T> items = SpecialItem.findAllIn(inventory, (ItemStack stack) -> getItem(stack, game));
 				for(T item : items) {
 					inventory.remove(item.getStack());
 				}
@@ -268,7 +274,7 @@ public abstract class SpecialItem {
 
 			ItemStack item = event.getItemDrop().getItemStack();
 
-			if (getItem(item) != null) {
+			if (getItem(item, game) != null) {
 				event.setCancelled(true);
 			}
 		}
@@ -282,7 +288,7 @@ public abstract class SpecialItem {
 				item = event.getCurrentItem();
 			}
 
-			if (getItem(item) == null) return;
+			if (getItem(item, game) == null) return;
 
 			if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY && event.getInventory().getType() != InventoryType.PLAYER) {
 				event.setResult(Result.DENY);
@@ -293,7 +299,7 @@ public abstract class SpecialItem {
 		public void onItemSpawn(ItemSpawnEvent event) {
 			ItemStack item = event.getEntity().getItemStack();
 
-			if (getItem(item) == null) return;
+			if (getItem(item, game) == null) return;
 
 			event.setCancelled(true);
 		}
@@ -314,9 +320,9 @@ public abstract class SpecialItem {
 			if (! canPlayerHaveItem(player)) return;
 
 			Inventory inventory = player.getInventory();
-			if (T.containedIn(inventory, this::getItem)) return;
+			if (T.containedIn(inventory, (ItemStack stack) -> getItem(stack, game))) return;
 
-			T item = createItem(player);
+			T item = createItem(player, game);
 			if (item == null) return;
 
 			player.getInventory().addItem(item.getStack());

@@ -18,11 +18,11 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 public class HuntsmanBow extends SpecialItem {
-	public HuntsmanBow(ItemStack stack){
-		super(stack);
+	public HuntsmanBow(ItemStack stack, Game game) {
+		super(stack, game);
 	}
-	public HuntsmanBow(Player owner){
-		super(new ItemStack(Material.BOW), owner);
+	public HuntsmanBow(Player owner, Game game) {
+		super(new ItemStack(Material.BOW), owner, game);
 	}
 
 	@Override
@@ -64,17 +64,17 @@ public class HuntsmanBow extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected HuntsmanBow getItem(ItemStack stack) {
+		protected HuntsmanBow getItem(ItemStack stack, Game game) {
 			try {
-				HuntsmanBow bow = new HuntsmanBow(stack);
+				HuntsmanBow bow = new HuntsmanBow(stack, game);
 				return bow;
 			} catch (IllegalArgumentException e) {
 				return null;
 			}
 		}
 		@Override
-		protected HuntsmanBow createItem(Player owner) {
-			return new HuntsmanBow(owner);
+		protected HuntsmanBow createItem(Player owner, Game game) {
+			return new HuntsmanBow(owner, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {

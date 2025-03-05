@@ -39,7 +39,7 @@ public class TrapperRole extends Role {
 					sneakingPlayer.addPotionEffect(PotionEffectType.INVISIBILITY.createEffect(10,0));
 				}
 			}
-		}.runTaskTimer(Ludos.getInstance(), 0, 1);
+		}.runTaskTimer(getGame().getPlugin(), 0, 1);
 	}
 
 	@Override
@@ -78,6 +78,10 @@ public class TrapperRole extends Role {
 		@Override
 		public String getId() {
 			return id;
+		}
+
+		public Builder(Ludos plugin) {
+			super(plugin);
 		}
 
 		@Override
