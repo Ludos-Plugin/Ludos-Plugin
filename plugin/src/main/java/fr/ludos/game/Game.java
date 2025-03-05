@@ -42,13 +42,10 @@ public abstract class Game implements Listener {
 		return activeRoles;
 	}
 
-	private Builder gameBuilder;
+	private final Builder gameBuilder;
 	protected Builder getGameBuilder() {
 		return gameBuilder;
 	}
-
-
-
 
 	public Game(Builder gameBuilder) {
 		this.gameBuilder = gameBuilder;
@@ -64,7 +61,7 @@ public abstract class Game implements Listener {
 
 		onInit();
 
-		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
+		Bukkit.getPluginManager().registerEvents(this, this.gameBuilder.getPlugin());
 
 		for (Role.Builder roleBuilder : Role.getRegistered().values()) {
 			Role role = roleBuilder.build(gameBuilder, current);
@@ -114,9 +111,12 @@ public abstract class Game implements Listener {
 		}
 	}
 
-
-
 	public static abstract class Builder implements TabExecutor {
+		public final Ludos plugin;
+		public Ludos getPlugin() {
+			return plugin;
+		}
+
 		public abstract String getId();
 
 		public String getConfigKey(String key) {
@@ -160,5 +160,9 @@ public abstract class Game implements Listener {
 		public abstract List<String> gameTabComplete(CommandSender sender, Command command, String label, String[] args, GameCommandOptions option);
 
 		public abstract Game build();
+
+		public Builder(Ludos plugin) {
+			this.plugin = plugin;
+		}
 	}
 }

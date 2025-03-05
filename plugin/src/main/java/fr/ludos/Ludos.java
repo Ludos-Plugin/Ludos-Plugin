@@ -31,7 +31,7 @@ public class Ludos extends JavaPlugin implements Listener {
 		Role.loadConfigRoles(this);
 
 
-		Game.registerGame(new ManhuntGame.Builder());
+		Game.registerGame(new ManhuntGame.Builder(this));
 
 		Role.registerRole(new HuntsmanRole.Builder());
 		Role.registerRole(new BurrowerRole.Builder());
