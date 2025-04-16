@@ -105,7 +105,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		getOwner().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, Integer.MAX_VALUE, 0, false, false));
 	}
 
-	public void breakRadius(Location location, BlockFace face) {
+	public void breakRadius(Block block, BlockFace face) {
 		TriFunction<Integer, Integer, Integer, Vector> vectorGetter =
 			face == BlockFace.EAST || face == BlockFace.WEST ? (x, y, z) -> new Vector(z, x, y) :
 			face == BlockFace.UP || face == BlockFace.DOWN ? (x, y, z) -> new Vector(x, z, y) :
@@ -121,11 +121,14 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 			for (int xOffset = -radius; xOffset <= radius; xOffset++) {
 				for (int yOffset = -radius; yOffset <= radius; yOffset++) {
 					Vector vector = vectorGetter.apply(xOffset, yOffset, isDepthAxisPositive ? -depthOffset : depthOffset);
-					Block block = location.getBlock().getRelative(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+					Block relativeBlock = block.getRelative(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
 
-					if (ItemUtilities.isBreakable(block) && block.isPreferredTool(getStack())) {
-						awardBreak(getOwner(), block);
-						block.breakNaturally(getStack());
+					if (
+						ItemUtilities.isBreakable(relativeBlock) &&
+						relativeBlock.isPreferredTool(getStack())
+					) {
+						awardBreak(getOwner(), relativeBlock);
+						relativeBlock.breakNaturally(getStack());
 					}
 				}
 			}
@@ -314,7 +317,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 			BlockFace face = targetBlock.getFace(adjacentBlock);
 
-			pick.breakRadius(targetBlock.getLocation(), face);
+			pick.breakRadius(targetBlock, face);
 		}
 
 
