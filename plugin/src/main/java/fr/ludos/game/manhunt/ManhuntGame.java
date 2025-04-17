@@ -13,8 +13,13 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.EnumUtils;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.title.Title;
+
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.GameMode;
 import org.bukkit.World;
@@ -162,7 +167,16 @@ public class ManhuntGame extends Game {
 
 		int areaRadius = areaDiameter / 2;
 
-		prey.sendTitle("You are the " + ChatColor.BLUE + "Prey", "Run for your life", 10, 70, 20);
+		prey.showTitle(Title.title(
+			Component.text("You are the").appendSpace()
+				.append(Component.text("Prey").color(TextColor.color(0x0000FF))),
+			Component.text("Run for your life"),
+			Title.Times.times(
+				Duration.ofMillis(500),
+				Duration.ofMillis(3500),
+				Duration.ofMillis(1000)
+			)
+		));
 
 		prey.teleport(location);
 		prey.setBedSpawnLocation(location, true);
@@ -182,9 +196,20 @@ public class ManhuntGame extends Game {
 
 
 		for (Player hunter : hunters) {
-			hunter.sendTitle("You are a " + ChatColor.RED + "Hunter", "Go and seek " + ChatColor.BLUE + prey.getName(), 10, 70, 20);
+			hunter.showTitle(Title.title(
+				Component.text("You are a").appendSpace()
+					.append(Component.text("Hunter").color(TextColor.color(0xFF5555))),
+				Component.text("Go and seek").appendSpace()
+					.append(Component.text(prey.getName()).color(TextColor.color(0x5555FF))),
+				Title.Times.times(
+					Duration.ofMillis(500),
+					Duration.ofMillis(3500),
+					Duration.ofMillis(1000)
+				)
+			));
 
 			Location hunterLocation = Utility.getGroundedLocationAround(location, (int)(areaRadius * 0.3), (int)(areaRadius * 0.7), location);
+
 			hunter.teleport(hunterLocation);
 			hunter.setBedSpawnLocation(hunterLocation, true);
 			hunter.setGameMode(GameMode.SURVIVAL);
@@ -224,8 +249,8 @@ public class ManhuntGame extends Game {
 			Location spawnLocation = new Location(world, x, world.getHighestBlockYAt(x, z) + 2, z);
 			EntityType animal = animals[random.nextInt(animals.length)];
 
-			Bukkit.broadcastMessage(animal.toString());
-			Bukkit.broadcastMessage(spawnLocation.toString());
+			Bukkit.getServer().broadcast(Component.text(animal.toString()));
+			Bukkit.getServer().broadcast(Component.text(spawnLocation.toString()));
 
 			world.spawnEntity(spawnLocation, animal);
 		}
@@ -267,7 +292,7 @@ public class ManhuntGame extends Game {
 		}.runTaskTimer(getPlugin(), 400, 400);
 
 
-		Bukkit.broadcastMessage("The Game of Manhunt started");
+		Bukkit.getServer().broadcast(Component.text("The Game of Manhunt started"));
 	}
 
 	@Override
@@ -281,7 +306,7 @@ public class ManhuntGame extends Game {
 
 		saturationTask.cancel();
 
-		Bukkit.broadcastMessage("The Game of Manhunt ended");
+		Bukkit.getServer().broadcast(Component.text("The Game of Manhunt ended"));
 	}
 
 
@@ -293,7 +318,14 @@ public class ManhuntGame extends Game {
 
 		Location preyLocation = prey.get().getLocation();
 
-		Bukkit.broadcastMessage("The Prey was revealed!\nThey are located at " + ChatColor.RED + "X:" + preyLocation.getBlockX() + ChatColor.GREEN + " Y:" + preyLocation.getBlockY() + ChatColor.BLUE + " Z:" + preyLocation.getBlockZ() + ".");
+		Bukkit.getServer().broadcast(
+			Component.text("The Prey was revealed!")
+				.appendNewline()
+			.append(Component.text("They are located at")).appendSpace()
+			.append(Component.text("X:" + preyLocation.getBlockX()).color(TextColor.color(0xFFAAAA))).appendSpace()
+			.append(Component.text("Y:" + preyLocation.getBlockY()).color(TextColor.color(0xAAFFAA))).appendSpace()
+			.append(Component.text("Z:" + preyLocation.getBlockZ()).color(TextColor.color(0xAAAAFF)))
+		);
 
 		for (Player hunter : teamController.getHunters()) {
 			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), (ItemStack stack) -> ManhuntCompass.getItem(stack, this))) {

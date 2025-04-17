@@ -3,7 +3,9 @@ package fr.ludos.item;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.persistence.*;
@@ -73,23 +75,26 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 		branch.onSwitchBranch(this);
 	}
 
-	protected String getBranchAnnotation() {
+	protected Component getBranchAnnotation() {
 		TBranches branch = getBranch();
 		if (branch == null) return null;
 
-		return "(" + branch.getName() + ChatColor.RESET.toString() + ChatColor.WHITE + ")";
+		return Component.text("(")
+			.append(branch.getName())
+			.append(Component.text(")"));
 	}
 
 	@Override
-	protected List<String> getLore() {
-		List<String> lore = super.getLore();
+	protected List<Component> getLore() {
+		List<Component> lore = super.getLore();
 		if (lore == null) {
-			lore = new ArrayList<String>();
+			lore = new ArrayList<Component>();
 		}
 
-		String branchFormatted = ChatColor.GRAY + "Type: " + ChatColor.YELLOW + branch.getName();
-
-		lore.add(branchFormatted);
+		lore.add(
+			Component.text("Type:").color(TextColor.color(0xAAAAAA)).appendSpace()
+			.append(branch.getName().color(TextColor.color(0xFFFF55)))
+		);
 		return lore;
 	}
 

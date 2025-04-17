@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.HashMap;
 import javax.annotation.Nullable;
 
+import net.kyori.adventure.text.Component;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
@@ -133,8 +135,8 @@ public class BurrowerShovel extends SpecialItem {
 	}
 
 	@Override
-	protected String getName() {
-		return "Burrower's Shovel"; // TODO: Translate
+	protected Component getName() {
+		return Component.text("Burrower's Shovel"); // TODO: Translate
 	}
 
 

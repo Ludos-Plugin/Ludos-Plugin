@@ -3,8 +3,11 @@ package fr.ludos.item.trapper;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+
 import org.bukkit.Material;
-import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -15,7 +18,10 @@ import fr.ludos.item.SpecialItemBranches;
 
 
 public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSnareDeviceBranches> {
-	REVEALING (ChatColor.GOLD.toString() + ChatColor.ITALIC + "REVEALING", "REVEALING Description") {
+	REVEALING (
+		Component.text("REVEALING").color(TextColor.color(0xFFAA00)).decorate(TextDecoration.ITALIC),
+		Component.text("REVEALING Description")
+	) {
 		private final Material type = Material.FERMENTED_SPIDER_EYE;
 
 		@Override
@@ -51,7 +57,10 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 	},
 
 
-	SLOWING	(ChatColor.BLUE.toString() + ChatColor.ITALIC + "SLOWING", "SLOWING Description") {
+	SLOWING	(
+		Component.text("SLOWING").color(TextColor.color(0x0000FF)).decorate(TextDecoration.ITALIC),
+		Component.text("SLOWING Description")
+	) {
 		private final Material type = Material.COBWEB;
 
 
@@ -85,22 +94,20 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 
 	public final static TrapperSnareDeviceBranches[] values = TrapperSnareDeviceBranches.values();
 
-	private final String name;
-
+	private final Component name;
 	@Override
-	public String getName() {
+	public Component getName() {
 		return name;
 	}
 
-	private final String description;
-
+	private final Component description;
 	@Override
-	public String getDescription() {
+	public Component getDescription() {
 		return description;
 	}
 
 
-	private TrapperSnareDeviceBranches(String name, String description) {
+	private TrapperSnareDeviceBranches(Component name, Component description) {
 		this.name = name;
 		this.description = description;
 	}

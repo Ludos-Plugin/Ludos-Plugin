@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+
 import org.bukkit.persistence.*;
 import org.bukkit.NamespacedKey;
 import org.bukkit.ChatColor;
@@ -124,27 +127,30 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 	}
 
 	@Override
-	public List<String> getLore() {
-		List<String> lore = super.getLore();
+	public List<Component> getLore() {
+		List<Component> lore = super.getLore();
 		if (lore == null) {
-			lore = new ArrayList<String>();
+			lore = new ArrayList<Component>();
 		}
-		String xpFormatted = ChatColor.GRAY + "XP: " + ChatColor.YELLOW;
 
+		String xpLabel;
 		if ( level.isMax() ) {
-			xpFormatted += MAX_LVL_LABEL;
+			xpLabel = MAX_LVL_LABEL;
 		} else {
 			String xpRounded = Double.toString(Math.round(xp * 100.0) / 100.0);
-			xpFormatted += xpRounded + '/' + level.getXpThreshold();
+			xpLabel = xpRounded + '/' + level.getXpThreshold();
 		}
 
-		lore.add(xpFormatted);
+		lore.add(
+			Component.text("XP:").color(TextColor.color(0xAAAAAA)).appendSpace()
+				.append(Component.text(xpLabel).color(TextColor.color(0xFFFF55)))
+		);
+
 		return lore;
 	}
 
 
 	public static abstract class Events<T extends LevelItem<TLevels>, TLevels extends SpecialItemLevels<TLevels>> extends SpecialItem.Events<T> {
-
 		protected final TLevels baseLevel;
 		private Map<String, TLevels> deadPlayerLevels = new HashMap<>();
 

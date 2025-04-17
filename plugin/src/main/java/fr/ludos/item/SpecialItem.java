@@ -7,8 +7,9 @@ import java.util.ArrayList;
 import java.util.UUID;
 import javax.annotation.Nullable;
 
+import net.kyori.adventure.text.Component;
+
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -117,24 +118,24 @@ public abstract class SpecialItem {
 	}
 
 
-	protected List<String> getLore() {
+	protected List<Component> getLore() {
 		return null;
 	}
 
 	protected abstract String getId();
-	protected abstract String getName();
+	protected abstract Component getName();
 
 
 	public void updateName() {
 		ItemStack stack = getStack();
 		ItemMeta meta = stack.getItemMeta();
-		meta.setDisplayName(ChatColor.RESET.toString() + ChatColor.WHITE + getName());
+		meta.displayName(getName());
 		stack.setItemMeta(meta);
 	}
 	public void updateLore() {
 		ItemStack stack = getStack();
 		ItemMeta meta = stack.getItemMeta();
-		meta.setLore(getLore());
+		meta.lore(getLore());
 		stack.setItemMeta(meta);
 	}
 

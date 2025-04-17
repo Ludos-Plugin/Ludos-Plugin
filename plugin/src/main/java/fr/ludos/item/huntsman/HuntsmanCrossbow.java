@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.ArrayList;
 import javax.annotation.Nullable;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+
 import org.bukkit.Material;
-import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -73,20 +75,22 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 	}
 
 	@Override
-	protected String getName() {
-		return "Cursed Crossbow " + getBranchAnnotation(); // TODO: Translate
+	protected Component getName() {
+		return Component.text("Cursed Crossbow").appendSpace()
+			.append(getBranchAnnotation()); // TODO: Translate
 	}
 
 	@Override
-	protected List<String> getLore() {
-		List<String> lore = super.getLore();
+	protected List<Component> getLore() {
+		List<Component> lore = super.getLore();
 		if (lore == null) {
-			lore = new ArrayList<String>();
+			lore = new ArrayList<Component>();
 		}
 
-		String hintFormatted = ChatColor.GRAY + "Press " + ChatColor.YELLOW + "Left Click (MB1) " + ChatColor.GRAY + "to Switch Mode";
-
-		lore.add(hintFormatted);
+		lore.add(Component.text("Press").color(TextColor.color(0xAAAAAA)).appendSpace()
+			.append(Component.text("Left Click (MB1)").color(TextColor.color(0xFFFF55))).appendSpace()
+			.append(Component.text("to Switch Mode").color(TextColor.color(0xAAAAAA)))
+		);
 		return lore;
 	}
 

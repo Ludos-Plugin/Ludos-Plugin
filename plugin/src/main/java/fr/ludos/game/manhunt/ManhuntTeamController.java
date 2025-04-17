@@ -9,8 +9,10 @@ import java.util.stream.Collectors;
 import java.util.Random;
 import javax.annotation.Nullable;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -33,14 +35,14 @@ public final class ManhuntTeamController extends TeamController {
 		hunterTeam = scoreboard.getTeam("Hunters");
 		if (hunterTeam == null) {
 			hunterTeam = scoreboard.registerNewTeam("Hunters");
-			hunterTeam.setColor(ChatColor.RED);
+			hunterTeam.color(NamedTextColor.RED);
 			hunterTeam.setAllowFriendlyFire(false);
 		}
 
 		preyTeam = scoreboard.getTeam("Prey");
 		if (preyTeam == null) {
 			preyTeam = scoreboard.registerNewTeam("Prey");
-			preyTeam.setColor(ChatColor.BLUE);
+			preyTeam.color(NamedTextColor.BLUE);
 			preyTeam.setAllowFriendlyFire(false);
 		}
 
@@ -118,14 +120,14 @@ public final class ManhuntTeamController extends TeamController {
 			return;
 		}
 
-		Bukkit.broadcastMessage("Prey " + player.getName() + " Slain!"); // TODO: Translate
+		Bukkit.getServer().broadcast(Component.text("Prey " + player.getName() + " Slain!")); // TODO: Translate
 		preyTeam.removeEntry(player.getName());
 
 		if (preyTeam.getSize() == 0) {
 			new BukkitRunnable() {
 				@Override
 				public void run() {
-					Bukkit.broadcastMessage("All Prey Dead! End of Game!"); // TODO: Translate
+					Bukkit.getServer().sendMessage(Component.text("All Prey Dead! End of Game!")); // TODO: Translate
 					Game.stopCurrentGame();
 				}
 			}.runTaskLater(game.getPlugin(), 0);

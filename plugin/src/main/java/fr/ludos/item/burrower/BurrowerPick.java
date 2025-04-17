@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.function.TriFunction;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+
 import org.bukkit.Material;
-import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.util.Vector;
@@ -202,30 +204,38 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	}
 
 	@Override
-	protected String getName() {
+	protected Component getName() {
 		if (hammerMode == null) {
 			hammerMode = false;
 		}
-		return "Burrower's Pick (" + (hammerMode ? ChatColor.RED + "Hammer" : ChatColor.AQUA + "Pickaxe") + ChatColor.RESET.toString() + ChatColor.WHITE + ")"; // TODO: Translate
+		return Component.text("Burrower's Pick (")
+			.append(Component.text(hammerMode ? "Hammer" : "Pickaxe").color(hammerMode ? TextColor.color(0xFF5555) : TextColor.color(0x55FFFF)))
+			.append(Component.text(")")); // TODO: Translate
 	}
 
 	@Override
-	public List<String> getLore() {
-		List<String> lore = super.getLore();
+	public List<Component> getLore() {
+		List<Component> lore = super.getLore();
 		if (lore == null) {
-			lore = new ArrayList<String>();
+			lore = new ArrayList<Component>();
 		}
 
 		int size = 1 + getLevel().getRadius() * 2;
 		int depth = getLevel().getDepth() + 1;
-		String modeFormatted = ChatColor.GRAY + "Mode: " + ChatColor.YELLOW + (hammerMode ? "Hammer Mode" : "Pickaxe Mode");
-		String hintFormatted = ChatColor.GRAY + "Press " + ChatColor.YELLOW + "Right Click (MB2) " + ChatColor.GRAY + "to Switch Mode";
-		String sizeFormatted = ChatColor.GRAY + "Size: " + ChatColor.YELLOW + (size + "x" + size);
-		String depthFormatted = ChatColor.GRAY + "Depth: " + ChatColor.YELLOW + (depth);
-		lore.add(modeFormatted);
-		lore.add(hintFormatted);
-		lore.add(sizeFormatted);
-		lore.add(depthFormatted);
+
+
+		lore.add(Component.text("Mode:").color(TextColor.color(0xAAAAAA)).appendSpace()
+			.append(Component.text(hammerMode ? "Hammer Mode" : "Pickaxe Mode").color(TextColor.color(0xFFFF55))));
+
+		lore.add(Component.text("Press").color(TextColor.color(0xAAAAAA)).appendSpace()
+			.append(Component.text("Right Click (MB2)").color(TextColor.color(0xFFFF55))).appendSpace()
+			.append(Component.text("to Switch Mode").color(TextColor.color(0xAAAAAA))));
+
+		lore.add(Component.text("Size:").color(TextColor.color(0xAAAAAA)).appendSpace()
+			.append(Component.text(size + "x" + size).color(TextColor.color(0xFFFF55))));
+
+		lore.add(Component.text("Depth:").color(TextColor.color(0xAAAAAA)).appendSpace()
+			.append(Component.text(depth).color(TextColor.color(0xFFFF55))));
 
 		return lore;
 	}

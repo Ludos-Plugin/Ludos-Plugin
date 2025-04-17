@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+
 import org.bukkit.persistence.*;
 import org.bukkit.NamespacedKey;
 import org.bukkit.ChatColor;
@@ -127,10 +130,10 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 	}
 
 	@Override
-	protected List<String> getLore() {
-		List<String> lore = super.getLore();
+	protected List<Component> getLore() {
+		List<Component> lore = super.getLore();
 		if (lore == null) {
-			lore = new ArrayList<String>();
+			lore = new ArrayList<Component>();
 		}
 
 		int branchCount = getBranches().length;
@@ -139,18 +142,22 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 		}
 		int currentLevel = getCurrentBranchLevel();
 
-		String xpFormatted = ChatColor.GRAY + "XP: " + ChatColor.YELLOW;
+		String xpLabel;
 		if ( getBranch().isMax(currentLevel) ) {
-			xpFormatted += MAX_LVL_LABEL;
+			xpLabel = MAX_LVL_LABEL;
 		} else {
 			String xpRounded = Double.toString(Math.round(getCurrentBranchXp() * 100.0) / 100.0);
-			xpFormatted += xpRounded + '/' + getBranch().getXpThreshold();
+			xpLabel = xpRounded + '/' + getBranch().getXpThreshold();
 		}
 
-		String levelFormatted = ChatColor.GRAY + "Level: " + ChatColor.YELLOW + Integer.toString(currentLevel + 1);
+		lore.add(Component.text("XP:").color(TextColor.color(0xAAAAAA)).appendSpace()
+			.append(Component.text(xpLabel).color(TextColor.color(0xFFFF55)))
+		);
 
-		lore.add(xpFormatted);
-		lore.add(levelFormatted);
+		lore.add(Component.text("Level:").color(TextColor.color(0xAAAAAA)).appendSpace()
+			.append(Component.text(Integer.toString(currentLevel + 1)).color(TextColor.color(0xFFFF55)))
+		);
+
 		return lore;
 	}
 

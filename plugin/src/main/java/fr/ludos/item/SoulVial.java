@@ -3,6 +3,9 @@ package fr.ludos.item;
 import java.util.Map;
 import java.util.HashMap;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -45,7 +48,7 @@ public class SoulVial implements Listener {
 		int soulCount = soulCounts.get(player);
 
 		ItemMeta meta = soulVial.getItemMeta();
-		meta.setDisplayName(ChatColor.BLUE + SOUL_VIAL_NAME);
+		meta.displayName(Component.text(SOUL_VIAL_NAME).color(TextColor.color(0xFFAAAA)));
 
 		if (soulCount > 0) {
 			int red = (int) ((double) soulCount / MAX_SOULS * 255);
@@ -55,7 +58,10 @@ public class SoulVial implements Listener {
 			((LeatherArmorMeta) meta).setColor(Color.fromRGB(red, green, blue));
 		}
 
-		meta.setLore(java.util.Collections.singletonList("Souls: " + ChatColor.DARK_RED + soulCount));
+		meta.lore(java.util.Collections.singletonList(
+			Component.text("Souls:").appendSpace()
+				.append(Component.text(soulCount).color(TextColor.color(0xAA0000)))
+		));
 
 		soulVial.setItemMeta(meta);
 
@@ -102,7 +108,7 @@ public class SoulVial implements Listener {
 	 */
 
 	private void openEffectSelectionMenu(Player player) {
-		Inventory menu = Bukkit.createInventory(player, 9, "Soul Vial Effects");
+		Inventory menu = Bukkit.createInventory(player, 9, Component.text("Soul Vial Effects"));
 
 		addPotionItem(menu, Material.POTION, "Speed", PotionEffectType.SPEED);
 		addPotionItem(menu, Material.POTION, "Strength", PotionEffectType.INCREASE_DAMAGE);
@@ -122,7 +128,7 @@ public class SoulVial implements Listener {
 	private void addPotionItem(Inventory inventory, Material potionType, String displayName, PotionEffectType effectType) {
 		ItemStack potionItem = new ItemStack(potionType);
 		ItemMeta meta = potionItem.getItemMeta();
-		meta.setDisplayName(ChatColor.RESET + displayName);
+		meta.displayName(Component.text(displayName));
 		potionItem.setItemMeta(meta);
 
 		inventory.addItem(potionItem);

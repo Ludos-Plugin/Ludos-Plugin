@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.ArrayList;
 import javax.annotation.Nullable;
 
+import net.kyori.adventure.text.Component;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -59,13 +61,15 @@ public class ManhuntCompass extends SpecialItem {
 	}
 
 	@Override
-	public List<String> getLore() {
-		return new ArrayList<String>(){{ add("Every three minutes, the position of prey is revealed through the compass."); }};
+	public List<Component> getLore() {
+		return new ArrayList<Component>(){{
+			add(Component.text("Every three minutes, the position of prey is revealed through the compass."));
+		}};
 	}
 
 	@Override
-	public String getName() {
-		return "Hunter's Compass";
+	public Component getName() {
+		return Component.text("Hunter's Compass");
 	}
 
 	@Nullable

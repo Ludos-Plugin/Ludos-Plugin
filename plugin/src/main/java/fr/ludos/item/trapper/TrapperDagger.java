@@ -2,6 +2,8 @@ package fr.ludos.item.trapper;
 
 import javax.annotation.Nullable;
 
+import net.kyori.adventure.text.Component;
+
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -29,9 +31,8 @@ public class TrapperDagger extends SpecialItem {
 		return "trapperDagger";
 	}
 	@Override
-	protected String getName() {
-		return "Trapper Dagger";
-
+	protected Component getName() {
+		return Component.text("Trapper Dagger");
 	}
 
 

@@ -5,6 +5,8 @@ import java.util.Random;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 
+import net.kyori.adventure.text.Component;
+
 import org.bukkit.Material;
 import org.bukkit.ChatColor;
 import org.bukkit.event.entity.EntityShootBowEvent;
@@ -119,8 +121,8 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 	public final static HuntsmanCrossbowBranches[] values = HuntsmanCrossbowBranches.values();
 
 	private String name;
-	public String getName() {
-		return name;
+	public Component getName() {
+		return Component.text(name);
 	}
 
 	private double xpThreshold;
@@ -134,8 +136,8 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 	}
 
 	private String description;
-	public String getDescription() {
-		return description;
+	public Component getDescription() {
+		return Component.text(description);
 	}
 
 

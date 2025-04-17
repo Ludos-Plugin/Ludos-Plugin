@@ -2,6 +2,8 @@ package fr.ludos;
 
 import java.util.Random;
 
+import net.kyori.adventure.text.Component;
+
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
@@ -34,7 +36,7 @@ public class Utility {
 		while (location.getBlock().isLiquid() && retries >= 0);
 
 		if (retries == 0) {
-			Bukkit.broadcastMessage("Could not find valid play area");
+			Bukkit.getServer().broadcast(Component.text("Could not find valid play area"));
 			return fallback.clone();
 		}
 

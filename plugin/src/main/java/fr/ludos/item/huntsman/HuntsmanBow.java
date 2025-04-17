@@ -3,6 +3,8 @@ package fr.ludos.item.huntsman;
 import java.util.List;
 import javax.annotation.Nullable;
 
+import net.kyori.adventure.text.Component;
+
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityShootBowEvent;
@@ -32,12 +34,12 @@ public class HuntsmanBow extends SpecialItem {
 	}
 
 	@Override
-	protected String getName(){
-		return "Stolen Bow";
+	protected Component getName(){
+		return Component.text("Stolen Bow");
 	}
 
 	@Override
-	public List<String> getLore(){
+	public List<Component> getLore(){
 		return null;
 	}
 
