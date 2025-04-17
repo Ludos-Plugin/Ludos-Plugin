@@ -9,8 +9,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 
-
 import fr.ludos.game.Game;
+
 
 public class GameCommand implements TabExecutor {
 

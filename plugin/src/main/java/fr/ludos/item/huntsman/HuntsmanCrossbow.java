@@ -1,36 +1,34 @@
 package fr.ludos.item.huntsman;
 
-import fr.ludos.Ludos;
-import fr.ludos.game.Game;
-import fr.ludos.item.BranchLevelItem;
-import fr.ludos.role.HuntsmanRole;
-import fr.ludos.role.Role;
+import java.util.List;
+import java.util.ArrayList;
+import javax.annotation.Nullable;
 
 import org.bukkit.Material;
+import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
-import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
-import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.entity.Arrow;
 
-import java.util.ArrayList;
-import java.util.List;
+import fr.ludos.item.BranchLevelItem;
+import fr.ludos.game.Game;
+import fr.ludos.role.Role;
+import fr.ludos.role.HuntsmanRole;
 
-import javax.annotation.Nullable;
 
 public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> {
 

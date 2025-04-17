@@ -12,11 +12,11 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
 import fr.ludos.Ludos;
-import fr.ludos.game.Game;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.item.huntsman.HuntsmanBow;
 import fr.ludos.item.huntsman.HuntsmanCrossbow;
 import fr.ludos.item.huntsman.HuntsmanArrow;
+import fr.ludos.game.Game;
 
 
 public class HuntsmanRole extends Role {
@@ -58,6 +58,7 @@ public class HuntsmanRole extends Role {
 
 
 	public static class Builder extends Role.Builder {
+
 		@Override
 		public String getId() {
 			return id;

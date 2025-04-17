@@ -1,10 +1,10 @@
 package fr.ludos.listener;
 
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 
 /**
  * MonsterTargetListener is a Bukkit event listener that cancels targeting events for specific entities.
@@ -19,7 +19,6 @@ import org.bukkit.event.entity.EntityTargetEvent;
  */
 
 public class MonsterListener implements Listener {
-
 	private Player playerToIgnore;
 
 	/**

@@ -1,27 +1,25 @@
 package fr.ludos.item.trapper;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Set;
-
+import java.util.HashSet;
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.block.Block;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 
-import fr.ludos.Ludos;
-import fr.ludos.game.Game;
-import fr.ludos.item.BranchItem;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.item.BranchItem;
+import fr.ludos.game.Game;
 import fr.ludos.role.Role;
 import fr.ludos.role.TrapperRole;
 

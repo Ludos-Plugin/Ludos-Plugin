@@ -7,12 +7,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.command.GameCommand;
 import fr.ludos.command.RoleCommand;
+import fr.ludos.game.Game;
+import fr.ludos.game.manhunt.ManhuntGame;
 import fr.ludos.role.Role;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.TrapperRole;
-import fr.ludos.game.Game;
-import fr.ludos.game.manhunt.ManhuntGame;
+
 
 public class Ludos extends JavaPlugin implements Listener {
 

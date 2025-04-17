@@ -2,16 +2,17 @@ package fr.ludos;
 
 import java.util.Random;
 
-import org.bukkit.*;
-
-
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
+
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.Location;
+import org.bukkit.GameMode;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.entity.Player;
+
 
 public class Utility {
 

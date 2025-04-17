@@ -1,25 +1,23 @@
 package fr.ludos.role;
 
-import java.util.HashMap;
-import java.util.Map;
-import javax.annotation.Nullable;
-
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
-
-import java.util.List;
 import java.util.Objects;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
-
-import fr.ludos.Ludos;
-import fr.ludos.game.Game;
-import fr.ludos.item.SpecialItem;
+import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+
+import fr.ludos.Ludos;
+import fr.ludos.item.SpecialItem;
+import fr.ludos.game.Game;
 
 
 /**
@@ -28,6 +26,7 @@ import org.bukkit.entity.Player;
  */
 public abstract class Role implements Listener {
 	private static final String rolesKey = "playerRoles";
+
 	private boolean started = false;
 
 	public static Map<String, Builder> getRegistered() {
@@ -69,7 +68,6 @@ public abstract class Role implements Listener {
 
 	public final void start() {
 		if (started) return;
-
 		started = true;
 
 		onInit();
@@ -87,9 +85,7 @@ public abstract class Role implements Listener {
 
 
 	public final void stop() {
-		if (!started) {
-			return;
-		}
+		if (!started) return;
 		started = false;
 
 		HandlerList.unregisterAll(this);

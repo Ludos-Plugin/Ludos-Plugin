@@ -1,22 +1,21 @@
 package fr.ludos.item;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+
 import org.bukkit.persistence.*;
-
-import fr.ludos.Ludos;
-import fr.ludos.game.Game;
-
-import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import fr.ludos.game.Game;
+
 
 public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extends SpecialItem {
 

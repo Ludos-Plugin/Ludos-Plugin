@@ -1,25 +1,25 @@
 package fr.ludos.game;
 
-import fr.ludos.Ludos;
-import fr.ludos.command.GameCommandOptions;
-import fr.ludos.role.Role;
-
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
-import org.bukkit.command.TabExecutor;
-import org.bukkit.entity.Player;
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-
-import org.apache.commons.lang3.EnumUtils;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.EnumUtils;
+
+import org.bukkit.Bukkit;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.command.TabExecutor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import fr.ludos.Ludos;
+import fr.ludos.role.Role;
+import fr.ludos.command.GameCommandOptions;
+
 
 public abstract class Game implements Listener {
 

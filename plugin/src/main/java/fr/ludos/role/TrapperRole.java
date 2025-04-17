@@ -3,13 +3,12 @@ package fr.ludos.role;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.EventHandler;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;

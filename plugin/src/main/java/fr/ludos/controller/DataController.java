@@ -1,16 +1,13 @@
 package fr.ludos.controller;
 
-
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.File;
-
 import java.util.Properties;
 
 
 public class DataController {
-
 	private static final File propsFile = new File("manhunt.dat");
 	private static final String propertiesPath = "prop.propeties";
 

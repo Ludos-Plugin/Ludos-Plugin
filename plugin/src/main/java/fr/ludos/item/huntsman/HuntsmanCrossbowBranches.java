@@ -1,24 +1,25 @@
 package fr.ludos.item.huntsman;
 
+import java.util.List;
+import java.util.Random;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
+
 import org.bukkit.Material;
+import org.bukkit.ChatColor;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.block.Block;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.item.BranchItem;
 import fr.ludos.item.SpecialItemLevelBranches;
-import net.md_5.bungee.api.ChatColor;
 
-import java.util.List;
-import java.util.Random;
 
 public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<HuntsmanCrossbowBranches> {
 	FLAME (ChatColor.RED.toString() + ChatColor.ITALIC + "Igniting", 200, "Igniting Description") {

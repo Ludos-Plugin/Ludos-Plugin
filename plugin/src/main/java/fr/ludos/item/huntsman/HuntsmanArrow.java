@@ -1,20 +1,21 @@
 package fr.ludos.item.huntsman;
 
-import fr.ludos.role.HuntsmanRole;
-import fr.ludos.role.Role;
-import fr.ludos.game.Game;
-import fr.ludos.item.SpecialItem;
-
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.EntityShootBowEvent;
-
 import java.util.List;
 import javax.annotation.Nullable;
+
+import org.bukkit.Material;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
+
+import fr.ludos.item.SpecialItem;
+import fr.ludos.role.Role;
+import fr.ludos.role.HuntsmanRole;
+import fr.ludos.game.Game;
+
 
 public class HuntsmanArrow extends SpecialItem {
 	public HuntsmanArrow(ItemStack stack, Game game) {

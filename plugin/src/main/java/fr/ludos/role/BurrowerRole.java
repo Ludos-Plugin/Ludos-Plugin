@@ -1,18 +1,18 @@
 package fr.ludos.role;
 
-import fr.ludos.Ludos;
-import fr.ludos.game.Game;
-import fr.ludos.item.SpecialItem;
-import fr.ludos.item.burrower.BurrowerPick;
-import fr.ludos.item.burrower.BurrowerShovel;
+import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StructureSearchResult;
 import org.bukkit.generator.structure.StructureType;
 
-import org.bukkit.util.StructureSearchResult;
+import fr.ludos.Ludos;
+import fr.ludos.item.SpecialItem;
+import fr.ludos.item.burrower.BurrowerPick;
+import fr.ludos.item.burrower.BurrowerShovel;
+import fr.ludos.game.Game;
 
-import java.util.Map;
 
 public class BurrowerRole extends Role {
 	public static final String id = "burrower";
@@ -126,6 +126,7 @@ public class BurrowerRole extends Role {
 
 
 	public static class Builder extends Role.Builder {
+
 		@Override
 		public String getId() {
 			return id;

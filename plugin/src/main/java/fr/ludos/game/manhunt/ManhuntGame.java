@@ -1,50 +1,47 @@
 package fr.ludos.game.manhunt;
+
+import java.util.Optional;
+import java.util.Iterator;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.UUID;
 import java.util.Random;
-import org.bukkit.Bukkit;
-// import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.GameMode;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.EnumUtils;
 
-import java.util.stream.Collectors;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.UUID;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.List;
-import javax.annotation.Nullable;
-
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.GameMode;
+import org.bukkit.World;
+import org.bukkit.WorldBorder;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.Ludos;
 import fr.ludos.Utility;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.GameCommandOptions;
 import fr.ludos.game.Game;
-import net.md_5.bungee.api.ChatColor;
-
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.WorldBorder;
-import org.bukkit.advancement.Advancement;
-import org.bukkit.advancement.AdvancementProgress;
-import org.bukkit.attribute.Attribute;
-
 
 
 public class ManhuntGame extends Game {

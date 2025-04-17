@@ -1,34 +1,24 @@
 package fr.ludos.item;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+
 import org.bukkit.persistence.*;
-
-import fr.ludos.Ludos;
-import fr.ludos.game.Game;
-
-import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.entity.Player;
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import fr.ludos.game.Game;
 
 
 public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches<TBranches>> extends BranchItem<TBranches> {
-	public BranchLevelItem(ItemStack stack, Player owner, TBranches branch, Game game) {
-		super(stack, owner, branch, game);
-
-		//TODO Auto-generated constructor stub
-	}
-
-
 	public static final String LEVELS = "levels";
 	private NamespacedKey levelsKey = new NamespacedKey(getGame().getPlugin(), LEVELS);
 
@@ -38,9 +28,7 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 	private static final String MAX_LVL_LABEL = "MAX";
 
 
-
 	private int[] branchLevels;
-	private double[] branchXps;
 
 	public int[] getBranchLevels() {
 		return branchLevels;
@@ -48,13 +36,15 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 	public int getCurrentBranchLevel() {
 		return branchLevels[getBranch().index()];
 	}
+
+	private double[] branchXps;
+
 	public double[] getXps() {
 		return branchXps;
 	}
 	public double getCurrentBranchXp() {
 		return branchXps[getBranch().index()];
 	}
-
 
 	public BranchLevelItem(ItemStack stack, Game game) throws IllegalArgumentException {
 		super(stack, game);

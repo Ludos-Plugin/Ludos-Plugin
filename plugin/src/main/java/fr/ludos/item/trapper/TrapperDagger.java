@@ -1,21 +1,19 @@
 package fr.ludos.item.trapper;
-import fr.ludos.game.Game;
-import fr.ludos.item.SpecialItem;
-import fr.ludos.role.Role;
-import fr.ludos.role.TrapperRole;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.EventHandler;
-
 import org.bukkit.potion.PotionEffectType;
 
+import fr.ludos.item.SpecialItem;
+import fr.ludos.game.Game;
+import fr.ludos.role.Role;
+import fr.ludos.role.TrapperRole;
 
 public class TrapperDagger extends SpecialItem {
 
@@ -46,6 +44,7 @@ public class TrapperDagger extends SpecialItem {
 			return null;
 		}
 	}
+
 	public static TrapperDagger createItem(Player owner, Game game) {
 		return new TrapperDagger(owner, game);
 	}
@@ -89,5 +88,3 @@ public class TrapperDagger extends SpecialItem {
 		}
 	}
 }
-
-

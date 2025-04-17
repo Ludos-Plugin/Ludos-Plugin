@@ -1,9 +1,5 @@
 package fr.ludos.command;
 
-
-import fr.ludos.Ludos;
-import fr.ludos.role.Role;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,11 +9,14 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
+
+import fr.ludos.Ludos;
+import fr.ludos.role.Role;
+
 
 public class RoleCommand implements TabExecutor {
-
 	private static final String randomRole = "random";
+
 	private final Ludos plugin;
 
 

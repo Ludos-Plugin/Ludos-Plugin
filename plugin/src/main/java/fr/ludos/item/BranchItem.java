@@ -1,20 +1,17 @@
 package fr.ludos.item;
 
-import org.bukkit.persistence.*;
-
-import fr.ludos.Ludos;
-import fr.ludos.game.Game;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.persistence.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-
-import java.util.ArrayList;
-import java.util.List;
+import fr.ludos.game.Game;
 
 
 public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches>> extends SpecialItem {

@@ -1,41 +1,38 @@
 package fr.ludos.item;
 
-import fr.ludos.Ludos;
-import fr.ludos.game.Game;
+import java.util.function.Function;
+import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.UUID;
+import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.event.Event.Result;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
-import org.bukkit.event.Event.Result;
-import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import fr.ludos.game.Game;
 
-
-
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-import javax.annotation.Nullable;
-import java.util.UUID;
 
 public abstract class SpecialItem {
 
@@ -162,8 +159,7 @@ public abstract class SpecialItem {
 	 */
 	public static <T extends SpecialItem> Boolean containedIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		ItemStack[] items = inventory.getContents();
-		for (int i = 0; i < items.length; i++) {
-			ItemStack item = items[i];
+		for (ItemStack item : items) {
 			if (item == null) {
 				continue;
 			}
@@ -183,8 +179,7 @@ public abstract class SpecialItem {
 	 */
 	public static <T extends SpecialItem>T findIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		ItemStack[] items = inventory.getContents();
-		for (int i = 0; i < items.length; i++) {
-			ItemStack item = items[i];
+		for (ItemStack item : items) {
 			if (item == null) {
 				continue;
 			}
@@ -205,8 +200,7 @@ public abstract class SpecialItem {
 	public static <T extends SpecialItem> List<T> findAllIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		ItemStack[] items = inventory.getContents();
 		ArrayList<T> results = new ArrayList<>();
-		for (int i = 0; i < items.length; i++) {
-			ItemStack item = items[i];
+		for (ItemStack item : items) {
 			if (item == null) {
 				continue;
 			}

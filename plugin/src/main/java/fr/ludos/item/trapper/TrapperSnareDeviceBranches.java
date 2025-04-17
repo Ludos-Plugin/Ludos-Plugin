@@ -2,7 +2,9 @@ package fr.ludos.item.trapper;
 
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
+
 import org.bukkit.Material;
+import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -10,7 +12,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.item.BranchItem;
 import fr.ludos.item.SpecialItemBranches;
-import net.md_5.bungee.api.ChatColor;
+
 
 public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSnareDeviceBranches> {
 	REVEALING (ChatColor.GOLD.toString() + ChatColor.ITALIC + "REVEALING", "REVEALING Description") {
