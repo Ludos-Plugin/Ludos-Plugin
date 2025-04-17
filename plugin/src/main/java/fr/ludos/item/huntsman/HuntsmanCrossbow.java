@@ -111,8 +111,6 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 
 
 	public static class Events extends BranchLevelItem.Events<HuntsmanCrossbow, HuntsmanCrossbowBranches> {
-
-
 		public static final String ARROW_TYPE = "arrow_type";
 		public final NamespacedKey arrowTypeKey = new NamespacedKey(game.getPlugin(), ARROW_TYPE);
 
@@ -129,29 +127,26 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 
 		@EventHandler
 		public void onShootArrow(EntityShootBowEvent event) {
-			LivingEntity entity = event.getEntity();
-			if (! (entity instanceof HumanEntity player)) return;
+			if (! (event.getEntity() instanceof HumanEntity player)) return;
+
+			if (player.hasCooldown(Material.CROSSBOW)) return;
 
 			HuntsmanCrossbow crossbow = getItem(event.getBow(), game);
 			if (crossbow == null) return;
 
 			Arrow arrowProjectile = (Arrow) event.getProjectile();
-			arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
-
-			PersistentDataContainer container = arrowProjectile.getPersistentDataContainer();
 			HuntsmanCrossbowBranches branch = crossbow.getBranch();
-
+			PersistentDataContainer container = arrowProjectile.getPersistentDataContainer();
 			int level = crossbow.getCurrentBranchLevel();
 
-			if (! player.hasCooldown(Material.CROSSBOW))  {
-				container.set(arrowTypeKey, PersistentDataType.INTEGER, branch.index());
-				container.set(arrowLevelKey, PersistentDataType.INTEGER, level);
-				arrowProjectile.setGravity(false);
-				arrowProjectile.setDamage(4);
-				branch.processShotArrow(arrowProjectile, player, level, event);
+			arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
+			arrowProjectile.setGravity(false);
+			arrowProjectile.setDamage(4);
+			container.set(arrowTypeKey, PersistentDataType.INTEGER, branch.index());
+			container.set(arrowLevelKey, PersistentDataType.INTEGER, level);
 
-				player.setCooldown(Material.CROSSBOW, 200);
-			}
+			branch.processShotArrow(arrowProjectile, player, level, event);
+			player.setCooldown(Material.CROSSBOW, 200);
 		}
 
 		@EventHandler
@@ -200,15 +195,6 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 			event.setCancelled(true);
 
 			crossbow.cycleBranch();
-		}
-
-		@EventHandler
-		public void onItemDrop(PlayerDropItemEvent event) {
-			if (! canPlayerHaveItem(event.getPlayer())) return;
-
-			if (event.getItemDrop().getItemStack().getType() == Material.ARROW) {
-				event.setCancelled(true);
-			}
 		}
 
 
