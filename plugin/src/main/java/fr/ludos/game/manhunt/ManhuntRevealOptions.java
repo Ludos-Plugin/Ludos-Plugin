@@ -1,7 +1,7 @@
 package fr.ludos.game.manhunt;
 
 public enum ManhuntRevealOptions {
-	often (40),
+	often (100),
 	occasional (180),
 	rare (360);
 

@@ -1,9 +1,9 @@
 package fr.ludos.game.manhunt;
 
 public enum ManhuntAreaOptions {
-	large (500),
-	medium (200),
-	small (100);
+	large (350),
+	medium (250),
+	small (150);
 
 	private int size;
 	public int getSize() {
