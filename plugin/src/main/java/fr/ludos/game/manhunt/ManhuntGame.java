@@ -332,9 +332,9 @@ public class ManhuntGame extends Game {
 		Bukkit.getServer().broadcast(
 			Component.text("The Prey was revealed!\n")
 			.append(Component.text("They are located at"))
-			.append(Component.text(" X:" + preyLocation.getBlockX()).color(TextColor.color(0xFFAAAA)))
-			.append(Component.text(" Y:" + preyLocation.getBlockY()).color(TextColor.color(0xAAFFAA)))
-			.append(Component.text(" Z:" + preyLocation.getBlockZ()).color(TextColor.color(0xAAAAFF)))
+			.append(Component.text(" X:" + preyLocation.getBlockX()).color(TextColor.color(0xFF0000)))
+			.append(Component.text(" Y:" + preyLocation.getBlockY()).color(TextColor.color(0x00FF00)))
+			.append(Component.text(" Z:" + preyLocation.getBlockZ()).color(TextColor.color(0x0000FF)))
 		);
 
 		for (Player hunter : teamController.getHunters()) {
