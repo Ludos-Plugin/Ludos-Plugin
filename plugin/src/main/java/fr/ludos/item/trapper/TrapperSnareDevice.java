@@ -48,7 +48,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 	@Override
 	protected Component getName() {
-		return Component.text("Snare Grimoire").appendSpace()
+		return Component.text("Snare Grimoire ")
 			.append(getBranchAnnotation());
 	}
 

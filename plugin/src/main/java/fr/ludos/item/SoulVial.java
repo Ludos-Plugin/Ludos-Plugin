@@ -59,7 +59,7 @@ public class SoulVial implements Listener {
 		}
 
 		meta.lore(java.util.Collections.singletonList(
-			Component.text("Souls:").appendSpace()
+			Component.text("Souls: ")
 				.append(Component.text(soulCount).color(TextColor.color(0xAA0000)))
 		));
 

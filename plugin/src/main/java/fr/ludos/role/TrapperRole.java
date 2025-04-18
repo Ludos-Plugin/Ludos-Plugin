@@ -45,7 +45,9 @@ public class TrapperRole extends Role {
 	protected void onStop() {
 		sneakingPlayers.clear();
 
-		invisibilityTask.cancel();
+		if (invisibilityTask != null) {
+			invisibilityTask.cancel();
+		}
 		invisibilityTask = null;
 	}
 

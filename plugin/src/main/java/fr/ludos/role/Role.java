@@ -78,7 +78,13 @@ public abstract class Role implements Listener {
 			events.start();
 		}
 
-		onStart();
+		try {
+			onStart();
+		} catch (Exception e) {
+			getPlugin().getLogger().severe("Error while initializing role " + builder.getId() + ": " + e.getMessage());
+			e.printStackTrace();
+			stop();
+		}
 	}
 	protected void onInit() { }
 	protected void onStart() { }

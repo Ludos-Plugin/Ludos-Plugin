@@ -132,9 +132,6 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 	@Override
 	protected List<Component> getLore() {
 		List<Component> lore = super.getLore();
-		if (lore == null) {
-			lore = new ArrayList<Component>();
-		}
 
 		int branchCount = getBranches().length;
 		if (branchLevels == null || branchXps == null || branchLevels.length < branchCount || branchXps.length < branchCount) {
@@ -150,11 +147,11 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 			xpLabel = xpRounded + '/' + getBranch().getXpThreshold();
 		}
 
-		lore.add(Component.text("XP:").color(TextColor.color(0xAAAAAA)).appendSpace()
+		lore.add(Component.text("XP: ").color(TextColor.color(0xAAAAAA))
 			.append(Component.text(xpLabel).color(TextColor.color(0xFFFF55)))
 		);
 
-		lore.add(Component.text("Level:").color(TextColor.color(0xAAAAAA)).appendSpace()
+		lore.add(Component.text("Level: ").color(TextColor.color(0xAAAAAA))
 			.append(Component.text(Integer.toString(currentLevel + 1)).color(TextColor.color(0xFFFF55)))
 		);
 

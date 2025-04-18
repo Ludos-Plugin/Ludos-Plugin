@@ -73,7 +73,13 @@ public abstract class Game implements Listener {
 			role.start();
 		}
 
-		onStart();
+		try {
+			onStart();
+		} catch (Exception e) {
+			getPlugin().getLogger().severe("Error while starting game " + builder.getId() + ": " + e.getMessage());
+			e.printStackTrace();
+			stop();
+		}
 	}
 	protected void onInit() { }
 	protected void onStart() { }

@@ -129,9 +129,6 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 	@Override
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
-		if (lore == null) {
-			lore = new ArrayList<Component>();
-		}
 
 		String xpLabel;
 		if ( level.isMax() ) {
@@ -142,7 +139,7 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 		}
 
 		lore.add(
-			Component.text("XP:").color(TextColor.color(0xAAAAAA)).appendSpace()
+			Component.text("XP: ").color(TextColor.color(0xAAAAAA))
 				.append(Component.text(xpLabel).color(TextColor.color(0xFFFF55)))
 		);
 

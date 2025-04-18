@@ -216,25 +216,22 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	@Override
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
-		if (lore == null) {
-			lore = new ArrayList<Component>();
-		}
 
 		int size = 1 + getLevel().getRadius() * 2;
 		int depth = getLevel().getDepth() + 1;
 
 
-		lore.add(Component.text("Mode:").color(TextColor.color(0xAAAAAA)).appendSpace()
+		lore.add(Component.text("Mode: ").color(TextColor.color(0xAAAAAA))
 			.append(Component.text(hammerMode ? "Hammer Mode" : "Pickaxe Mode").color(TextColor.color(0xFFFF55))));
 
-		lore.add(Component.text("Press").color(TextColor.color(0xAAAAAA)).appendSpace()
-			.append(Component.text("Right Click (MB2)").color(TextColor.color(0xFFFF55))).appendSpace()
+		lore.add(Component.text("Press ").color(TextColor.color(0xAAAAAA))
+			.append(Component.text("Right Click (MB2) ").color(TextColor.color(0xFFFF55)))
 			.append(Component.text("to Switch Mode").color(TextColor.color(0xAAAAAA))));
 
-		lore.add(Component.text("Size:").color(TextColor.color(0xAAAAAA)).appendSpace()
+		lore.add(Component.text("Size: ").color(TextColor.color(0xAAAAAA))
 			.append(Component.text(size + "x" + size).color(TextColor.color(0xFFFF55))));
 
-		lore.add(Component.text("Depth:").color(TextColor.color(0xAAAAAA)).appendSpace()
+		lore.add(Component.text("Depth: ").color(TextColor.color(0xAAAAAA))
 			.append(Component.text(depth).color(TextColor.color(0xFFFF55))));
 
 		return lore;

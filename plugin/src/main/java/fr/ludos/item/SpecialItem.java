@@ -119,7 +119,7 @@ public abstract class SpecialItem {
 
 
 	protected List<Component> getLore() {
-		return null;
+		return new ArrayList<>();
 	}
 
 	protected abstract String getId();

@@ -77,7 +77,7 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 
 	protected Component getBranchAnnotation() {
 		TBranches branch = getBranch();
-		if (branch == null) return null;
+		if (branch == null) return Component.empty();
 
 		return Component.text("(")
 			.append(branch.getName())
@@ -87,12 +87,9 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 	@Override
 	protected List<Component> getLore() {
 		List<Component> lore = super.getLore();
-		if (lore == null) {
-			lore = new ArrayList<Component>();
-		}
 
 		lore.add(
-			Component.text("Type:").color(TextColor.color(0xAAAAAA)).appendSpace()
+			Component.text("Type: ").color(TextColor.color(0xAAAAAA))
 			.append(branch.getName().color(TextColor.color(0xFFFF55)))
 		);
 		return lore;

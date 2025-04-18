@@ -76,19 +76,16 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 
 	@Override
 	protected Component getName() {
-		return Component.text("Cursed Crossbow").appendSpace()
+		return Component.text("Cursed Crossbow ")
 			.append(getBranchAnnotation()); // TODO: Translate
 	}
 
 	@Override
 	protected List<Component> getLore() {
 		List<Component> lore = super.getLore();
-		if (lore == null) {
-			lore = new ArrayList<Component>();
-		}
 
-		lore.add(Component.text("Press").color(TextColor.color(0xAAAAAA)).appendSpace()
-			.append(Component.text("Left Click (MB1)").color(TextColor.color(0xFFFF55))).appendSpace()
+		lore.add(Component.text("Press ").color(TextColor.color(0xAAAAAA))
+			.append(Component.text("Left Click (MB1) ").color(TextColor.color(0xFFFF55)))
 			.append(Component.text("to Switch Mode").color(TextColor.color(0xAAAAAA)))
 		);
 		return lore;

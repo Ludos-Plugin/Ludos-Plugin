@@ -87,12 +87,15 @@ public class ManhuntGame extends Game {
 	private final ManhuntTimer timer;
 
 	private final Builder builder;
-	private final Player prey;
-	private final Set<Player> hunters;
+
+
+	private Player prey;
+	private Set<Player> hunters;
 
 	private WorldBorder border;
 
 	private BukkitTask saturationTask;
+
 
 	@Nullable
 	public static UUID getBorderWorldUID(Ludos plugin) {
@@ -147,15 +150,6 @@ public class ManhuntGame extends Game {
 		this.scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
 		this.teamController = new ManhuntTeamController(this, builder.getChosenPlayers(), builder.getChosenPrey());
 
-
-		Optional<Player> nullablePrey = teamController.getPrey();
-		if (nullablePrey.isEmpty()) {
-			throw new IllegalArgumentException("No players were found");
-		}
-		prey = nullablePrey.get();
-		hunters = teamController.getHunters();
-
-
 		timer = new ManhuntTimer(this, builder.getReveal().getDuration());
 		compassEvents = new ManhuntCompass.Events(this);
 	}
@@ -168,7 +162,7 @@ public class ManhuntGame extends Game {
 		int areaRadius = areaDiameter / 2;
 
 		prey.showTitle(Title.title(
-			Component.text("You are the").appendSpace()
+			Component.text("You are the ")
 				.append(Component.text("Prey").color(TextColor.color(0x0000FF))),
 			Component.text("Run for your life"),
 			Title.Times.times(
@@ -177,6 +171,9 @@ public class ManhuntGame extends Game {
 				Duration.ofMillis(1000)
 			)
 		));
+
+		double highestY = world.getHighestBlockYAt(location) + 2;
+		location.setY(highestY);
 
 		prey.teleport(location);
 		prey.setBedSpawnLocation(location, true);
@@ -197,9 +194,9 @@ public class ManhuntGame extends Game {
 
 		for (Player hunter : hunters) {
 			hunter.showTitle(Title.title(
-				Component.text("You are a").appendSpace()
+				Component.text("You are a ")
 					.append(Component.text("Hunter").color(TextColor.color(0xFF5555))),
-				Component.text("Go and seek").appendSpace()
+				Component.text("Go and seek ")
 					.append(Component.text(prey.getName()).color(TextColor.color(0x5555FF))),
 				Title.Times.times(
 					Duration.ofMillis(500),
@@ -258,6 +255,17 @@ public class ManhuntGame extends Game {
 
 	@Override
 	protected void onInit() {
+		teamController.start();
+
+
+		Optional<Player> nullablePrey = teamController.getPrey();
+		if (nullablePrey.isEmpty()) {
+			throw new IllegalArgumentException("No players were found");
+		}
+		prey = nullablePrey.get();
+		hunters = teamController.getHunters();
+
+
 		prey.getInventory().clear();
 		for (Player hunter : hunters) {
 			hunter.getInventory().clear();
@@ -266,6 +274,9 @@ public class ManhuntGame extends Game {
 
 	@Override
 	protected void onStart() {
+		compassEvents.start();
+		timer.start();
+
 		int areaDiameter = builder.getArea().getSize();
 
 		ManhuntLocationOptions locationOption = builder.getLocation();
@@ -276,10 +287,6 @@ public class ManhuntGame extends Game {
 
 		setGameArea(prey, hunters, areaDiameter, gameLocation);
 		prey.getWorld().setTime(1000);
-
-
-		compassEvents.start();
-		timer.start();
 
 		saturationTask = new BukkitRunnable() {
 			@Override
@@ -297,14 +304,18 @@ public class ManhuntGame extends Game {
 
 	@Override
 	protected void onStop() {
-		resetBorder(getPlugin());
-
 		teamController.stop();
 
 		compassEvents.stop();
 		timer.stop();
 
-		saturationTask.cancel();
+
+		resetBorder(getPlugin());
+
+		if (saturationTask != null) {
+			saturationTask.cancel();
+			saturationTask = null;
+		}
 
 		Bukkit.getServer().broadcast(Component.text("The Game of Manhunt ended"));
 	}
@@ -319,12 +330,11 @@ public class ManhuntGame extends Game {
 		Location preyLocation = prey.get().getLocation();
 
 		Bukkit.getServer().broadcast(
-			Component.text("The Prey was revealed!")
-				.appendNewline()
-			.append(Component.text("They are located at")).appendSpace()
-			.append(Component.text("X:" + preyLocation.getBlockX()).color(TextColor.color(0xFFAAAA))).appendSpace()
-			.append(Component.text("Y:" + preyLocation.getBlockY()).color(TextColor.color(0xAAFFAA))).appendSpace()
-			.append(Component.text("Z:" + preyLocation.getBlockZ()).color(TextColor.color(0xAAAAFF)))
+			Component.text("The Prey was revealed!\n")
+			.append(Component.text("They are located at"))
+			.append(Component.text(" X:" + preyLocation.getBlockX()).color(TextColor.color(0xFFAAAA)))
+			.append(Component.text(" Y:" + preyLocation.getBlockY()).color(TextColor.color(0xAAFFAA)))
+			.append(Component.text(" Z:" + preyLocation.getBlockZ()).color(TextColor.color(0xAAAAFF)))
 		);
 
 		for (Player hunter : teamController.getHunters()) {

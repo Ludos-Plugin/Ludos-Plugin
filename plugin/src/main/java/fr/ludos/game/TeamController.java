@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 
 
 public abstract class TeamController implements Listener {
-
+	private boolean started = false;
 	protected final Game game;
 	protected final Scoreboard scoreboard;
 
@@ -22,12 +22,27 @@ public abstract class TeamController implements Listener {
 	public TeamController(Game game, Scoreboard scoreboard) {
 		this.game = game;
 		this.scoreboard = scoreboard;
-		Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
 	}
 
-	public void stop() {
-		HandlerList.unregisterAll(this);
+	public final void start() {
+		if (started) return;
+		started = true;
+
+		Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
+
+		onStart();
 	}
+	protected void onStart() { }
+
+	public final void stop() {
+		if (! started) return;
+		started = false;
+
+		HandlerList.unregisterAll(this);
+
+		onStop();
+	}
+	protected void onStop() { }
 
 
 	public abstract Collection<Player> getPlayers();

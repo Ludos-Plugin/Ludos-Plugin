@@ -1,5 +1,7 @@
 package fr.ludos.item.huntsman;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -40,7 +42,7 @@ public class HuntsmanBow extends SpecialItem {
 
 	@Override
 	public List<Component> getLore(){
-		return null;
+		return new ArrayList<>();
 	}
 
 

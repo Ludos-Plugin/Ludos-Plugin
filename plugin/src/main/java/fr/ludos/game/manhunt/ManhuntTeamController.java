@@ -28,24 +28,18 @@ public final class ManhuntTeamController extends TeamController {
 	public Team hunterTeam;
 	public Team preyTeam;
 
+	private final Set<Player> selectedPlayers;
+	public Set<Player> getSelectedPlayers() {
+		return selectedPlayers;
+	}
+	private final Player selectedPrey;
+	public Player getSelectedPrey() {
+		return selectedPrey;
+	}
+
 
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<Player> players, @Nullable Player prey) {
 		super(game, game.getScoreboard());
-
-		hunterTeam = scoreboard.getTeam("Hunters");
-		if (hunterTeam == null) {
-			hunterTeam = scoreboard.registerNewTeam("Hunters");
-			hunterTeam.color(NamedTextColor.RED);
-			hunterTeam.setAllowFriendlyFire(false);
-		}
-
-		preyTeam = scoreboard.getTeam("Prey");
-		if (preyTeam == null) {
-			preyTeam = scoreboard.registerNewTeam("Prey");
-			preyTeam.color(NamedTextColor.BLUE);
-			preyTeam.setAllowFriendlyFire(false);
-		}
-
 
 		if (players == null) {
 			players = new HashSet<>(Bukkit.getOnlinePlayers());
@@ -61,33 +55,55 @@ public final class ManhuntTeamController extends TeamController {
 		}
 		players.remove(prey);
 
+		this.selectedPlayers = players;
+		this.selectedPrey = prey;
+	}
 
-		for (Player hunter : players) {
+	@Override
+	protected void onStart() {
+		hunterTeam = scoreboard.getTeam("Hunters");
+		if (hunterTeam == null) {
+			hunterTeam = scoreboard.registerNewTeam("Hunters");
+			hunterTeam.color(NamedTextColor.RED);
+			hunterTeam.setAllowFriendlyFire(false);
+		}
+
+		preyTeam = scoreboard.getTeam("Prey");
+		if (preyTeam == null) {
+			preyTeam = scoreboard.registerNewTeam("Prey");
+			preyTeam.color(NamedTextColor.BLUE);
+			preyTeam.setAllowFriendlyFire(false);
+		}
+
+		preyTeam.addEntry(selectedPrey.getName());
+		selectedPrey.setScoreboard(scoreboard);
+
+		for (Player hunter : selectedPlayers) {
 			if (hunter == null) continue;
 			hunterTeam.addEntry(hunter.getName());
 			hunter.setScoreboard(scoreboard);
 		}
-
-		preyTeam.addEntry(prey.getName());
-		prey.setScoreboard(scoreboard);
 	}
 
 	@Override
-	public void stop() {
-		super.stop();
-
+	protected void onStop() {
 		preyTeam.unregister();
+		preyTeam = null;
+
 		hunterTeam.unregister();
+		hunterTeam = null;
 	}
 
 
 	public Set<Player> getHunters() {
+		if (hunterTeam == null) return Set.of();
 		return hunterTeam.getEntries().stream()
 			.map(Bukkit::getPlayerExact)
 			.filter(p -> p != null)
 			.collect(Collectors.toSet());
 	}
 	public Optional<Player> getPrey() {
+		if (preyTeam == null) return Optional.empty();
 		return preyTeam.getEntries().stream()
 			.map(Bukkit::getPlayerExact)
 			.filter(p -> p != null)
