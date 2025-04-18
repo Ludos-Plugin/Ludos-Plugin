@@ -181,13 +181,10 @@ public abstract class SpecialItem {
 	public static <T extends SpecialItem>T findIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		ItemStack[] items = inventory.getContents();
 		for (ItemStack item : items) {
-			if (item == null) {
-				continue;
-			}
+			if (item == null) continue;
+
 			T specialItem = constructor.apply(item);
-			if (specialItem != null) {
-				return specialItem;
-			}
+			if (specialItem != null) return specialItem;
 		}
 
 		return null;
@@ -202,13 +199,10 @@ public abstract class SpecialItem {
 		ItemStack[] items = inventory.getContents();
 		ArrayList<T> results = new ArrayList<>();
 		for (ItemStack item : items) {
-			if (item == null) {
-				continue;
-			}
+			if (item == null) continue;
+
 			T specialItem = constructor.apply(item);
-			if (specialItem != null) {
-				results.add(specialItem);
-			}
+			if (specialItem != null) results.add(specialItem);
 		}
 
 		return (List<T>) Collections.unmodifiableList(results);
