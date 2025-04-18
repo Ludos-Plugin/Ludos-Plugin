@@ -349,8 +349,8 @@ public class ManhuntGame extends Game {
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		var hunters = teamController.getHunters();
-		var prey = teamController.getPrey();
+		Set<Player> hunters = teamController.getHunters();
+		Optional<Player> prey = teamController.getPrey();
 
 		if (hunters.size() > 0 || ! prey.isEmpty()) {
 			timer.resume();
