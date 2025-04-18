@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -25,13 +26,13 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		private final Material type = Material.FERMENTED_SPIDER_EYE;
 
 		@Override
-		public TrapperTrap createTrap(Player owner, Block block) {
-			block.getLocation().getBlock().setType(Material.SUNFLOWER);
-			owner.sendMessage("Trap placed !");
+		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
+			Block trapBlock = block.getRelative(face);
 
-			owner.setCooldown(type, 120);
+			trapBlock.getLocation().getBlock().setType(Material.SUNFLOWER);
 
-			return new TrapperTrap(owner, block.getLocation(), block.getWorld(), this);
+			owner.sendMessage(block.getType().toString());
+			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), this);
 		}
 
 		@Override
@@ -65,11 +66,12 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 
 
 		@Override
-		public TrapperTrap createTrap(Player owner, Block block) {
-			block.getLocation().getBlock().setType(Material.COARSE_DIRT);
-			owner.sendMessage("Trap placed !");
-			owner.setCooldown(type, 10);
-			return new TrapperTrap(owner, block.getLocation(), block.getWorld(), this);
+		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
+			Block trapBlock = block.getRelative(face);
+
+			trapBlock.getLocation().getBlock().setType(Material.COARSE_DIRT);
+
+			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), this);
 		}
 
 		@Override
@@ -126,6 +128,6 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		return ArrayUtils.indexOf(values(), this);
 	}
 
-	public abstract TrapperTrap createTrap(Player owner, Block block);
+	public abstract TrapperTrap createTrap(Player owner, Block block, BlockFace face);
 	public abstract Boolean executeEffect(Player target, TrapperTrap info);
 }

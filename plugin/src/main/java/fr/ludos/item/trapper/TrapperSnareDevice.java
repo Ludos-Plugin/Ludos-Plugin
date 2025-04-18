@@ -153,8 +153,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 				case RIGHT_CLICK_BLOCK -> {
 					Block clickedBlock = event.getClickedBlock();
 					if (clickedBlock != null) {
-						Block block = clickedBlock.getRelative(event.getBlockFace());
-						traps.add(snareDevice.getBranch().createTrap(player, block));
+						traps.add(snareDevice.getBranch().createTrap(player, clickedBlock, event.getBlockFace()));
 					} else {
 						player.sendMessage("You must click on a block to place a trap."); // TODO: Translate
 					}
