@@ -172,7 +172,7 @@ public class ManhuntGame extends Game {
 			)
 		));
 
-		double highestY = world.getHighestBlockYAt(location) + 2;
+		double highestY = world.getHighestBlockYAt(location) + 1;
 		location.setY(highestY);
 
 		prey.teleport(location);
@@ -352,19 +352,30 @@ public class ManhuntGame extends Game {
 		Set<Player> hunters = teamController.getHunters();
 		Optional<Player> prey = teamController.getPrey();
 
-		if (hunters.size() > 0 || ! prey.isEmpty()) {
+		if (hunters.isEmpty() || ! prey.isEmpty()) {
 			timer.resume();
+		}
+
+		var player = event.getPlayer();
+
+		if (!hunters.contains(player) && !(prey.isPresent() && prey.get() == player)) {
+			player.setGameMode(GameMode.SPECTATOR);
+
+			player.teleport(prey.get().getLocation());
 		}
 	}
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
+		Player player = event.getPlayer();
+
 		var hunters = teamController.getHunters();
-		if (hunters.contains(event.getPlayer())) {
-			hunters.remove(event.getPlayer());
+		if (hunters.contains(player)) {
+			hunters.remove(player);
 		}
+
 		var prey = teamController.getPrey();
-		if (prey.isPresent() && prey.get() == event.getPlayer()) {
+		if (prey.isPresent() && prey.get() == player) {
 			prey = Optional.empty();
 		}
 

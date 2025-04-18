@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
 
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.event.EventHandler;
@@ -100,6 +101,9 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 					for (TrapperTrap trap : traps) {
 						Set<Player> targetedPlayers = game.getTeamController().getEnemies(trap.getOwner());
 						for (Player targetedPlayer : targetedPlayers) {
+							if (targetedPlayer.isDead()) continue;
+							if (targetedPlayer.getGameMode() == GameMode.SPECTATOR || targetedPlayer.getGameMode() == GameMode.CREATIVE) continue;
+
 							if (trap.getType().executeEffect(targetedPlayer, trap)) {
 								trapsToRemove.add(trap);
 							}
