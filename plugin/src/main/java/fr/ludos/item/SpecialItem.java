@@ -226,23 +226,37 @@ public abstract class SpecialItem {
 
 
 	public static abstract class Events<T extends SpecialItem> implements Listener {
+		private boolean isStarted = false;
+
 		public final Game game;
 
 		public Events(Game game) {
 			this.game = game;
 		}
 
-		public void start() {
+		public final void start() {
+			if (isStarted) return;
+			isStarted = true;
+
 			Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
 
 			updateAllInventories();
-		}
 
-		public void stop() {
+			onStart();
+		}
+		protected void onStart() { }
+
+		public final void stop() {
+			if (! isStarted) return;
+			isStarted = false;
+
 			HandlerList.unregisterAll(this);
 
 			removeFromAllInventories();
+
+			onStop();
 		}
+		protected void onStop() { }
 
 
 		@Nullable

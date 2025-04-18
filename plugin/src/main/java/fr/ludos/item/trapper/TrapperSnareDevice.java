@@ -111,9 +111,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		}
 
 		@Override
-		public void stop() {
-			super.stop();
-
+		protected void onStop() {
 			traps.clear();
 		}
 
