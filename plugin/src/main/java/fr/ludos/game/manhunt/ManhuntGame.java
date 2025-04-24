@@ -90,7 +90,11 @@ public class ManhuntGame extends Game {
 	private Player prey;
 	private Set<Player> hunters;
 
+
 	private WorldBorder border;
+
+	private Location lastPreyLocation = null;
+	private BukkitTask actionBarTask;
 
 	private BukkitTask saturationTask;
 
@@ -148,7 +152,7 @@ public class ManhuntGame extends Game {
 		this.scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
 		this.teamController = new ManhuntTeamController(this, builder.getChosenPlayers(), builder.getChosenPrey());
 
-		timer = new ManhuntTimer(this, builder.getReveal().getDuration());
+		timer = new ManhuntTimer(this, builder.getReveal());
 		compassEvents = new ManhuntCompass.Events(this);
 	}
 
@@ -289,6 +293,22 @@ public class ManhuntGame extends Game {
 		setGameArea(prey, hunters, areaDiameter, gameLocation);
 		prey.getWorld().setTime(1000);
 
+		actionBarTask = new BukkitRunnable() {
+			@Override
+			public void run() {
+				if (lastPreyLocation == null) return;
+
+				for (Player player : Bukkit.getOnlinePlayers()) {
+					player.sendActionBar(
+						Component.text("Prey's location:")
+						.append(Component.text(" X:" + lastPreyLocation.getBlockX()).color(NamedTextColor.RED))
+						.append(Component.text(" Y:" + lastPreyLocation.getBlockY()).color(NamedTextColor.GREEN))
+						.append(Component.text(" Z:" + lastPreyLocation.getBlockZ()).color(NamedTextColor.BLUE))
+					);
+				}
+			}
+		}.runTaskTimer(getPlugin(), 1, 1);
+
 		saturationTask = new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -313,6 +333,11 @@ public class ManhuntGame extends Game {
 
 		resetBorder(getPlugin());
 
+		if (actionBarTask != null) {
+			actionBarTask.cancel();
+			actionBarTask = null;
+		}
+
 		if (saturationTask != null) {
 			saturationTask.cancel();
 			saturationTask = null;
@@ -328,14 +353,14 @@ public class ManhuntGame extends Game {
 			return;
 		}
 
-		Location preyLocation = prey.get().getLocation();
+		lastPreyLocation = prey.get().getLocation();
 
 		Bukkit.getServer().broadcast(
 			Component.text("The Prey was revealed!\n")
 			.append(Component.text("They are located at"))
-			.append(Component.text(" X:" + preyLocation.getBlockX()).color(NamedTextColor.RED))
-			.append(Component.text(" Y:" + preyLocation.getBlockY()).color(NamedTextColor.GREEN))
-			.append(Component.text(" Z:" + preyLocation.getBlockZ()).color(NamedTextColor.BLUE))
+			.append(Component.text(" X:" + lastPreyLocation.getBlockX()).color(NamedTextColor.RED))
+			.append(Component.text(" Y:" + lastPreyLocation.getBlockY()).color(NamedTextColor.GREEN))
+			.append(Component.text(" Z:" + lastPreyLocation.getBlockZ()).color(NamedTextColor.BLUE))
 		);
 
 		for (Player hunter : teamController.getHunters()) {
