@@ -1,11 +1,11 @@
 package fr.ludos.item.huntsman;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -36,7 +36,8 @@ public class HuntsmanArrow extends SpecialItem {
 
 	@Override
 	protected Component getName(){
-		return Component.text("Stolen Arrow");
+		return Component.text("Stolen Arrow")
+			.decoration(TextDecoration.ITALIC, false);
 	}
 
 	@Override

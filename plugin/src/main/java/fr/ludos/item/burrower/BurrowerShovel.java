@@ -7,6 +7,7 @@ import java.util.HashMap;
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -136,7 +137,9 @@ public class BurrowerShovel extends SpecialItem {
 
 	@Override
 	protected Component getName() {
-		return Component.text("Burrower's Shovel"); // TODO: Translate
+		return
+			Component.text("Burrower's Shovel")
+			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
 	}
 
 

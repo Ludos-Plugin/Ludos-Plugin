@@ -1,7 +1,7 @@
 package fr.ludos.game.manhunt;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -68,7 +68,10 @@ public class ManhuntTimer implements Listener {
 
 		HandlerList.unregisterAll(this);
 
-		Bukkit.getServer().broadcast(Component.text("Timer ended. Final Time : " + formattedTime).color(TextColor.color(0x55FF55)));
+		Bukkit.getServer().broadcast(
+			Component.text("Timer ended. Final Time : " + formattedTime)
+				.color(NamedTextColor.GREEN)
+		);
 	}
 
 	public void resume() {

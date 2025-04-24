@@ -3,6 +3,7 @@ package fr.ludos.item.trapper;
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
@@ -32,7 +33,8 @@ public class TrapperDagger extends SpecialItem {
 	}
 	@Override
 	protected Component getName() {
-		return Component.text("Trapper Dagger");
+		return Component.text("Trapper Dagger")
+			.decoration(TextDecoration.ITALIC, false);
 	}
 
 

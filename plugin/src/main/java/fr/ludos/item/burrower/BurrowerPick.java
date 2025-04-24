@@ -1,12 +1,12 @@
 package fr.ludos.item.burrower;
 
 import java.util.List;
-import java.util.ArrayList;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.function.TriFunction;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -209,8 +209,10 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 			hammerMode = false;
 		}
 		return Component.text("Burrower's Pick (")
-			.append(Component.text(hammerMode ? "Hammer" : "Pickaxe").color(hammerMode ? TextColor.color(0xFF5555) : TextColor.color(0x55FFFF)))
-			.append(Component.text(")")); // TODO: Translate
+			.append(Component.text(hammerMode ? "Hammer" : "Pickaxe")
+				.color(hammerMode ? NamedTextColor.RED : NamedTextColor.AQUA))
+			.append(Component.text(")"))
+			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
 	}
 
 	@Override
@@ -221,18 +223,39 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		int depth = getLevel().getDepth() + 1;
 
 
-		lore.add(Component.text("Mode: ").color(TextColor.color(0xAAAAAA))
-			.append(Component.text(hammerMode ? "Hammer Mode" : "Pickaxe Mode").color(TextColor.color(0xFFFF55))));
+		lore.add(
+			Component.text("Mode: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(hammerMode ? "Hammer Mode" : "Pickaxe Mode")
+				.color(NamedTextColor.YELLOW))
+			.decoration(TextDecoration.ITALIC, false)
+		);
 
-		lore.add(Component.text("Press ").color(TextColor.color(0xAAAAAA))
-			.append(Component.text("Right Click (MB2) ").color(TextColor.color(0xFFFF55)))
-			.append(Component.text("to Switch Mode").color(TextColor.color(0xAAAAAA))));
+		lore.add(
+			Component.text("Press ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text("Right Click (MB2) ")
+				.color(NamedTextColor.YELLOW))
+			.append(Component.text("to Switch Mode")
+				.color(NamedTextColor.GRAY))
+			.decoration(TextDecoration.ITALIC, false)
+		);
 
-		lore.add(Component.text("Size: ").color(TextColor.color(0xAAAAAA))
-			.append(Component.text(size + "x" + size).color(TextColor.color(0xFFFF55))));
+		lore.add(
+			Component.text("Size: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(size + "x" + size)
+				.color(NamedTextColor.YELLOW))
+			.decoration(TextDecoration.ITALIC, false)
+		);
 
-		lore.add(Component.text("Depth: ").color(TextColor.color(0xAAAAAA))
-			.append(Component.text(depth).color(TextColor.color(0xFFFF55))));
+		lore.add(
+			Component.text("Depth: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(depth)
+				.color(NamedTextColor.YELLOW))
+			.decoration(TextDecoration.ITALIC, false)
+		);
 
 		return lore;
 	}
