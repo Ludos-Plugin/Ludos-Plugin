@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
 
 
 public class ManhuntTimer implements Listener {
-	private int revealSeconds = 180;
+	private ManhuntRevealOptions revealOption = ManhuntRevealOptions.occasional;
 	private ManhuntGame game;
 	private BossBar bossbar;
 
@@ -29,9 +29,9 @@ public class ManhuntTimer implements Listener {
 	private long totalSeconds;
 	private String formattedTime;
 
-	public ManhuntTimer(ManhuntGame game, int revealSeconds) {
+	public ManhuntTimer(ManhuntGame game, ManhuntRevealOptions revealOption) {
 		this.game = game;
-		this.revealSeconds = revealSeconds;
+		this.revealOption = revealOption;
 
 		bossbar = Bukkit.createBossBar("Timer", BarColor.RED, BarStyle.SEGMENTED_12);
 	}
@@ -106,12 +106,13 @@ public class ManhuntTimer implements Listener {
 		long seconds = totalSeconds % 60;
 
 		formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+		double timerDuration = (double) revealOption.getDuration();
 
-		double progress = ((double)totalSeconds % (double)revealSeconds) / (double)revealSeconds;
+		double progress = ((double)totalSeconds % timerDuration) / timerDuration;
 		bossbar.setProgress(progress);
 		bossbar.setTitle(formattedTime);
 
-		if (totalSeconds % revealSeconds == 0 && totalSeconds != 0) {
+		if (totalSeconds % timerDuration == 0 && totalSeconds != 0) {
 			game.revealPrey();
 		}
 	}
