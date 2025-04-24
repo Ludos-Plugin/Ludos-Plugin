@@ -107,6 +107,14 @@ public abstract class Role implements Listener {
 
 	protected abstract Map<String, SpecialItem.Events<?>> createItemEvents(Builder builder, Game game);
 
+
+	public static List<String> getRoleIds() {
+		return registered.keySet().stream().collect( Collectors.toList() );
+	}
+	public static List<Builder> getRoleBuilders() {
+		return registered.values().stream().collect( Collectors.toList() );
+	}
+
 	public static void loadConfigRoles(Ludos plugin) {
 		ConfigurationSection rolesSection = plugin.getConfig().getConfigurationSection(rolesKey);
 		if (rolesSection != null) {
@@ -131,6 +139,11 @@ public abstract class Role implements Listener {
 	@Nullable
 	public static Builder getRole(HumanEntity player) {
 		return registered.getOrDefault(playerRoles.getOrDefault(player.getName(), ""), null);
+	}
+
+	@Nullable
+	public static Builder getRoleById(String roleId) {
+		return registered.getOrDefault(roleId, null);
 	}
 
 	public static boolean isPlayerRole(HumanEntity player, String role) {
