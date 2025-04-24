@@ -74,20 +74,23 @@ public abstract class SpecialItem {
 			throw new IllegalArgumentException("ItemStack has no Meta");
 		}
 
-		this.idKey = new NamespacedKey(game.getPlugin(), ID);
-		this.ownerKey = new NamespacedKey(game.getPlugin(), OWNER);
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
-		if (! container.has(ownerKey, PersistentDataType.STRING) ) {
-			throw new IllegalArgumentException("Owner not found");
-		}
 
+		this.idKey = new NamespacedKey(game.getPlugin(), ID);
 		if (! container.has(idKey, PersistentDataType.STRING) ) {
 			throw new IllegalArgumentException("ID not found");
 		}
 		String id = container.get(idKey, PersistentDataType.STRING);
+
 		if (! id.equals(getId())) {
 			throw new IllegalArgumentException("Invalid ID (" + id + " instead of " + getId() + ")");
+		}
+
+
+		this.ownerKey = new NamespacedKey(game.getPlugin(), OWNER);
+		if (! container.has(ownerKey, PersistentDataType.STRING) ) {
+			throw new IllegalArgumentException("Owner not found");
 		}
 
 		this.owner = Bukkit.getPlayer(
