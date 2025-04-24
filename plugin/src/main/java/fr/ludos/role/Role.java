@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -105,7 +106,7 @@ public abstract class Role implements Listener {
 	protected void onStop() { }
 
 
-	protected abstract Map<String, SpecialItem.Events<?>> createItemEvents(Builder builder, Game game);
+	protected abstract LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Builder builder, Game game);
 
 
 	public static List<String> getRoleIds() {
