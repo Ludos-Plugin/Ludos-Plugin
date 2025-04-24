@@ -87,11 +87,15 @@ public final class ManhuntTeamController extends TeamController {
 
 	@Override
 	protected void onStop() {
-		preyTeam.unregister();
-		preyTeam = null;
+		if (preyTeam != null) {
+			preyTeam.unregister();
+			preyTeam = null;
+		}
 
-		hunterTeam.unregister();
-		hunterTeam = null;
+		if (hunterTeam != null) {
+			hunterTeam.unregister();
+			hunterTeam = null;
+		}
 	}
 
 
