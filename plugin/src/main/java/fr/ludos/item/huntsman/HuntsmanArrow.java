@@ -1,6 +1,7 @@
 package fr.ludos.item.huntsman;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -12,6 +13,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.CrossbowMeta;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
@@ -94,10 +96,10 @@ public class HuntsmanArrow extends SpecialItem {
 				.mapToInt(item -> item.getStack().getAmount())
 				.sum();
 			// count loaded arrows in crossbow
-			amount += java.util.Arrays.stream(player.getInventory().getContents())
+			amount += Arrays.stream(player.getInventory().getContents())
 				.filter(item -> item != null && item.getType() == Material.CROSSBOW)
 				.mapToInt(item -> {
-					if (item.getItemMeta() instanceof org.bukkit.inventory.meta.CrossbowMeta meta) {
+					if (item.getItemMeta() instanceof CrossbowMeta meta) {
 						return (int) meta.getChargedProjectiles().stream()
 							.filter(charged -> getItem(charged, game) != null)
 							.count();
