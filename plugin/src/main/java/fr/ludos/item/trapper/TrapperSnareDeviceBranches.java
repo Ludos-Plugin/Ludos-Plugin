@@ -24,13 +24,17 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		Component.text("REVEALING").color(TextColor.color(0xFFAA00)).decorate(TextDecoration.ITALIC),
 		Component.text("REVEALING Description")
 	) {
-		private final Material type = Material.FERMENTED_SPIDER_EYE;
+		private final Material type = Material.ENDER_EYE;
 
 		@Override
 		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
-			trapBlock.getLocation().getBlock().setType(Material.SUNFLOWER);
+			if (block.getType() == Material.SAND) {
+				trapBlock.getLocation().getBlock().setType(Material.SAND);
+			} else {
+				trapBlock.getLocation().getBlock().setType(Material.GRASS_BLOCK);
+			}
 
 			owner.sendMessage(block.getType().toString());
 			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), this);
@@ -39,7 +43,8 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		@Override
 		public Boolean executeEffect(Player target, TrapperTrap info) {
 			if (target.getLocation().distance(info.getLocation()) >= 3) return false;
-			if (info.getLocation().getBlock().getType() != Material.SUNFLOWER) return true;
+			Material blockType = info.getLocation().getBlock().getType();
+			if (blockType != Material.GRASS_BLOCK && blockType != Material.DIRT && blockType != Material.SAND) return true;
 
 			info.getOwner().sendMessage("Trap triggered !");
 			target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 20, 1));
