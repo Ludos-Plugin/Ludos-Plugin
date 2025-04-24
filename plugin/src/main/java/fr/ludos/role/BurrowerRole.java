@@ -2,6 +2,9 @@ package fr.ludos.role;
 
 import java.util.Map;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StructureSearchResult;
@@ -139,6 +142,16 @@ public class BurrowerRole extends Role {
 		@Override
 		public Role build(Game game){
 			return new BurrowerRole(this, game);
+		}
+
+		@Override
+		public TextComponent getInfoName() {
+			return Component.text("Burrower");
+		}
+
+		@Override
+		public TextComponent getInfoDescription() {
+			return Component.text("");
 		}
 	}
 }

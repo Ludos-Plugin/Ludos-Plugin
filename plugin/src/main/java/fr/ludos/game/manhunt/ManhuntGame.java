@@ -36,6 +36,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -47,6 +49,7 @@ import fr.ludos.Utility;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.GameCommandOptions;
 import fr.ludos.game.Game;
+import fr.ludos.role.Role;
 
 
 public class ManhuntGame extends Game {
@@ -364,6 +367,24 @@ public class ManhuntGame extends Game {
 			player.teleport(prey.get().getLocation());
 		}
 	}
+
+	public void giveInteractableBook(Player player, Role.Builder role) {
+		ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
+		BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
+
+		meta.title(role.getInfoName());
+		meta.author(Component.text("Ludos"));
+
+		TextComponent page = role.getInfoName()
+			.clickEvent(
+				ClickEvent.runCommand(String.format("/role set %s", role.getId()))
+			);
+		meta.addPage(page);
+
+		book.setItemMeta(meta.build());
+		player.getInventory().addItem(book);
+	}
+
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {

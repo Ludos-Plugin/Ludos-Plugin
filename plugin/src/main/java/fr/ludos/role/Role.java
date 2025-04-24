@@ -7,11 +7,19 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
@@ -170,9 +178,29 @@ public abstract class Role implements Listener {
 	 */
 	public static abstract class Builder {
 		private final Ludos plugin;
-		public Ludos getPlugin() { return plugin; }
+		public final Ludos getPlugin() { return plugin; }
 
 		public abstract String getId();
+
+		public abstract TextComponent getInfoName();
+		public abstract TextComponent getInfoDescription();
+
+		public final ItemStack createGuidebook() {
+			ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
+			BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
+
+			meta.title(getInfoName());
+			meta.author(Component.text("Ludos"));
+
+			TextComponent page = getInfoName()
+				.clickEvent(
+					ClickEvent.runCommand(String.format("/role set %s", getId()))
+				);
+			meta.addPage(page);
+
+			book.setItemMeta(meta.build());
+			return book;
+		}
 
 		public Builder(Ludos plugin) {
 			this.plugin = plugin;
