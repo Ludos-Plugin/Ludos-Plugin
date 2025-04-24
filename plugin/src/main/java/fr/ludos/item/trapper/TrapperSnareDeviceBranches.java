@@ -16,6 +16,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.item.BranchItem;
 import fr.ludos.item.SpecialItemBranches;
+import io.papermc.paper.entity.LookAnchor;
 
 
 public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSnareDeviceBranches> {
@@ -83,6 +84,44 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 			info.getOwner().sendMessage("Trap triggered !");
 
 			info.getLocation().getBlock().setType(Material.COBWEB);
+
+			return true;
+		}
+
+		@Override
+		public void onSwitchBranch(BranchItem<TrapperSnareDeviceBranches> item) {
+			item.getStack().setType(type);
+		}
+	},
+
+	REBOUND (
+		Component.text("REBOUND").color(TextColor.color(0x00FF00)).decorate(TextDecoration.ITALIC),
+		Component.text("REBOUND Description")
+	) {
+		private final Material type = Material.END_ROD;
+
+
+		@Override
+		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
+			Block trapBlock = block.getRelative(face);
+			trapBlock.getLocation().getBlock().setType(Material.END_ROD);
+
+			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), this);
+		}
+
+		@Override
+		public Boolean executeEffect(Player target, TrapperTrap info) {
+			if (target.getLocation().distance(info.getLocation()) >= 7) return false;
+			if (info.getLocation().getBlock().getType() != Material.END_ROD) return true;
+
+			Player owner = info.getOwner();
+			info.getLocation().getBlock().setType(Material.AIR);
+
+			owner.teleport(info.getLocation());
+			owner.lookAt(target, LookAnchor.EYES, LookAnchor.EYES);
+			target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 10, 1));
+
+			owner.sendMessage("Trap triggered !");
 
 			return true;
 		}
