@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
@@ -20,8 +20,10 @@ import fr.ludos.item.SpecialItemBranches;
 
 public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSnareDeviceBranches> {
 	REVEALING (
-		Component.text("REVEALING").color(TextColor.color(0xFFAA00)).decorate(TextDecoration.ITALIC),
-		Component.text("REVEALING Description")
+		Component.text("Revealing")
+			.color(NamedTextColor.YELLOW)
+			.decorate(TextDecoration.ITALIC),
+		Component.text("Revealing Description")
 	) {
 		private final Material type = Material.FERMENTED_SPIDER_EYE;
 
@@ -59,8 +61,10 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 
 
 	SLOWING	(
-		Component.text("SLOWING").color(TextColor.color(0x0000FF)).decorate(TextDecoration.ITALIC),
-		Component.text("SLOWING Description")
+		Component.text("Impeding")
+			.color(NamedTextColor.DARK_BLUE)
+			.decorate(TextDecoration.ITALIC),
+		Component.text("Impeding Description")
 	) {
 		private final Material type = Material.COBWEB;
 

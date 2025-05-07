@@ -1,6 +1,6 @@
 package fr.ludos.role;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -32,14 +32,14 @@ public class HuntsmanRole extends Role {
 
 
 	@Override
-	protected Map<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
+	protected LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
 		switch (builder.getId()) {
 			default:
-				return Map.of(
-					"bow", new HuntsmanBow.Events(game),
-					"crossbow", new HuntsmanCrossbow.Events(game),
-					"arrow", new HuntsmanArrow.Events(game)
-				);
+				return new LinkedHashMap<>() {{
+					put("bow", new HuntsmanBow.Events(game));
+					put("crossbow", new HuntsmanCrossbow.Events(game));
+					put("arrow", new HuntsmanArrow.Events(game));
+				}};
 		}
 	}
 

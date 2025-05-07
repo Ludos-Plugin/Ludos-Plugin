@@ -6,9 +6,10 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
-import org.bukkit.ChatColor;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.block.Block;
@@ -24,7 +25,13 @@ import fr.ludos.item.SpecialItemLevelBranches;
 
 
 public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<HuntsmanCrossbowBranches> {
-	FLAME (ChatColor.RED.toString() + ChatColor.ITALIC + "Igniting", 200, "Igniting Description") {
+	FLAME (
+		Component.text("Igniting")
+			.color(NamedTextColor.RED)
+			.decorate(TextDecoration.ITALIC),
+		Component.text("Igniting Description"),
+		200
+	) {
 		@Override
 		public void processShotArrow(Arrow arrow, HumanEntity player, int level, EntityShootBowEvent event) {
 			arrow.setFireTicks(10000);
@@ -49,7 +56,13 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 	},
 
 
-	WITHER (ChatColor.GRAY.toString() + ChatColor.ITALIC + "Rotting",  200, "Rotting Description") {
+	WITHER (
+		Component.text("Wither")
+			.color(NamedTextColor.GRAY)
+			.decorate(TextDecoration.ITALIC),
+		Component.text("Wither Description"),
+		200
+	) {
 		@Override
 		public void processShotArrow(Arrow arrow, HumanEntity player, int level, EntityShootBowEvent event) {
 			int poisonDuration = 20 * 3;
@@ -74,7 +87,13 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 	},
 
 
-	SLOWNESS (ChatColor.BLUE.toString() + ChatColor.ITALIC + "Impeding", 200, "Impeding Description") {
+	SLOWNESS (
+		Component.text("Impeding")
+			.color(NamedTextColor.DARK_BLUE)
+			.decorate(TextDecoration.ITALIC),
+		Component.text("Impeding Description"),
+		200
+	) {
 		@Override
 		public void processShotArrow(Arrow arrow, HumanEntity player, int level, EntityShootBowEvent event) {
 			PotionEffect slowEffect = new PotionEffect(PotionEffectType.SLOW, 20 * 7, 2);
@@ -120,9 +139,14 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 
 	public final static HuntsmanCrossbowBranches[] values = HuntsmanCrossbowBranches.values();
 
-	private String name;
+	private Component name;
 	public Component getName() {
-		return Component.text(name);
+		return name;
+	}
+
+	private Component description;
+	public Component getDescription() {
+		return description;
 	}
 
 	private double xpThreshold;
@@ -135,13 +159,8 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 		return evolutions;
 	}
 
-	private String description;
-	public Component getDescription() {
-		return Component.text(description);
-	}
 
-
-	private HuntsmanCrossbowBranches(String name, double xpThreshold, String description) {
+	private HuntsmanCrossbowBranches(Component name, Component description, double xpThreshold) {
 		this.name = name;
 		this.xpThreshold = xpThreshold;
 		this.description = description;

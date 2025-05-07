@@ -1,11 +1,11 @@
 package fr.ludos.item.huntsman;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
@@ -37,7 +37,8 @@ public class HuntsmanBow extends SpecialItem {
 
 	@Override
 	protected Component getName(){
-		return Component.text("Stolen Bow");
+		return Component.text("Stolen Bow")
+			.decoration(TextDecoration.ITALIC, false);
 	}
 
 	@Override

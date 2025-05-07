@@ -4,6 +4,7 @@ import java.util.function.Function;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 import javax.annotation.Nullable;
 
@@ -28,6 +29,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -72,20 +74,23 @@ public abstract class SpecialItem {
 			throw new IllegalArgumentException("ItemStack has no Meta");
 		}
 
-		this.idKey = new NamespacedKey(game.getPlugin(), ID);
-		this.ownerKey = new NamespacedKey(game.getPlugin(), OWNER);
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
-		if (! container.has(ownerKey, PersistentDataType.STRING) ) {
-			throw new IllegalArgumentException("Owner not found");
-		}
 
+		this.idKey = new NamespacedKey(game.getPlugin(), ID);
 		if (! container.has(idKey, PersistentDataType.STRING) ) {
 			throw new IllegalArgumentException("ID not found");
 		}
 		String id = container.get(idKey, PersistentDataType.STRING);
+
 		if (! id.equals(getId())) {
 			throw new IllegalArgumentException("Invalid ID (" + id + " instead of " + getId() + ")");
+		}
+
+
+		this.ownerKey = new NamespacedKey(game.getPlugin(), OWNER);
+		if (! container.has(ownerKey, PersistentDataType.STRING) ) {
+			throw new IllegalArgumentException("Owner not found");
 		}
 
 		this.owner = Bukkit.getPlayer(
@@ -173,13 +178,23 @@ public abstract class SpecialItem {
 		return false;
 	}
 
-
 	/**
 	 * @param inventory
 	 * @return The first Special Item of type T found in the inventory or null if there is none
 	 */
-	public static <T extends SpecialItem>T findIn(Inventory inventory, Function<ItemStack, T> constructor) {
-		ItemStack[] items = inventory.getContents();
+	@Nullable
+	public static <T extends SpecialItem> T findIn(Inventory inventory, Function<ItemStack, T> constructor) {
+		return findIn(Arrays.asList(inventory.getContents()), constructor);
+	}
+	/**
+	 * @param inventory
+	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
+	 */
+	public static <T extends SpecialItem> List<T> findAllIn(Inventory inventory, Function<ItemStack, T> constructor) {
+		return findAllIn(Arrays.asList(inventory.getContents()), constructor);
+	}
+
+	public static <T extends SpecialItem> T findIn(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
 		for (ItemStack item : items) {
 			if (item == null) continue;
 
@@ -189,14 +204,7 @@ public abstract class SpecialItem {
 
 		return null;
 	}
-
-
-	/**
-	 * @param inventory
-	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
-	 */
-	public static <T extends SpecialItem> List<T> findAllIn(Inventory inventory, Function<ItemStack, T> constructor) {
-		ItemStack[] items = inventory.getContents();
+	public static <T extends SpecialItem> List<T> findAllIn(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
 		ArrayList<T> results = new ArrayList<>();
 		for (ItemStack item : items) {
 			if (item == null) continue;
@@ -205,7 +213,7 @@ public abstract class SpecialItem {
 			if (specialItem != null) results.add(specialItem);
 		}
 
-		return (List<T>) Collections.unmodifiableList(results);
+		return Collections.unmodifiableList(results);
 	}
 
 
@@ -262,10 +270,13 @@ public abstract class SpecialItem {
 
 		protected void removeFromAllInventories() {
 			for (Player player : Bukkit.getOnlinePlayers()) {
-				Inventory inventory = player.getInventory();
+				PlayerInventory inventory = player.getInventory();
 				List<T> items = SpecialItem.findAllIn(inventory, (ItemStack stack) -> getItem(stack, game));
 				for(T item : items) {
 					inventory.remove(item.getStack());
+					if (inventory.getItemInOffHand().equals(item.getStack())) {
+						inventory.setItemInOffHand(null);
+					}
 				}
 			}
 		}

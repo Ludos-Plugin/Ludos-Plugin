@@ -1,6 +1,6 @@
 package fr.ludos.role;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -49,11 +49,14 @@ public class BurrowerRole extends Role {
 	}
 
 	@Override
-	protected Map<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
-		return Map.of(
-			"pick", new BurrowerPick.Events(game),
-			"shovel", new BurrowerShovel.Events(game)
-		);
+	protected LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
+		switch (builder.getId()) {
+			default:
+				return new LinkedHashMap<>() {{
+					put("pick", new BurrowerPick.Events(game));
+					put("shovel", new BurrowerShovel.Events(game));
+				}};
+		}
 	}
 
 	// @EventHandler

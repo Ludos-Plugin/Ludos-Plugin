@@ -2,12 +2,12 @@ package fr.ludos.item;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.persistence.*;
 import org.bukkit.NamespacedKey;
@@ -147,12 +147,20 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 			xpLabel = xpRounded + '/' + getBranch().getXpThreshold();
 		}
 
-		lore.add(Component.text("XP: ").color(TextColor.color(0xAAAAAA))
-			.append(Component.text(xpLabel).color(TextColor.color(0xFFFF55)))
+		lore.add(
+			Component.text("XP: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(xpLabel)
+				.color(NamedTextColor.YELLOW))
+			.decoration(TextDecoration.ITALIC, false)
 		);
 
-		lore.add(Component.text("Level: ").color(TextColor.color(0xAAAAAA))
-			.append(Component.text(Integer.toString(currentLevel + 1)).color(TextColor.color(0xFFFF55)))
+		lore.add(
+			Component.text("Level: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(Integer.toString(currentLevel + 1))
+				.color(NamedTextColor.RED))
+			.decoration(TextDecoration.ITALIC, false)
 		);
 
 		return lore;

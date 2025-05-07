@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -113,7 +114,15 @@ public abstract class Role implements Listener {
 	protected void onStop() { }
 
 
-	protected abstract Map<String, SpecialItem.Events<?>> createItemEvents(Builder builder, Game game);
+	protected abstract LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Builder builder, Game game);
+
+
+	public static List<String> getRoleIds() {
+		return registered.keySet().stream().collect( Collectors.toList() );
+	}
+	public static List<Builder> getRoleBuilders() {
+		return registered.values().stream().collect( Collectors.toList() );
+	}
 
 	public static void loadConfigRoles(Ludos plugin) {
 		ConfigurationSection rolesSection = plugin.getConfig().getConfigurationSection(rolesKey);
@@ -139,6 +148,11 @@ public abstract class Role implements Listener {
 	@Nullable
 	public static Builder getRole(HumanEntity player) {
 		return registered.getOrDefault(playerRoles.getOrDefault(player.getName(), ""), null);
+	}
+
+	@Nullable
+	public static Builder getRoleById(String roleId) {
+		return registered.getOrDefault(roleId, null);
 	}
 
 	public static boolean isPlayerRole(HumanEntity player, String role) {

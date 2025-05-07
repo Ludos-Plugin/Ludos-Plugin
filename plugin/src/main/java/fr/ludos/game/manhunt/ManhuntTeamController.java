@@ -87,11 +87,15 @@ public final class ManhuntTeamController extends TeamController {
 
 	@Override
 	protected void onStop() {
-		preyTeam.unregister();
-		preyTeam = null;
+		if (preyTeam != null) {
+			preyTeam.unregister();
+			preyTeam = null;
+		}
 
-		hunterTeam.unregister();
-		hunterTeam = null;
+		if (hunterTeam != null) {
+			hunterTeam.unregister();
+			hunterTeam = null;
+		}
 	}
 
 
@@ -131,8 +135,8 @@ public final class ManhuntTeamController extends TeamController {
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player player = event.getEntity();
-		if (! preyTeam.hasEntry(event.getEntity().getName())) {
-			Utility.onDeathSpectate(event.getEntity(), 5, game.getPlugin());
+		if (! preyTeam.hasEntry(player.getName())) {
+			Utility.onDeathSpectate(player, 5, game.getPlugin());
 			return;
 		}
 
