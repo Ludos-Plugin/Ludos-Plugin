@@ -1,7 +1,7 @@
 package fr.ludos.role;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -52,11 +52,14 @@ public class TrapperRole extends Role {
 	}
 
 	@Override
-	protected Map<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
-		return Map.of(
-			"snare", new TrapperSnareDevice.Events(game),
-			"dagger", new TrapperDagger.Events(game)
-		);
+	protected LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
+		switch (builder.getId()) {
+			default:
+				return new LinkedHashMap<>() {{
+					put("snare", new TrapperSnareDevice.Events(game));
+					put("dagger", new TrapperDagger.Events(game));
+				}};
+		}
 	}
 
 

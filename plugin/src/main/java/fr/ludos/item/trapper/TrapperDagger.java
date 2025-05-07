@@ -4,6 +4,7 @@ import java.util.Random;
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -59,7 +60,8 @@ public class TrapperDagger extends LevelItem<TrapperDaggerLevels> {
 	}
 	@Override
 	protected Component getName() {
-		return Component.text("Trapper Dagger");
+		return Component.text("Trapper Dagger")
+			.decoration(TextDecoration.ITALIC, false);
 	}
 
 

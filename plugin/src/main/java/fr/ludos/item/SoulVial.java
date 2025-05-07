@@ -4,10 +4,10 @@ import java.util.Map;
 import java.util.HashMap;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
@@ -48,7 +48,11 @@ public class SoulVial implements Listener {
 		int soulCount = soulCounts.get(player);
 
 		ItemMeta meta = soulVial.getItemMeta();
-		meta.displayName(Component.text(SOUL_VIAL_NAME).color(TextColor.color(0xFFAAAA)));
+		meta.displayName(
+			Component.text(SOUL_VIAL_NAME)
+				.color(NamedTextColor.RED)
+			.decoration(TextDecoration.ITALIC, false)
+		);
 
 		if (soulCount > 0) {
 			int red = (int) ((double) soulCount / MAX_SOULS * 255);
@@ -60,7 +64,9 @@ public class SoulVial implements Listener {
 
 		meta.lore(java.util.Collections.singletonList(
 			Component.text("Souls: ")
-				.append(Component.text(soulCount).color(TextColor.color(0xAA0000)))
+			.append(Component.text(soulCount)
+				.color(NamedTextColor.DARK_RED))
+			.decoration(TextDecoration.ITALIC, false)
 		));
 
 		soulVial.setItemMeta(meta);
@@ -128,7 +134,10 @@ public class SoulVial implements Listener {
 	private void addPotionItem(Inventory inventory, Material potionType, String displayName, PotionEffectType effectType) {
 		ItemStack potionItem = new ItemStack(potionType);
 		ItemMeta meta = potionItem.getItemMeta();
-		meta.displayName(Component.text(displayName));
+		meta.displayName(
+			Component.text(displayName)
+			.decoration(TextDecoration.ITALIC, false)
+		);
 		potionItem.setItemMeta(meta);
 
 		inventory.addItem(potionItem);

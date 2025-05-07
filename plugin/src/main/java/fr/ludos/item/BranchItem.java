@@ -1,10 +1,10 @@
 package fr.ludos.item;
 
 import java.util.List;
-import java.util.ArrayList;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
@@ -81,7 +81,8 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 
 		return Component.text("(")
 			.append(branch.getName())
-			.append(Component.text(")"));
+			.append(Component.text(")"))
+			.decoration(TextDecoration.ITALIC, false);
 	}
 
 	@Override
@@ -89,8 +90,11 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 		List<Component> lore = super.getLore();
 
 		lore.add(
-			Component.text("Type: ").color(TextColor.color(0xAAAAAA))
-			.append(branch.getName().color(TextColor.color(0xFFFF55)))
+			Component.text("Type: ")
+				.color(NamedTextColor.GRAY)
+			.append(branch.getName()
+				.color(NamedTextColor.YELLOW))
+			.decoration(TextDecoration.ITALIC, false)
 		);
 		return lore;
 	}

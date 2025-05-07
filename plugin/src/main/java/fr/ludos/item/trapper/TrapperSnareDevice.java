@@ -6,6 +6,7 @@ import java.util.HashSet;
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -49,8 +50,10 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 	@Override
 	protected Component getName() {
-		return Component.text("Snare Grimoire ")
-			.append(getBranchAnnotation());
+		return
+			Component.text("Snare Grimoire ")
+			.append(getBranchAnnotation())
+			.decoration(TextDecoration.ITALIC, false);
 	}
 
 

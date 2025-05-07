@@ -1,11 +1,11 @@
 package fr.ludos.item.huntsman;
 
 import java.util.List;
-import java.util.ArrayList;
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -76,17 +76,24 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 
 	@Override
 	protected Component getName() {
-		return Component.text("Cursed Crossbow ")
-			.append(getBranchAnnotation()); // TODO: Translate
+		return
+			Component.text("Cursed Crossbow ")
+			.append(getBranchAnnotation())
+			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
 	}
 
 	@Override
 	protected List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		lore.add(Component.text("Press ").color(TextColor.color(0xAAAAAA))
-			.append(Component.text("Left Click (MB1) ").color(TextColor.color(0xFFFF55)))
-			.append(Component.text("to Switch Mode").color(TextColor.color(0xAAAAAA)))
+		lore.add(
+			Component.text("Press ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text("Left Click (MB1) ")
+				.color(NamedTextColor.YELLOW))
+			.append(Component.text("to Switch Mode")
+				.color(NamedTextColor.GRAY))
+			.decoration(TextDecoration.ITALIC, false)
 		);
 		return lore;
 	}

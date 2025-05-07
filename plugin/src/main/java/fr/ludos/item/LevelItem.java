@@ -1,12 +1,12 @@
 package fr.ludos.item;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.persistence.*;
 import org.bukkit.NamespacedKey;
@@ -139,8 +139,11 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 		}
 
 		lore.add(
-			Component.text("XP: ").color(TextColor.color(0xAAAAAA))
-				.append(Component.text(xpLabel).color(TextColor.color(0xFFFF55)))
+			Component.text("XP: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(xpLabel)
+				.color(NamedTextColor.RED))
+			.decoration(TextDecoration.ITALIC, false)
 		);
 
 		return lore;
