@@ -14,7 +14,9 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.EnumUtils;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
 
 import org.bukkit.Bukkit;
@@ -34,8 +36,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -47,7 +47,6 @@ import fr.ludos.Utility;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.GameCommandOptions;
 import fr.ludos.game.Game;
-import fr.ludos.role.Role;
 
 
 public class ManhuntGame extends Game {
@@ -394,24 +393,6 @@ public class ManhuntGame extends Game {
 		}
 	}
 
-	public void giveInteractableBook(Player player, Role.Builder role) {
-		ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
-		BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
-
-		meta.title(role.getInfoName());
-		meta.author(Component.text("Ludos"));
-
-		TextComponent page = role.getInfoName()
-			.clickEvent(
-				ClickEvent.runCommand(String.format("/role set %s", role.getId()))
-			);
-		meta.addPage(page);
-
-		book.setItemMeta(meta.build());
-		player.getInventory().addItem(book);
-	}
-
-
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
@@ -559,6 +540,19 @@ public class ManhuntGame extends Game {
 		@Override
 		public String getId() {
 			return id;
+		}
+
+		@Override
+		public TextComponent getDisplayName() {
+			return Component.text("Manhunt")
+				.color(NamedTextColor.RED);
+		}
+		@Override
+		public TextComponent getDescription() {
+			return Component.text("A game of hide and seek.\n" +
+				"As the Prey, survive for as long as possible, while the Hunters try to find you.\n" +
+				"The Hunters posses a Compass that will update regularly to point at the Prey's position.\n")
+				.color(NamedTextColor.GRAY);
 		}
 
 		public void gameHelp(CommandSender sender, Command command, String label, GameCommandOptions option) {

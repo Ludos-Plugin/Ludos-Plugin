@@ -148,12 +148,12 @@ public class BurrowerRole extends Role {
 		}
 
 		@Override
-		public TextComponent getInfoName() {
+		public TextComponent getDisplayName() {
 			return Component.text("Burrower");
 		}
 
 		@Override
-		public TextComponent getInfoDescription() {
+		public TextComponent getDescription() {
 			return Component.text("");
 		}
 	}

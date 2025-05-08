@@ -97,12 +97,12 @@ public class TrapperRole extends Role {
 		}
 
 		@Override
-		public TextComponent getInfoName() {
+		public TextComponent getDisplayName() {
 			return Component.text("Trapper");
 		}
 
 		@Override
-		public TextComponent getInfoDescription() {
+		public TextComponent getDescription() {
 			return Component.text("");
 		}
 	}

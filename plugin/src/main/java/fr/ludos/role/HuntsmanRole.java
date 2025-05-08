@@ -78,12 +78,12 @@ public class HuntsmanRole extends Role {
 		}
 
 		@Override
-		public TextComponent getInfoName() {
+		public TextComponent getDisplayName() {
 			return Component.text("Huntsman");
 		}
 
 		@Override
-		public TextComponent getInfoDescription() {
+		public TextComponent getDescription() {
 			return Component.text("");
 		}
 	}

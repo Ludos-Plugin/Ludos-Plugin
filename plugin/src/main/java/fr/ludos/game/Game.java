@@ -8,9 +8,19 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.EnumUtils;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -36,6 +46,14 @@ public abstract class Game implements Listener {
 	public static Map<String, Builder> getRegistered() {
 		return registered;
 	}
+
+	public static List<String> getGameIds() {
+		return registered.keySet().stream().collect( Collectors.toList() );
+	}
+	public static List<Builder> getGameBuilders() {
+		return registered.values().stream().collect( Collectors.toList() );
+	}
+
 
 	private final Map<String, Role> activeRoles = new HashMap<>();
 	public Map<String, Role> getActiveRoles() {
@@ -129,6 +147,37 @@ public abstract class Game implements Listener {
 
 		public abstract String getId();
 
+		public abstract TextComponent getDisplayName();
+		public abstract TextComponent getDescription();
+
+		public final ItemStack createGuidebook() {
+			ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
+			BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
+
+			meta.title(getDisplayName());
+			meta.author(Component.text("Ludos"));
+
+			TextComponent page =
+				getDisplayName().append(Component.text("\n\n"))
+				.append(getDescription().append(Component.text("\n\n")))
+				.append(
+					Component.text("Start")
+					.color(NamedTextColor.DARK_GREEN)
+					.decorate(TextDecoration.BOLD)
+					.clickEvent(
+						ClickEvent.runCommand(String.format("/ludos:game %s start", getId()))
+					)
+				);
+			meta.addPage(page);
+
+			populateGuidebook(meta);
+
+			book.setItemMeta(meta.build());
+			return book;
+		}
+
+		public void populateGuidebook(BookMetaBuilder builder) { }
+
 		@Override
 		public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 			if (args.length == 0) {
@@ -165,10 +214,11 @@ public abstract class Game implements Listener {
 		public abstract boolean gameCommand(CommandSender sender, Command command, String label, String[] args, GameCommandOptions option);
 		public abstract List<String> gameTabComplete(CommandSender sender, Command command, String label, String[] args, GameCommandOptions option);
 
-		public abstract Game build();
 
 		public Builder(Ludos plugin) {
 			this.plugin = plugin;
 		}
+
+		public abstract Game build();
 	}
 }

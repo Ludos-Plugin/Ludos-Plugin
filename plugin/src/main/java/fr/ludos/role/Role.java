@@ -11,6 +11,8 @@ import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -42,6 +44,15 @@ public abstract class Role implements Listener {
 		return registered;
 	}
 	private static Map<String, Builder> registered = new HashMap<String, Builder>();
+
+
+	public static List<String> getRoleIds() {
+		return registered.keySet().stream().collect( Collectors.toList() );
+	}
+	public static List<Builder> getRoleBuilders() {
+		return registered.values().stream().collect( Collectors.toList() );
+	}
+
 
 	public static Map<String, String> getPlayerRoles() {
 		return playerRoles;
@@ -116,14 +127,6 @@ public abstract class Role implements Listener {
 
 	protected abstract LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Builder builder, Game game);
 
-
-	public static List<String> getRoleIds() {
-		return registered.keySet().stream().collect( Collectors.toList() );
-	}
-	public static List<Builder> getRoleBuilders() {
-		return registered.values().stream().collect( Collectors.toList() );
-	}
-
 	public static void loadConfigRoles(Ludos plugin) {
 		ConfigurationSection rolesSection = plugin.getConfig().getConfigurationSection(rolesKey);
 		if (rolesSection != null) {
@@ -196,25 +199,36 @@ public abstract class Role implements Listener {
 
 		public abstract String getId();
 
-		public abstract TextComponent getInfoName();
-		public abstract TextComponent getInfoDescription();
+		public abstract TextComponent getDisplayName();
+		public abstract TextComponent getDescription();
 
 		public final ItemStack createGuidebook() {
 			ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
 			BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
 
-			meta.title(getInfoName());
+			meta.title(getDisplayName());
 			meta.author(Component.text("Ludos"));
 
-			TextComponent page = getInfoName()
-				.clickEvent(
-					ClickEvent.runCommand(String.format("/role set %s", getId()))
+			TextComponent page =
+				getDisplayName().append(Component.text("\n\n"))
+				.append(getDescription().append(Component.text("\n\n")))
+				.append(
+					Component.text("Select")
+					.color(NamedTextColor.DARK_GREEN)
+					.decorate(TextDecoration.BOLD)
+					.clickEvent(
+						ClickEvent.runCommand(String.format("/ludos:role set %s", getId()))
+					)
 				);
 			meta.addPage(page);
+
+			populateGuidebook(meta);
 
 			book.setItemMeta(meta.build());
 			return book;
 		}
+
+		public void populateGuidebook(BookMetaBuilder builder) { }
 
 		public Builder(Ludos plugin) {
 			this.plugin = plugin;
