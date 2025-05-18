@@ -9,8 +9,11 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.entity.HumanEntity;
@@ -153,9 +156,7 @@ public abstract class Role implements Listener {
 	}
 
 	public static void setRole(HumanEntity player, String roleId, JavaPlugin plugin) {
-		if ( playerRoles.containsKey(player.getName()) && playerRoles.get(player.getName()).equalsIgnoreCase(roleId) ) {
-			return;
-		}
+		if ( playerRoles.containsKey(player.getName()) && playerRoles.get(player.getName()).equalsIgnoreCase(roleId) ) return;
 
 		playerRoles.put(player.getName(), roleId);
 		player.sendMessage("Your role is now " + roleId);
@@ -166,12 +167,10 @@ public abstract class Role implements Listener {
 	}
 
 	public static void removeRole(Player player, JavaPlugin plugin) {
-		if ( ! playerRoles.containsKey(player.getName()) ) {
-			return;
-		}
+		if ( ! playerRoles.containsKey(player.getName()) ) return;
 
 		playerRoles.remove(player.getName());
-		player.sendMessage("Your role is now randomly chosen");
+		player.sendMessage("Your now have no role");
 
 		plugin.getConfig().set(rolesKey + '.' + player.getName(), null);
 		plugin.saveConfig();
@@ -187,6 +186,12 @@ public abstract class Role implements Listener {
 		public Ludos getPlugin() { return plugin; }
 
 		public abstract String getId();
+
+
+		public boolean executeRoleConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) { return false; }
+		public List<String> roleConfigTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) { return null; }
+		public String getRoleConfigUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) { return null; }
+
 
 		public Builder(Ludos plugin) {
 			this.plugin = plugin;

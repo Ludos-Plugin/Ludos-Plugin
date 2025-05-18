@@ -1,16 +1,14 @@
 package fr.ludos.game;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.EnumUtils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -18,7 +16,6 @@ import org.bukkit.entity.Player;
 
 import fr.ludos.Ludos;
 import fr.ludos.role.Role;
-import fr.ludos.command.GameCommandOptions;
 
 
 public abstract class Game implements Listener {
@@ -121,7 +118,7 @@ public abstract class Game implements Listener {
 		}
 	}
 
-	public static abstract class Builder implements TabExecutor {
+	public static abstract class Builder {
 		public final Ludos plugin;
 		public Ludos getPlugin() {
 			return plugin;
@@ -129,41 +126,11 @@ public abstract class Game implements Listener {
 
 		public abstract String getId();
 
-		@Override
-		public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-			if (args.length == 0) {
-				return false;
-			}
 
-			String arg = args[0];
-			if ( ! EnumUtils.isValidEnum(GameCommandOptions.class, arg) ) {
-				return false;
-			}
-			GameCommandOptions option = GameCommandOptions.valueOf( arg );
+		public abstract boolean executeGameConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args);
+		public abstract List<String> gameConfigTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args);
+		public abstract String getGameConfigUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label);
 
-			return gameCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
-		}
-
-		@Override
-		public final List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-			if (args.length < 2) {
-				return Arrays.stream(GameCommandOptions.values())
-					.map(GameCommandOptions::toString)
-					.sorted()
-					.collect(Collectors.toList());
-			}
-
-			String arg = args[0];
-			if ( ! EnumUtils.isValidEnum(GameCommandOptions.class, arg) ) {
-				return null;
-			}
-			GameCommandOptions option = GameCommandOptions.valueOf( arg );
-
-			return gameTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
-		}
-
-		public abstract boolean gameCommand(CommandSender sender, Command command, String label, String[] args, GameCommandOptions option);
-		public abstract List<String> gameTabComplete(CommandSender sender, Command command, String label, String[] args, GameCommandOptions option);
 
 		public abstract Game build();
 

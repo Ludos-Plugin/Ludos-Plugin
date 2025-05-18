@@ -5,8 +5,7 @@ import java.net.http.WebSocket.Listener;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import fr.ludos.command.GameCommand;
-import fr.ludos.command.RoleCommand;
+import fr.ludos.command.ludos.LudosCommand;
 import fr.ludos.game.Game;
 import fr.ludos.game.manhunt.ManhuntGame;
 import fr.ludos.role.Role;
@@ -34,17 +33,11 @@ public class Ludos extends JavaPlugin implements Listener {
 		Role.registerRole(new TrapperRole.Builder(this));
 
 
-		PluginCommand cmd = getCommand("game");
-		GameCommand gameCommand = new GameCommand();
-		cmd.setExecutor(gameCommand);
-		cmd.setTabCompleter(gameCommand);
-		cmd.setUsage(gameCommand.getUsage());
-
-		cmd = getCommand("role");
-		RoleCommand roleCommand = new RoleCommand(this);
-		cmd.setExecutor(roleCommand);
-		cmd.setTabCompleter(roleCommand);
-		cmd.setUsage(roleCommand.getUsage());
+		PluginCommand cmd = getCommand("ludos");
+		LudosCommand ludosCommand = new LudosCommand(this);
+		cmd.setExecutor(ludosCommand);
+		cmd.setTabCompleter(ludosCommand);
+		// cmd.setUsage(ludosCommand.getUsage());
 	}
 
 	@Override
