@@ -16,7 +16,6 @@ import org.apache.commons.lang3.EnumUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
 
 import org.bukkit.Bukkit;
@@ -45,7 +44,6 @@ import org.bukkit.potion.PotionEffectType;
 import fr.ludos.Ludos;
 import fr.ludos.Utility;
 import fr.ludos.command.CommandUtility;
-import fr.ludos.command.GameCommandOptions;
 import fr.ludos.game.Game;
 
 
@@ -458,9 +456,8 @@ public class ManhuntGame extends Game {
 
 		public ManhuntAreaOptions getArea() {
 			String areaString = getPlugin().getConfig().getString(areaPath);
-			return EnumUtils.isValidEnum(ManhuntAreaOptions.class, areaString)
-				? ManhuntAreaOptions.valueOf( areaString )
-				: ManhuntAreaOptions.medium;
+			return Arrays.stream(ManhuntAreaOptions.values()).filter(o -> o.toString().equals(areaString)).findFirst()
+				.orElse(ManhuntAreaOptions.medium);
 		}
 		public void setArea(ManhuntAreaOptions area) {
 			String value = area == null ? null : area.toString();
@@ -470,9 +467,8 @@ public class ManhuntGame extends Game {
 
 		public ManhuntLocationOptions getLocation() {
 			String locationString = getPlugin().getConfig().getString(locationPath);
-			return EnumUtils.isValidEnum(ManhuntLocationOptions.class, locationString)
-				? ManhuntLocationOptions.valueOf( locationString )
-				: ManhuntLocationOptions.random;
+			return Arrays.stream(ManhuntLocationOptions.values()).filter(o -> o.toString().equals(locationString)).findFirst()
+				.orElse(ManhuntLocationOptions.random);
 		}
 		public void setLocation(ManhuntLocationOptions location) {
 			String value = location == null ? null : location.toString();
@@ -482,9 +478,8 @@ public class ManhuntGame extends Game {
 
 		public ManhuntRevealOptions getReveal() {
 			String revealString = getPlugin().getConfig().getString(revealPath);
-			return EnumUtils.isValidEnum(ManhuntRevealOptions.class, revealString)
-				? ManhuntRevealOptions.valueOf( revealString )
-				: ManhuntRevealOptions.occasional;
+			return Arrays.stream(ManhuntRevealOptions.values()).filter(o -> o.toString().equals(revealString)).findFirst()
+				.orElse(ManhuntRevealOptions.three_minutes);
 		}
 		public void setReveal(ManhuntRevealOptions reveal) {
 			String value = reveal == null ? null : reveal.toString();
@@ -555,81 +550,28 @@ public class ManhuntGame extends Game {
 				.color(NamedTextColor.GRAY);
 		}
 
-		public void gameHelp(CommandSender sender, Command command, String label, GameCommandOptions option) {
-			switch ( option ) {
-			case config:
-				sender.sendMessage("Usage: /" + label + " config <config> [value]");
-				sender.sendMessage("Available configs:");
-				sender.sendMessage("  players [player1] [player2] ...");
-				sender.sendMessage("  prey [player]");
-				sender.sendMessage("  area <large|medium|small>");
-				sender.sendMessage("  location <random|here>");
-				sender.sendMessage("  frequency <short|medium|long>");
-				break;
-			case start:
-				sender.sendMessage("Usage: /" + label + " start");
-				break;
-			case stop:
-				sender.sendMessage("Usage: /" + label + " stop");
-				break;
+		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
+			StringBuilder usage = new StringBuilder("/" + label + " config <config> [value]");
+
+			for (ManhuntGameConfigs config : ManhuntGameConfigs.values()) {
+				usage.append("\n  ").append(config.toString()).append(" ")
+					.append(config.getUsage());
 			}
+
+			return usage.toString();
 		}
 
 		@Override
-		public boolean gameCommand(CommandSender sender, Command command, String label, String[] args, GameCommandOptions option) {
-			switch ( option ) {
-			case config:
-				if (args.length == 0) {
-					return false;
-				}
-
-				String arg = args[0];
-				if ( ! EnumUtils.isValidEnum(ManhuntGameConfigs.class, arg) ) {
-					return false;
-				}
-				ManhuntGameConfigs config = ManhuntGameConfigs.valueOf( arg );
-
-				return handleConfigsCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), config);
-			case start:
-				build().start();
-				break;
-			case stop:
-				Game.stopCurrentGame();
-				break;
-			}
-
-			return true;
-		}
-
-		@Override
-		public List<String> gameTabComplete(CommandSender sender, Command command, String label, String[] args, GameCommandOptions option) {
+		public boolean executeGameConfig(CommandSender sender, Command command, String label, String[] args) {
 			if (args.length == 0) {
-				return null;
+				return false;
 			}
 
-			switch ( option ) {
-			case config:
-				if (args.length == 1) {
-					// Show all configs
-					return Arrays.stream(ManhuntGameConfigs.values())
-						.map(ManhuntGameConfigs::toString)
-						.sorted()
-						.collect(Collectors.toList());
-				}
+			String arg = args[0];
+			ManhuntGameConfigs option = Arrays.stream(ManhuntGameConfigs.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+			if (option == null) return false;
 
-				String arg = args[0];
-				if ( ! EnumUtils.isValidEnum(ManhuntGameConfigs.class, arg) ) {
-					return null;
-				}
-				ManhuntGameConfigs config = ManhuntGameConfigs.valueOf( arg );
-
-				return handleConfigsTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length), config);
-			case start:
-			case stop:
-				break;
-			}
-
-			return null;
+			return handleConfigsCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
 		}
 
 		private boolean handleConfigsCommand(CommandSender sender, Command command, String label, String[] args, ManhuntGameConfigs config) {
@@ -684,10 +626,8 @@ public class ManhuntGame extends Game {
 				}
 
 				String givenArea = args[0];
-				if ( ! EnumUtils.isValidEnum(ManhuntAreaOptions.class, givenArea) ) {
-					return false;
-				}
-				ManhuntAreaOptions areaOption = ManhuntAreaOptions.valueOf(givenArea);
+				ManhuntAreaOptions areaOption = Arrays.stream(ManhuntAreaOptions.values()).filter(o -> o.toString().equals(givenArea)).findFirst().orElse(null);
+				if (areaOption == null) return false;
 
 				setArea(areaOption);
 
@@ -702,10 +642,8 @@ public class ManhuntGame extends Game {
 				}
 
 				String givenLocation = args[0];
-				if ( ! EnumUtils.isValidEnum(ManhuntLocationOptions.class, givenLocation) ) {
-					return false;
-				}
-				ManhuntLocationOptions locationOption = ManhuntLocationOptions.valueOf(givenLocation);
+				ManhuntLocationOptions locationOption = Arrays.stream(ManhuntLocationOptions.values()).filter(o -> o.toString().equals(givenLocation)).findFirst().orElse(null);
+				if (locationOption == null) return false;
 
 				setLocation(locationOption);
 
@@ -720,10 +658,8 @@ public class ManhuntGame extends Game {
 				}
 
 				String givenReveal = args[0];
-				if ( ! EnumUtils.isValidEnum(ManhuntRevealOptions.class, givenReveal) ) {
-					return false;
-				}
-				ManhuntRevealOptions revealOption = ManhuntRevealOptions.valueOf(givenReveal);
+				ManhuntRevealOptions revealOption = Arrays.stream(ManhuntRevealOptions.values()).filter(o -> o.toString().equals(givenReveal)).findFirst().orElse(null);
+				if (revealOption == null) return false;
 
 				setReveal(revealOption);
 
@@ -732,6 +668,24 @@ public class ManhuntGame extends Game {
 			}
 
 			return false;
+		}
+
+
+		@Override
+		public List<String> gameConfigTabComplete(CommandSender sender, Command command, String label, String[] args) {
+			if (args.length <= 1) {
+				return Arrays.stream(ManhuntGameConfigs.values())
+					.map(ManhuntGameConfigs::toString)
+					.collect(Collectors.toList());
+			}
+
+			String arg = args[0];
+			if ( ! EnumUtils.isValidEnum(ManhuntGameConfigs.class, arg) ) {
+				return null;
+			}
+			ManhuntGameConfigs config = ManhuntGameConfigs.valueOf( arg );
+
+			return handleConfigsTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length), config);
 		}
 
 		private List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args, ManhuntGameConfigs config) {
@@ -761,7 +715,6 @@ public class ManhuntGame extends Game {
 			case reveal:
 				// Options are : short, medium, long
 				return revealOptions;
-
 			}
 
 			return null;

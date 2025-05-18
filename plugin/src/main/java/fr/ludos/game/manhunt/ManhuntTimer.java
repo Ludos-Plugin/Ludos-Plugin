@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
 
 
 public class ManhuntTimer implements Listener {
-	private ManhuntRevealOptions revealOption = ManhuntRevealOptions.occasional;
+	private ManhuntRevealOptions revealOption = ManhuntRevealOptions.three_minutes;
 	private ManhuntGame game;
 	private BossBar bossbar;
 
