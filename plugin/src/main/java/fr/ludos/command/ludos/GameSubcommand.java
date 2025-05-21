@@ -80,7 +80,7 @@ public final class GameSubcommand implements TabExecutor {
 		if (args.length <= 1) {
 			return Stream.concat(
 				Game.getRegistered().keySet().stream().sorted(),
-				Arrays.stream(GameOptions.values()).map(GameOptions::toString)
+				Arrays.stream(GameSubcommandOptions.values()).map(GameSubcommandOptions::toString)
 			)
 				.collect(Collectors.toList());
 		}
