@@ -162,7 +162,7 @@ public abstract class Game implements Listener {
 					.color(NamedTextColor.DARK_GREEN)
 					.decorate(TextDecoration.BOLD)
 					.clickEvent(
-						ClickEvent.runCommand(String.format("/ludos:game %s start", getId()))
+						ClickEvent.runCommand(String.format("/ludos:ludos game %s start", getId()))
 					)
 				);
 			meta.addPage(page);

@@ -216,7 +216,7 @@ public abstract class Role implements Listener {
 					.color(NamedTextColor.DARK_GREEN)
 					.decorate(TextDecoration.BOLD)
 					.clickEvent(
-						ClickEvent.runCommand(String.format("/ludos:role set %s", getId()))
+						ClickEvent.runCommand(String.format("/ludos:ludos role set %s", getId()))
 					)
 				);
 			meta.addPage(page);
