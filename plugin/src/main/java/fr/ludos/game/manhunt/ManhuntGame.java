@@ -547,7 +547,7 @@ public class ManhuntGame extends Game {
 			return Component.text("A game of hide and seek.\n" +
 				"As the Prey, survive for as long as possible, while the Hunters try to find you.\n" +
 				"The Hunters possess a Compass that will update regularly to point at the Prey's position.\n")
-				.color(NamedTextColor.GRAY);
+				.color(NamedTextColor.BLACK);
 		}
 
 		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
