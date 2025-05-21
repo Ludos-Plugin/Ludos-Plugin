@@ -8,6 +8,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
@@ -41,7 +42,7 @@ public final class RoleSubcommand implements TabExecutor {
 	private boolean handleConfigsCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args, @NotNull RoleSubcommandOptions option) {
 		switch (option) {
 			case get:
-				Player getTarget = CommandUtility.getPlayerFromArgsOrSender(args, 0, sender);
+				Player getTarget = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
 				if (getTarget == null) {
 					sender.sendMessage(noRoleLabel); // TODO: Translate
 					return true;
@@ -79,6 +80,19 @@ public final class RoleSubcommand implements TabExecutor {
 			case help:
 				sender.sendMessage(getUsage(sender, command, label));
 				return true;
+			case guidebook:
+				if (args.length == 0) return false;
+				if (!(sender instanceof Player player)) return false;
+
+				String guidebookRoleId = args[0].toLowerCase();
+				if (! Role.getRegistered().containsKey(guidebookRoleId)) return false;
+
+				Role.Builder guidebookRole = Role.getRoleById(guidebookRoleId);
+				if (guidebookRole == null) return false;
+
+				ItemStack book = guidebookRole.createGuidebook();
+				player.getInventory().addItem(book);
+				return true;
 			default:
 				return false;
 		}
@@ -102,6 +116,7 @@ public final class RoleSubcommand implements TabExecutor {
 	private List<String> handleConfigsTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args, @NotNull RoleSubcommandOptions option) {
 		switch (option) {
 			case set:
+			case guidebook:
 				if (args.length <= 1) {
 					return Role.getRegistered().keySet().stream()
 						.collect(Collectors.toList());

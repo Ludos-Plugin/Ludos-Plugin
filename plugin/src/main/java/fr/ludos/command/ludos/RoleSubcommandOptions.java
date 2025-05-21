@@ -4,6 +4,7 @@ public enum RoleSubcommandOptions {
 	get ("get"),
 	reset ("reset"),
 	set ("set"),
+	guidebook ("guidebook"),
 	help ("help");
 
 	private String name;

@@ -8,6 +8,8 @@ import java.util.stream.Stream;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
@@ -68,6 +70,12 @@ public final class GameSubcommand implements TabExecutor {
 			return game.executeGameConfig(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 		case help:
 			sender.sendMessage(game.getGameConfigUsage(sender, command, label));
+			return true;
+		case guidebook:
+			if (!(sender instanceof Player player)) return false;
+
+			ItemStack book = game.createGuidebook();
+			player.getInventory().addItem(book);
 			return true;
 		default:
 			return false;
