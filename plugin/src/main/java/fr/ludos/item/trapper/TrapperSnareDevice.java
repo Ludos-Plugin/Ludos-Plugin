@@ -11,6 +11,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -88,13 +89,16 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 
 	public static class Events extends SpecialItem.Events<TrapperSnareDevice> {
-
+		private BukkitTask trapTask = null;
 		public final ArrayList<TrapperTrap> traps = new ArrayList<>();
 
 		public Events(Game game) {
 			super(game);
+		}
 
-			new BukkitRunnable() {
+		@Override
+		protected void onStart() {
+			trapTask = new BukkitRunnable() {
 				@Override
 				public void run() {
 					var game = Game.getCurrent();
@@ -120,6 +124,11 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		@Override
 		protected void onStop() {
 			traps.clear();
+
+			if (trapTask != null) {
+				trapTask.cancel();
+				trapTask = null;
+			}
 		}
 
 
