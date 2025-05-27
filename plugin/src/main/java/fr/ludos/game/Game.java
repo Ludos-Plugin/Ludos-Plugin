@@ -45,6 +45,11 @@ public abstract class Game implements Listener {
 		return registered;
 	}
 
+	@Nullable
+	public static Builder getGameById(String gameId) {
+		return registered.getOrDefault(gameId, null);
+	}
+
 	public static List<String> getGameIds() {
 		return registered.keySet().stream().collect( Collectors.toList() );
 	}
