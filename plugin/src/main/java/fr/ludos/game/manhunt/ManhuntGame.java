@@ -538,7 +538,7 @@ public class ManhuntGame extends Game {
 		}
 
 		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
-			StringBuilder usage = new StringBuilder("/" + label + " config <config> [value]");
+			StringBuilder usage = new StringBuilder("/" + label + " game " + getId() + " config <config> [value]");
 
 			for (ManhuntGameConfigs config : ManhuntGameConfigs.values()) {
 				usage.append("\n  ").append(config.toString()).append(" ")
