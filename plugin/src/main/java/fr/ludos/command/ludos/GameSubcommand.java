@@ -30,20 +30,22 @@ public final class GameSubcommand implements TabExecutor {
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length == 0) return false;
 
-		String gameId = args[0].toLowerCase();
-
-		if (gameId.equals(GameSubcommandOptions.stop.toString())) {
-			Game.stopCurrentGame();
-			return true;
+		String arg = args[0].toLowerCase();
+		GameSubcommandOptions option = Arrays.stream(GameSubcommandOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+		if (option != null) {
+			switch (option) {
+			case stop:
+				Game.stopCurrentGame();
+				return true;
+			case help:
+				sender.sendMessage(getUsage(sender, command, label));
+				return true;
+			}
 		}
-		if (gameId.equals(GameSubcommandOptions.help.toString())) {
-			sender.sendMessage(getUsage(sender, command, label));
-			return true;
-		}
 
-		Game.Builder game = Game.getRegistered().get(gameId);
+		Game.Builder game = Game.getRegistered().get(arg);
 		if (game == null) {
-			sender.sendMessage("Game not found: " + gameId);
+			sender.sendMessage("Game not found: " + arg);
 			return false;
 		}
 
@@ -79,7 +81,7 @@ public final class GameSubcommand implements TabExecutor {
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length <= 1) {
 			return Stream.concat(
-				Game.getRegistered().keySet().stream().sorted(),
+				Game.getRegistered().keySet().stream(),
 				Arrays.stream(GameSubcommandOptions.values()).map(GameSubcommandOptions::toString)
 			)
 				.collect(Collectors.toList());
@@ -119,7 +121,7 @@ public final class GameSubcommand implements TabExecutor {
 		usage.append(
 			Stream.concat(
 				Game.getRegistered().keySet().stream().sorted(),
-				Arrays.stream(GameSubcommandOptions.values()).map(GameSubcommandOptions::toString)
+				Arrays.stream(GameSubcommandOptions.values()).sorted().map(GameSubcommandOptions::toString)
 			)
 				.collect(Collectors.joining(" | "))
 		);
@@ -129,7 +131,7 @@ public final class GameSubcommand implements TabExecutor {
 
 		usage.append('<');
 		usage.append(
-			Arrays.stream(GameOptions.values()).map(GameOptions::toString)
+			Arrays.stream(GameOptions.values()).sorted().map(GameOptions::toString)
 				.collect(Collectors.joining(" | "))
 		);
 		usage.append('>');

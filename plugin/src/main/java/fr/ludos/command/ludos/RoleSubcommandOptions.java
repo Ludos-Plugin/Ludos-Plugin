@@ -2,8 +2,7 @@ package fr.ludos.command.ludos;
 
 public enum RoleSubcommandOptions {
 	get ("get"),
-	reset ("reset"),
-	set ("set"),
+	none ("none"),
 	help ("help");
 
 	private String name;

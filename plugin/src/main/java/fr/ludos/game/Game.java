@@ -34,6 +34,11 @@ public abstract class Game implements Listener {
 		return registered;
 	}
 
+	@Nullable
+	public static Builder getGameById(String gameId) {
+		return registered.getOrDefault(gameId, null);
+	}
+
 	private final Map<String, Role> activeRoles = new HashMap<>();
 	public Map<String, Role> getActiveRoles() {
 		return activeRoles;
