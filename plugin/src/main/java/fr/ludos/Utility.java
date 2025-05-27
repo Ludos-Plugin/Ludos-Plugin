@@ -1,8 +1,14 @@
 package fr.ludos;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
@@ -77,5 +83,108 @@ public class Utility {
 				}
 			}.runTaskLater(plugin, (long)(20 * spectateSeconds));
 		}
+	}
+
+	// Utility: Character width map for Minecraft's default font
+	private static final Map<Character, Integer> MC_CHAR_WIDTH = new HashMap<>() {{
+		put(' ', 3);
+		put('!', 1);
+		put('"', 3);
+		put('\'', 1);
+		put('(', 3);
+		put(')', 3);
+		put('*', 3);
+		put(',', 1);
+		put('.', 1);
+		put(':', 1);
+		put(';', 1);
+		put('<', 4);
+		put('>', 4);
+		put('@', 6);
+		put('I', 3);
+		put('[', 3);
+		put(']', 3);
+		put('`', 2);
+		put('f', 4);
+		put('i', 1);
+		put('k', 4);
+		put('l', 2);
+		put('t', 3);
+		put('{', 3);
+		put('|', 1);
+		put('}', 3);
+		put('~', 6);
+	}};
+
+	public static final int MC_BOOK_LINE_WIDTH = 114; // Width of a book line in pixels
+	public static final int MC_BOOK_LINE_COUNT = 14; // Number of lines in a book page
+	public static final int MC_CHAR_WIDTH_DEFAULT = 5; // Default width for unknown characters
+
+	public static final int getPixelWidth(char c) {
+		return getPixelWidth(c, false);
+	}
+	public static final int getPixelWidth(char c, boolean bold) {
+		return MC_CHAR_WIDTH.getOrDefault(c, MC_CHAR_WIDTH_DEFAULT) + (bold ? 1 : 0); // +1 for bold
+	}
+
+	// Utility: Calculate pixel width of a string
+	public static final int getPixelWidth(String s) {
+		return getPixelWidth(s, false);
+	}
+	public static final int getPixelWidth(String s, boolean bold) {
+		int width = 0;
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			int charWidth = getPixelWidth(c, bold);
+			width += charWidth + 1; // +1 for spacing
+		}
+		return width > 0 ? width - 1 : 0; // Remove last spacing
+	}
+
+	// Calculate pixel width of a TextComponent, considering decorations
+	public static int getPixelWidth(TextComponent component) {
+		return getPixelWidth(component, false);
+	}
+	public static int getPixelWidth(TextComponent component, boolean parentBold) {
+		int width = 0;
+		boolean bold = component.decoration(TextDecoration.BOLD) == TextDecoration.State.TRUE;
+		String content = component.content();
+		for (int i = 0; i < content.length(); i++) {
+			char c = content.charAt(i);
+			int charWidth = getPixelWidth(c, bold);
+			width += charWidth + 1;
+		}
+		if (width > 0) width -= 1;
+		for (Component child : component.children()) {
+			if (child instanceof TextComponent tc) {
+				width += getPixelWidth(tc, bold);
+			}
+		}
+		return width;
+	}
+
+
+	// Center a TextComponent line, considering decorations (bold, italic)
+	public static TextComponent centerBookLine(TextComponent component) {
+		return centerBookLine(component, MC_BOOK_LINE_WIDTH);
+	}
+
+	public static TextComponent centerBookLine(TextComponent component, int lineWidth) {
+		int textWidth = getPixelWidth(component);
+		if (textWidth >= lineWidth) return component;
+
+		int spaceWidth = getPixelWidth(' ') + 1;
+		int totalPadding = lineWidth - textWidth;
+		double padding = totalPadding / 2.0;
+		int spaces = (int) (padding / spaceWidth);
+
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < spaces; i++) {
+			sb.append(' ');
+		}
+		return Component.text()
+				.append(Component.text(sb.toString()))
+				.append(component)
+			.build();
 	}
 }

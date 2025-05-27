@@ -25,6 +25,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import fr.ludos.Ludos;
+import fr.ludos.Utility;
 import fr.ludos.role.Role;
 
 
@@ -154,17 +155,23 @@ public abstract class Game implements Listener {
 			meta.title(getDisplayName());
 			meta.author(Component.text("Ludos"));
 
+
 			TextComponent page =
-				getDisplayName().append(Component.text("\n\n"))
-				.append(getDescription().append(Component.text("\n\n")))
-				.append(
-					Component.text("Start")
-					.color(NamedTextColor.DARK_GREEN)
-					.decorate(TextDecoration.BOLD)
-					.clickEvent(
-						ClickEvent.runCommand(String.format("/ludos:ludos game %s start", getId()))
+				Component.text()
+					.append(Utility.centerBookLine(getDisplayName())).append(Component.text("\n\n"))
+					// .append(getDescription()).append(Component.text("\n\n"))
+					.append(
+						Utility.centerBookLine(
+							Component.text("Start")
+								.color(NamedTextColor.DARK_GREEN)
+								.decorate(TextDecoration.BOLD)
+								.clickEvent(
+									ClickEvent.runCommand(String.format("/ludos:ludos game %s start", getId()))
+								)
+						)
 					)
-				);
+				.build();
+
 			meta.addPage(page);
 
 			populateGuidebook(meta);

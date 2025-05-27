@@ -30,6 +30,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
 import fr.ludos.Ludos;
+import fr.ludos.Utility;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.game.Game;
 
@@ -209,16 +210,25 @@ public abstract class Role implements Listener {
 			meta.author(Component.text("Ludos"));
 
 			TextComponent page =
-				getDisplayName().append(Component.text("\n\n"))
-				.append(getDescription().append(Component.text("\n\n")))
-				.append(
-					Component.text("Select")
-					.color(NamedTextColor.DARK_GREEN)
-					.decorate(TextDecoration.BOLD)
-					.clickEvent(
-						ClickEvent.runCommand(String.format("/ludos:ludos role set %s", getId()))
+				Component.text()
+					.append(
+						Utility.centerBookLine(
+							getDisplayName()
+						)
+					).append(Component.text("\n\n"))
+					// .append(getDescription()).append(Component.text("\n\n"))
+					.append(
+						Utility.centerBookLine(
+							Component.text("Select")
+								.color(NamedTextColor.BLUE)
+								.decorate(TextDecoration.BOLD)
+								.clickEvent(
+									ClickEvent.runCommand(String.format("/ludos:ludos role set %s", getId()))
+								)
+						)
 					)
-				);
+				.build();
+
 			meta.addPage(page);
 
 			populateGuidebook(meta);
