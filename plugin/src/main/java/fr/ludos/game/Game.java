@@ -1,24 +1,32 @@
 package fr.ludos.game;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.stream.Collectors;
+import java.util.HashMap;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.EnumUtils;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.command.TabExecutor;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import fr.ludos.Ludos;
+import fr.ludos.Utility;
 import fr.ludos.role.Role;
-import fr.ludos.command.GameCommandOptions;
 
 
 public abstract class Game implements Listener {
@@ -36,6 +44,19 @@ public abstract class Game implements Listener {
 	public static Map<String, Builder> getRegistered() {
 		return registered;
 	}
+
+	@Nullable
+	public static Builder getGameById(String gameId) {
+		return registered.getOrDefault(gameId, null);
+	}
+
+	public static List<String> getGameIds() {
+		return registered.keySet().stream().collect( Collectors.toList() );
+	}
+	public static List<Builder> getGameBuilders() {
+		return registered.values().stream().collect( Collectors.toList() );
+	}
+
 
 	private final Map<String, Role> activeRoles = new HashMap<>();
 	public Map<String, Role> getActiveRoles() {
@@ -121,7 +142,7 @@ public abstract class Game implements Listener {
 		}
 	}
 
-	public static abstract class Builder implements TabExecutor {
+	public static abstract class Builder {
 		public final Ludos plugin;
 		public Ludos getPlugin() {
 			return plugin;
@@ -129,41 +150,48 @@ public abstract class Game implements Listener {
 
 		public abstract String getId();
 
-		@Override
-		public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-			if (args.length == 0) {
-				return false;
-			}
+		public abstract TextComponent getDisplayName();
+		public abstract TextComponent getDescription();
 
-			String arg = args[0];
-			if ( ! EnumUtils.isValidEnum(GameCommandOptions.class, arg) ) {
-				return false;
-			}
-			GameCommandOptions option = GameCommandOptions.valueOf( arg );
+		public final ItemStack createGuidebook() {
+			ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
+			BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
 
-			return gameCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
+			meta.title(getDisplayName());
+			meta.author(Component.text("Ludos"));
+
+
+			TextComponent page =
+				Component.text()
+					.append(Utility.centerBookLine(getDisplayName())).append(Component.text("\n\n"))
+					// .append(getDescription()).append(Component.text("\n\n"))
+					.append(
+						Utility.centerBookLine(
+							Component.text("Start")
+								.color(NamedTextColor.DARK_GREEN)
+								.decorate(TextDecoration.BOLD)
+								.clickEvent(
+									ClickEvent.runCommand(String.format("/ludos:ludos game %s start", getId()))
+								)
+						)
+					)
+				.build();
+
+			meta.addPage(page);
+
+			populateGuidebook(meta);
+
+			book.setItemMeta(meta.build());
+			return book;
 		}
 
-		@Override
-		public final List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-			if (args.length < 2) {
-				return Arrays.stream(GameCommandOptions.values())
-					.map(GameCommandOptions::toString)
-					.sorted()
-					.collect(Collectors.toList());
-			}
+		public void populateGuidebook(BookMetaBuilder builder) { }
 
-			String arg = args[0];
-			if ( ! EnumUtils.isValidEnum(GameCommandOptions.class, arg) ) {
-				return null;
-			}
-			GameCommandOptions option = GameCommandOptions.valueOf( arg );
 
-			return gameTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
-		}
+		public abstract boolean executeGameConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args);
+		public abstract List<String> gameConfigTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args);
+		public abstract String getGameConfigUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label);
 
-		public abstract boolean gameCommand(CommandSender sender, Command command, String label, String[] args, GameCommandOptions option);
-		public abstract List<String> gameTabComplete(CommandSender sender, Command command, String label, String[] args, GameCommandOptions option);
 
 		public abstract Game build();
 

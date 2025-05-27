@@ -3,6 +3,9 @@ package fr.ludos.role;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.event.EventHandler;
@@ -91,6 +94,16 @@ public class TrapperRole extends Role {
 		@Override
 		public Role build(Game game) {
 			return new TrapperRole(this, game);
+		}
+
+		@Override
+		public TextComponent getDisplayName() {
+			return Component.text("Trapper");
+		}
+
+		@Override
+		public TextComponent getDescription() {
+			return Component.text("");
 		}
 	}
 }

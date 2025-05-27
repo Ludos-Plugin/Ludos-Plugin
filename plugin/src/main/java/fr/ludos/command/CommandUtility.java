@@ -27,7 +27,6 @@ public class CommandUtility {
 	public static List<String> getOnlinePlayerNames() {
 		return Bukkit.getServer().getOnlinePlayers().stream()
 				.map(Player::getName)
-				.sorted()
 				.collect(Collectors.toList());
 	}
 }

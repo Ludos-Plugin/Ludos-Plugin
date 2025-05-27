@@ -2,6 +2,9 @@ package fr.ludos.role;
 
 import java.util.LinkedHashMap;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Projectile;
@@ -72,6 +75,16 @@ public class HuntsmanRole extends Role {
 		@Override
 		public HuntsmanRole build(Game game) {
 			return new HuntsmanRole(this, game);
+		}
+
+		@Override
+		public TextComponent getDisplayName() {
+			return Component.text("Huntsman");
+		}
+
+		@Override
+		public TextComponent getDescription() {
+			return Component.text("");
 		}
 	}
 }

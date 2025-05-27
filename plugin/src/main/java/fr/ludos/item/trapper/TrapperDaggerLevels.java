@@ -46,8 +46,9 @@ public enum TrapperDaggerLevels implements SpecialItemLevels<TrapperDaggerLevels
 	}
 
 	public int getLevelByTimer() {
-		int minutes = (int) (ManhuntTimer.totalSeconds / 60);
-		return minutes / 10 < 3 ? minutes / 10 : 2;
+		// int minutes = (int) (ManhuntTimer.totalSeconds / 60);
+		// return minutes / 10 < 3 ? minutes / 10 : 2;
+		return 0;
 	}
 
 	private TrapperDaggerLevels(Enchantment enchantment, int level) {
