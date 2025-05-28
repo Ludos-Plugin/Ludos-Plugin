@@ -40,24 +40,24 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 			}
 
 			owner.sendMessage(block.getType().toString());
-			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), this);
-		}
+			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld()) {
+				@Override
+				public Boolean executeEffect(Player target) {
+					if (target.getLocation().distance(this.getLocation()) >= 3) return false;
+					Material blockType = this.getLocation().getBlock().getType();
+					if (blockType != Material.GRASS_BLOCK && blockType != Material.DIRT && blockType != Material.SAND) return true;
 
-		@Override
-		public Boolean executeEffect(Player target, TrapperTrap info) {
-			if (target.getLocation().distance(info.getLocation()) >= 3) return false;
-			Material blockType = info.getLocation().getBlock().getType();
-			if (blockType != Material.GRASS_BLOCK && blockType != Material.DIRT && blockType != Material.SAND) return true;
+					this.getOwner().sendMessage("Trap triggered !");
+					target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 20, 1));
 
-			info.getOwner().sendMessage("Trap triggered !");
-			target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 20, 1));
+					this.getLocation().getBlock().setType(Material.AIR);
 
-			info.getLocation().getBlock().setType(Material.AIR);
+					// TODO Envoyer un event au plugin pour notifier que le joueur a été révélé et declencher le reveal de la position du joueur
+					//Bukkit.getServer().getPluginManager().callEvent()
 
-			// TODO Envoyer un event au plugin pour notifier que le joueur a été révélé et declencher le reveal de la position du joueur
-			//Bukkit.getServer().getPluginManager().callEvent()
-
-			return true;
+					return true;
+				}
+			};
 		}
 
 		@Override
@@ -82,20 +82,20 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 
 			trapBlock.getLocation().getBlock().setType(Material.COARSE_DIRT);
 
-			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), this);
-		}
+			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld()) {
+				@Override
+				public Boolean executeEffect(Player target) {
+					if (target.getLocation().distance(this.getLocation()) >= 7) return false;
+					if (this.getLocation().getBlock().getType() != Material.COARSE_DIRT) return true;
 
-		@Override
-		public Boolean executeEffect(Player target, TrapperTrap info) {
-			if (target.getLocation().distance(info.getLocation()) >= 7) return false;
-			if (info.getLocation().getBlock().getType() != Material.COARSE_DIRT) return true;
+					target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 10, 1));
+					this.getOwner().sendMessage("Trap triggered !");
 
-			target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 10, 1));
-			info.getOwner().sendMessage("Trap triggered !");
+					this.getLocation().getBlock().setType(Material.COBWEB);
 
-			info.getLocation().getBlock().setType(Material.COBWEB);
-
-			return true;
+					return true;
+				}
+			};
 		}
 
 		@Override
@@ -120,21 +120,21 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 
 			trapBlock.getLocation().getBlock().setType(Material.END_ROD);
 
-			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), this);
-		}
+			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld()) {
+				@Override
+				public Boolean executeEffect(Player target) {
+					if (target.getLocation().distance(this.getLocation()) >= 7) return false;
+					if (this.getLocation().getBlock().getType() != Material.END_ROD) return true;
 
-		@Override
-		public Boolean executeEffect(Player target, TrapperTrap info) {
-			if (target.getLocation().distance(info.getLocation()) >= 7) return false;
-			if (info.getLocation().getBlock().getType() != Material.END_ROD) return true;
+					this.getLocation().getBlock().setType(Material.AIR);
 
-			info.getLocation().getBlock().setType(Material.AIR);
+					this.getOwner().teleport(this.getLocation(), TeleportCause.ENDER_PEARL);
+					this.getOwner().lookAt(target, LookAnchor.EYES, LookAnchor.EYES);
+					target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 10, 1));
 
-			info.getOwner().teleport(info.getLocation(), TeleportCause.ENDER_PEARL);
-			info.getOwner().lookAt(target, LookAnchor.EYES, LookAnchor.EYES);
-			target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 10, 1));
-
-			return true;
+					return true;
+				}
+			};
 		}
 
 		@Override
@@ -179,5 +179,4 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 	}
 
 	public abstract TrapperTrap createTrap(Player owner, Block block, BlockFace face);
-	public abstract Boolean executeEffect(Player target, TrapperTrap info);
 }

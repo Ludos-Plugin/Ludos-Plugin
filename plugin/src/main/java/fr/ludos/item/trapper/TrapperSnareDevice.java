@@ -111,7 +111,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 							if (targetedPlayer.isDead()) continue;
 							if (targetedPlayer.getGameMode() == GameMode.SPECTATOR || targetedPlayer.getGameMode() == GameMode.CREATIVE) continue;
 
-							if (trap.getType().executeEffect(targetedPlayer, trap)) {
+							if (trap.executeEffect(targetedPlayer)) {
 								trapsToRemove.add(trap);
 							}
 						}

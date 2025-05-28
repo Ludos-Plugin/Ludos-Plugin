@@ -4,13 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-public class TrapperTrap {
-
-	private final TrapperSnareDeviceBranches type;
-	public TrapperSnareDeviceBranches getType() {
-		return type;
-	}
-
+public abstract class TrapperTrap {
 	private final Player owner;
 	public Player getOwner() {
 		return owner;
@@ -27,15 +21,11 @@ public class TrapperTrap {
 	}
 
 
-	public TrapperTrap(Player owner, Location location, World world, TrapperSnareDeviceBranches type) {
+	public TrapperTrap(Player owner, Location location, World world) {
 		this.owner = owner;
 		this.location = location;
 		this.world = world;
-		this.type = type;
 	}
 
-
-	public void process(Player target) {
-		type.executeEffect(target, this);
-	}
+	public abstract Boolean executeEffect(Player target);
 }
