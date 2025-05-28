@@ -25,10 +25,9 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		Component.text("Revealing")
 			.color(NamedTextColor.YELLOW)
 			.decorate(TextDecoration.ITALIC),
-		Component.text("Revealing Description")
+		Component.text("Revealing Description"),
+		Material.ENDER_EYE
 	) {
-		private final Material type = Material.ENDER_EYE;
-
 		@Override
 		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
@@ -47,11 +46,6 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 				}
 			};
 		}
-
-		@Override
-		public void onSwitchBranch(BranchItem<TrapperSnareDeviceBranches> item) {
-			item.getStack().setType(type);
-		}
 	},
 
 
@@ -59,11 +53,9 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		Component.text("Impeding")
 			.color(NamedTextColor.DARK_BLUE)
 			.decorate(TextDecoration.ITALIC),
-		Component.text("Impeding Description")
+		Component.text("Impeding Description"),
+		Material.COBWEB
 	) {
-		private final Material type = Material.COBWEB;
-
-
 		@Override
 		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
@@ -84,11 +76,6 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 				}
 			};
 		}
-
-		@Override
-		public void onSwitchBranch(BranchItem<TrapperSnareDeviceBranches> item) {
-			item.getStack().setType(type);
-		}
 	},
 
 
@@ -96,11 +83,9 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		Component.text("Rebound")
 			.color(NamedTextColor.LIGHT_PURPLE)
 			.decorate(TextDecoration.ITALIC),
-		Component.text("Rebound Description")
+		Component.text("Rebound Description"),
+		Material.ENDER_PEARL
 	) {
-		private final Material type = Material.ENDER_PEARL;
-
-
 		@Override
 		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
@@ -117,11 +102,6 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 					this.getOwner().lookAt(target, LookAnchor.EYES, LookAnchor.EYES);
 				}
 			};
-		}
-
-		@Override
-		public void onSwitchBranch(BranchItem<TrapperSnareDeviceBranches> item) {
-			item.getStack().setType(type);
 		}
 	};
 
@@ -140,11 +120,33 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		return description;
 	}
 
+	private final Material type;
+	public Material getType() {
+		return type;
+	}
 
-	private TrapperSnareDeviceBranches(Component name, Component description) {
+	private final int limit;
+	public int getLimit() {
+		return limit;
+	}
+
+
+	private TrapperSnareDeviceBranches(Component name, Component description, Material type) {
+		this(name, description, type, 0);
+	}
+	private TrapperSnareDeviceBranches(Component name, Component description, Material type, int limit) {
 		this.name = name;
 		this.description = description;
+		this.type = type;
+		this.limit = limit;
 	}
+
+	@Override
+	public void onSwitchBranch(BranchItem<TrapperSnareDeviceBranches> item) {
+		item.getStack().setType(type);
+		onSwitchTrapBranch(item);
+	}
+	protected void onSwitchTrapBranch(BranchItem<TrapperSnareDeviceBranches> item) { }
 
 
 	@Nullable

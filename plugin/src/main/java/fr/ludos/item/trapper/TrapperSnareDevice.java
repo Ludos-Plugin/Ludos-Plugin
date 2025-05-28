@@ -1,8 +1,11 @@
 package fr.ludos.item.trapper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
+
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
@@ -90,7 +93,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 	public static class Events extends SpecialItem.Events<TrapperSnareDevice> {
 		private BukkitTask trapTask = null;
-		public final ArrayList<TrapperTrap> traps = new ArrayList<>();
+		public final Map<Player, Map<TrapperSnareDeviceBranches, ArrayList<TrapperTrap>>> traps = new HashMap<>();
 
 		public Events(Game game) {
 			super(game);
@@ -104,20 +107,30 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 					var game = Game.getCurrent();
 					if (game == null) return;
 
-					Set<TrapperTrap> trapsToRemove = new HashSet<>();
-					for (TrapperTrap trap : traps) {
-						Set<Player> targetedPlayers = game.getTeamController().getEnemies(trap.getOwner());
-						for (Player targetedPlayer : targetedPlayers) {
-							if (targetedPlayer.isDead()) continue;
-							if (targetedPlayer.getGameMode() == GameMode.SPECTATOR || targetedPlayer.getGameMode() == GameMode.CREATIVE) continue;
+					for (var playerTrapEntries : traps.entrySet()) {
+						Player player = playerTrapEntries.getKey();
+						Set<Player> targetedPlayers = game.getTeamController().getEnemies(playerTrapEntries.getKey());
 
-							if (trap.canTriggerEffect(targetedPlayer)) {
-								trap.triggerEffect(targetedPlayer);
-								trapsToRemove.add(trap);
+						for (var branchTrapEntries : playerTrapEntries.getValue().entrySet()) {
+							TrapperSnareDeviceBranches branch = branchTrapEntries.getKey();
+							ArrayList<TrapperTrap> branchTraps = branchTrapEntries.getValue();
+							if (branch.getLimit() > 0 && branchTraps.size() >= branch.getLimit()) {
+								continue;
+							}
+
+							for (TrapperTrap trap : branchTraps) {
+								for (Player targetedPlayer : targetedPlayers) {
+									if (targetedPlayer.isDead()) continue;
+									if (targetedPlayer.getGameMode() == GameMode.SPECTATOR || targetedPlayer.getGameMode() == GameMode.CREATIVE) continue;
+
+									if (trap.canTriggerEffect(targetedPlayer)) {
+										trap.triggerEffect(targetedPlayer);
+										removeTrap(player, branch, trap);
+									}
+								}
 							}
 						}
 					}
-					traps.removeAll(trapsToRemove);
 				}
 			}.runTaskTimer(game.getPlugin(), 0, 1);
 		}
@@ -132,16 +145,17 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 			}
 		}
 
-
-		public void loop(int radius, TrapperTrap innerTrap, Material material) {
-			for (int x = -radius; x <= radius; x++) {
-				for (int y = -radius; y <= radius; y++) {
-					for (int z = -radius; z <= radius; z++) {
-						if (innerTrap.getLocation().getBlock().getRelative(x, y, z).getType().isAir()) {
-							innerTrap.getLocation().getBlock().getRelative(x, y, z).setType(material);
-						}
-					}
-				}
+		private ArrayList<TrapperTrap> getTraps(Player player, TrapperSnareDeviceBranches branch) {
+			return traps.computeIfAbsent(player, k -> new HashMap<>())
+				.computeIfAbsent(branch, k -> new ArrayList<>());
+		}
+		private void addTrap(Player player, TrapperSnareDeviceBranches branch, TrapperTrap trap) {
+			getTraps(player, branch).add(trap);
+		}
+		private void removeTrap(Player player, TrapperSnareDeviceBranches branch, TrapperTrap trap) {
+			ArrayList<TrapperTrap> playerTraps = getTraps(player, branch);
+			if (playerTraps != null) {
+				playerTraps.remove(trap);
 			}
 		}
 
@@ -165,11 +179,13 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 				case LEFT_CLICK_AIR, LEFT_CLICK_BLOCK -> snareDevice.cycleBranch();
 				case RIGHT_CLICK_BLOCK -> {
 					Block clickedBlock = event.getClickedBlock();
-					if (clickedBlock != null) {
-						traps.add(snareDevice.getBranch().createTrap(player, clickedBlock, event.getBlockFace()));
-					} else {
-						player.sendMessage("You must click on a block to place a trap."); // TODO: Translate
-					}
+					if (clickedBlock == null) break;
+
+					TrapperSnareDeviceBranches branch = snareDevice.getBranch();
+
+					if (player.hasCooldown(branch.getType())) break;
+
+					getTraps(player, branch).add(branch.createTrap(player, clickedBlock, event.getBlockFace()));
 				}
 				default -> player.sendMessage("You must click on a block to place a trap."); // TODO: Translate
 			}
