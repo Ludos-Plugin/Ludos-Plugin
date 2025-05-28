@@ -199,10 +199,10 @@ public class ManhuntGame extends Game {
 			hunter.showTitle(Title.title(
 				Component.text("You are a ")
 				.append(Component.text("Hunter")
-					.color(NamedTextColor.BLUE)),
+					.color(NamedTextColor.RED)),
 				Component.text("Go and seek ")
 				.append(Component.text(prey.getName())
-					.color(NamedTextColor.RED)),
+					.color(NamedTextColor.BLUE)),
 				Title.Times.times(
 					Duration.ofMillis(500),
 					Duration.ofMillis(3500),

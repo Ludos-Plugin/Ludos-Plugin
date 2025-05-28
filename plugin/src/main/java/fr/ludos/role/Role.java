@@ -223,7 +223,7 @@ public abstract class Role implements Listener {
 								.color(NamedTextColor.BLUE)
 								.decorate(TextDecoration.BOLD)
 								.clickEvent(
-									ClickEvent.runCommand(String.format("/ludos:ludos role set %s", getId()))
+									ClickEvent.runCommand(String.format("/ludos:ludos role %s", getId()))
 								)
 						)
 					)
