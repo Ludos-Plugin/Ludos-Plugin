@@ -33,29 +33,17 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
-			if (block.getType() == Material.SAND) {
-				trapBlock.getLocation().getBlock().setType(Material.SAND);
-			} else {
-				trapBlock.getLocation().getBlock().setType(Material.GRASS_BLOCK);
-			}
-
-			owner.sendMessage(block.getType().toString());
-			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld()) {
+			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), block.getType()) {
 				@Override
-				public Boolean executeEffect(Player target) {
-					if (target.getLocation().distance(this.getLocation()) >= 3) return false;
-					Material blockType = this.getLocation().getBlock().getType();
-					if (blockType != Material.GRASS_BLOCK && blockType != Material.DIRT && blockType != Material.SAND) return true;
+				public Boolean canTriggerEffect(Player target) {
+					return target.getLocation().distance(this.getLocation()) < 3;
+				}
 
-					this.getOwner().sendMessage("Trap triggered !");
+				@Override
+				public void triggerBlockTrapEffect(Player target) {
 					target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 20, 1));
-
-					this.getLocation().getBlock().setType(Material.AIR);
-
-					// TODO Envoyer un event au plugin pour notifier que le joueur a été révélé et declencher le reveal de la position du joueur
+					// TODO: Envoyer un event au plugin pour notifier que le joueur a été révélé et declencher le reveal de la position du joueur
 					//Bukkit.getServer().getPluginManager().callEvent()
-
-					return true;
 				}
 			};
 		}
@@ -80,20 +68,19 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
-			trapBlock.getLocation().getBlock().setType(Material.COARSE_DIRT);
-
-			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld()) {
+			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), Material.COARSE_DIRT) {
 				@Override
-				public Boolean executeEffect(Player target) {
-					if (target.getLocation().distance(this.getLocation()) >= 7) return false;
-					if (this.getLocation().getBlock().getType() != Material.COARSE_DIRT) return true;
+				public Boolean canTriggerEffect(Player target) {
+					return target.getLocation().distance(this.getLocation()) < 7;
+				}
 
+				@Override
+				public void triggerBlockTrapEffect(Player target) {
 					target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 10, 1));
-					this.getOwner().sendMessage("Trap triggered !");
 
+					// TODO: Find an algorithm to make a web-like structure around the trap location
+					// For now, just set the block to cobweb
 					this.getLocation().getBlock().setType(Material.COBWEB);
-
-					return true;
 				}
 			};
 		}
@@ -118,21 +105,16 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
-			trapBlock.getLocation().getBlock().setType(Material.END_ROD);
-
-			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld()) {
+			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), Material.END_ROD) {
 				@Override
-				public Boolean executeEffect(Player target) {
-					if (target.getLocation().distance(this.getLocation()) >= 7) return false;
-					if (this.getLocation().getBlock().getType() != Material.END_ROD) return true;
+				public Boolean canTriggerEffect(Player target) {
+					return target.getLocation().distance(this.getLocation()) < 7;
+				}
 
-					this.getLocation().getBlock().setType(Material.AIR);
-
+				@Override
+				public void triggerBlockTrapEffect(Player target) {
 					this.getOwner().teleport(this.getLocation(), TeleportCause.ENDER_PEARL);
 					this.getOwner().lookAt(target, LookAnchor.EYES, LookAnchor.EYES);
-					target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 10, 1));
-
-					return true;
 				}
 			};
 		}

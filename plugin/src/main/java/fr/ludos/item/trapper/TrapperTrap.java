@@ -27,5 +27,6 @@ public abstract class TrapperTrap {
 		this.world = world;
 	}
 
-	public abstract Boolean executeEffect(Player target);
+	public abstract Boolean canTriggerEffect(Player target);
+	public abstract void triggerEffect(Player target);
 }
