@@ -1,13 +1,13 @@
 package fr.ludos.command;
 
-import javax.annotation.Nullable;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
 
 public class CommandUtility {
 
@@ -27,7 +27,6 @@ public class CommandUtility {
 	public static List<String> getOnlinePlayerNames() {
 		return Bukkit.getServer().getOnlinePlayers().stream()
 				.map(Player::getName)
-				.sorted()
 				.collect(Collectors.toList());
 	}
 }

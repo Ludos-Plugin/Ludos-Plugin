@@ -1,25 +1,25 @@
 package fr.ludos.item;
 
-import org.bukkit.persistence.*;
+import java.util.List;
 
-import fr.ludos.Ludos;
-import fr.ludos.game.Game;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
-import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.persistence.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-
-import java.util.ArrayList;
-import java.util.List;
+import fr.ludos.game.Game;
 
 
 public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches>> extends SpecialItem {
+
 	public static final String BRANCH = "branch";
-	private NamespacedKey branchKey = new NamespacedKey(Ludos.getInstance(), BRANCH);
+	private final NamespacedKey branchKey;
 
 
 	private TBranches branch;
@@ -29,8 +29,10 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 	}
 
 
-	public BranchItem(ItemStack stack) throws IllegalArgumentException {
-		super(stack);
+	public BranchItem(ItemStack stack, Game game) throws IllegalArgumentException {
+		super(stack, game);
+
+		branchKey = new NamespacedKey(game.getPlugin(), BRANCH);
 
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 		if ( ! container.has(branchKey, PersistentDataType.INTEGER) ) {
@@ -40,8 +42,11 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 		this.branch = convertToBranch(getPersistentData(stack, branchKey, PersistentDataType.INTEGER));
 	}
 
-	public BranchItem(ItemStack stack, Player owner, TBranches branch) {
-		super(stack, owner);
+	public BranchItem(ItemStack stack, Player owner, TBranches branch, Game game) {
+		super(stack, owner, game);
+
+		branchKey = new NamespacedKey(getGame().getPlugin(), BRANCH);
+
 		setBranch(branch);
 	}
 
@@ -66,25 +71,31 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 
 		updateLore();
 		updateName();
+
+		branch.onSwitchBranch(this);
 	}
 
-	protected String getBranchAnnotation() {
+	protected Component getBranchAnnotation() {
 		TBranches branch = getBranch();
-		if (branch == null) return null;
+		if (branch == null) return Component.empty();
 
-		return "(" + branch.getName() + ChatColor.RESET.toString() + ChatColor.WHITE + ")";
+		return Component.text("(")
+			.append(branch.getName())
+			.append(Component.text(")"))
+			.decoration(TextDecoration.ITALIC, false);
 	}
 
 	@Override
-	protected List<String> getLore() {
-		List<String> lore = super.getLore();
-		if (lore == null) {
-			lore = new ArrayList<String>();
-		}
+	protected List<Component> getLore() {
+		List<Component> lore = super.getLore();
 
-		String branchFormatted = ChatColor.GRAY + "Type: " + ChatColor.YELLOW + branch.getName();
-
-		lore.add(branchFormatted);
+		lore.add(
+			Component.text("Type: ")
+				.color(NamedTextColor.GRAY)
+			.append(branch.getName()
+				.color(NamedTextColor.YELLOW))
+			.decoration(TextDecoration.ITALIC, false)
+		);
 		return lore;
 	}
 
@@ -94,7 +105,6 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 		public Events(Game game) {
 			super(game);
 		}
-
 
 		protected abstract TBranches[] getBranches();
 	}

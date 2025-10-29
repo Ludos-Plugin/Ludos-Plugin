@@ -1,17 +1,16 @@
 package fr.ludos.item.burrower;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-
+import java.util.HashMap;
 import javax.annotation.Nullable;
-
 import org.apache.commons.lang3.ArrayUtils;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 
 import fr.ludos.item.SpecialItemLevels;
+
 
 public enum BurrowerPickLevels implements SpecialItemLevels<BurrowerPickLevels> {
 	WOODEN      (Material.WOODEN_PICKAXE,    25,    1, 0, Collections.emptyMap()),

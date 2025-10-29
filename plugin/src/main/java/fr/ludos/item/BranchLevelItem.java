@@ -1,45 +1,37 @@
 package fr.ludos.item;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+
 import org.bukkit.persistence.*;
-
-import fr.ludos.Ludos;
-import fr.ludos.game.Game;
-
-import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.entity.Player;
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import fr.ludos.game.Game;
 
 
 public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches<TBranches>> extends BranchItem<TBranches> {
-	public BranchLevelItem(ItemStack stack, Player owner, TBranches branch) {
-		super(stack, owner, branch);
-		//TODO Auto-generated constructor stub
-	}
-
-
 	public static final String LEVELS = "levels";
-	private NamespacedKey levelsKey = new NamespacedKey(Ludos.getInstance(), LEVELS);
+	private NamespacedKey levelsKey = new NamespacedKey(getGame().getPlugin(), LEVELS);
 
 	public static final String XP = "xp";
-	private NamespacedKey xpKey = new NamespacedKey(Ludos.getInstance(), XP);
+	private NamespacedKey xpKey = new NamespacedKey(getGame().getPlugin(), XP);
 
 	private static final String MAX_LVL_LABEL = "MAX";
 
 
-
 	private int[] branchLevels;
-	private double[] branchXps;
 
 	public int[] getBranchLevels() {
 		return branchLevels;
@@ -47,6 +39,9 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 	public int getCurrentBranchLevel() {
 		return branchLevels[getBranch().index()];
 	}
+
+	private double[] branchXps;
+
 	public double[] getXps() {
 		return branchXps;
 	}
@@ -54,9 +49,8 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 		return branchXps[getBranch().index()];
 	}
 
-
-	public BranchLevelItem(ItemStack stack) throws IllegalArgumentException {
-		super(stack);
+	public BranchLevelItem(ItemStack stack, Game game) throws IllegalArgumentException {
+		super(stack, game);
 
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 		if ( ! container.has(levelsKey, PersistentDataType.INTEGER_ARRAY) ) {
@@ -70,8 +64,8 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 		this.branchXps = getPersistentData(stack, xpKey, DoubleArrayPersistentDataType.INSTANCE);
 	}
 
-	public BranchLevelItem(ItemStack stack, Player owner, TBranches branch, int[] levels, double[] xps) {
-		super(stack, owner, branch);
+	public BranchLevelItem(ItemStack stack, Player owner, TBranches branch, int[] levels, double[] xps, Game game) {
+		super(stack, owner, branch, game);
 		setXps(xps);
 		setLvls(levels);
 	}
@@ -136,11 +130,8 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 	}
 
 	@Override
-	protected List<String> getLore() {
-		List<String> lore = super.getLore();
-		if (lore == null) {
-			lore = new ArrayList<String>();
-		}
+	protected List<Component> getLore() {
+		List<Component> lore = super.getLore();
 
 		int branchCount = getBranches().length;
 		if (branchLevels == null || branchXps == null || branchLevels.length < branchCount || branchXps.length < branchCount) {
@@ -148,18 +139,30 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 		}
 		int currentLevel = getCurrentBranchLevel();
 
-		String xpFormatted = ChatColor.GRAY + "XP: " + ChatColor.YELLOW;
+		String xpLabel;
 		if ( getBranch().isMax(currentLevel) ) {
-			xpFormatted += MAX_LVL_LABEL;
+			xpLabel = MAX_LVL_LABEL;
 		} else {
 			String xpRounded = Double.toString(Math.round(getCurrentBranchXp() * 100.0) / 100.0);
-			xpFormatted += xpRounded + '/' + getBranch().getXpThreshold();
+			xpLabel = xpRounded + '/' + getBranch().getXpThreshold();
 		}
 
-		String levelFormatted = ChatColor.GRAY + "Level: " + ChatColor.YELLOW + Integer.toString(currentLevel + 1);
+		lore.add(
+			Component.text("XP: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(xpLabel)
+				.color(NamedTextColor.YELLOW))
+			.decoration(TextDecoration.ITALIC, false)
+		);
 
-		lore.add(xpFormatted);
-		lore.add(levelFormatted);
+		lore.add(
+			Component.text("Level: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(Integer.toString(currentLevel + 1))
+				.color(NamedTextColor.RED))
+			.decoration(TextDecoration.ITALIC, false)
+		);
+
 		return lore;
 	}
 
@@ -179,7 +182,7 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 			Player player = event.getEntity();
 			if (! canPlayerHaveItem(player)) return;
 
-			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
+			T specialItem = SpecialItem.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
 			if ( specialItem == null ) {
 				return;
 			}
@@ -190,16 +193,16 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 		}
 
 		protected abstract TBranches[] getBranches();
-		protected abstract T createItem(Player owner, int[] levels);
+		protected abstract T createItem(Player owner, int[] levels, Game game);
 
 		@Override
-		protected final T createItem(Player owner) {
+		protected final T createItem(Player owner, Game game) {
 			int[] levels = new int[getBranches().length];
 			if (owner != null && deadPlayerLevels != null && deadPlayerLevels.containsKey(owner.getName())) {
 				levels = deadPlayerLevels.get(owner.getName());
 			}
 
-			return createItem(owner, levels);
+			return createItem(owner, levels, game);
 		}
 	}
 }

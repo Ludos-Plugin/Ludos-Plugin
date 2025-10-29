@@ -1,18 +1,21 @@
 package fr.ludos.role;
 
-import fr.ludos.game.Game;
-import fr.ludos.item.SpecialItem;
-import fr.ludos.item.burrower.BurrowerPick;
-import fr.ludos.item.burrower.BurrowerShovel;
+import java.util.LinkedHashMap;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StructureSearchResult;
 import org.bukkit.generator.structure.StructureType;
 
-import org.bukkit.util.StructureSearchResult;
+import fr.ludos.Ludos;
+import fr.ludos.item.SpecialItem;
+import fr.ludos.item.burrower.BurrowerPick;
+import fr.ludos.item.burrower.BurrowerShovel;
+import fr.ludos.game.Game;
 
-import java.util.List;
-import java.util.Map;
 
 public class BurrowerRole extends Role {
 	public static final String id = "burrower";
@@ -46,11 +49,14 @@ public class BurrowerRole extends Role {
 	}
 
 	@Override
-	protected Map<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
-		return Map.of(
-			"pick", new BurrowerPick.Events(game),
-			"shovel", new BurrowerShovel.Events(game)
-		);
+	protected LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
+		switch (builder.getId()) {
+			default:
+				return new LinkedHashMap<>() {{
+					put("pick", new BurrowerPick.Events(game));
+					put("shovel", new BurrowerShovel.Events(game));
+				}};
+		}
 	}
 
 	// @EventHandler
@@ -126,14 +132,29 @@ public class BurrowerRole extends Role {
 
 
 	public static class Builder extends Role.Builder {
+
 		@Override
 		public String getId() {
 			return id;
 		}
 
+		public Builder(Ludos plugin) {
+			super(plugin);
+		}
+
 		@Override
-		public Role build(Game.Builder builder, Game game){
+		public Role build(Game game){
 			return new BurrowerRole(this, game);
+		}
+
+		@Override
+		public TextComponent getDisplayName() {
+			return Component.text("Burrower");
+		}
+
+		@Override
+		public TextComponent getDescription() {
+			return Component.text("");
 		}
 	}
 }

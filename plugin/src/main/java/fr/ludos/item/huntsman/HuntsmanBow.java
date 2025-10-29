@@ -1,28 +1,33 @@
 package fr.ludos.item.huntsman;
 
-import fr.ludos.role.HuntsmanRole;
-import fr.ludos.role.Role;
-import fr.ludos.game.Game;
-import fr.ludos.item.SpecialItem;
-
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.AbstractArrow.PickupStatus;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.EntityShootBowEvent;
-
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+
+import org.bukkit.Material;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.AbstractArrow.PickupStatus;
+import org.bukkit.entity.Arrow;
+
+import fr.ludos.item.SpecialItem;
+import fr.ludos.game.Game;
+import fr.ludos.role.Role;
+import fr.ludos.role.HuntsmanRole;
+
+
 public class HuntsmanBow extends SpecialItem {
-	public HuntsmanBow(ItemStack stack){
-		super(stack);
+	public HuntsmanBow(ItemStack stack, Game game) {
+		super(stack, game);
 	}
-	public HuntsmanBow(Player owner){
-		super(new ItemStack(Material.BOW), owner);
+	public HuntsmanBow(Player owner, Game game) {
+		super(new ItemStack(Material.BOW), owner, game);
 	}
 
 	@Override
@@ -31,13 +36,14 @@ public class HuntsmanBow extends SpecialItem {
 	}
 
 	@Override
-	protected String getName(){
-		return "Stolen Bow";
+	protected Component getName(){
+		return Component.text("Stolen Bow")
+			.decoration(TextDecoration.ITALIC, false);
 	}
 
 	@Override
-	public List<String> getLore(){
-		return null;
+	public List<Component> getLore(){
+		return new ArrayList<>();
 	}
 
 
@@ -64,17 +70,17 @@ public class HuntsmanBow extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected HuntsmanBow getItem(ItemStack stack) {
+		protected HuntsmanBow getItem(ItemStack stack, Game game) {
 			try {
-				HuntsmanBow bow = new HuntsmanBow(stack);
+				HuntsmanBow bow = new HuntsmanBow(stack, game);
 				return bow;
 			} catch (IllegalArgumentException e) {
 				return null;
 			}
 		}
 		@Override
-		protected HuntsmanBow createItem(Player owner) {
-			return new HuntsmanBow(owner);
+		protected HuntsmanBow createItem(Player owner, Game game) {
+			return new HuntsmanBow(owner, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {

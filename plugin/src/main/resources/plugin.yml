@@ -6,7 +6,5 @@ main: fr.ludos.Ludos
 
 
 commands:
-   game:
+   ludos:
       description: "The Main Ludos command"
-   role:
-      description: "Pick a role to use when playing a Ludos game"

@@ -5,28 +5,44 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 
-import fr.ludos.Ludos;
 
 public abstract class TeamController implements Listener {
+	private boolean started = false;
+	protected final Game game;
+	protected final Scoreboard scoreboard;
 
-	protected Scoreboard scoreboard;
 
-
-	public TeamController(Scoreboard scoreboard) {
+	public TeamController(Game game, Scoreboard scoreboard) {
+		this.game = game;
 		this.scoreboard = scoreboard;
-		Bukkit.getPluginManager().registerEvents(this, Ludos.getInstance());
 	}
 
-	public void stop() {
-		HandlerList.unregisterAll(this);
+	public final void start() {
+		if (started) return;
+		started = true;
+
+		Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
+
+		onStart();
 	}
+	protected void onStart() { }
+
+	public final void stop() {
+		if (! started) return;
+		started = false;
+
+		HandlerList.unregisterAll(this);
+
+		onStop();
+	}
+	protected void onStop() { }
 
 
 	public abstract Collection<Player> getPlayers();

@@ -1,30 +1,37 @@
 package fr.ludos.item;
 
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+
 import org.bukkit.persistence.*;
-
-import fr.ludos.Ludos;
-import fr.ludos.game.Game;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import fr.ludos.game.Game;
+
 
 public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extends SpecialItem {
-	public static final String LEVEL = "level";
-	private NamespacedKey levelKey = new NamespacedKey(Ludos.getInstance(), LEVEL);
 
+	public LevelItem(ItemStack stack, Player owner, Game game) {
+		super(stack, owner, game);
+		this.levelKey = new NamespacedKey(game.getPlugin(), LEVEL);
+		this.xpKey = new NamespacedKey(game.getPlugin(), XP);
+	}
+
+	public static final String LEVEL = "level";
 	public static final String XP = "xp";
-	private NamespacedKey xpKey = new NamespacedKey(Ludos.getInstance(), XP);
+	private final NamespacedKey levelKey;
+	private final NamespacedKey xpKey;
 
 	private static final String MAX_LVL_LABEL = "MAX";
 
@@ -40,8 +47,10 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 
 	public abstract TLevel convertToLevel(int level);
 
-	public LevelItem(ItemStack stack) throws IllegalArgumentException {
-		super(stack);
+	public LevelItem(ItemStack stack, Game game) throws IllegalArgumentException {
+		super(stack, game);
+		this.levelKey = new NamespacedKey(game.getPlugin(), LEVEL);
+		this.xpKey = new NamespacedKey(game.getPlugin(), XP);
 
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 		if ( ! container.has(levelKey, PersistentDataType.INTEGER) ) {
@@ -55,12 +64,15 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 		this.xp = getPersistentData(stack, xpKey, PersistentDataType.DOUBLE);
 	}
 
-	public LevelItem(ItemStack stack, Player owner, TLevel level) {
-		this(stack, owner, level, 0);
+	public LevelItem(ItemStack stack, Player owner, TLevel level, Game game) {
+		this(stack, owner, level, 0, game);
 	}
 
-	public LevelItem(ItemStack stack, Player owner, TLevel level, double xp) {
-		super(stack, owner);
+	public LevelItem(ItemStack stack, Player owner, TLevel level, double xp, Game game) {
+		super(stack, owner, game);
+
+		this.levelKey = new NamespacedKey(game.getPlugin(), LEVEL);
+		this.xpKey = new NamespacedKey(game.getPlugin(), XP);
 
 		setLvl(level);
 		setXp(xp);
@@ -115,27 +127,30 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 	}
 
 	@Override
-	public List<String> getLore() {
-		List<String> lore = super.getLore();
-		if (lore == null) {
-			lore = new ArrayList<String>();
-		}
-		String xpFormatted = ChatColor.GRAY + "XP: " + ChatColor.YELLOW;
+	public List<Component> getLore() {
+		List<Component> lore = super.getLore();
 
+		String xpLabel;
 		if ( level.isMax() ) {
-			xpFormatted += MAX_LVL_LABEL;
+			xpLabel = MAX_LVL_LABEL;
 		} else {
 			String xpRounded = Double.toString(Math.round(xp * 100.0) / 100.0);
-			xpFormatted += xpRounded + '/' + level.getXpThreshold();
+			xpLabel = xpRounded + '/' + level.getXpThreshold();
 		}
 
-		lore.add(xpFormatted);
+		lore.add(
+			Component.text("XP: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(xpLabel)
+				.color(NamedTextColor.RED))
+			.decoration(TextDecoration.ITALIC, false)
+		);
+
 		return lore;
 	}
 
 
 	public static abstract class Events<T extends LevelItem<TLevels>, TLevels extends SpecialItemLevels<TLevels>> extends SpecialItem.Events<T> {
-
 		protected final TLevels baseLevel;
 		private Map<String, TLevels> deadPlayerLevels = new HashMap<>();
 
@@ -151,14 +166,14 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 		}
 
 
-		protected abstract T createItem(Player owner, TLevels level);
+		protected abstract T createItem(Player owner, TLevels level, Game game);
 
 		@EventHandler
 		public void onPlayerDeath(PlayerDeathEvent event) {
 			Player player = event.getEntity();
 			if (! canPlayerHaveItem(player)) return;
 
-			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
+			T specialItem = SpecialItem.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
 			if ( specialItem == null ) {
 				return;
 			}
@@ -167,7 +182,7 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 		}
 
 		@Override
-		protected final T createItem(Player owner) {
+		protected final T createItem(Player owner, Game game) {
 			TLevels level = this.baseLevel;
 
 			if (owner != null && deadPlayerLevels != null && deadPlayerLevels.containsKey(owner.getName())) {
@@ -175,7 +190,7 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 				level = deadLevels != null ? deadLevels : level;
 			}
 
-			return createItem(owner, level);
+			return createItem(owner, level, game);
 		}
 	}
 }

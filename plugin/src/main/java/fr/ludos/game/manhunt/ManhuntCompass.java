@@ -1,29 +1,31 @@
 package fr.ludos.game.manhunt;
 
-import fr.ludos.game.Game;
-import fr.ludos.item.SpecialItem;
-
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.CompassMeta;
-
 import java.util.List;
 import java.util.ArrayList;
 import javax.annotation.Nullable;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.CompassMeta;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
+
+import fr.ludos.item.SpecialItem;
+import fr.ludos.game.Game;
 
 
 public class ManhuntCompass extends SpecialItem {
 
-	public ManhuntCompass(ItemStack item) {
-		super(item);
+	public ManhuntCompass(ItemStack item, Game game) {
+		super(item, game);
 	}
 
-	public ManhuntCompass(Player owner) {
-		super(createItemStack(), owner);
+	public ManhuntCompass(Player owner, Game game) {
+		super(createItemStack(), owner, game);
 	}
 
 	private static ItemStack createItemStack() {
@@ -60,27 +62,33 @@ public class ManhuntCompass extends SpecialItem {
 	}
 
 	@Override
-	public List<String> getLore() {
-		return new ArrayList<String>(){{ add("Every three minutes, the position of prey is revealed through the compass."); }};
+	public List<Component> getLore() {
+		return new ArrayList<Component>(){{
+			add(
+				Component.text("Every three minutes, the position of prey is revealed through the compass.")
+					.decoration(TextDecoration.ITALIC, false)
+			);
+		}};
 	}
 
 	@Override
-	public String getName() {
-		return "Hunter's Compass";
+	public Component getName() {
+		return Component.text("Hunter's Compass")
+			.decoration(TextDecoration.ITALIC, false);
 	}
 
 	@Nullable
-	public static ManhuntCompass getItem(ItemStack stack) {
+	public static ManhuntCompass getItem(ItemStack stack, Game game) {
 		try {
-			ManhuntCompass compass = new ManhuntCompass(stack);
+			ManhuntCompass compass = new ManhuntCompass(stack, game);
 			return compass;
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
 	}
 
-	public static ManhuntCompass createItem(Player owner) {
-		return new ManhuntCompass(owner);
+	public static ManhuntCompass createItem(Player owner, Game game) {
+		return new ManhuntCompass(owner, game);
 	}
 
 	public static class Events extends SpecialItem.Events<ManhuntCompass> {
@@ -91,12 +99,12 @@ public class ManhuntCompass extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected ManhuntCompass getItem(ItemStack stack) {
-			return ManhuntCompass.getItem(stack);
+		protected ManhuntCompass getItem(ItemStack stack, Game game) {
+			return ManhuntCompass.getItem(stack, game);
 		}
 
-		protected ManhuntCompass createItem(Player owner) {
-			return ManhuntCompass.createItem(owner);
+		protected ManhuntCompass createItem(Player owner, Game game) {
+			return ManhuntCompass.createItem(owner, game);
 		}
 
 		@Override

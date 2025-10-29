@@ -2,8 +2,9 @@ package fr.ludos.item;
 
 import java.util.Arrays;
 
-import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.persistence.PersistentDataAdapterContext;
+
 
 public class DoubleArrayPersistentDataType implements PersistentDataType<long[], double[]> {
 
