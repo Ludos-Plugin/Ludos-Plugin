@@ -32,6 +32,8 @@ sourceSets {
     }
 }
 
-sourceCompatibility = targetCompatibility = '17'
+tasks.withType(Jar).configureEach {
+    destinationDirectory = layout.buildDirectory.dir("output")
+}
+
 compileJava.options.encoding = 'UTF-8'
-setLibsDirName('/output')
