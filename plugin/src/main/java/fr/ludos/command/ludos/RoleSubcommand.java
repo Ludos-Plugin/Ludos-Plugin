@@ -1,6 +1,7 @@
 package fr.ludos.command.ludos;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,114 +36,131 @@ public final class RoleSubcommand implements TabExecutor {
 
 		String arg = args[0].toLowerCase();
 		RoleSubcommandOptions option = Arrays.stream(RoleSubcommandOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
-		if (option != null) {
-			switch (option) {
-			case get:
-				Player getTarget = CommandUtility.getPlayerFromArgsOrSender(args, 0, sender);
-				if (getTarget == null) {
-					sender.sendMessage(noRoleLabel); // TODO: Translate
-					return true;
-				}
+		if (option == null) return false;
 
-				Role.Builder role = Role.getRole(getTarget);
-				sender.sendMessage(role == null ? noRoleLabel : role.getId());
-			case none:
-				Player target = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
-				Role.removeRole(target, plugin);
-				return true;
-			case help:
-				sender.sendMessage(getUsage(sender, command, label));
+		return onCommandOption(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
+	}
+	private boolean onCommandOption(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args, @NotNull RoleSubcommandOptions option) {
+		switch (option) {
+		case get:
+			Player getTarget = CommandUtility.getPlayerFromArgsOrSender(args, 0, sender);
+			if (getTarget == null) {
+				sender.sendMessage(noRoleLabel); // TODO: Translate
 				return true;
 			}
-		}
 
-		Role.Builder role = Role.getRoleById(arg);
-		if (role == null) {
-			sender.sendMessage("Role not found: " + arg);
-			return false;
-		}
-
-		return onRoleCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), role);
-	}
-
-	private boolean onRoleCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args, @NotNull Role.Builder role) {
-		RoleOptions option;
-		if (args.length == 0) {
-			option = RoleOptions.set;
-		}
-		else {
-			String arg = args[0];
-			option = Arrays.stream(RoleOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
-			if (option == null) return false;
-		}
-
-		switch (option) {
+			Role.Builder getRole = Role.getRole(getTarget);
+			sender.sendMessage(getRole == null ? noRoleLabel : getRole.getId());
+			return true;
 		case set:
-			Player setTarget = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
-			if (setTarget == null) return false;
+			if (args.length < 1) break;
 
-			Role.setRole(setTarget, role.getId(), plugin);
+			String roleId = args[0].toLowerCase();
+			Role.Builder setRole = Role.getRoleById(roleId);
+			if (setRole == null) {
+				sender.sendMessage("Role not found: " + roleId);
+				break;
+			}
+
+			Player setTarget = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
+			if (setTarget == null) {
+				sender.sendMessage("Player not found.");
+				break;
+			}
+
+			Role.setRole(setTarget, roleId, plugin);
 			if (setTarget != sender) {
-				sender.sendMessage("The role of Player " + setTarget.getName() + " is now " + role.getId());
+				sender.sendMessage("The role of Player " + setTarget.getName() + " is now " + roleId);
+			} else {
+				sender.sendMessage("Your role is now " + roleId);
 			}
 			return true;
 		case config:
-			return role.executeRoleConfig(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+			if (args.length < 1) break;
+
+			String configRoleId = args[0].toLowerCase();
+			Role.Builder configRole = Role.getRoleById(configRoleId);
+			if (configRole == null) {
+				sender.sendMessage("Role not found: " + configRoleId);
+				break;
+			}
+
+			return configRole.executeRoleConfig(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 		case guidebook:
-			if (args.length == 0) return false;
-			if (!(sender instanceof Player player)) return false;
+			if (args.length < 1) break;
 
 			String guidebookRoleId = args[0].toLowerCase();
-			if (! Role.getRegistered().containsKey(guidebookRoleId)) return false;
-
 			Role.Builder guidebookRole = Role.getRoleById(guidebookRoleId);
-			if (guidebookRole == null) return false;
+			if (guidebookRole == null) break;
+
+			Player player = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
+			if (player == null) break;
 
 			ItemStack book = guidebookRole.createGuidebook();
 			player.getInventory().addItem(book);
 			return true;
-		case help:
-			sender.sendMessage(role.getRoleConfigUsage(sender, command, label));
+		case reset:
+			Player target = CommandUtility.getPlayerFromArgsOrSender(args, 0, sender);
+			Role.removeRole(target, plugin);
+
 			return true;
-		default:
-			return false;
+		case help:
+			sender.sendMessage(getUsage(sender, command, label));
+
+			return true;
 		}
+
+		return false;
 	}
 
 	@Override
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length <= 1) {
-			return Stream.concat(
-				Role.getRegistered().keySet().stream(),
-				Arrays.stream(RoleSubcommandOptions.values()).map(RoleSubcommandOptions::toString)
-			)
+			return Arrays.stream(RoleSubcommandOptions.values())
+				.map(RoleSubcommandOptions::toString)
 				.collect(Collectors.toList());
 		}
 
-		String roleId = args[0].toLowerCase();
-
-		Role.Builder role = Role.getRegistered().get(roleId);
-		if (role == null) return null;
-
-		return onRoleTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length), role);
-	}
-
-	private List<String> onRoleTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args, @NotNull Role.Builder role) {
-		if (args.length <= 1) {
-			return Arrays.stream(RoleOptions.values()).map(RoleOptions::toString)
-				.collect(Collectors.toList());
-		}
-
-		String arg = args[0];
-		RoleOptions option = Arrays.stream(RoleOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+		String arg = args[0].toLowerCase();
+		RoleSubcommandOptions option = Arrays.stream(RoleSubcommandOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
 		if (option == null) return null;
 
+		return onRoleTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
+	}
+	private List<String> onRoleTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args, @NotNull RoleSubcommandOptions option) {
 		switch (option) {
+		case get:
+			if (args.length == 1)
+				return CommandUtility.getOnlinePlayerNames();
+		case set:
+			if (args.length == 1)
+				return Role.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+
+			if (args.length == 2)
+				return CommandUtility.getOnlinePlayerNames();
 		case config:
-			return role.roleConfigTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-		default:
-			return null;
+			if (args.length == 1)
+				return Role.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+
+			String roleId = args[0].toLowerCase();
+			Role.Builder configRole = Role.getRoleById(roleId);
+			if (configRole == null) break;
+
+			return configRole.roleConfigTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+		case guidebook:
+			if (args.length == 1)
+				return Role.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+
+			if (args.length == 2)
+				return CommandUtility.getOnlinePlayerNames();
+		case reset:
+			if (args.length == 1)
+				return CommandUtility.getOnlinePlayerNames();
+		case help:
+			break;
 		}
+
+		return null;
 	}
 
 
@@ -151,10 +169,7 @@ public final class RoleSubcommand implements TabExecutor {
 
 		usage.append('<');
 		usage.append(
-			Stream.concat(
-				Role.getRegistered().keySet().stream().sorted(),
-				Arrays.stream(RoleSubcommandOptions.values()).sorted().map(RoleSubcommandOptions::toString)
-			)
+			Arrays.stream(RoleSubcommandOptions.values()).sorted().map(RoleSubcommandOptions::toString)
 				.collect(Collectors.joining(" | ") )
 		);
 		usage.append('>');
@@ -163,7 +178,7 @@ public final class RoleSubcommand implements TabExecutor {
 
 		usage.append('[');
 		usage.append(
-			Arrays.stream(RoleOptions.values()).sorted().map(RoleOptions::toString)
+			Role.getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining( " | "))
 		);
 		usage.append(']');

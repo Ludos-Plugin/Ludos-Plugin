@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
+import fr.ludos.command.CommandUtility;
 import fr.ludos.game.Game;
 
 public final class GameSubcommand implements TabExecutor {
@@ -33,91 +34,102 @@ public final class GameSubcommand implements TabExecutor {
 
 		String arg = args[0].toLowerCase();
 		GameSubcommandOptions option = Arrays.stream(GameSubcommandOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
-		if (option != null) {
-			switch (option) {
-			case stop:
-				Game.stopCurrentGame();
-				return true;
-			case help:
-				sender.sendMessage(getUsage(sender, command, label));
-				return true;
-			}
-		}
+		if (option == null) return false;
 
-		Game.Builder game = Game.getRegistered().get(arg);
-		if (game == null) {
-			sender.sendMessage("Game not found: " + arg);
-			return false;
-		}
-
-		return onGameCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), game);
+		return onCommandOption(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
 	}
-
-	private boolean onGameCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args, @NotNull Game.Builder game) {
-		GameOptions option;
-		if (args.length == 0) {
-			option = GameOptions.start;
-		}
-		else {
-			String arg = args[0];
-			option = Arrays.stream(GameOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
-			if (option == null) return false;
-		}
-
+	private boolean onCommandOption(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args, @NotNull GameSubcommandOptions option) {
 		switch (option) {
 		case start:
-			game.build().start();
+			if (args.length < 1) break;
+
+			String startGameId = args[0].toLowerCase();
+			if ( !Game.getRegistered().containsKey(startGameId) ) {
+				sender.sendMessage("Game not found: " + startGameId);
+				break;
+			}
+
+			Game.startGame(startGameId);
+			return true;
+		case stop:
+			Game.stopCurrentGame();
 			return true;
 		case config:
-			return game.executeGameConfig(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-		case help:
-			sender.sendMessage(game.getGameConfigUsage(sender, command, label));
-			return true;
-		case guidebook:
-			if (!(sender instanceof Player player)) return false;
+			if (args.length < 1) break;
 
-			ItemStack book = game.createGuidebook();
+			String configGameId = args[0].toLowerCase();
+			Game.Builder configGame = Game.getRegistered().get(configGameId);
+			if (configGame == null) {
+				sender.sendMessage("Game not found: " + configGameId);
+				break;
+			}
+
+			return configGame.executeGameConfig(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+		case guidebook:
+			if (args.length < 1) break;
+
+			String guidebookGameId = args[0].toLowerCase();
+			Game.Builder guidebookGame = Game.getRegistered().get(guidebookGameId);
+			if (guidebookGame == null) {
+				sender.sendMessage("Game not found: " + guidebookGameId);
+				break;
+			}
+
+			Player player = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
+			if (player == null) break;
+
+			ItemStack book = guidebookGame.createGuidebook();
 			player.getInventory().addItem(book);
 			return true;
-		default:
-			return false;
+		case help:
+			sender.sendMessage(getUsage(sender, command, label));
+			return true;
 		}
+
+		return false;
 	}
 
 	@Override
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length <= 1) {
-			return Stream.concat(
-				Game.getRegistered().keySet().stream(),
-				Arrays.stream(GameSubcommandOptions.values()).map(GameSubcommandOptions::toString)
-			)
+			return Arrays.stream(GameSubcommandOptions.values())
+				.map(GameSubcommandOptions::toString)
 				.collect(Collectors.toList());
 		}
 
-		String gameId = args[0].toLowerCase();
-
-		Game.Builder game = Game.getRegistered().get(gameId);
-		if (game == null) return null;
-
-		return onGameTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length), game);
-	}
-
-	private List<String> onGameTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args, @NotNull Game.Builder game) {
-		if (args.length <= 1) {
-			return Arrays.stream(GameOptions.values()).map(GameOptions::toString)
-				.collect(Collectors.toList());
-		}
-
-		String arg = args[0];
-		GameOptions option = Arrays.stream(GameOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+		String arg = args[0].toLowerCase();
+		GameSubcommandOptions option = Arrays.stream(GameSubcommandOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
 		if (option == null) return null;
 
+		return onTabCompleteOption(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
+	}
+	private List<String> onTabCompleteOption(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args, @NotNull GameSubcommandOptions option) {
 		switch (option) {
+		case start:
+			if (args.length == 1)
+				return Game.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+		case stop:
+			break;
 		case config:
-			return game.gameConfigTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-		default:
-			return null;
+			if (args.length == 1)
+				return Game.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+
+			String configGameId = args[0].toLowerCase();
+			Game.Builder configGame = Game.getRegistered().get(configGameId);
+			if (configGame == null) break;
+
+			return configGame.gameConfigTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+		case guidebook:
+			if (args.length == 1)
+				return Game.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+
+			if (args.length == 2)
+				return CommandUtility.getOnlinePlayerNames();
+		case help:
+			break;
 		}
+
+		return null;
 	}
 
 
@@ -126,10 +138,7 @@ public final class GameSubcommand implements TabExecutor {
 
 		usage.append('<');
 		usage.append(
-			Stream.concat(
-				Game.getRegistered().keySet().stream().sorted(),
-				Arrays.stream(GameSubcommandOptions.values()).sorted().map(GameSubcommandOptions::toString)
-			)
+			Arrays.stream(GameSubcommandOptions.values()).sorted().map(GameSubcommandOptions::toString)
 				.collect(Collectors.joining(" | "))
 		);
 		usage.append('>');
@@ -138,7 +147,7 @@ public final class GameSubcommand implements TabExecutor {
 
 		usage.append('<');
 		usage.append(
-			Arrays.stream(GameOptions.values()).sorted().map(GameOptions::toString)
+			Game.getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))
 		);
 		usage.append('>');

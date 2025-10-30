@@ -705,15 +705,18 @@ public class ManhuntGame extends Game {
 
 			case area:
 				// Options are : large, medium, small
-				return areaOptions;
+				if (args.length == 1)
+					return areaOptions;
 
 			case location:
 				// Options are : random, here
-				return locationOptions;
+				if (args.length == 1)
+					return locationOptions;
 
 			case reveal:
 				// Options are : short, medium, long
-				return revealOptions;
+				if (args.length == 1)
+					return revealOptions;
 			}
 
 			return null;

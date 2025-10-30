@@ -141,7 +141,7 @@ public abstract class Role implements Listener {
 	}
 
 	public static void registerRole(Builder constructor) {
-		Role.registered.put(constructor.getId(), constructor);
+		Role.registered.put(constructor.getId().toLowerCase(), constructor);
 	}
 
 	public static List<Player> getPlayersOfRole(String roleId) {
