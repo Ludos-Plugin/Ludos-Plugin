@@ -41,21 +41,31 @@ public final class ManhuntTeamController extends TeamController {
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<Player> players, @Nullable Player prey) {
 		super(game, game.getScoreboard());
 
+		Set<Player> finalPlayers = new HashSet<>();
 		if (players == null) {
-			players = new HashSet<>(Bukkit.getOnlinePlayers());
+			finalPlayers.addAll(Bukkit.getOnlinePlayers());
+		} else {
+			finalPlayers.addAll(players.stream()
+				.filter(p -> p.isOnline())
+				.collect(Collectors.toSet())
+			);
+		}
+
+		if (finalPlayers.isEmpty()) {
+			throw new IllegalArgumentException("No players available (Check if the configured players are online)");
 		}
 
 		if (prey == null) {
-			Player[] playersArray = players.toArray(new Player[players.size()]);
-			prey = playersArray[ new Random().nextInt(players.size()) ];
+			Player[] playersArray = finalPlayers.toArray(new Player[finalPlayers.size()]);
+			prey = playersArray[ new Random().nextInt(playersArray.length) ];
+		}
+		else if (!prey.isOnline()) {
+			throw new IllegalArgumentException("Configured Prey is not online");
 		}
 
-		if (prey == null) {
-			throw new IllegalArgumentException("Prey could not be selected");
-		}
-		players.remove(prey);
+		finalPlayers.remove(prey);
 
-		this.selectedPlayers = players;
+		this.selectedPlayers = finalPlayers;
 		this.selectedPrey = prey;
 	}
 
