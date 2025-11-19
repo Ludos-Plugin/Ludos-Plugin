@@ -31,6 +31,7 @@ import org.bukkit.entity.Player;
 
 import fr.ludos.Ludos;
 import fr.ludos.Utility;
+import fr.ludos.book.BookUtility;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.game.Game;
 
@@ -201,6 +202,27 @@ public abstract class Role implements Listener {
 		public abstract TextComponent getDisplayName();
 		public abstract TextComponent getDescription();
 
+		public TextComponent[] buildPages() {
+			return BookUtility.truncatePage(
+				Component.text()
+					.append(BookUtility.centerBookLine(getDisplayName()))
+					.append(Component.text("\n\n"))
+					.append(getDescription())
+					.append(Component.text("\n\n"))
+					.append(
+						BookUtility.centerBookLine(
+							Component.text("Choose Role")
+								.color(NamedTextColor.DARK_GREEN)
+								.decorate(TextDecoration.BOLD)
+								.clickEvent(
+									ClickEvent.runCommand(String.format("/ludos:ludos role set %s", getId()))
+								)
+						)
+					)
+				.build()
+			);
+		}
+
 		public final ItemStack createGuidebook() {
 			ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
 			BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
@@ -208,27 +230,9 @@ public abstract class Role implements Listener {
 			meta.title(getDisplayName());
 			meta.author(Component.text("Ludos"));
 
-			TextComponent page =
-				Component.text()
-					.append(
-						Utility.centerBookLine(
-							getDisplayName()
-						)
-					).append(Component.text("\n\n"))
-					// .append(getDescription()).append(Component.text("\n\n"))
-					.append(
-						Utility.centerBookLine(
-							Component.text("Select")
-								.color(NamedTextColor.BLUE)
-								.decorate(TextDecoration.BOLD)
-								.clickEvent(
-									ClickEvent.runCommand(String.format("/ludos:ludos role %s", getId()))
-								)
-						)
-					)
-				.build();
-
-			meta.addPage(page);
+			for (TextComponent page : buildPages()) {
+				meta.addPage(page);
+			}
 
 			populateGuidebook(meta);
 
