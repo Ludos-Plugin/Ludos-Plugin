@@ -171,7 +171,6 @@ public abstract class Role implements Listener {
 		if ( playerRoles.containsKey(player.getName()) && playerRoles.get(player.getName()).equalsIgnoreCase(roleId) ) return;
 
 		playerRoles.put(player.getName(), roleId);
-		player.sendMessage("Your role is now " + roleId);
 
 		plugin.getConfig().set(rolesKey + '.' + player.getName(), roleId);
 		plugin.saveConfig();
