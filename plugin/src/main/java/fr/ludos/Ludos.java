@@ -22,6 +22,7 @@ import fr.ludos.game.manhunt.ManhuntGame;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
+import fr.ludos.role.TankRole;
 import fr.ludos.role.TrapperRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -44,6 +45,7 @@ public class Ludos extends JavaPlugin implements Listener {
 		Role.registerRole(new HuntsmanRole.Builder(this));
 		Role.registerRole(new BurrowerRole.Builder(this));
 		Role.registerRole(new TrapperRole.Builder(this));
+		Role.registerRole(new TankRole.Builder(this));
 
 
 
