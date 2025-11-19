@@ -165,8 +165,9 @@ public class ManhuntGame extends Game {
 
 		prey.showTitle(Title.title(
 			Component.text("You are the ")
-			.append(Component.text("Prey")
-				.color(NamedTextColor.BLUE)),
+				.append(Component.text("Prey")
+					.color(NamedTextColor.BLUE)
+				),
 			Component.text("Run for your life"),
 			Title.Times.times(
 				Duration.ofMillis(500),
@@ -546,7 +547,8 @@ public class ManhuntGame extends Game {
 		public TextComponent getDescription() {
 			return Component.text("A game of hide and seek.\n" +
 				"As the Prey, survive for as long as possible, while the Hunters try to find you.\n" +
-				"The Hunters possess a Compass that will update regularly to point at the Prey's position.");
+				"The Hunters possess a Compass that will update regularly to point at the Prey's position."
+			);
 		}
 
 		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
