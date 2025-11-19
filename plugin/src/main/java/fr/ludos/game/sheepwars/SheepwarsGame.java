@@ -1,39 +1,33 @@
 package fr.ludos.game.sheepwars;
 
-import java.util.Optional;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.EnumUtils;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
-
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scoreboard.Scoreboard;
 
 import fr.ludos.Ludos;
-import fr.ludos.Utility;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.game.Game;
 import fr.ludos.game.TeamController;
+import fr.ludos.item.sheep.Sheep;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 
 public class SheepwarsGame extends Game {
@@ -55,10 +49,13 @@ public class SheepwarsGame extends Game {
 
 	private SheepwarsTeamController teamController;
 	private Scoreboard scoreboard;
+	private final Sheep sheepEvents;
 
 	public SheepwarsGame(Builder builder) {
 		super(builder);
 		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+
+		this.sheepEvents = new Sheep();
 	}
 
 	public Scoreboard getScoreboard() {
@@ -108,19 +105,22 @@ public class SheepwarsGame extends Game {
 	@Override
 	protected void onStart() {
 		teamController.start();
+		Bukkit.getPluginManager().registerEvents(sheepEvents, this.getBuilder().getPlugin());
 
 		setupWorldBorder();
 
 		for (Player player : teamController.getSelectedPlayers()) {
 			player.setGameMode(GameMode.SURVIVAL);
 			player.setHealth(player.getMaxHealth());
-			player.setFoodLevel(20);
+			player.setFoodLevel(10);
+			player.setFoodLevel(10);
 			player.setSaturation(20);
 			player.setScoreboard(scoreboard);
+
 		}
 
 		Bukkit.broadcast(
-			Component.text("Sheepwars has started! Use your Cow Eggs wisely!")
+			Component.text("Sheepwars has started! Use your Sheep Eggs wisely!")
 				.color(NamedTextColor.GREEN)
 		);
 	}
@@ -130,6 +130,8 @@ public class SheepwarsGame extends Game {
 		if (teamController != null) {
 			teamController.stop();
 		}
+
+		HandlerList.unregisterAll(sheepEvents);
 
 		resetWorldBorder();
 
@@ -145,69 +147,69 @@ public class SheepwarsGame extends Game {
 
 	private void setupWorldBorder() {
 		FileConfiguration config = getBuilder().getPlugin().getConfig();
-		
+
 		String worldUUIDStr = config.getString(borderWorldUUIDPath);
 		World world = null;
-		
+
 		if (worldUUIDStr != null) {
 			try {
 				UUID worldUUID = UUID.fromString(worldUUIDStr);
 				world = Bukkit.getWorld(worldUUID);
-			} catch (IllegalArgumentException e) { 
-                e.printStackTrace();
-            }
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			}
 		}
-		
+
 		if (world == null) {
 			world = Bukkit.getWorlds().get(0);
 		}
 
-		WorldBorder border = world.getWorldBorder();
-		
-		SheepwarsAreaOptions areaOption = SheepwarsAreaOptions.medium;
-		String areaStr = config.getString(areaPath);
-		if (areaStr != null) {
-			SheepwarsAreaOptions configArea = EnumUtils.getEnum(SheepwarsAreaOptions.class, areaStr);
-			if (configArea != null) {
-				areaOption = configArea;
-			}
-		}
-		
-		Location centerLocation = world.getSpawnLocation();
-		String locationStr = config.getString(locationPath);
-		if ("here".equals(locationStr)) {
-			Optional<Player> firstPlayer = teamController.getSelectedPlayers().stream().findFirst();
-			if (firstPlayer.isPresent()) {
-				centerLocation = firstPlayer.get().getLocation();
-			}
-		} else if ("random".equals(locationStr)) {
-			centerLocation = Utility.getGroundedLocationAround(
-				world.getSpawnLocation(), 
-				100, 
-				1000, 
-				world.getSpawnLocation()
-			);
-		}
-		
-		border.setCenter(centerLocation);
-		border.setSize(areaOption.getSize() * 2);
-		border.setWarningDistance(50);
-		border.setDamageAmount(1.0);
-		border.setDamageBuffer(10.0);
+		// WorldBorder border = world.getWorldBorder();
 
-		config.set(borderWorldUUIDPath, world.getUID().toString());
-		config.set(borderLocationPath, 
-			centerLocation.getX() + "," + 
-			centerLocation.getY() + "," + 
-			centerLocation.getZ()
-		);
-		getBuilder().getPlugin().saveConfig();
+		// SheepwarsAreaOptions areaOption = SheepwarsAreaOptions.medium;
+		// String areaStr = config.getString(areaPath);
+		// if (areaStr != null) {
+		// 	SheepwarsAreaOptions configArea = EnumUtils.getEnum(SheepwarsAreaOptions.class, areaStr);
+		// 	if (configArea != null) {
+		// 		areaOption = configArea;
+		// 	}
+		// }
+
+		// Location centerLocation = world.getSpawnLocation();
+		// String locationStr = config.getString(locationPath);
+		// if ("here".equals(locationStr)) {
+		// 	Optional<Player> firstPlayer = teamController.getSelectedPlayers().stream().findFirst();
+		// 	if (firstPlayer.isPresent()) {
+		// 		centerLocation = firstPlayer.get().getLocation();
+		// 	}
+		// } else if ("random".equals(locationStr)) {
+		// 	centerLocation = Utility.getGroundedLocationAround(
+		// 		world.getSpawnLocation(),
+		// 		100,
+		// 		1000,
+		// 		world.getSpawnLocation()
+		// 	);
+		// }
+
+		// border.setCenter(centerLocation);
+		// border.setSize(areaOption.getSize() * 2);
+		// border.setWarningDistance(50);
+		// border.setDamageAmount(1.0);
+		// border.setDamageBuffer(10.0);
+
+		// config.set(borderWorldUUIDPath, world.getUID().toString());
+		// config.set(borderLocationPath,
+		// 	centerLocation.getX() + "," +
+		// 	centerLocation.getY() + "," +
+		// 	centerLocation.getZ()
+		// );
+		// getBuilder().getPlugin().saveConfig();
 	}
 
 	private void resetWorldBorder() {
 		FileConfiguration config = getBuilder().getPlugin().getConfig();
 		String worldUUIDStr = config.getString(borderWorldUUIDPath);
-		
+
 		if (worldUUIDStr != null) {
 			try {
 				UUID worldUUID = UUID.fromString(worldUUIDStr);
@@ -228,10 +230,25 @@ public class SheepwarsGame extends Game {
 		if (teamController != null && teamController.getSelectedPlayers().contains(player)) {
 			player.setScoreboard(scoreboard);
 		}
+
+		// player.sendMessage(Component.text("Bienvenue sur le serveur Ludos!", NamedTextColor.AQUA, TextDecoration.BOLD));
+		// ItemStack sheepItem = new ItemStack(Material.SHEEP_SPAWN_EGG, 1);
+
+		// if (!player.getInventory().contains(sheepItem)) {
+		//     player.getInventory().addItem(sheepItem);
+		// }
+
+		// ItemMeta meta = sheepItem.getItemMeta();
+
+		// List<Component> lore = meta.lore();
+		// lore.add(Component.text("Gros mouton sa mère, хорошо, хорошо, хорошо", NamedTextColor.YELLOW, TextDecoration.BOLD));
+		// meta.lore(lore);
+
+		// sheepItem.setItemMeta(meta);
 	}
 
 	public static class Builder extends Game.Builder {
-		
+
 		public Builder(Ludos plugin) {
 			super(plugin);
 		}
@@ -266,7 +283,7 @@ public class SheepwarsGame extends Game {
 
 			String configKey = args[0];
 			SheepwarsGameConfigs config = EnumUtils.getEnum(SheepwarsGameConfigs.class, configKey);
-			
+
 			if (config == null) {
 				sender.sendMessage(Component.text("Unknown config option: " + configKey)
 					.color(NamedTextColor.RED));
@@ -336,7 +353,7 @@ public class SheepwarsGame extends Game {
 			if (args.length == 2) {
 				String configKey = args[0];
 				SheepwarsGameConfigs config = EnumUtils.getEnum(SheepwarsGameConfigs.class, configKey);
-				
+
 				if (config != null) {
 					switch (config) {
 						case players -> {
@@ -373,7 +390,7 @@ public class SheepwarsGame extends Game {
 
 		@Override
 		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
-			return "<" + 
+			return "<" +
 				Arrays.stream(SheepwarsGameConfigs.values())
 					.map(config -> config.toString() + " " + config.getUsage())
 					.collect(Collectors.joining(" | ")) +
