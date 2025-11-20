@@ -89,6 +89,37 @@ public class BookUtility {
 	public static final int MC_BOOK_LINE_COUNT = 14; // Number of lines in a book page
 
 
+	public static TextComponent createPaddingSpaces(int totalPadding) {
+		return createPaddingSpaces((double) totalPadding);
+	}
+	public static TextComponent createPaddingSpaces(double totalPadding) {
+		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
+
+		double totalSpaceWidths = totalPadding / spaceWidth;
+
+		if (totalSpaceWidths < 1) {
+			return Component.text(' ').decoration(TextDecoration.BOLD, totalSpaceWidths > 0.5);
+		}
+
+		int totalSpacesCount = (int) totalSpaceWidths;
+		int boldSpacesCount = (int) ((totalSpaceWidths - totalSpacesCount) * spaceWidth);
+		int normalSpacesCount = totalSpacesCount - boldSpacesCount;
+
+		StringBuilder spaces = new StringBuilder(normalSpacesCount);
+		for (int i = 0; i < normalSpacesCount; i++) {
+			spaces.append(' ');
+		}
+		StringBuilder boldSpaces = new StringBuilder(boldSpacesCount);
+		for (int i = 0; i < boldSpacesCount; i++) {
+			boldSpaces.append(' ');
+		}
+
+		return Component.text()
+			.append(Component.text(spaces.toString()))
+			.append(Component.text(boldSpaces.toString()).decorate(TextDecoration.BOLD))
+			.build();
+	}
+
 	public static final int getPixelWidth(char c) {
 		return getPixelWidth(c, false);
 	}
@@ -168,23 +199,9 @@ public class BookUtility {
 
 		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
 		int totalPadding = lineWidth - totalWidth - 2;
-		double spaces = (double) totalPadding / spaceWidth;
-		int fullSpaces = (int) (spaces);
-
-		int extraSpacePixels = (int) ((spaces - fullSpaces) * spaceWidth);
-
-		StringBuilder normalSpaces = new StringBuilder();
-		for (int i = 0; i < fullSpaces - extraSpacePixels; i++) {
-			normalSpaces.append(' ');
-		}
-		StringBuilder boldSpaces = new StringBuilder();
-		for (int i = 0; i < extraSpacePixels; i++) {
-			boldSpaces.append(' ');
-		}
 		return Component.text()
 			.append(leftComponent)
-			.append(Component.text(normalSpaces.toString()))
-			.append(Component.text(boldSpaces.toString()).decorate(TextDecoration.BOLD))
+			.append(createPaddingSpaces(totalPadding))
 			.append(rightComponent)
 			.append(Component.text('\n'))
 			.build();
@@ -193,29 +210,15 @@ public class BookUtility {
 	public static TextComponent alignRightBookLine(TextComponent component) {
 		return alignRightBookLine(component, MC_BOOK_LINE_WIDTH);
 	}
-
 	public static TextComponent alignRightBookLine(TextComponent component, int lineWidth) {
 		int textWidth = getPixelWidth(component);
 		if (textWidth >= lineWidth) return component;
 
 		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
 		int totalPadding = lineWidth - textWidth - 1;
-		double spaces = (double) totalPadding / spaceWidth;
-		int fullSpaces = (int) (spaces);
 
-		int extraSpacePixels = (int) ((spaces - fullSpaces) * spaceWidth);
-
-		StringBuilder normalSpaces = new StringBuilder();
-		for (int i = 0; i < fullSpaces - extraSpacePixels; i++) {
-			normalSpaces.append(' ');
-		}
-		StringBuilder boldSpaces = new StringBuilder();
-		for (int i = 0; i < extraSpacePixels; i++) {
-			boldSpaces.append(' ');
-		}
 		return Component.text()
-			.append(Component.text(normalSpaces.toString()))
-			.append(Component.text(boldSpaces.toString()).decorate(TextDecoration.BOLD))
+			.append(createPaddingSpaces(totalPadding))
 			.append(component)
 			.append(Component.text('\n'))
 			.build();
@@ -225,30 +228,15 @@ public class BookUtility {
 	public static TextComponent centerBookLine(TextComponent component) {
 		return centerBookLine(component, MC_BOOK_LINE_WIDTH);
 	}
-
 	public static TextComponent centerBookLine(TextComponent component, int lineWidth) {
 		int textWidth = getPixelWidth(component);
 		if (textWidth >= lineWidth) return component;
 
 		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
-		int totalPadding = lineWidth - textWidth;
-		double padding = totalPadding / 2.0;
-		double spaces = padding / spaceWidth;
-		int fullSpaces = (int) (spaces);
+		double totalPadding = (lineWidth - textWidth - 1) / 2;
 
-		int extraSpacePixels = (int) ((spaces - fullSpaces) * spaceWidth);
-
-		StringBuilder normalSpaces = new StringBuilder();
-		for (int i = 0; i < fullSpaces - extraSpacePixels; i++) {
-			normalSpaces.append(' ');
-		}
-		StringBuilder boldSpaces = new StringBuilder();
-		for (int i = 0; i < extraSpacePixels; i++) {
-			boldSpaces.append(' ');
-		}
 		return Component.text()
-			.append(Component.text(normalSpaces.toString()))
-			.append(Component.text(boldSpaces.toString()).decorate(TextDecoration.BOLD))
+			.append(createPaddingSpaces(totalPadding))
 			.append(component)
 			.append(Component.text('\n'))
 			.build();
@@ -347,6 +335,9 @@ public class BookUtility {
 		}
 	}
 
+	public static TextComponent[] truncatePage(TextComponent component) {
+		return truncatePage(component, MC_BOOK_LINE_WIDTH, MC_BOOK_LINE_COUNT);
+	}
 	public static TextComponent[] truncatePage(TextComponent component, int lineWidth, int lineCount) {
 		MiniMessage mm = MiniMessage.miniMessage();
 
@@ -375,9 +366,5 @@ public class BookUtility {
 		}
 
 		return pages.toArray(new TextComponent[0]);
-	}
-
-	public static TextComponent[] truncatePage(TextComponent component) {
-		return truncatePage(component, MC_BOOK_LINE_WIDTH, MC_BOOK_LINE_COUNT);
 	}
 }
