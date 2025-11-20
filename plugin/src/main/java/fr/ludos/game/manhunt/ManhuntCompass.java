@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
 import org.bukkit.entity.HumanEntity;
@@ -94,7 +95,7 @@ public class ManhuntCompass extends SpecialItem {
 	public static class Events extends SpecialItem.Events<ManhuntCompass> {
 
 		public Events(Game game) {
-			super(game);
+			super(game, 8);
 		}
 
 		@Override

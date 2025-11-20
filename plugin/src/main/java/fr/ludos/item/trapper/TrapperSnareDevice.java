@@ -87,7 +87,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 
 
-	public static class Events extends SpecialItem.Events<TrapperSnareDevice> {
+	public static class Events extends BranchItem.Events<TrapperSnareDevice, TrapperSnareDeviceBranches> {
 
 		public final ArrayList<TrapperTrap> traps = new ArrayList<>();
 
@@ -188,6 +188,11 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {
 			return Role.isPlayerRole(owner, TrapperRole.id);
+		}
+
+		@Override
+		protected TrapperSnareDeviceBranches[] getBranches() {
+			return TrapperSnareDeviceBranches.values;
 		}
 	}
 }

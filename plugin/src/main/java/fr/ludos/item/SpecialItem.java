@@ -26,6 +26,7 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -230,10 +231,23 @@ public abstract class SpecialItem {
 	public static abstract class Events<T extends SpecialItem> implements Listener {
 		private boolean isStarted = false;
 
+		private final boolean canDrop;
+		@Nullable
+		private final Integer slot;
+
 		public final Game game;
 
-		public Events(Game game) {
+		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
 			this.game = game;
+
+			this.canDrop = canDrop;
+			this.slot = slot;
+		}
+		protected Events(Game game, @Nullable Integer slot) {
+			this(game, slot, false);
+		}
+		protected Events(Game game) {
+			this(game, null, false);
 		}
 
 		public final void start() {
@@ -291,6 +305,7 @@ public abstract class SpecialItem {
 
 		@EventHandler
 		public void onPlayerDropItem(PlayerDropItemEvent event) {
+			if (canDrop) return;
 			if (! canPlayerHaveItem(event.getPlayer())) return;
 
 			ItemStack item = event.getItemDrop().getItemStack();
@@ -302,6 +317,7 @@ public abstract class SpecialItem {
 
 		@EventHandler
 		public void onInventoryClickItem(InventoryClickEvent event) {
+			if (canDrop) return;
 			if (! canPlayerHaveItem(event.getWhoClicked())) return;
 
 			ItemStack item = event.getCursor();
@@ -324,6 +340,7 @@ public abstract class SpecialItem {
 
 		@EventHandler
 		public void onItemSpawn(ItemSpawnEvent event) {
+			if (canDrop) return;
 			ItemStack item = event.getEntity().getItemStack();
 
 			if (getItem(item, game) == null) return;
@@ -346,13 +363,19 @@ public abstract class SpecialItem {
 		public void updateItemInInventory(Player player) {
 			if (! canPlayerHaveItem(player)) return;
 
-			Inventory inventory = player.getInventory();
+			PlayerInventory inventory = player.getInventory();
 			if (T.containedIn(inventory, (ItemStack stack) -> getItem(stack, game))) return;
 
 			T item = createItem(player, game);
 			if (item == null) return;
 
-			player.getInventory().addItem(item.getStack());
+			int index = (slot == null) ? -1 : slot.intValue();
+
+			if (index == -1 || inventory.getItem(index) != null) {
+				inventory.addItem(item.getStack());
+			} else {
+				inventory.setItem(index, item.getStack());
+			}
 		}
 	}
 }

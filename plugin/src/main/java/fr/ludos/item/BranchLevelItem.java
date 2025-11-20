@@ -3,6 +3,9 @@ package fr.ludos.item;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
+
 import java.util.HashMap;
 
 import net.kyori.adventure.text.Component;
@@ -168,14 +171,19 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 
 
 	public static abstract class Events<T extends BranchLevelItem<TBranches>, TBranches extends SpecialItemLevelBranches<TBranches>> extends BranchItem.Events<T, TBranches> {
+		private Map<String, int[]> deadPlayerLevels;
 
-		public Events(Game game) {
-			super(game);
+		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
+			super(game, slot, canDrop);
 
 			this.deadPlayerLevels = new HashMap<>();
 		}
-
-		private Map<String, int[]> deadPlayerLevels;
+		public Events(Game game, @Nullable Integer slot) {
+			this(game, slot, false);
+		}
+		public Events(Game game) {
+			this(game, null, false);
+		}
 
 		@EventHandler
 		public void onPlayerDeath(PlayerDeathEvent event) {

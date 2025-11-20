@@ -2,6 +2,8 @@ package fr.ludos.item;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -101,9 +103,14 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 
 
 	public static abstract class Events<T extends BranchItem<TBranches>, TBranches extends SpecialItemBranches<TBranches>> extends SpecialItem.Events<T> {
-
-		public Events(Game game) {
-			super(game);
+		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
+			super(game, slot, canDrop);
+		}
+		protected Events(Game game, @Nullable Integer slot) {
+			this(game, slot, false);
+		}
+		protected Events(Game game) {
+			this(game, null, false);
 		}
 
 		protected abstract TBranches[] getBranches();

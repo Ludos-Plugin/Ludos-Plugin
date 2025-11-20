@@ -2,6 +2,9 @@ package fr.ludos.item;
 
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
+
 import java.util.HashMap;
 
 import net.kyori.adventure.text.Component;
@@ -154,15 +157,20 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 		protected final TLevels baseLevel;
 		private Map<String, TLevels> deadPlayerLevels = new HashMap<>();
 
-
-		public Events(Game game, TLevels baseLevel) {
-			super(game);
+		protected Events(Game game, TLevels baseLevel, @Nullable Integer slot, boolean canDrop) {
+			super(game, slot, canDrop);
 			if (baseLevel == null) {
 				throw new IllegalArgumentException("Base level cannot be null");
 			}
 
 			this.baseLevel = baseLevel;
 			this.deadPlayerLevels = new HashMap<>();
+		}
+		protected Events(Game game, TLevels baseLevel, @Nullable Integer slot) {
+			this(game, baseLevel, slot, false);
+		}
+		protected Events(Game game, TLevels baseLevel) {
+			this(game, baseLevel, null, false);
 		}
 
 
