@@ -206,19 +206,26 @@ public abstract class Role implements Listener {
 			return BookUtility.truncatePage(
 				Component.text()
 					.append(BookUtility.centerBookLine(getDisplayName()))
-					.append(Component.text("\n\n"))
-					.append(getDescription())
-					.append(Component.text("\n\n"))
 					.append(
-						BookUtility.centerBookLine(
-							Component.text("Choose Role")
+						BookUtility.spaceBookLine(
+							Component.text("Reset")
+								.color(NamedTextColor.DARK_RED)
+								.decorate(TextDecoration.BOLD)
+								.decorate(TextDecoration.UNDERLINED)
+								.clickEvent(
+									ClickEvent.runCommand("/ludos:ludos role reset")
+								),
+							Component.text("Pick")
 								.color(NamedTextColor.DARK_GREEN)
 								.decorate(TextDecoration.BOLD)
+								.decorate(TextDecoration.UNDERLINED)
 								.clickEvent(
 									ClickEvent.runCommand(String.format("/ludos:ludos role set %s", getId()))
 								)
 						)
 					)
+					.append(Component.text("\n"))
+					.append(getDescription())
 				.build()
 			);
 		}

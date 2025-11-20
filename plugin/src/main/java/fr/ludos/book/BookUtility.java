@@ -110,28 +110,116 @@ public class BookUtility {
 		return width > 0 ? width - 1 : 0; // Remove last spacing
 	}
 
-	// Calculate pixel width of a TextComponent, considering decorations
+	private static int getTagNodePixelWidth(TagNode tagNode, boolean bold) {
+		boolean isBold = tagNode.name().equals("bold");
+
+		int pixelWidth = 0;
+
+		for (Node child : tagNode.children()) {
+			pixelWidth += getNodePixelWidth(child, bold || isBold);
+		}
+
+		return pixelWidth;
+	}
+
+	private static int getNodePixelWidth(Node node, boolean bold) {
+		if (node instanceof TextNode text) {
+			return getPixelWidth(text.value(), bold);
+		}
+		else if (node instanceof TagNode tag) {
+			return getTagNodePixelWidth(tag, bold);
+		}
+		else {
+			int pixelWidth = 0;
+			for (Node child : node.children()) {
+				pixelWidth += getNodePixelWidth(child, bold);
+			}
+			return pixelWidth;
+		}
+	}
+
 	public static int getPixelWidth(TextComponent component) {
 		return getPixelWidth(component, false);
 	}
 	public static int getPixelWidth(TextComponent component, boolean parentBold) {
-		int width = 0;
-		boolean bold = component.decoration(TextDecoration.BOLD) == TextDecoration.State.TRUE;
-		String content = component.content();
-		for (int i = 0; i < content.length(); i++) {
-			char c = content.charAt(i);
-			int charWidth = getPixelWidth(c, bold);
-			width += charWidth + 1;
-		}
-		if (width > 0) width -= 1;
-		for (Component child : component.children()) {
-			if (child instanceof TextComponent tc) {
-				width += getPixelWidth(tc, bold);
-			}
-		}
-		return width;
+		MiniMessage mm = MiniMessage.miniMessage();
+
+		Root tree = mm.deserializeToTree(mm.serialize(component));
+
+		return getNodePixelWidth(tree, parentBold);
 	}
 
+	public static TextComponent spaceBookLine(TextComponent leftComponent, TextComponent rightComponent) {
+		return spaceBookLine(leftComponent, rightComponent, MC_BOOK_LINE_WIDTH);
+	}
+	public static TextComponent spaceBookLine(TextComponent leftComponent, TextComponent rightComponent, int lineWidth) {
+		int leftWidth = getPixelWidth(leftComponent);
+		int rightWidth = getPixelWidth(rightComponent);
+		int totalWidth = leftWidth + rightWidth;
+
+		if (totalWidth >= lineWidth) {
+			return Component.text()
+				.append(leftComponent)
+				.append(Component.text(" "))
+				.append(rightComponent)
+				.append(Component.text('\n'))
+				.build();
+		}
+
+		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
+		int totalPadding = lineWidth - totalWidth - 2;
+		double spaces = (double) totalPadding / spaceWidth;
+		int fullSpaces = (int) (spaces);
+
+		int extraSpacePixels = (int) ((spaces - fullSpaces) * spaceWidth);
+
+		StringBuilder normalSpaces = new StringBuilder();
+		for (int i = 0; i < fullSpaces - extraSpacePixels; i++) {
+			normalSpaces.append(' ');
+		}
+		StringBuilder boldSpaces = new StringBuilder();
+		for (int i = 0; i < extraSpacePixels; i++) {
+			boldSpaces.append(' ');
+		}
+		return Component.text()
+			.append(leftComponent)
+			.append(Component.text(normalSpaces.toString()))
+			.append(Component.text(boldSpaces.toString()).decorate(TextDecoration.BOLD))
+			.append(rightComponent)
+			.append(Component.text('\n'))
+			.build();
+	}
+
+	public static TextComponent alignRightBookLine(TextComponent component) {
+		return alignRightBookLine(component, MC_BOOK_LINE_WIDTH);
+	}
+
+	public static TextComponent alignRightBookLine(TextComponent component, int lineWidth) {
+		int textWidth = getPixelWidth(component);
+		if (textWidth >= lineWidth) return component;
+
+		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
+		int totalPadding = lineWidth - textWidth - 1;
+		double spaces = (double) totalPadding / spaceWidth;
+		int fullSpaces = (int) (spaces);
+
+		int extraSpacePixels = (int) ((spaces - fullSpaces) * spaceWidth);
+
+		StringBuilder normalSpaces = new StringBuilder();
+		for (int i = 0; i < fullSpaces - extraSpacePixels; i++) {
+			normalSpaces.append(' ');
+		}
+		StringBuilder boldSpaces = new StringBuilder();
+		for (int i = 0; i < extraSpacePixels; i++) {
+			boldSpaces.append(' ');
+		}
+		return Component.text()
+			.append(Component.text(normalSpaces.toString()))
+			.append(Component.text(boldSpaces.toString()).decorate(TextDecoration.BOLD))
+			.append(component)
+			.append(Component.text('\n'))
+			.build();
+	}
 
 	// Center a TextComponent line, considering decorations (bold, italic)
 	public static TextComponent centerBookLine(TextComponent component) {
@@ -166,7 +254,7 @@ public class BookUtility {
 			.build();
 	}
 
-	private static int ProcessTextNode(StringBuilder builder, List<String> lines, TextNode textNode, int currentLineLength, int maxLineLength) {
+	private static int truncateTextNode(StringBuilder builder, List<String> lines, TextNode textNode, int currentLineLength, int maxLineLength) {
 		String text = textNode.value();
 
 		String[] textLines = text.split("\n");
@@ -219,7 +307,7 @@ public class BookUtility {
 		return currentLineLength;
 	}
 
-	private static int ProcessTagNode(StringBuilder builder, List<String> lines, TagNode tagNode, int currentLineLength, int maxLineLength) {
+	private static int truncateTagNode(StringBuilder builder, List<String> lines, TagNode tagNode, int currentLineLength, int maxLineLength) {
 		if (tagNode.name().equals("br")) {
 			lines.add(builder.toString());
 			builder.setLength(0);
@@ -237,23 +325,23 @@ public class BookUtility {
 		builder.append('>');
 
 		for (Node child : tagNode.children()) {
-			currentLineLength = processNode(builder, lines, child, currentLineLength, maxLineLength);
+			currentLineLength = truncateNode(builder, lines, child, currentLineLength, maxLineLength);
 		}
 
 		builder.append("</").append(tagNode.name()).append('>');
 		return currentLineLength;
 	}
 
-	private static int processNode(StringBuilder builder, List<String> lines, Node node, int currentLineLength, int maxLineLength) {
+	private static int truncateNode(StringBuilder builder, List<String> lines, Node node, int currentLineLength, int maxLineLength) {
 		if (node instanceof TextNode text) {
-			return ProcessTextNode(builder, lines, text, currentLineLength, maxLineLength);
+			return truncateTextNode(builder, lines, text, currentLineLength, maxLineLength);
 		}
 		else if (node instanceof TagNode tag) {
-			return ProcessTagNode(builder, lines, tag, currentLineLength, maxLineLength);
+			return truncateTagNode(builder, lines, tag, currentLineLength, maxLineLength);
 		}
 		else {
 			for (Node child : node.children()) {
-				currentLineLength = processNode(builder, lines, child, currentLineLength, maxLineLength);
+				currentLineLength = truncateNode(builder, lines, child, currentLineLength, maxLineLength);
 			}
 			return currentLineLength;
 		}
@@ -267,7 +355,7 @@ public class BookUtility {
 		StringBuilder builder = new StringBuilder();
 		List<String> finalLines = new ArrayList<>();
 
-		processNode(builder, finalLines, tree, 0, lineWidth);
+		truncateNode(builder, finalLines, tree, 0, lineWidth);
 
 		List<TextComponent> pages = new ArrayList<>();
 		TextComponent.Builder pageBuilder = Component.text();
