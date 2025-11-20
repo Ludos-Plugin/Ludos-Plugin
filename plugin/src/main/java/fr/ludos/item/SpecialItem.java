@@ -311,7 +311,13 @@ public abstract class SpecialItem {
 
 			if (getItem(item, game) == null) return;
 
-			if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY && event.getInventory().getType() != InventoryType.PLAYER) {
+			InventoryType invType = event.getInventory().getType();
+
+			if (
+				event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY &&
+				invType != InventoryType.PLAYER &&
+				invType != InventoryType.CRAFTING
+			) {
 				event.setResult(Result.DENY);
 			}
 		}
