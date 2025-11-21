@@ -58,27 +58,45 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 	},
 
 
-	WITHER (
-		Component.text("Wither")
+	REPULSING (
+		Component.text("Repulsing")
 			.color(NamedTextColor.GRAY)
 			.decorate(TextDecoration.ITALIC),
-		Component.text("Wither Description"),
+		Component.text("Repulsing Description"),
 		200
 	) {
 		@Override
 		public void processShotArrow(Arrow arrow, HumanEntity player, int level, EntityShootBowEvent event) {
-			int poisonDuration = 20 * 3;
-			int poisonAmplifier = level > 0 ? 1 : 2;
-			PotionEffect poisonEffect = new PotionEffect(PotionEffectType.POISON, poisonDuration, poisonAmplifier);
-			arrow.addCustomEffect(poisonEffect, true);
+			arrow.setKnockbackStrength(level + 1);
 		}
 
 		@Override
 		public void processLandedArrow(Arrow arrow, HumanEntity player, int level, ProjectileHitEvent event) {
 			if (level > 1 && isMax(level)) {
-				AreaEffectCloud effect = (AreaEffectCloud) arrow.getWorld().spawnEntity(arrow.getLocation(), EntityType.AREA_EFFECT_CLOUD);
-				effect.addCustomEffect(PotionEffectType.WITHER.createEffect(60, 1), false);
-				effect.setDuration(40);
+				// spawn an AEC that applies levitation as a splash
+				PotionEffect levitationEffect = new PotionEffect(PotionEffectType.LEVITATION, 10, 2);
+
+				arrow.getWorld().createExplosion(arrow.getLocation(), 0, true, false, null);
+
+				// produce a no-damage "explosion" by applying outward velocity to nearby mobs
+				double pushRadius = 5.0;
+				double pushStrength = 4.0;
+				for (org.bukkit.entity.Entity e : arrow.getNearbyEntities(pushRadius, pushRadius, pushRadius)) {
+					if (e == null || /* e.equals(player) ||  */e.equals(arrow)) continue;
+					if (!(e instanceof org.bukkit.entity.LivingEntity livingEntity)) continue;
+
+					livingEntity.addPotionEffect(levitationEffect);
+
+					org.bukkit.util.Vector dir = e.getLocation().toVector().subtract(arrow.getLocation().toVector());
+					if (dir.lengthSquared() == 0) {
+						// pick a random small push if exactly on center
+						dir = new org.bukkit.util.Vector((Math.random() - 0.5), 0.2, (Math.random() - 0.5));
+					}
+					dir.normalize().multiply(pushStrength);
+					// give a little upward lift so mobs are pushed away nicely
+					dir.setY(Math.max(dir.getY(), 0.4));
+					e.setVelocity(dir);
+				}
 			}
 		}
 
