@@ -1,52 +1,56 @@
 package fr.ludos.item.trapper;
 
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.HashSet;
-import javax.annotation.Nullable;
+import java.util.Set;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
+import javax.annotation.Nullable;
 
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.block.Block;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.block.Block;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import fr.ludos.item.SpecialItem;
-import fr.ludos.item.BranchItem;
 import fr.ludos.game.Game;
+import fr.ludos.item.BranchItem;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
 import fr.ludos.role.TrapperRole;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
+	private final static String ID = "trapperSnareGrimoire";
 
-	public TrapperSnareDevice(ItemStack stack, Game game) throws IllegalArgumentException {
-		super(stack, game);
+
+	public static TrapperSnareDevice fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		if (owner == null) return null;
+		Integer branchIndex = BranchItem.branchFromItemStack(stack, game);
+		if (branchIndex == null) return null;
+
+		return new TrapperSnareDevice(stack, owner, TrapperSnareDeviceBranches.findByKey(branchIndex), game);
+	}
+	public static TrapperSnareDevice createItem(Player owner, Game game) {
+		return new TrapperSnareDevice(new ItemStack(Material.ENCHANTED_BOOK), owner, TrapperSnareDeviceBranches.REVEALING, game);
 	}
 
-	public TrapperSnareDevice(Player owner, Game game) {
-		this(owner, TrapperSnareDeviceBranches.REVEALING, game);
-	}
-
-	protected TrapperSnareDevice(Player owner, TrapperSnareDeviceBranches branch, Game game) {
-		super(new ItemStack(Material.ENCHANTED_BOOK), owner, branch, game);
+	protected TrapperSnareDevice(ItemStack stack, Player owner, TrapperSnareDeviceBranches branch, Game game) {
+		super(stack, owner, branch, game);
 	}
 
 
 	@Override
-	public String getId(){
-		return "trapperSnareGrimoire";
+	public String getId() {
+		return ID;
 	}
-
 
 	@Override
 	protected Component getName() {
@@ -57,25 +61,6 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 	}
 
 
-
-	public void throwObject(Player player, Material material) {
-		Item item = player.getWorld().dropItem(player.getEyeLocation(), new ItemStack(material));
-		item.setVelocity(player.getLocation().getDirection().multiply(2));
-	}
-
-	@Nullable
-	public static TrapperSnareDevice getItem(ItemStack stack, Game game) {
-		try {
-			TrapperSnareDevice snareDevice = new TrapperSnareDevice(stack, game);
-			return snareDevice;
-		} catch (IllegalArgumentException e) {
-			return null;
-		}
-	}
-	public static TrapperSnareDevice createItem(Player owner, Game game) {
-		return new TrapperSnareDevice(owner, game);
-	}
-
 	@Override
 	public TrapperSnareDeviceBranches convertToBranch(int level) {
 		return TrapperSnareDeviceBranches.findByKey(level);
@@ -84,7 +69,6 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 	protected TrapperSnareDeviceBranches[] getBranches() {
 		return TrapperSnareDeviceBranches.values;
 	}
-
 
 
 	public static class Events extends BranchItem.Events<TrapperSnareDevice, TrapperSnareDeviceBranches> {
@@ -178,7 +162,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		@Override
 		@Nullable
 		protected TrapperSnareDevice getItem(ItemStack stack, Game game) {
-			return TrapperSnareDevice.getItem(stack, game);
+			return TrapperSnareDevice.fromItemStack(stack, game);
 		}
 
 		@Override

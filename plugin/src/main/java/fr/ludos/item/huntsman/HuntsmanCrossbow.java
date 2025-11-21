@@ -1,77 +1,65 @@
 package fr.ludos.item.huntsman;
 
 import java.util.List;
+
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.AbstractArrow.PickupStatus;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.projectiles.ProjectileSource;
+
+import fr.ludos.game.Game;
+import fr.ludos.item.BranchLevelItem;
+import fr.ludos.item.SpecialItem;
+import fr.ludos.role.HuntsmanRole;
+import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.block.Action;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.projectiles.ProjectileSource;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.AbstractArrow.PickupStatus;
-import org.bukkit.entity.Arrow;
-
-import fr.ludos.item.BranchLevelItem;
-import fr.ludos.game.Game;
-import fr.ludos.role.Role;
-import fr.ludos.role.HuntsmanRole;
-
 
 public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> {
+	public static final String ID = "manhuntHuntsmanCrossbow";
 
-	public HuntsmanCrossbow(ItemStack stack, Game game) throws IllegalArgumentException {
-		super(stack, game);
+
+	public static HuntsmanCrossbow fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		if (owner == null) return null;
+		Integer branchIndex = BranchLevelItem.branchFromItemStack(stack, game);
+		if (branchIndex == null) return null;
+		Pair<int[], double[]> levels = BranchLevelItem.levelsFromItemStack(stack, ID, game);
+		if (levels == null) return null;
+
+		return new HuntsmanCrossbow(stack, owner, HuntsmanCrossbowBranches.findByKey(branchIndex), levels.getLeft(), levels.getRight(), game);
+	}
+	public static HuntsmanCrossbow createItem(Player owner, int[] levels, Game game) {
+		return new HuntsmanCrossbow(new ItemStack(Material.CROSSBOW), owner, HuntsmanCrossbowBranches.findByKey(0), levels, new double[HuntsmanCrossbowBranches.values.length], game);
 	}
 
-
-	public HuntsmanCrossbow(Player owner, Game game) {
-		this(owner, HuntsmanCrossbowBranches.FLAME, game);
-	}
-	protected HuntsmanCrossbow(Player owner, int[] levels, Game game) {
-		this(owner, HuntsmanCrossbowBranches.FLAME, levels, game);
-	}
-
-	protected HuntsmanCrossbow(Player owner, HuntsmanCrossbowBranches branch, Game game) {
-		this(owner, branch, new int[HuntsmanCrossbowBranches.values.length], game);
-	}
-
-	protected HuntsmanCrossbow(Player owner, HuntsmanCrossbowBranches branch, int[] levels, Game game) {
-		this(owner, branch, levels, new double[levels.length], game);
-	}
-
-	protected HuntsmanCrossbow(Player owner, HuntsmanCrossbowBranches branch, int[] levels, double[] xps, Game game) {
-		super(new ItemStack(Material.CROSSBOW), owner, branch, levels, xps, game);
-	}
-
-	@Override
-	public HuntsmanCrossbowBranches convertToBranch(int level) {
-		return HuntsmanCrossbowBranches.findByKey(level);
-	}
-
-	@Override
-	protected HuntsmanCrossbowBranches[] getBranches() {
-		return HuntsmanCrossbowBranches.values;
+	protected HuntsmanCrossbow(ItemStack stack, Player owner, HuntsmanCrossbowBranches branch, int[] levels, double[] xps, Game game) {
+		super(stack, owner, branch, levels, xps, game);
 	}
 
 
 	@Override
 	public String getId() {
-		return "manhuntHuntsmanCrossbow";
+		return ID;
 	}
 
 	@Override
@@ -99,21 +87,15 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 	}
 
 
-	@Nullable
-	public static HuntsmanCrossbow getItem(ItemStack stack, Game game) {
-		try {
-			HuntsmanCrossbow bow = new HuntsmanCrossbow(stack, game);
-			return bow;
-		} catch (IllegalArgumentException e) {
-			return null;
-		}
+	@Override
+	public HuntsmanCrossbowBranches convertToBranch(int level) {
+		return HuntsmanCrossbowBranches.findByKey(level);
 	}
 
-	public static HuntsmanCrossbow createItem(Player owner, int[] levels, Game game) {
-		return new HuntsmanCrossbow(owner, levels, game);
+	@Override
+	protected HuntsmanCrossbowBranches[] getBranches() {
+		return HuntsmanCrossbowBranches.values;
 	}
-
-
 
 
 	public static class Events extends BranchLevelItem.Events<HuntsmanCrossbow, HuntsmanCrossbowBranches> {
@@ -213,7 +195,7 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 		@Override
 		@Nullable
 		protected HuntsmanCrossbow getItem(ItemStack stack, Game game) {
-			return HuntsmanCrossbow.getItem(stack, game);
+			return HuntsmanCrossbow.fromItemStack(stack, game);
 		}
 		@Override
 		protected HuntsmanCrossbow createItem(Player owner, int[] levels, Game game) {

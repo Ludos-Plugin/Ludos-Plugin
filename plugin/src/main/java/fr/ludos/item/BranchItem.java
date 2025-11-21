@@ -4,18 +4,18 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
-import org.bukkit.persistence.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import fr.ludos.game.Game;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches>> extends SpecialItem {
@@ -31,17 +31,13 @@ public abstract class BranchItem<TBranches extends SpecialItemBranches<TBranches
 	}
 
 
-	public BranchItem(ItemStack stack, Game game) throws IllegalArgumentException {
-		super(stack, game);
-
-		branchKey = new NamespacedKey(game.getPlugin(), BRANCH);
-
+	public static @Nullable Integer branchFromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
-		if ( ! container.has(branchKey, PersistentDataType.INTEGER) ) {
-			throw new IllegalArgumentException("Branch Not found");
-		}
+		NamespacedKey branchKey = new NamespacedKey(game.getPlugin(), BRANCH);
 
-		this.branch = convertToBranch(getPersistentData(stack, branchKey, PersistentDataType.INTEGER));
+		if ( ! container.has(branchKey, PersistentDataType.INTEGER) ) return null;
+
+		return getPersistentData(stack, branchKey, PersistentDataType.INTEGER);
 	}
 
 	public BranchItem(ItemStack stack, Player owner, TBranches branch, Game game) {

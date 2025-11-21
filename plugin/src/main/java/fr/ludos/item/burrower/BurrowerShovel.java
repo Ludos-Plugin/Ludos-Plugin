@@ -1,34 +1,35 @@
 package fr.ludos.item.burrower;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
-import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
+import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 
-import fr.ludos.item.SpecialItem;
-import fr.ludos.item.ItemUtilities;
-import fr.ludos.role.Role;
-import fr.ludos.role.BurrowerRole;
 import fr.ludos.game.Game;
+import fr.ludos.item.ItemUtilities;
+import fr.ludos.item.SpecialItem;
+import fr.ludos.role.BurrowerRole;
+import fr.ludos.role.Role;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class BurrowerShovel extends SpecialItem {
+	private static final String ID = "manhuntBurrowerShovel";
 
 	private static final int COOLDOWN_SECONDS = 20;
 	private static final int TUNNEL_LENGTH = 10;
@@ -36,17 +37,33 @@ public class BurrowerShovel extends SpecialItem {
 	private final static Map<Player, List<BlockState>> tunnelBlocks = new HashMap<>();
 
 
-	public BurrowerShovel(ItemStack stack, Game game) throws IllegalArgumentException {
-		super(stack, game);
-	}
+	public static BurrowerShovel fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		if (owner == null) return null;
 
-	public BurrowerShovel(Player owner, Game game) {
-		this(new ItemStack(Material.IRON_SHOVEL), owner, game);
+		return new BurrowerShovel(stack, owner, game);
+	}
+	public static BurrowerShovel createItem(Player owner, Game game) {
+		return new BurrowerShovel(new ItemStack(Material.IRON_SHOVEL), owner, game);
 	}
 
 	protected BurrowerShovel(ItemStack stack, Player owner, Game game) {
 		super(stack, owner, game);
 	}
+
+
+	@Override
+	public String getId() {
+		return ID;
+	}
+
+	@Override
+	protected Component getName() {
+		return
+			Component.text("Burrower's Shovel")
+			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
+	}
+
 
 	public void useAbility() {
 		if (getOwner().hasCooldown(getStack().getType())) {
@@ -70,7 +87,8 @@ public class BurrowerShovel extends SpecialItem {
 	// 	} else {
 	// 		getOwner().addPotionEffect(new PotionEffect(PotionEffectType.LUCK, Integer.MAX_VALUE, 1, false, true));
 	// 	}
-    // }
+	// }
+
 
 	private void digTunnel() {
 		List<Block> lastTwoTargetBlocks = getOwner().getLastTwoTargetBlocks(null, 20);
@@ -130,18 +148,6 @@ public class BurrowerShovel extends SpecialItem {
 		getOwner().setCooldown(getStack().getType(), COOLDOWN_SECONDS * 20);
 	}
 
-	@Override
-	public String getId() {
-		return "manhuntBurrowerShovel";
-	}
-
-	@Override
-	protected Component getName() {
-		return
-			Component.text("Burrower's Shovel")
-			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
-	}
-
 
 
 	public static class Events extends SpecialItem.Events<BurrowerShovel> {
@@ -187,16 +193,11 @@ public class BurrowerShovel extends SpecialItem {
 		@Override
 		@Nullable
 		protected BurrowerShovel getItem(ItemStack stack, Game game) {
-			try {
-				BurrowerShovel shovel = new BurrowerShovel(stack, game);
-				return shovel;
-			} catch (IllegalArgumentException e) {
-				return null;
-			}
+			return BurrowerShovel.fromItemStack(stack, game);
 		}
 		@Override
 		protected BurrowerShovel createItem(Player owner, Game game) {
-			return new BurrowerShovel(owner, game);
+			return BurrowerShovel.createItem(owner, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {

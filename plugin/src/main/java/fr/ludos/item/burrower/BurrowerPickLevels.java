@@ -1,11 +1,12 @@
 package fr.ludos.item.burrower;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.HashMap;
-import javax.annotation.Nullable;
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.Map;
 
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 

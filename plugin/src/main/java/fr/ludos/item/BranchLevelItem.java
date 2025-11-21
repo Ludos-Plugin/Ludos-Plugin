@@ -1,27 +1,27 @@
 package fr.ludos.item;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import java.util.HashMap;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-
-import org.bukkit.persistence.*;
-import org.bukkit.NamespacedKey;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.ChatColor;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import fr.ludos.game.Game;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches<TBranches>> extends BranchItem<TBranches> {
@@ -52,19 +52,19 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 		return branchXps[getBranch().index()];
 	}
 
-	public BranchLevelItem(ItemStack stack, Game game) throws IllegalArgumentException {
-		super(stack, game);
-
+	public static @Nullable Pair<int[], double[]> levelsFromItemStack(ItemStack stack, String id, Game game) {
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
-		if ( ! container.has(levelsKey, PersistentDataType.INTEGER_ARRAY) ) {
-			throw new IllegalArgumentException("Levels Not found");
-		}
-		if ( ! container.has(xpKey, PersistentDataType.LONG_ARRAY) ) {
-			throw new IllegalArgumentException("XPs not found");
-		}
 
-		this.branchLevels = getPersistentData(stack, levelsKey, PersistentDataType.INTEGER_ARRAY);
-		this.branchXps = getPersistentData(stack, xpKey, DoubleArrayPersistentDataType.INSTANCE);
+		NamespacedKey levelsKey = new NamespacedKey(game.getPlugin(), LEVELS);
+		if ( ! container.has(levelsKey, PersistentDataType.INTEGER_ARRAY) ) return null;
+
+		NamespacedKey xpKey = new NamespacedKey(game.getPlugin(), XP);
+		if ( ! container.has(xpKey, DoubleArrayPersistentDataType.INSTANCE) ) return null;
+
+		int[] levels = getPersistentData(stack, levelsKey, PersistentDataType.INTEGER_ARRAY);
+		double[] xps = getPersistentData(stack, xpKey, DoubleArrayPersistentDataType.INSTANCE);
+
+		return Pair.of(levels, xps);
 	}
 
 	public BranchLevelItem(ItemStack stack, Player owner, TBranches branch, int[] levels, double[] xps, Game game) {

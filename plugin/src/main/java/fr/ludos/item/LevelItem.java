@@ -1,26 +1,26 @@
 package fr.ludos.item;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import java.util.HashMap;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-
-import org.bukkit.persistence.*;
-import org.bukkit.NamespacedKey;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.ChatColor;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import fr.ludos.game.Game;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extends SpecialItem {
@@ -50,21 +50,19 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 
 	public abstract TLevel convertToLevel(int level);
 
-	public LevelItem(ItemStack stack, Game game) throws IllegalArgumentException {
-		super(stack, game);
-		this.levelKey = new NamespacedKey(game.getPlugin(), LEVEL);
-		this.xpKey = new NamespacedKey(game.getPlugin(), XP);
-
+	public static @Nullable Pair<Integer, Double> fromLevelItemStack(ItemStack stack, String id, Game game) {
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
-		if ( ! container.has(levelKey, PersistentDataType.INTEGER) ) {
-			throw new IllegalArgumentException("Level Not found");
-		}
-		if ( ! container.has(xpKey, PersistentDataType.DOUBLE) ) {
-			throw new IllegalArgumentException("XP not found");
-		}
 
-		this.level = convertToLevel(getPersistentData(stack, levelKey, PersistentDataType.INTEGER));
-		this.xp = getPersistentData(stack, xpKey, PersistentDataType.DOUBLE);
+		NamespacedKey levelKey = new NamespacedKey(game.getPlugin(), LEVEL);
+		if ( ! container.has(levelKey, PersistentDataType.INTEGER) ) return null;
+
+		NamespacedKey xpKey = new NamespacedKey(game.getPlugin(), XP);
+		if ( ! container.has(xpKey, PersistentDataType.DOUBLE) ) return null;
+
+		int level = getPersistentData(stack, levelKey, PersistentDataType.INTEGER);
+		double xp = getPersistentData(stack, xpKey, PersistentDataType.DOUBLE);
+
+		return Pair.of(level, xp);
 	}
 
 	public LevelItem(ItemStack stack, Player owner, TLevel level, Game game) {

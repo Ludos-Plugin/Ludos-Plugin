@@ -1,42 +1,45 @@
 package fr.ludos.item.burrower;
 
 import java.util.List;
-import javax.annotation.Nullable;
-import org.apache.commons.lang3.function.TriFunction;
 
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.function.TriFunction;
+import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
+
+import fr.ludos.game.Game;
+import fr.ludos.item.ItemUtilities;
+import fr.ludos.item.LevelItem;
+import fr.ludos.item.SpecialItem;
+import fr.ludos.role.BurrowerRole;
+import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Sound;
-import org.bukkit.util.Vector;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-
-import fr.ludos.game.Game;
-import fr.ludos.role.BurrowerRole;
-import fr.ludos.role.Role;
-import fr.ludos.item.LevelItem;
-import fr.ludos.item.ItemUtilities;
-
 
 public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
+	private static final String ID = "manhuntBurrowerPick";
+
 	public static final String HAMMER_MODE = "mode";
 	private NamespacedKey modeKey = new NamespacedKey(getGame().getPlugin(), HAMMER_MODE);
 
@@ -46,35 +49,84 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	}
 
 
-	public BurrowerPick(ItemStack stack, Game game) throws IllegalArgumentException {
-		super(stack, game);
+	public static BurrowerPick fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		if (owner == null) return null;
+		Pair<Integer, Double> levelAndXp = LevelItem.fromLevelItemStack(stack, ID, game);
+		if (levelAndXp == null) return null;
 
-		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
-		if (
-			! container.has(modeKey, PersistentDataType.INTEGER)
-		) {
-			throw new IllegalArgumentException();
-		}
-
-		hammerMode = getPersistentData(stack, modeKey, PersistentDataType.INTEGER) == 1;
+		return new BurrowerPick(stack, owner, BurrowerPickLevels.findByKey(levelAndXp.getLeft()), levelAndXp.getRight(), game);
 	}
-
-	public BurrowerPick(Player owner, Game game) {
-		this(owner, BurrowerPickLevels.WOODEN, game);
-	}
-	public BurrowerPick(Player owner, BurrowerPickLevels level, Game game) {
-		this(new ItemStack(level.getMaterial()), owner, level, game);
+	public static BurrowerPick createItem(Player owner, BurrowerPickLevels level, Game game) {
+		return new BurrowerPick(new ItemStack(level.getMaterial()), owner, level, 0.0, game);
 	}
 
-	protected BurrowerPick(ItemStack item, Player owner, Game game) {
-		this(item, owner, BurrowerPickLevels.WOODEN, game);
-	}
-	protected BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level, Game game) {
-		this(item, owner, level, 0, game);
-	}
 	protected BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level, double xp, Game game) {
 		super(item, owner, level, xp, game);
 		setHammerMode(false);
+	}
+
+
+	@Override
+	public String getId() {
+		return "manhuntBurrowerPick";
+	}
+
+	@Override
+	protected Component getName() {
+		if (hammerMode == null) {
+			hammerMode = false;
+		}
+		return Component.text("Burrower's Pick (")
+			.append(Component.text(hammerMode ? "Hammer" : "Pickaxe")
+				.color(hammerMode ? NamedTextColor.RED : NamedTextColor.AQUA))
+			.append(Component.text(")"))
+			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
+	}
+
+	@Override
+	public List<Component> getLore() {
+		List<Component> lore = super.getLore();
+
+		int size = 1 + getLevel().getRadius() * 2;
+		int depth = getLevel().getDepth() + 1;
+
+
+		lore.add(
+			Component.text("Mode: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(hammerMode ? "Hammer Mode" : "Pickaxe Mode")
+				.color(NamedTextColor.YELLOW))
+			.decoration(TextDecoration.ITALIC, false)
+		);
+
+		lore.add(
+			Component.text("Press ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text("Right Click (MB2) ")
+				.color(NamedTextColor.YELLOW))
+			.append(Component.text("to Switch Mode")
+				.color(NamedTextColor.GRAY))
+			.decoration(TextDecoration.ITALIC, false)
+		);
+
+		lore.add(
+			Component.text("Size: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(size + "x" + size)
+				.color(NamedTextColor.YELLOW))
+			.decoration(TextDecoration.ITALIC, false)
+		);
+
+		lore.add(
+			Component.text("Depth: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(depth)
+				.color(NamedTextColor.YELLOW))
+			.decoration(TextDecoration.ITALIC, false)
+		);
+
+		return lore;
 	}
 
 
@@ -197,69 +249,6 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	}
 
 
-
-	@Override
-	public String getId() {
-		return "manhuntBurrowerPick";
-	}
-
-	@Override
-	protected Component getName() {
-		if (hammerMode == null) {
-			hammerMode = false;
-		}
-		return Component.text("Burrower's Pick (")
-			.append(Component.text(hammerMode ? "Hammer" : "Pickaxe")
-				.color(hammerMode ? NamedTextColor.RED : NamedTextColor.AQUA))
-			.append(Component.text(")"))
-			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
-	}
-
-	@Override
-	public List<Component> getLore() {
-		List<Component> lore = super.getLore();
-
-		int size = 1 + getLevel().getRadius() * 2;
-		int depth = getLevel().getDepth() + 1;
-
-
-		lore.add(
-			Component.text("Mode: ")
-				.color(NamedTextColor.GRAY)
-			.append(Component.text(hammerMode ? "Hammer Mode" : "Pickaxe Mode")
-				.color(NamedTextColor.YELLOW))
-			.decoration(TextDecoration.ITALIC, false)
-		);
-
-		lore.add(
-			Component.text("Press ")
-				.color(NamedTextColor.GRAY)
-			.append(Component.text("Right Click (MB2) ")
-				.color(NamedTextColor.YELLOW))
-			.append(Component.text("to Switch Mode")
-				.color(NamedTextColor.GRAY))
-			.decoration(TextDecoration.ITALIC, false)
-		);
-
-		lore.add(
-			Component.text("Size: ")
-				.color(NamedTextColor.GRAY)
-			.append(Component.text(size + "x" + size)
-				.color(NamedTextColor.YELLOW))
-			.decoration(TextDecoration.ITALIC, false)
-		);
-
-		lore.add(
-			Component.text("Depth: ")
-				.color(NamedTextColor.GRAY)
-			.append(Component.text(depth)
-				.color(NamedTextColor.YELLOW))
-			.decoration(TextDecoration.ITALIC, false)
-		);
-
-		return lore;
-	}
-
 	@Override
 	public void setLvl(BurrowerPickLevels level) {
 		super.setLvl(level);
@@ -273,7 +262,6 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	public BurrowerPickLevels convertToLevel(int level) {
 		return BurrowerPickLevels.findByKey(level);
 	}
-
 
 
 	public static class Events extends LevelItem.Events<BurrowerPick, BurrowerPickLevels> {
@@ -353,16 +341,11 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		@Override
 		@Nullable
 		protected BurrowerPick getItem(ItemStack stack, Game game) {
-			try {
-				BurrowerPick pick = new BurrowerPick(stack, game);
-				return pick;
-			} catch (IllegalArgumentException e) {
-				return null;
-			}
+			return BurrowerPick.fromItemStack(stack, game);
 		}
 		@Override
 		protected BurrowerPick createItem(Player owner, BurrowerPickLevels level, Game game) {
-			return new BurrowerPick(owner, level, game);
+			return BurrowerPick.createItem(owner, level, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {

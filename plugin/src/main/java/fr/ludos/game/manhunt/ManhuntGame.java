@@ -365,7 +365,7 @@ public class ManhuntGame extends Game {
 		);
 
 		for (Player hunter : teamController.getHunters()) {
-			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), (ItemStack stack) -> ManhuntCompass.getItem(stack, this))) {
+			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), (ItemStack stack) -> ManhuntCompass.fromItemStack(stack, this))) {
 				compass.setLocation(prey.get());
 			}
 		}

@@ -2,37 +2,48 @@ package fr.ludos.item.huntsman;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.annotation.Nullable;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-
 import org.bukkit.Material;
+import org.bukkit.entity.AbstractArrow.PickupStatus;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.AbstractArrow.PickupStatus;
-import org.bukkit.entity.Arrow;
 
-import fr.ludos.item.SpecialItem;
 import fr.ludos.game.Game;
-import fr.ludos.role.Role;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.role.HuntsmanRole;
+import fr.ludos.role.Role;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class HuntsmanBow extends SpecialItem {
-	public HuntsmanBow(ItemStack stack, Game game) {
-		super(stack, game);
+	private static final String ID = "manhuntHuntsmanBow";
+
+
+	public static @Nullable HuntsmanBow fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		if (owner == null) return null;
+
+		return new HuntsmanBow(stack, owner, game);
 	}
-	public HuntsmanBow(Player owner, Game game) {
-		super(new ItemStack(Material.BOW), owner, game);
+	public static HuntsmanBow createItem(Player owner, Game game) {
+		return new HuntsmanBow(new ItemStack(Material.BOW), owner, game);
 	}
+
+	protected HuntsmanBow(ItemStack stack, Player owner, Game game) {
+		super(stack, owner, game);
+	}
+
 
 	@Override
 	public String getId() {
-		return "manhuntHuntsmanBow";
+		return ID;
 	}
 
 	@Override
@@ -71,16 +82,11 @@ public class HuntsmanBow extends SpecialItem {
 		@Override
 		@Nullable
 		protected HuntsmanBow getItem(ItemStack stack, Game game) {
-			try {
-				HuntsmanBow bow = new HuntsmanBow(stack, game);
-				return bow;
-			} catch (IllegalArgumentException e) {
-				return null;
-			}
+			return HuntsmanBow.fromItemStack(stack, game);
 		}
 		@Override
 		protected HuntsmanBow createItem(Player owner, Game game) {
-			return new HuntsmanBow(owner, game);
+			return HuntsmanBow.createItem(owner, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {

@@ -2,26 +2,28 @@ package fr.ludos.item.huntsman;
 
 import java.util.List;
 import java.util.Random;
+
 import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.ArrayUtils;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-
 import org.bukkit.Material;
-import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.block.Block;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.SplashPotion;
+import org.bukkit.entity.ThrownPotion;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.item.BranchItem;
 import fr.ludos.item.SpecialItemLevelBranches;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<HuntsmanCrossbowBranches> {

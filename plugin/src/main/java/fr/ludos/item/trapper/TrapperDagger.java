@@ -2,54 +2,48 @@ package fr.ludos.item.trapper;
 
 import javax.annotation.Nullable;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
-import fr.ludos.item.SpecialItem;
 import fr.ludos.game.Game;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
 import fr.ludos.role.TrapperRole;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class TrapperDagger extends SpecialItem {
+	private final static String ID = "trapperDagger";
 
-	public TrapperDagger(ItemStack stack, Game game) {
-		super(stack, game);
+
+	public static @Nullable TrapperDagger fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		if (owner == null) return null;
+
+		return new TrapperDagger(stack, owner, game);
 	}
-	public TrapperDagger(Player owner, Game game) {
-		super(new ItemStack(Material.STONE_SWORD), owner, game);
+	public static TrapperDagger createItem(Player owner, Game game) {
+		return new TrapperDagger(new ItemStack(Material.STONE_SWORD), owner, game);
 	}
+
+	protected TrapperDagger(ItemStack stack, Player owner, Game game) {
+		super(stack, owner, game);
+	}
+
 
 	@Override
 	protected String getId() {
-		return "trapperDagger";
+		return ID;
 	}
 	@Override
 	protected Component getName() {
 		return Component.text("Trapper Dagger")
 			.decoration(TextDecoration.ITALIC, false);
-	}
-
-
-	@Nullable
-	public static TrapperDagger getItem(ItemStack stack, Game game) {
-		try {
-			TrapperDagger dagger = new TrapperDagger(stack, game);
-			return dagger;
-		} catch (IllegalArgumentException e) {
-			return null;
-		}
-	}
-
-	public static TrapperDagger createItem(Player owner, Game game) {
-		return new TrapperDagger(owner, game);
 	}
 
 
@@ -77,7 +71,7 @@ public class TrapperDagger extends SpecialItem {
 		@Override
 		@Nullable
 		protected TrapperDagger getItem(ItemStack stack, Game game) {
-			return TrapperDagger.getItem(stack, game);
+			return TrapperDagger.fromItemStack(stack, game);
 		}
 
 		@Override
