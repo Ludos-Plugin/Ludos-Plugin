@@ -616,7 +616,7 @@ public class ManhuntGame extends Game {
 
 				setPreyName(givenPreyName);
 
-				sender.sendMessage( getPreyString() );
+				sender.sendMessage( "Prey player set to " + getPreyString() );
 				return true;
 
 			case area:

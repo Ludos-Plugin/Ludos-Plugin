@@ -95,7 +95,15 @@ public abstract class LevelItem<TLevel extends SpecialItemLevels<TLevel>> extend
 
 		setLvl(getLevel().getNext());
 		if (getOwner() != null) {
-			getOwner().sendMessage(ChatColor.GREEN + "Your " + getName() + ChatColor.RESET + ChatColor.GREEN + " has leveled up!"); // TODO: Translate
+			getOwner().sendMessage(
+				Component.text("Your ")
+					.color(NamedTextColor.GREEN)
+				.append(getName())
+				.append(
+					Component.text(" has leveled up!")
+					.color(NamedTextColor.GREEN)
+				)
+			); // TODO: Translate
 		}
 
 		updateLore();
