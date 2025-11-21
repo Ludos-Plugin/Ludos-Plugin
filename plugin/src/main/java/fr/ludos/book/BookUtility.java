@@ -142,12 +142,20 @@ public class BookUtility {
 	}
 
 	private static int getTagNodePixelWidth(TagNode tagNode, boolean bold) {
-		boolean isBold = tagNode.name().equals("bold");
+		if (tagNode.name().equals("bold") || tagNode.name().equals("b")) {
+			bold = tagNode.parts().size() == 1 || Boolean.parseBoolean(tagNode.parts().get(1).value());
+		}
+		else if (tagNode.name().equals("!bold") || tagNode.name().equals("!b")) {
+			bold = false;
+		}
+		else if (tagNode.name().equals("reset")) {
+			bold = false;
+		}
 
 		int pixelWidth = 0;
 
 		for (Node child : tagNode.children()) {
-			pixelWidth += getNodePixelWidth(child, bold || isBold);
+			pixelWidth += getNodePixelWidth(child, bold);
 		}
 
 		return pixelWidth;
@@ -296,7 +304,7 @@ public class BookUtility {
 	}
 
 	private static int truncateTagNode(StringBuilder builder, List<String> lines, TagNode tagNode, int currentLineLength, int maxLineLength) {
-		if (tagNode.name().equals("br")) {
+		if (tagNode.name().equals("newline") || tagNode.name().equals("br")) {
 			lines.add(builder.toString());
 			builder.setLength(0);
 			return 0;
