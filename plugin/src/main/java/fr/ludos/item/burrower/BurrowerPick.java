@@ -279,7 +279,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	public static class Events extends LevelItem.Events<BurrowerPick, BurrowerPickLevels> {
 
 		public Events(Game game) {
-			super(game, BurrowerPickLevels.WOODEN);
+			super(game, BurrowerPickLevels.WOODEN, 0);
 		}
 
 		@EventHandler

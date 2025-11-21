@@ -127,7 +127,7 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 
 
 		public Events(Game game) {
-			super(game);
+			super(game, 1);
 		}
 
 

@@ -53,7 +53,7 @@ public class HuntsmanArrow extends SpecialItem {
 		private final int reloadTime;
 
 		public Events(Game game, Integer arrowMagazineSize, int reloadTime) {
-			super(game);
+			super(game, 35);
 			this.arrowMagazineSize = arrowMagazineSize;
 			this.reloadTime = reloadTime;
 		}

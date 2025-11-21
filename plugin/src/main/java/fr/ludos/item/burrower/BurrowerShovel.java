@@ -147,7 +147,7 @@ public class BurrowerShovel extends SpecialItem {
 	public static class Events extends SpecialItem.Events<BurrowerShovel> {
 
 		public Events(Game game) {
-			super(game);
+			super(game, 1);
 		}
 
 

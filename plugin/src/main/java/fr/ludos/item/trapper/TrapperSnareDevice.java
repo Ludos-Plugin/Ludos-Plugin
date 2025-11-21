@@ -92,7 +92,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		public final ArrayList<TrapperTrap> traps = new ArrayList<>();
 
 		public Events(Game game) {
-			super(game);
+			super(game, 1);
 
 			new BukkitRunnable() {
 				@Override

@@ -55,7 +55,7 @@ public class TrapperDagger extends SpecialItem {
 
 	public static class Events extends SpecialItem.Events<TrapperDagger> {
 		public Events(Game game) {
-			super(game);
+			super(game, 0);
 		}
 
 

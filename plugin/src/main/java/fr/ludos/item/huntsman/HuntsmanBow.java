@@ -50,7 +50,7 @@ public class HuntsmanBow extends SpecialItem {
 	public static class Events extends SpecialItem.Events<HuntsmanBow> {
 
 		public Events(Game game) {
-			super(game);
+			super(game, 0);
 		}
 
 		@EventHandler
