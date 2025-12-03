@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
@@ -30,12 +31,14 @@ import fr.ludos.game.Game;
 import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.item.texture.TextureManager;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+import java.util.Arrays;
 
 public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	private static final String ID = "manhuntBurrowerPick";
@@ -64,6 +67,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	protected BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level, double xp, Game game) {
 		super(item, owner, level, xp, game);
 		setHammerMode(false);
+		applyTexture();
 	}
 
 
@@ -129,6 +133,17 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		return lore;
 	}
 
+	private void applyTexture() {
+		String baseMaterial = getLevel().getTextureSuffix().replaceAll("\\d+", "");
+		String mode = hammerMode ? "hammer" : "normal";
+		String expectedKey = getLevel().buildTextureKey(baseMaterial, mode);
+
+		getGame().getPlugin().getLogger().info("DEBUG - Applying texture: baseMaterial=" + baseMaterial + ", mode=" + mode + ", key=" + expectedKey);
+
+		TextureManager.getInstance().applyTexture(getStack(), getLevel(), baseMaterial, mode);
+
+		if (getOwner() != null) getOwner().updateInventory();
+	}
 
 	public void setHammerMode(Boolean value) {
 		ItemMeta meta = getStack().getItemMeta();
@@ -142,6 +157,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 		updateLore();
 		updateName();
+		applyTexture();
 	}
 
 	public void updateWielding() {
@@ -256,6 +272,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		getStack().removeEnchantment(Enchantment.DIG_SPEED);
 		getStack().removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
 		getStack().addEnchantments(level.getEnchantments());
+		applyTexture();
 	}
 
 	@Override
@@ -268,6 +285,8 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 		public Events(Game game) {
 			super(game, BurrowerPickLevels.WOODEN, 0);
+
+			TextureManager.getInstance().registerProviders(Arrays.asList(BurrowerPickLevels.values()));
 		}
 
 		@EventHandler

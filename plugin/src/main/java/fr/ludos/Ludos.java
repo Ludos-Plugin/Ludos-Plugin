@@ -19,6 +19,8 @@ import fr.ludos.book.BookUtility;
 import fr.ludos.command.ludos.LudosCommand;
 import fr.ludos.game.Game;
 import fr.ludos.game.manhunt.ManhuntGame;
+import fr.ludos.item.texture.TextureListener;
+import fr.ludos.item.texture.TextureManager;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
@@ -34,7 +36,16 @@ public class Ludos extends JavaPlugin implements Listener {
 
 	public static final String namespace = "ludos";
 
-	public Ludos() { }
+	private final TextureManager textureManager;
+	public TextureManager getTextureManager() {
+		return textureManager;
+	}
+	private final TextureListener textureListener;
+
+	public Ludos() {
+		textureManager = new TextureManager(this);
+		textureListener = new TextureListener(this);
+	}
 
 	@Override
 	public void onEnable() {
@@ -53,6 +64,16 @@ public class Ludos extends JavaPlugin implements Listener {
 		cmd.setTabCompleter(ludosCommand);
 		// cmd.setUsage(ludosCommand.getUsage());
 
+
+		//pour l'instant garder c'est pour savoir l'indexation des texture à chaque items, customiser
+		PluginCommand textureCmd = getCommand("texture");
+
+		if (textureCmd != null) {
+			textureCmd.setExecutor(textureManager);
+		}
+
+
+		Bukkit.getPluginManager().registerEvents(textureListener, this);
 		Bukkit.getPluginManager().registerEvents(this, this);
 	}
 
@@ -60,6 +81,7 @@ public class Ludos extends JavaPlugin implements Listener {
 	public void onDisable() {
 		Game.stopCurrentGame();
 		HandlerList.unregisterAll((Listener)this);
+		HandlerList.unregisterAll(textureListener);
 	}
 
 

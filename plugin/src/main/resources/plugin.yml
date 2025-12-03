@@ -8,3 +8,6 @@ main: fr.ludos.Ludos
 commands:
    ludos:
       description: "The Main Ludos command"
+   texture:
+      description: "Manage custom textures and generate resource pack"
+      permission: ludos.admin
