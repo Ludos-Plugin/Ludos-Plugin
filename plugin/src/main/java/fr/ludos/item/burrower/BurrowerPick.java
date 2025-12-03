@@ -34,7 +34,7 @@ import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.Role;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.ItemUtilities;
-
+import fr.ludos.item.texture.TextureManager;
 
 public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	public static final String HAMMER_MODE = "mode";
@@ -57,6 +57,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		}
 
 		hammerMode = getPersistentData(stack, modeKey, PersistentDataType.INTEGER) == 1;
+		applyTexture();
 	}
 
 	public BurrowerPick(Player owner, Game game) {
@@ -75,8 +76,20 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 	protected BurrowerPick(ItemStack item, Player owner, BurrowerPickLevels level, double xp, Game game) {
 		super(item, owner, level, xp, game);
 		setHammerMode(false);
+		applyTexture();
 	}
 
+	private void applyTexture() {
+		String baseMaterial = getLevel().getTextureSuffix().replaceAll("\\d+", "");
+		String mode = hammerMode ? "hammer" : "normal";
+		String expectedKey = getLevel().buildTextureKey(baseMaterial, mode);
+		
+		getGame().getPlugin().getLogger().info("DEBUG - Applying texture: baseMaterial=" + baseMaterial + ", mode=" + mode + ", key=" + expectedKey);
+		
+		TextureManager.getInstance().applyTexture(getStack(), getLevel(), baseMaterial, mode);
+		
+		if (getOwner() != null) getOwner().updateInventory();
+	}
 
 	public void setHammerMode(Boolean value) {
 		ItemMeta meta = getStack().getItemMeta();
@@ -86,8 +99,8 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 		getStack().setItemMeta(meta);
 
+		applyTexture();
 		updateWielding();
-
 		updateLore();
 		updateName();
 	}
@@ -267,6 +280,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 		getStack().removeEnchantment(Enchantment.DIG_SPEED);
 		getStack().removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
 		getStack().addEnchantments(level.getEnchantments());
+		applyTexture();
 	}
 
 	@Override
@@ -280,6 +294,8 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 		public Events(Game game) {
 			super(game, BurrowerPickLevels.WOODEN);
+
+			TextureManager.getInstance().registerProviders(java.util.Arrays.asList(BurrowerPickLevels.values()));
 		}
 
 		@EventHandler
@@ -360,10 +376,12 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 				return null;
 			}
 		}
+
 		@Override
 		protected BurrowerPick createItem(Player owner, BurrowerPickLevels level, Game game) {
 			return new BurrowerPick(owner, level, game);
 		}
+		
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {
 			return Role.isPlayerRole(owner, BurrowerRole.id);

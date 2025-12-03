@@ -257,6 +257,11 @@ public class SheepwarsGame extends Game {
 		}
 
 		@Override
+		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
+			return "<config> <value> - Available configs: players, duration, respawnTime, teamKills";
+		}
+
+		@Override
 		public boolean executeGameConfig(CommandSender sender, Command command, String label, String[] args) {
 			if (args.length < 2) {
 				sender.sendMessage(Component.text("Usage: /" + label + " game config " + getGameConfigUsage(sender, command, label))
@@ -369,15 +374,6 @@ public class SheepwarsGame extends Game {
 			}
 
 			return null;
-		}
-
-		@Override
-		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
-			return "<" + 
-				Arrays.stream(SheepwarsGameConfigs.values())
-					.map(config -> config.toString() + " " + config.getUsage())
-					.collect(Collectors.joining(" | ")) +
-				">";
 		}
 	}
 }

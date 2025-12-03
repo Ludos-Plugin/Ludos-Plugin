@@ -13,13 +13,19 @@ import fr.ludos.role.Role;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.TrapperRole;
+import fr.ludos.item.texture.TextureManager;
+import fr.ludos.item.texture.TextureListener;
 
 
 public class Ludos extends JavaPlugin implements Listener {
 
 	public static final String namespace = "ludos";
+	private TextureManager textureManager;
 
-	public Ludos() {
+	public Ludos() { }
+	
+	public TextureManager getTextureManager() {
+		return textureManager;
 	}
 
 	@Override
@@ -34,12 +40,21 @@ public class Ludos extends JavaPlugin implements Listener {
 		Role.registerRole(new BurrowerRole.Builder(this));
 		Role.registerRole(new TrapperRole.Builder(this));
 
+		textureManager = new TextureManager(this);
+		
+		getServer().getPluginManager().registerEvents(new TextureListener(this), this);
 
 		PluginCommand cmd = getCommand("ludos");
 		LudosCommand ludosCommand = new LudosCommand(this);
 		cmd.setExecutor(ludosCommand);
 		cmd.setTabCompleter(ludosCommand);
-		// cmd.setUsage(ludosCommand.getUsage());
+
+		//pour l'instant garder c'est pour savoir l'indexation des texture à chaque items, customiser
+		PluginCommand textureCmd = getCommand("texture");
+
+		if (textureCmd != null) {
+			textureCmd.setExecutor(textureManager);
+		}
 	}
 
 	@Override
