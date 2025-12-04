@@ -28,7 +28,10 @@ public class TrapperDagger extends SpecialItem {
 		return new TrapperDagger(stack, owner, game);
 	}
 	public static TrapperDagger createItem(Player owner, Game game) {
-		return new TrapperDagger(new ItemStack(Material.STONE_SWORD), owner, game);
+		TrapperDagger dagger = new TrapperDagger(new ItemStack(Material.STONE_SWORD), owner, game);
+		dagger.initializeItem();
+
+		return dagger;
 	}
 
 	protected TrapperDagger(ItemStack stack, Player owner, Game game) {
@@ -41,7 +44,7 @@ public class TrapperDagger extends SpecialItem {
 		return ID;
 	}
 	@Override
-	protected Component getName() {
+	public Component getName() {
 		return Component.text("Trapper Dagger")
 			.decoration(TextDecoration.ITALIC, false);
 	}

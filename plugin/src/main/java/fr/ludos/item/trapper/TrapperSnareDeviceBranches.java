@@ -11,13 +11,13 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.item.BranchItem;
-import fr.ludos.item.SpecialItemBranches;
+import fr.ludos.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSnareDeviceBranches> {
+public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnareDeviceBranches> {
 	REVEALING (
 		Component.text("Revealing")
 			.color(NamedTextColor.YELLOW)
@@ -53,9 +53,11 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		}
 
 		@Override
-		public void onSwitchBranch(BranchItem<TrapperSnareDeviceBranches> item) {
+		public void onEquip(SpecialItem item) {
 			item.getStack().setType(type);
 		}
+		@Override
+		public void onUnequip(SpecialItem item) { }
 	},
 
 
@@ -91,9 +93,11 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		}
 
 		@Override
-		public void onSwitchBranch(BranchItem<TrapperSnareDeviceBranches> item) {
+		public void onEquip(SpecialItem item) {
 			item.getStack().setType(type);
 		}
+		@Override
+		public void onUnequip(SpecialItem item) { }
 	};
 
 

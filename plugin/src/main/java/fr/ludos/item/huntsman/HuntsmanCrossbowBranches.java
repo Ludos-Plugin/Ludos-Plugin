@@ -8,25 +8,21 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.SplashPotion;
-import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import fr.ludos.item.BranchItem;
-import fr.ludos.item.SpecialItemLevelBranches;
+import fr.ludos.item.MultiLevelBranchItem;
+import fr.ludos.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<HuntsmanCrossbowBranches> {
+public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<HuntsmanCrossbowBranches> {
 	FLAME (
 		Component.text("Igniting")
 			.color(NamedTextColor.RED)
@@ -52,9 +48,9 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 		}
 
 		@Override
-		public void onSwitchBranch(BranchItem<HuntsmanCrossbowBranches> item) {
-
-		}
+		public void onEquip(SpecialItem item) { }
+		@Override
+		public void onUnequip(SpecialItem item) { }
 	},
 
 
@@ -101,9 +97,9 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 		}
 
 		@Override
-		public void onSwitchBranch(BranchItem<HuntsmanCrossbowBranches> item) {
-
-		}
+		public void onEquip(SpecialItem item) { }
+		@Override
+		public void onUnequip(SpecialItem item) { }
 	},
 
 
@@ -150,9 +146,9 @@ public enum HuntsmanCrossbowBranches implements SpecialItemLevelBranches<Huntsma
 		}
 
 		@Override
-		public void onSwitchBranch(BranchItem<HuntsmanCrossbowBranches> item) {
-
-		}
+		public void onEquip(SpecialItem item) { }
+		@Override
+		public void onUnequip(SpecialItem item) { }
 	};
 
 

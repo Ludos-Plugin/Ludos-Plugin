@@ -25,6 +25,7 @@ import fr.ludos.item.SpecialItem;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
@@ -44,7 +45,10 @@ public class BurrowerShovel extends SpecialItem {
 		return new BurrowerShovel(stack, owner, game);
 	}
 	public static BurrowerShovel createItem(Player owner, Game game) {
-		return new BurrowerShovel(new ItemStack(Material.IRON_SHOVEL), owner, game);
+		BurrowerShovel shovel = new BurrowerShovel(new ItemStack(Material.IRON_SHOVEL), owner, game);
+		shovel.initializeItem();
+
+		return shovel;
 	}
 
 	protected BurrowerShovel(ItemStack stack, Player owner, Game game) {
@@ -58,10 +62,22 @@ public class BurrowerShovel extends SpecialItem {
 	}
 
 	@Override
-	protected Component getName() {
+	public Component getName() {
 		return
 			Component.text("Burrower's Shovel")
 			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
+	}
+
+	@Override
+	public List<Component> getLore() {
+		List<Component> lore = new ArrayList<>();
+
+		lore.add(Component.text("Ability: Dig a tunnel, use again to revert it")
+			.decoration(TextDecoration.ITALIC, false)
+			.color(NamedTextColor.GRAY));
+		lore.add(getActionAnnotation("key.use", Component.text("Tunnel")));
+
+		return lore;
 	}
 
 

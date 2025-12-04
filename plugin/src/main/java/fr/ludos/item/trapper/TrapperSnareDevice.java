@@ -39,7 +39,10 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		return new TrapperSnareDevice(stack, owner, TrapperSnareDeviceBranches.findByKey(branchIndex), game);
 	}
 	public static TrapperSnareDevice createItem(Player owner, Game game) {
-		return new TrapperSnareDevice(new ItemStack(Material.ENCHANTED_BOOK), owner, TrapperSnareDeviceBranches.REVEALING, game);
+		TrapperSnareDevice device = new TrapperSnareDevice(new ItemStack(Material.ENCHANTED_BOOK), owner, TrapperSnareDeviceBranches.REVEALING, game);
+		device.initializeItem();
+
+		return device;
 	}
 
 	protected TrapperSnareDevice(ItemStack stack, Player owner, TrapperSnareDeviceBranches branch, Game game) {
@@ -53,7 +56,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 	}
 
 	@Override
-	protected Component getName() {
+	public Component getName() {
 		return
 			Component.text("Snare Grimoire ")
 			.append(getBranchAnnotation())
@@ -128,9 +131,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 			}
 
 
-			if (! snareDevice.refreshUseCooldown()) {
-				return;
-			}
+			if (! snareDevice.refreshUseCooldown()) return;
 			event.setCancelled(true);
 
 

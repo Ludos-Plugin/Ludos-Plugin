@@ -32,23 +32,28 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public abstract class SpecialItem {
 
-	private final Game game;
-	public Game getGame() { return game; }
-
 	public static final String ID = "id";
-	private final NamespacedKey idKey;
+	private static final NamespacedKey idKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ID);
 
 	public static final String OWNER = "owner";
-	private final NamespacedKey ownerKey;
+	private static final NamespacedKey ownerKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), OWNER);
 
-	public static final int USAGE_COOLDOWN = 5;
+	public static final int USAGE_COOLDOWN = 3;
+
+	private final Game game;
+	public Game getGame() { return game; }
 
 	private final ItemStack stack;
 	public ItemStack getStack() {
@@ -69,15 +74,12 @@ public abstract class SpecialItem {
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
-		NamespacedKey idKey = new NamespacedKey(game.getPlugin(), ID);
 		if (! container.has(idKey, PersistentDataType.STRING) ) return null;
-
 		String itemId = container.get(idKey, PersistentDataType.STRING);
 		if (! itemId.equals(id)) return null;
 
-
-		NamespacedKey ownerKey = new NamespacedKey(game.getPlugin(), OWNER);
 		if (! container.has(ownerKey, PersistentDataType.STRING) ) return null;
+
 
 		Player owner = Bukkit.getPlayer(
 			UUID.fromString(
@@ -87,17 +89,23 @@ public abstract class SpecialItem {
 
 		return owner;
 	}
+	public static Component getActionAnnotation(final @NotNull String keybind, Component action) {
+		return Component.text("Press ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.keybind(keybind)
+				.color(NamedTextColor.YELLOW))
+			.append(Component.text(" to ")
+				.color(NamedTextColor.GRAY))
+			.append(action)
+			.decoration(TextDecoration.ITALIC, false);
+	}
 
 	protected SpecialItem(ItemStack stack, Player owner, Game game) {
 		this.game = game;
 		this.stack = stack;
 		this.owner = owner;
-
-		this.idKey = new NamespacedKey(game.getPlugin(), ID);
-		this.ownerKey = new NamespacedKey(game.getPlugin(), OWNER);
-
-		updateName();
-
+	}
+	protected final void initializeItem() {
 		ItemMeta meta = stack.getItemMeta();
 
 		meta.setUnbreakable(true);
@@ -108,10 +116,16 @@ public abstract class SpecialItem {
 		container.set(idKey, PersistentDataType.STRING, getId());
 
 		stack.setItemMeta(meta);
+
+		updateName();
+		updateLore();
+
+		onInitialize();
 	}
+	protected void onInitialize() { }
 
 
-	protected List<Component> getLore() {
+	public List<Component> getLore() {
 		return new ArrayList<>();
 	}
 

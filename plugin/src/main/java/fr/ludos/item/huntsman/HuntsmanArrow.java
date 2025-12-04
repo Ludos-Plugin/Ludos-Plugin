@@ -48,7 +48,7 @@ public class HuntsmanArrow extends SpecialItem {
 	}
 
 	@Override
-	protected Component getName(){
+	public Component getName(){
 		return Component.text("Stolen Arrow")
 			.decoration(TextDecoration.ITALIC, false);
 	}

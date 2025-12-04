@@ -33,7 +33,10 @@ public class HuntsmanBow extends SpecialItem {
 		return new HuntsmanBow(stack, owner, game);
 	}
 	public static HuntsmanBow createItem(Player owner, Game game) {
-		return new HuntsmanBow(new ItemStack(Material.BOW), owner, game);
+		HuntsmanBow bow = new HuntsmanBow(new ItemStack(Material.BOW), owner, game);
+		bow.initializeItem();
+
+		return bow;
 	}
 
 	protected HuntsmanBow(ItemStack stack, Player owner, Game game) {
@@ -47,7 +50,7 @@ public class HuntsmanBow extends SpecialItem {
 	}
 
 	@Override
-	protected Component getName(){
+	public Component getName(){
 		return Component.text("Stolen Bow")
 			.decoration(TextDecoration.ITALIC, false);
 	}

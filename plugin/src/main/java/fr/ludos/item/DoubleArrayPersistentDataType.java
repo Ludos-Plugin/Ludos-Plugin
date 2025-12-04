@@ -8,7 +8,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class DoubleArrayPersistentDataType implements PersistentDataType<long[], double[]> {
 
-	public static DoubleArrayPersistentDataType INSTANCE = new DoubleArrayPersistentDataType();
+	public static final DoubleArrayPersistentDataType INSTANCE = new DoubleArrayPersistentDataType();
 
 	@Override
 	public Class<long[]> getPrimitiveType() {

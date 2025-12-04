@@ -8,11 +8,10 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.bukkit.ChatColor;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -24,16 +23,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches<TBranches>> extends BranchItem<TBranches> {
-	public static final String LEVELS = "levels";
-	private NamespacedKey levelsKey = new NamespacedKey(getGame().getPlugin(), LEVELS);
-
-	public static final String XP = "xp";
-	private NamespacedKey xpKey = new NamespacedKey(getGame().getPlugin(), XP);
-
-	private static final String MAX_LVL_LABEL = "MAX";
-
-
+public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.Branch<TBranch>> extends BranchItem<TBranch> {
 	private int[] branchLevels;
 
 	public int[] getBranchLevels() {
@@ -55,22 +45,29 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 	public static @Nullable Pair<int[], double[]> levelsFromItemStack(ItemStack stack, String id, Game game) {
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 
-		NamespacedKey levelsKey = new NamespacedKey(game.getPlugin(), LEVELS);
-		if ( ! container.has(levelsKey, PersistentDataType.INTEGER_ARRAY) ) return null;
+		if ( ! container.has(LevelItem.levelKey, PersistentDataType.INTEGER_ARRAY) ) return null;
+		if ( ! container.has(LevelItem.xpKey, DoubleArrayPersistentDataType.INSTANCE) ) return null;
+		if ( ! container.has(BranchItem.branchKey, PersistentDataType.INTEGER) ) return null;
 
-		NamespacedKey xpKey = new NamespacedKey(game.getPlugin(), XP);
-		if ( ! container.has(xpKey, DoubleArrayPersistentDataType.INSTANCE) ) return null;
-
-		int[] levels = getPersistentData(stack, levelsKey, PersistentDataType.INTEGER_ARRAY);
-		double[] xps = getPersistentData(stack, xpKey, DoubleArrayPersistentDataType.INSTANCE);
+		int[] levels = container.get(LevelItem.levelKey, PersistentDataType.INTEGER_ARRAY);
+		double[] xps = container.get(LevelItem.xpKey, DoubleArrayPersistentDataType.INSTANCE);
 
 		return Pair.of(levels, xps);
 	}
 
-	public BranchLevelItem(ItemStack stack, Player owner, TBranches branch, int[] levels, double[] xps, Game game) {
+	public MultiLevelBranchItem(ItemStack stack, Player owner, TBranch branch, int[] levels, double[] xps, Game game) {
 		super(stack, owner, branch, game);
-		setXps(xps);
-		setLvls(levels);
+
+		this.branchLevels = levels;
+		this.branchXps = xps;
+	}
+
+	@Override
+	protected void onInitialize() {
+		super.onInitialize();
+
+		setLvls(branchLevels);
+		setXps(branchXps);
 	}
 
 
@@ -78,7 +75,7 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 		ItemMeta meta = getStack().getItemMeta();
 
 		branchLevels = levels;
-		meta.getPersistentDataContainer().set(levelsKey, PersistentDataType.INTEGER_ARRAY, branchLevels);
+		meta.getPersistentDataContainer().set(LevelItem.levelKey, PersistentDataType.INTEGER_ARRAY, branchLevels);
 		getStack().setItemMeta(meta);
 
 		updateLore();
@@ -112,10 +109,10 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 
 	public void setXps(double[] xps) {
 		ItemMeta meta = getStack().getItemMeta();
+		meta.getPersistentDataContainer().set(LevelItem.xpKey, DoubleArrayPersistentDataType.INSTANCE, xps);
+		getStack().setItemMeta(meta);
 
 		branchXps = xps;
-		meta.getPersistentDataContainer().set(xpKey, DoubleArrayPersistentDataType.INSTANCE, branchXps);
-		getStack().setItemMeta(meta);
 
 		updateLore();
 	}
@@ -141,7 +138,7 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 	}
 
 	@Override
-	protected List<Component> getLore() {
+	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
 		int branchCount = getBranches().length;
@@ -152,7 +149,7 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 
 		String xpLabel;
 		if ( getBranch().isMax(currentLevel) ) {
-			xpLabel = MAX_LVL_LABEL;
+			xpLabel = LevelItem.MAX_LVL_LABEL;
 		} else {
 			String xpRounded = Double.toString(Math.round(getCurrentBranchXp() * 100.0) / 100.0);
 			xpLabel = xpRounded + '/' + getBranch().getXpThreshold();
@@ -178,7 +175,12 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 	}
 
 
-	public static abstract class Events<T extends BranchLevelItem<TBranches>, TBranches extends SpecialItemLevelBranches<TBranches>> extends BranchItem.Events<T, TBranches> {
+	public static interface Branch<TBranches extends Branch<TBranches>> extends BranchItem.Branch<TBranches> {
+		public double getXpThreshold();
+		public boolean isMax(int level);
+	}
+
+	public static abstract class Events<T extends MultiLevelBranchItem<TBranch>, TBranch extends Branch<TBranch>> extends BranchItem.Events<T, TBranch> {
 		private Map<String, int[]> deadPlayerLevels;
 
 		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
@@ -199,16 +201,14 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 			if (! canPlayerHaveItem(player)) return;
 
 			T specialItem = SpecialItem.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
-			if ( specialItem == null ) {
-				return;
-			}
+			if ( specialItem == null ) return;
 
 			deadPlayerLevels.put( player.getName(), Arrays.stream(specialItem.getBranchLevels())
 				.map((int lvl) -> lvl == 0 ? 0 : lvl -1)
 				.toArray() );
 		}
 
-		protected abstract TBranches[] getBranches();
+		protected abstract TBranch[] getBranches();
 		protected abstract T createItem(Player owner, int[] levels, Game game);
 
 		@Override
@@ -219,6 +219,11 @@ public abstract class BranchLevelItem<TBranches extends SpecialItemLevelBranches
 			}
 
 			return createItem(owner, levels, game);
+		}
+
+		@EventHandler
+		public void onSwitchItem(PlayerItemHeldEvent event) {
+			BranchItem.onSwitchItem(event, (stack) -> getItem(stack, game), BranchItem::getBranch);
 		}
 	}
 }
