@@ -1,11 +1,14 @@
 package fr.ludos.item.burrower;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -32,29 +35,45 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public class BurrowerPick extends LevelBranchItem<BurrowerPickLevels, BurrowerPickBranches> {
+public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, BurrowerPickLevels> {
 	private static final String ID = "manhuntBurrowerPick";
+
+	private final static Map<ItemStack, BurrowerPick> cachedItems = new HashMap<>();
 
 
 	public static BurrowerPick fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		BurrowerPick cached = cachedItems.get(stack);
+		if (cached != null) return cached;
+
 		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
 		if (owner == null) return null;
 		Integer branchIndex = BranchItem.branchFromItemStack(stack, game);
 		if (branchIndex == null) return null;
-		Pair<Integer, Double> levelAndXp = LevelItem.fromLevelItemStack(stack, ID, game);
-		if (levelAndXp == null) return null;
+		LevelState levelState = LevelItem.levelFromItemStack(stack, ID, game);
+		if (levelState == null) return null;
 
-		return new BurrowerPick(stack, owner, BurrowerPickBranches.values()[branchIndex], BurrowerPickLevels.values()[levelAndXp.getLeft()], levelAndXp.getRight(), game);
+		return new BurrowerPick(stack, owner, BurrowerPickBranches.values()[branchIndex], levelState, game);
 	}
-	public static BurrowerPick createItem(Player owner, BurrowerPickLevels level, Game game) {
-		BurrowerPick burrowerPick = new BurrowerPick(new ItemStack(level.getMaterial()), owner, BurrowerPickBranches.Pickaxe, level, 0.0, game);
+	public static BurrowerPick createItem(Player owner, LevelState level, Game game) {
+		BurrowerPickLevels lvl = BurrowerPickLevels.values()[level.getLevel()];
+		BurrowerPick burrowerPick = new BurrowerPick(new ItemStack(lvl.getMaterial()), owner, BurrowerPickBranches.Pickaxe, level, game);
 		burrowerPick.initializeItem();
 
 		return burrowerPick;
 	}
 
-	protected BurrowerPick(ItemStack stack, Player owner, BurrowerPickBranches branch, @Nullable BurrowerPickLevels level, double xp, Game game) {
-		super(stack, owner, branch, level, xp, game);
+	protected BurrowerPick(ItemStack stack, Player owner, BurrowerPickBranches branch, LevelState level, Game game) {
+		super(BurrowerPickBranches.class, BurrowerPickLevels.class, stack, owner, branch, level, game);
+
+		this.getLevelState().addLevelUpListener((lvlState) -> {
+			BurrowerPickLevels lvl = getLevel(lvlState.getLevel());
+
+			ItemStack item = getStack();
+			item.setType(lvl.getMaterial());
+			item.removeEnchantment(Enchantment.DIG_SPEED);
+			item.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
+			item.addEnchantments(lvl.getEnchantments());
+		});
 	}
 
 
@@ -75,8 +94,9 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickLevels, BurrowerPi
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		int size = 1 + getLevel().getRadius() * 2;
-		int depth = getLevel().getDepth() + 1;
+		BurrowerPickLevels level = getLvl();
+		int size = 1 + level.getRadius() * 2;
+		int depth = level.getDepth() + 1;
 
 
 		lore.add(BranchItem.getCycleBranchAnnotation("key.use"));
@@ -109,8 +129,9 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickLevels, BurrowerPi
 
 		Boolean isDepthAxisPositive = face == BlockFace.EAST || face == BlockFace.UP || face == BlockFace.SOUTH;
 
-		int radius = getLevel().getRadius();
-		int depth = getLevel().getDepth();
+		BurrowerPickLevels level = getLvl();
+		int radius = level.getRadius();
+		int depth = level.getDepth();
 
 		for (int depthOffset = 0; depthOffset <= depth; depthOffset++) {
 			for (int xOffset = -radius; xOffset <= radius; xOffset++) {
@@ -136,16 +157,6 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickLevels, BurrowerPi
 		if (oreXp != 0) {
 			addXp(oreXp);
 		}
-	}
-
-
-	@Override
-	public BurrowerPickBranches convertToBranch(int levels) {
-		return BurrowerPickBranches.values()[levels];
-	}
-	@Override
-	protected BurrowerPickBranches[] getBranches() {
-		return BurrowerPickBranches.values();
 	}
 
 
@@ -180,22 +191,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickLevels, BurrowerPi
 	}
 
 
-	@Override
-	public void setLvl(BurrowerPickLevels level) {
-		super.setLvl(level);
-		getStack().setType(level.getMaterial());
-		getStack().removeEnchantment(Enchantment.DIG_SPEED);
-		getStack().removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
-		getStack().addEnchantments(level.getEnchantments());
-	}
-
-	@Override
-	public BurrowerPickLevels convertToLevel(int level) {
-		return BurrowerPickLevels.values()[level];
-	}
-
-
-	public static class Events extends LevelBranchItem.Events<BurrowerPick, BurrowerPickLevels, BurrowerPickBranches> {
+	public static class Events extends LevelBranchItem.Events<BurrowerPick, BurrowerPickBranches, BurrowerPickLevels> {
 
 		public Events(Game game) {
 			super(game, BurrowerPickLevels.WOODEN, 0);
@@ -234,7 +230,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickLevels, BurrowerPi
 			return BurrowerPick.fromItemStack(stack, game);
 		}
 		@Override
-		protected BurrowerPick createItem(Player owner, BurrowerPickLevels level, Game game) {
+		protected BurrowerPick createItem(Player owner, LevelState level, Game game) {
 			return BurrowerPick.createItem(owner, level, game);
 		}
 		@Override
@@ -245,11 +241,6 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickLevels, BurrowerPi
 		@Override
 		protected BurrowerPickBranches[] getBranches() {
 			return BurrowerPickBranches.values();
-		}
-
-		@Override
-		protected BurrowerPick createItem(Player owner, int[] levels, Game game) {
-			return BurrowerPick.createItem(owner, BurrowerPickLevels.values()[levels[0]], game);
 		}
 	}
 }

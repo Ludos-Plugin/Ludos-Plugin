@@ -68,7 +68,7 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 
 		@Override
 		public void processLandedArrow(Arrow arrow, HumanEntity player, int level, ProjectileHitEvent event) {
-			if (level > 1 && isMax(level)) {
+			if (level > 1 && level == getMaxLevel()) {
 				// spawn an AEC that applies levitation as a splash
 				PotionEffect levitationEffect = new PotionEffect(PotionEffectType.LEVITATION, 10, 2);
 
@@ -153,8 +153,6 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 
 
 
-	public final static HuntsmanCrossbowBranches[] values = HuntsmanCrossbowBranches.values();
-
 	private Component name;
 	public Component getName() {
 		return name;
@@ -183,14 +181,6 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 	}
 
 
-	@Nullable
-	public static HuntsmanCrossbowBranches findByKey(int i) {
-		if ( i >= values.length ) return null;
-
-		return values[i];
-	}
-
-
 	private static Block getBlock(ProjectileHitEvent event) {
 		Block block;
 		if (event.getHitBlock() != null) {
@@ -206,12 +196,8 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 		return block;
 	}
 
-	public int index() {
-		return ArrayUtils.indexOf(values, this);
-	}
-
-	public boolean isMax(int level) {
-		return level == 2;
+	public int getMaxLevel() {
+		return 2;
 	}
 
 	public abstract void processShotArrow(Arrow arrow, HumanEntity player, int level, EntityShootBowEvent event);

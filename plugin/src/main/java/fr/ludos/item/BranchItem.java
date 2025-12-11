@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -24,7 +25,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public abstract class BranchItem<TBranch extends BranchItem.Branch<TBranch>> extends SpecialItem {
+public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>> extends SpecialItem {
 	public static final String BRANCH = "branch";
 	public static final NamespacedKey branchKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), BRANCH);
 
@@ -32,6 +33,13 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch<TBranch>> ext
 	private TBranch branch;
 	public TBranch getBranch() {
 		return branch;
+	}
+	private final TBranch[] branches;
+	public TBranch[] getBranches() {
+		return branches;
+	}
+	public int getMaxBranchIndex() {
+		return branches.length - 1;
 	}
 
 
@@ -46,7 +54,7 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch<TBranch>> ext
 	public static Component getCycleBranchAnnotation(final @NotNull String keybind) {
 		return getActionAnnotation(keybind, Component.text("Switch Mode"));
 	}
-	public static <TBranch extends Branch<TBranch>> Component getBranchAnnotation(TBranch branch) {
+	public static <TBranch extends Enum<TBranch> & Branch<TBranch>> Component getBranchAnnotation(TBranch branch) {
 		if (branch == null) return Component.empty();
 
 		return Component.text("(")
@@ -54,7 +62,7 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch<TBranch>> ext
 			.append(Component.text(")"))
 			.decoration(TextDecoration.ITALIC, false);
 	}
-	public static <TBranch extends Branch<TBranch>> Component getBranchLoreField(TBranch branch) {
+	public static <TBranch extends Enum<TBranch> & Branch<TBranch>> Component getBranchLoreField(TBranch branch) {
 		return Component.text("Mode: ")
 				.color(NamedTextColor.GRAY)
 			.append(branch.getName()
@@ -62,13 +70,13 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch<TBranch>> ext
 			.decoration(TextDecoration.ITALIC, false);
 	}
 
-	public static <TItem extends SpecialItem, TBranch extends Branch<TBranch>> void setItemBranch(TItem item, TBranch newBranch, Function<TItem, TBranch> getBranch, BiConsumer<TItem, TBranch> setBranch) {
+	public static <TItem extends SpecialItem, TBranch extends Enum<TBranch> & Branch<TBranch>> void setItemBranch(TItem item, TBranch newBranch, Function<TItem, TBranch> getBranch, BiConsumer<TItem, TBranch> setBranch) {
 		TBranch oldBranch = getBranch.apply(item);
 
 		ItemStack itemStack = item.getStack();
 
 		ItemMeta meta = itemStack.getItemMeta();
-		meta.getPersistentDataContainer().set(branchKey, PersistentDataType.INTEGER, newBranch.index());
+		meta.getPersistentDataContainer().set(branchKey, PersistentDataType.INTEGER, newBranch.ordinal());
 		itemStack.setItemMeta(meta);
 
 		setBranch.accept(item, newBranch);
@@ -82,7 +90,7 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch<TBranch>> ext
 		item.updateName();
 	}
 
-	public static <TItem extends SpecialItem, TBranch extends BranchItem.Branch<TBranch>> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem, Function<TItem, TBranch> getBranch) {
+	public static <TItem extends SpecialItem, TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem, Function<TItem, TBranch> getBranch) {
 		Player player = event.getPlayer();
 
 		TItem oldItem = getItem.apply(player.getInventory().getItem(event.getPreviousSlot()));
@@ -98,10 +106,15 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch<TBranch>> ext
 	}
 
 
-	public BranchItem(ItemStack stack, Player owner, TBranch branch, Game game) {
+	public BranchItem(Class<TBranch> branchClass, ItemStack stack, Player owner, TBranch branch, Game game) {
 		super(stack, owner, game);
 
+		if (branch == null) {
+			throw new IllegalArgumentException("Branch cannot be null");
+		}
+
 		this.branch = branch;
+		this.branches = branchClass.getEnumConstants();
 	}
 
 	@Override
@@ -113,15 +126,12 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch<TBranch>> ext
 
 
 	public void cycleBranch() {
-		setBranch(convertToBranch((getBranch().index() + 1) % getBranches().length));
+		TBranch newBranch = branches[(getBranch().ordinal() + 1) % branches.length];
+		setBranch(newBranch);
 
 		Player owner = getOwner();
 		owner.playSound(owner.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 0.25f, 1);
 	}
-
-
-	public abstract TBranch convertToBranch(int levels);
-	protected abstract TBranch[] getBranches();
 
 	public void setBranch(TBranch branch) {
 		setItemBranch(this, branch, BranchItem::getBranch, (item, newBranch) -> item.branch = newBranch);
@@ -141,17 +151,15 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch<TBranch>> ext
 	}
 
 
-	public static interface Branch<T extends Branch<T>> {
+	public static interface Branch<T extends Enum<T> & Branch<T>> {
 		public Component getName();
 		public Component getDescription();
-
-		public int index();
 
 		public void onEquip(SpecialItem item);
 		public void onUnequip(SpecialItem item);
 	}
 
-	public static abstract class Events<T extends BranchItem<TBranch>, TBranch extends Branch<TBranch>> extends SpecialItem.Events<T> {
+	public static abstract class Events<T extends BranchItem<TBranch>, TBranch extends Enum<TBranch> & Branch<TBranch>> extends SpecialItem.Events<T> {
 		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
 			super(game, slot, canDrop);
 		}
@@ -161,7 +169,5 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch<TBranch>> ext
 		protected Events(Game game) {
 			this(game, null, false);
 		}
-
-		protected abstract TBranch[] getBranches();
 	}
 }

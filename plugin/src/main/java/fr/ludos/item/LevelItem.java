@@ -1,12 +1,17 @@
 package fr.ludos.item;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.logging.Level;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,15 +21,18 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.item.BranchItem.Branch;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public abstract class LevelItem<TLevel extends LevelItem.Level<TLevel>> extends SpecialItem {
+public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends SpecialItem {
 	public static final String LEVEL = "level";
 	public static final NamespacedKey levelKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), LEVEL);
 
@@ -34,19 +42,29 @@ public abstract class LevelItem<TLevel extends LevelItem.Level<TLevel>> extends 
 	public static final String MAX_LVL_LABEL = "MAX";
 
 
-	private @Nullable TLevel level;
-	public @Nullable TLevel getLevel() {
-		return level;
+	private final LevelState levelState;
+	public LevelState getLevelState() {
+		return levelState;
+	}
+	private final TLevel[] levels;
+	public TLevel getLevel(int levelIndex) {
+		return levels[levelIndex];
+	}
+	public TLevel getLevel() {
+		return getLevel(levelState.getLevel());
+	}
+	public int getMaxLevelIndex() {
+		return levels.length - 1;
 	}
 
-	private double xp;
+	public TLevel getLvl() {
+		return levels[levelState.getLevel()];
+	}
 	public double getXp() {
-		return xp;
+		return levelState.getXp();
 	}
 
-	public abstract TLevel convertToLevel(int level);
-
-	public static @Nullable Pair<Integer, Double> fromLevelItemStack(ItemStack stack, String id, Game game) {
+	public static LevelState levelFromItemStack(ItemStack stack, String id, Game game) {
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 
 		if ( ! container.has(levelKey, PersistentDataType.INTEGER) ) return null;
@@ -55,98 +73,32 @@ public abstract class LevelItem<TLevel extends LevelItem.Level<TLevel>> extends 
 		int level = getPersistentData(stack, levelKey, PersistentDataType.INTEGER);
 		double xp = getPersistentData(stack, xpKey, PersistentDataType.DOUBLE);
 
-		return Pair.of(level, xp);
+		return new LevelState(level, xp);
+	}
+	public static void saveLevelState(SpecialItem item, LevelItem.LevelState levelState) {
+		ItemMeta meta = item.getStack().getItemMeta();
+		meta.getPersistentDataContainer().set(LevelItem.levelKey, PersistentDataType.INTEGER, levelState.getLevel());
+		meta.getPersistentDataContainer().set(LevelItem.xpKey, PersistentDataType.DOUBLE, levelState.getXp());
+		item.getStack().setItemMeta(meta);
 	}
 
-
-	public LevelItem(ItemStack stack, Player owner, @Nullable TLevel level, double xp, Game game) {
-		super(stack, owner, game);
-
-		this.level = level;
-		this.xp = xp;
+	public static @NotNull TextComponent getLevelUpMessage(SpecialItem item) { // TODO: Translate
+		return Component.text("Your ")
+			.color(NamedTextColor.GREEN)
+		.append(item.getName())
+		.append(
+			Component.text(" has leveled up!")
+			.color(NamedTextColor.GREEN)
+		);
 	}
 
-	public LevelItem(ItemStack stack, Player owner, @Nullable TLevel level, Game game) {
-		this(stack, owner, level, 0, game);
-	}
-
-	public LevelItem(ItemStack stack, Player owner, Game game) {
-		this(stack, owner, null, 0, game);
-	}
-
-	@Override
-	protected void onInitialize() {
-		super.onInitialize();
-
-		setLvl(level != null ? level : convertToLevel(0));
-		setXp(xp);
-	}
-
-
-	public void setLvl(TLevel level) {
-		ItemMeta meta = getStack().getItemMeta();
-		meta.getPersistentDataContainer().set(levelKey, PersistentDataType.INTEGER, level.index());
-		getStack().setItemMeta(meta);
-
-		this.level = level;
-	}
-
-	public void addLvl() {
-		if ( level.getNext() == null ) return;
-
-		setLvl(getLevel().getNext());
-		if (getOwner() != null) {
-			getOwner().sendMessage(
-				Component.text("Your ")
-					.color(NamedTextColor.GREEN)
-				.append(getName())
-				.append(
-					Component.text(" has leveled up!")
-					.color(NamedTextColor.GREEN)
-				)
-			); // TODO: Translate
-		}
-
-		updateLore();
-	}
-
-	public void setXp(double xp) {
-		double scaledTreshold = level.getXpThreshold();
-		while (xp >= scaledTreshold) {
-			addLvl();
-			xp -= scaledTreshold;
-		}
-
-		ItemMeta meta = getStack().getItemMeta();
-		meta.getPersistentDataContainer().set(xpKey, PersistentDataType.DOUBLE, xp);
-		getStack().setItemMeta(meta);
-
-		this.xp = xp;
-
-		updateLore();
-	}
-
-	public void addXp(double xp) {
-		if ( level.getNext() == null ) return;
-
-		double newXp = this.xp + xp;
-		setXp(newXp);
-	}
-
-	@Override
-	public List<Component> getLore() {
-		List<Component> lore = super.getLore();
-		lore.add(getLevelLoreField(level, xp));
-
-		return lore;
-	}
-	public static <TLevel extends Level<TLevel>> Component getLevelLoreField(TLevel level, double xp) {
+	public static <TLevel extends Enum<TLevel> & Level<TLevel>> Component getXpLoreField(boolean isMax, double levelThreshold, double xp) {
 		String xpLabel;
-		if ( level.getNext() == null ) {
+		if ( isMax ) {
 			xpLabel = MAX_LVL_LABEL;
 		} else {
 			String xpRounded = Double.toString(Math.round(xp * 100.0) / 100.0);
-			xpLabel = xpRounded + '/' + level.getXpThreshold();
+			xpLabel = xpRounded + '/' + levelThreshold;
 		}
 
 		return
@@ -156,18 +108,191 @@ public abstract class LevelItem<TLevel extends LevelItem.Level<TLevel>> extends 
 				.color(NamedTextColor.RED))
 			.decoration(TextDecoration.ITALIC, false);
 	}
+	public static <TLevel extends Enum<TLevel> & Level<TLevel>> Component getXpLoreField(LevelItem<TLevel> item) {
+		int maxLevel = item.getMaxLevelIndex();
+		TLevel level = item.getLevel();
 
-	public static interface Level<T extends Level<T>> {
-		public int index();
-		public double getXpThreshold();
+		boolean isMax = maxLevel >= 0 && level.ordinal() >= maxLevel;
+		double levelThreshold = isMax ? 0 : level.getXpThreshold();
 
-		public @Nullable T getPrevious();
-		public @Nullable T getNext();
+		return getXpLoreField(isMax, levelThreshold, item.getLevelState().getXp());
+	}
+	public static <TBranch extends Enum<TBranch> & MultiLevelBranchItem.Branch<TBranch>> Component getBranchXpLoreField(MultiLevelBranchItem<TBranch> item) {
+		int maxLevel = item.getMaxBranchIndex();
+		LevelState level = item.getCurrentBranchLevel();
+
+		boolean isMax = maxLevel >= 0 && level.getLevel() >= maxLevel;
+		double levelThreshold = isMax ? 0 : item.getBranch().getXpThreshold();
+
+		return getXpLoreField(isMax, levelThreshold, level.getXp());
 	}
 
-	public static abstract class Events<T extends LevelItem<TLevel>, TLevel extends Level<TLevel>> extends SpecialItem.Events<T> {
+	public static <TLevel extends Enum<TLevel> & Level<TLevel>> Component getLevelLoreField(int levelIndex) {
+		return
+			Component.text("Level: ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.text(levelIndex + 1)
+				.color(NamedTextColor.RED))
+			.decoration(TextDecoration.ITALIC, false);
+	}
+	public static <TLevel extends Enum<TLevel> & Level<TLevel>> Component getLevelLoreField(LevelItem<TLevel> item) {
+		return getLevelLoreField(item.getLevelState().getLevel());
+	}
+	public static <TBranch extends Enum<TBranch> & MultiLevelBranchItem.Branch<TBranch>> Component getBranchLevelLoreField(MultiLevelBranchItem<TBranch> item) {
+		return getLevelLoreField(item.getCurrentBranchLevel().getLevel());
+	}
+
+
+	public LevelItem(Class<TLevel> levelClass, ItemStack stack, Player owner, LevelState level, Game game) {
+		super(stack, owner, game);
+
+		this.levelState = level;
+		this.levels = levelClass.getEnumConstants();
+
+		this.levelState.addLevelUpListener( (lvlState) -> {
+			getOwner().sendMessage(
+				LevelItem.getLevelUpMessage(this)
+			);
+		} );
+		this.levelState.addXpChangeListener( (lvlState) -> {
+			saveLevelState(this, lvlState);
+			updateLore();
+		} );
+	}
+
+	@Override
+	protected void onInitialize() {
+		super.onInitialize();
+
+		saveLevelState(this, levelState);
+	}
+
+
+	public final void setLvl(int level) {
+		LevelItem.LevelState state = getLevelState();
+
+		state.setLevel(level, getMaxLevelIndex());
+	}
+	public final void addLvl() {
+		LevelItem.LevelState state = getLevelState();
+
+		state.addLvl(getMaxLevelIndex());
+	}
+
+	public final void setXp(double value) {
+		LevelItem.LevelState state = getLevelState();
+
+		state.setXp(value, getMaxLevelIndex(), (lvl) -> levels[lvl].getXpThreshold());
+	}
+	public final void addXp(double xp) {
+		LevelItem.LevelState state = getLevelState();
+
+		state.addXp(xp, getMaxLevelIndex(), (lvl) -> levels[lvl].getXpThreshold());
+	}
+
+	@Override
+	public List<Component> getLore() {
+		List<Component> lore = super.getLore();
+
+		LevelState state = getLevelState();
+		lore.add(getXpLoreField(this));
+
+		return lore;
+	}
+
+
+	public static interface Level<T extends Enum<T> & Level<T>> {
+		public Class<T> getLevelClass();
+
+		public double getXpThreshold();
+	}
+
+	public static class LevelState {
+		private final List<Consumer<LevelState>> xpChangeListeners = new ArrayList<>();
+
+		public void addXpChangeListener(Consumer<LevelState> listener) {
+			xpChangeListeners.add(listener);
+		}
+
+		public void removeXpChangeListener(Consumer<LevelState> listener) {
+			xpChangeListeners.remove(listener);
+		}
+
+		private void notifyXpChange() {
+			for (Consumer<LevelState> listener : xpChangeListeners) {
+				listener.accept(this);
+			}
+		}
+
+		private final List<Consumer<LevelState>> levelUpListeners = new ArrayList<>();
+
+		public void addLevelUpListener(Consumer<LevelState> listener) {
+			levelUpListeners.add(listener);
+		}
+
+		public void removeLevelUpListener(Consumer<LevelState> listener) {
+			levelUpListeners.remove(listener);
+		}
+
+		private void notifyLevelUp() {
+			for (Consumer<LevelState> listener : levelUpListeners) {
+				listener.accept(this);
+			}
+		}
+
+
+		private int level;
+		public int getLevel() {
+			return level;
+		}
+		public boolean setLevel(int level, int maxLevel) {
+			if (level < 0 || (maxLevel >= 0 && level > maxLevel)) return false;
+			this.level = level;
+			notifyLevelUp();
+			return true;
+		}
+		public boolean addLvl(int maxLevel) {
+			return setLevel(level + 1, maxLevel);
+		}
+
+		private double xp;
+		public double getXp() {
+			return xp;
+		}
+		public boolean setXp(double xp, int maxLevel, Function<Integer, Double> levelToXpThreshold) {
+			boolean levelUp = false;
+			while (this.level < maxLevel && xp >= levelToXpThreshold.apply(this.level)) {
+				xp -= levelToXpThreshold.apply(this.level);
+				addLvl(maxLevel);
+				levelUp = true;
+			}
+			this.xp = xp;
+			notifyXpChange();
+			return levelUp;
+		}
+		public boolean addXp(double xp, int maxLevel, Function<Integer, Double> levelToXpThreshold) {
+			return setXp(this.xp + xp, maxLevel, levelToXpThreshold);
+		}
+
+		public LevelState(int level, double xp) {
+			this.level = level;
+			this.xp = xp;
+		}
+		public LevelState(int level) {
+			this(level, 0.0);
+		}
+		public LevelState() {
+			this(0);
+		}
+
+		public LevelState copy() {
+			return new LevelState(level, xp);
+		}
+	}
+
+	public static abstract class Events<T extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & Level<TLevel>> extends SpecialItem.Events<T> {
 		protected final TLevel baseLevel;
-		private Map<String, TLevel> deadPlayerLevels = new HashMap<>();
+		protected final Map<Player, LevelItem.LevelState> deadPlayerLevels = new HashMap<>();
 
 		protected Events(Game game, TLevel baseLevel, @Nullable Integer slot, boolean canDrop) {
 			super(game, slot, canDrop);
@@ -176,7 +301,6 @@ public abstract class LevelItem<TLevel extends LevelItem.Level<TLevel>> extends 
 			}
 
 			this.baseLevel = baseLevel;
-			this.deadPlayerLevels = new HashMap<>();
 		}
 		protected Events(Game game, TLevel baseLevel, @Nullable Integer slot) {
 			this(game, baseLevel, slot, false);
@@ -186,7 +310,7 @@ public abstract class LevelItem<TLevel extends LevelItem.Level<TLevel>> extends 
 		}
 
 
-		protected abstract T createItem(Player owner, TLevel level, Game game);
+		protected abstract T createItem(Player owner, LevelState level, Game game);
 
 		@EventHandler
 		public void onPlayerDeath(PlayerDeathEvent event) {
@@ -198,19 +322,17 @@ public abstract class LevelItem<TLevel extends LevelItem.Level<TLevel>> extends 
 				return;
 			}
 
-			deadPlayerLevels.put( player.getName(), specialItem.getLevel().getPrevious() );
+			deadPlayerLevels.put( player, specialItem.getLevelState().copy() );
 		}
 
 		@Override
 		protected T createItem(Player owner, Game game) {
-			TLevel level = this.baseLevel;
-
-			if (owner != null && deadPlayerLevels != null && deadPlayerLevels.containsKey(owner.getName())) {
-				TLevel deadLevels = deadPlayerLevels.get(owner.getName());
-				level = deadLevels != null ? deadLevels : level;
+			if (!deadPlayerLevels.containsKey(owner)) {
+				return createItem(owner, new LevelState(), game);
 			}
 
-			return createItem(owner, level, game);
+			LevelState deadLevels = deadPlayerLevels.get(owner);
+			return createItem(owner, deadLevels, game);
 		}
 	}
 }

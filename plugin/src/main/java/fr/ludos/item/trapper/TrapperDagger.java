@@ -1,5 +1,8 @@
 package fr.ludos.item.trapper;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
@@ -19,9 +22,13 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class TrapperDagger extends SpecialItem {
 	private final static String ID = "trapperDagger";
+	private final static Map<ItemStack, TrapperDagger> cachedItems = new HashMap<>();
 
 
 	public static @Nullable TrapperDagger fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		TrapperDagger cached = cachedItems.get(stack);
+		if (cached != null) return cached;
+
 		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
 		if (owner == null) return null;
 

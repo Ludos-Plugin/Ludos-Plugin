@@ -36,9 +36,13 @@ public class BurrowerShovel extends SpecialItem {
 	private static final int TUNNEL_LENGTH = 10;
 
 	private final static Map<Player, List<BlockState>> tunnelBlocks = new HashMap<>();
+	private final static Map<ItemStack, BurrowerShovel> cachedItems = new HashMap<>();
 
 
 	public static BurrowerShovel fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		BurrowerShovel cached = cachedItems.get(stack);
+		if (cached != null) return cached;
+
 		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
 		if (owner == null) return null;
 

@@ -2,7 +2,9 @@ package fr.ludos.item.huntsman;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -25,9 +27,13 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class HuntsmanArrow extends SpecialItem {
 	private final static String ID = "manhuntHuntsmanArrow";
+	private final static Map<ItemStack, HuntsmanArrow> cachedItems = new HashMap<>();
 
 
 	public static @Nullable HuntsmanArrow fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		HuntsmanArrow cached = cachedItems.get(stack);
+		if (cached != null) return cached;
+
 		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
 		if (owner == null) return null;
 

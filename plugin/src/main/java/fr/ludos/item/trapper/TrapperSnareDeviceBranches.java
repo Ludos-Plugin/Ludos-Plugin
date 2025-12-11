@@ -130,11 +130,6 @@ public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnare
 		return values[i];
 	}
 
-	@Override
-	public int index() {
-		return ArrayUtils.indexOf(values(), this);
-	}
-
 	public abstract TrapperTrap createTrap(Player owner, Block block, BlockFace face);
 	public abstract Boolean executeEffect(Player target, TrapperTrap info);
 }

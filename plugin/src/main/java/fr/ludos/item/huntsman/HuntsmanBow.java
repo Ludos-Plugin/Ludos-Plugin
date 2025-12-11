@@ -1,7 +1,9 @@
 package fr.ludos.item.huntsman;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -24,9 +26,13 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class HuntsmanBow extends SpecialItem {
 	private static final String ID = "manhuntHuntsmanBow";
+	private final static Map<ItemStack, HuntsmanBow> cachedItems = new HashMap<>();
 
 
 	public static @Nullable HuntsmanBow fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		HuntsmanBow cached = cachedItems.get(stack);
+		if (cached != null) return cached;
+
 		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
 		if (owner == null) return null;
 

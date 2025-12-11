@@ -1,7 +1,9 @@
 package fr.ludos.item.trapper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -28,9 +30,13 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 	private final static String ID = "trapperSnareGrimoire";
+	private final static Map<ItemStack, TrapperSnareDevice> cachedItems = new HashMap<>();
 
 
 	public static TrapperSnareDevice fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		TrapperSnareDevice cached = cachedItems.get(stack);
+		if (cached != null) return cached;
+
 		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
 		if (owner == null) return null;
 		Integer branchIndex = BranchItem.branchFromItemStack(stack, game);
@@ -46,7 +52,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 	}
 
 	protected TrapperSnareDevice(ItemStack stack, Player owner, TrapperSnareDeviceBranches branch, Game game) {
-		super(stack, owner, branch, game);
+		super(TrapperSnareDeviceBranches.class, stack, owner, branch, game);
 	}
 
 
@@ -61,16 +67,6 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 			Component.text("Snare Grimoire ")
 			.append(getBranchAnnotation())
 			.decoration(TextDecoration.ITALIC, false);
-	}
-
-
-	@Override
-	public TrapperSnareDeviceBranches convertToBranch(int level) {
-		return TrapperSnareDeviceBranches.findByKey(level);
-	}
-	@Override
-	protected TrapperSnareDeviceBranches[] getBranches() {
-		return TrapperSnareDeviceBranches.values;
 	}
 
 
@@ -173,11 +169,6 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {
 			return Role.isPlayerRole(owner, TrapperRole.id);
-		}
-
-		@Override
-		protected TrapperSnareDeviceBranches[] getBranches() {
-			return TrapperSnareDeviceBranches.values;
 		}
 	}
 }

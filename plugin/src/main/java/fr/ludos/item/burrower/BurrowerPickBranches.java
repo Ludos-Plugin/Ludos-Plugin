@@ -3,6 +3,7 @@ package fr.ludos.item.burrower;
 import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -75,11 +76,6 @@ public enum BurrowerPickBranches implements BranchItem.Branch<BurrowerPickBranch
 	@Override
 	public Component getDescription() {
 		return description;
-	}
-
-	@Override
-	public int index() {
-		return ArrayUtils.indexOf(BurrowerPickBranches.values(), this);
 	}
 
 	public abstract void onBreakBlock(BurrowerPick pick, BlockBreakEvent event);

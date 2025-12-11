@@ -63,26 +63,13 @@ public enum BurrowerPickLevels implements LevelItem.Level<BurrowerPickLevels> {
 	}
 
 
-	public int index() {
-		return ArrayUtils.indexOf(values, this);
-	}
 	public boolean isMax() {
-		return (index() + 1) >= values.length;
+		return (ordinal() + 1) >= values.length;
 	}
 
-	@Override
-	public BurrowerPickLevels getPrevious() {
-		int index = index() - 1;
-		index = Math.max(0, index);
-		return values()[index];
-	}
 
 	@Override
-	public BurrowerPickLevels getNext() {
-		int currentIndex = index();
-		if ( currentIndex + 1 >= values.length ) {
-			return this;
-		}
-		return values()[currentIndex + 1];
+	public Class<BurrowerPickLevels> getLevelClass() {
+		return BurrowerPickLevels.class;
 	}
 }
