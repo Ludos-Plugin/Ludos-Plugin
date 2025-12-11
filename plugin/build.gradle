@@ -24,24 +24,26 @@ repositories {
 dependencies {
     compileOnly 'net.kyori:adventure-api:4.20.0'
     implementation 'net.kyori:adventure-api:4.20.0'
+    implementation("net.kyori:adventure-text-minimessage:4.25.0")
+
     compileOnly 'org.apache.commons:commons-lang3:3.12.0'
     compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
     compileOnly 'io.papermc.paper:paper-api:1.19-R0.1-SNAPSHOT'
 
-    compileOnly 'com.comphenix.protocol:ProtocolLib:5.0.0'
+    compileOnly 'net.dmulloy2:ProtocolLib:5.4.0'
 }
 
-shadowJar {
-    // relocate 'net.kyori.adventure', 'fr.ludos.adventure'
-    minimize()
-}
+// shadowJar {
+//     // relocate 'net.kyori.adventure', 'fr.ludos.adventure'
+//     minimize()
+// }
 
-build.dependsOn shadowJar
-shadowJar {
-    archiveBaseName.set('LudosPlugin')
-    archiveClassifier.set('') // Removes "-all" from the name
-    archiveVersion.set('1.0.0')
-}
+// build.dependsOn shadowJar
+// shadowJar {
+//     archiveBaseName.set('LudosPlugin')
+//     archiveClassifier.set('') // Removes "-all" from the name
+//     archiveVersion.set('1.0.0')
+// }
 
 sourceSets {
     main {
@@ -49,6 +51,8 @@ sourceSets {
     }
 }
 
-sourceCompatibility = targetCompatibility = '17'
+tasks.withType(Jar).configureEach {
+    destinationDirectory = layout.buildDirectory.dir("output")
+}
+
 compileJava.options.encoding = 'UTF-8'
-setLibsDirName('/output')

@@ -31,6 +31,7 @@ import org.bukkit.entity.Player;
 
 import fr.ludos.Ludos;
 import fr.ludos.Utility;
+import fr.ludos.book.BookUtility;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.game.Game;
 
@@ -141,7 +142,7 @@ public abstract class Role implements Listener {
 	}
 
 	public static void registerRole(Builder constructor) {
-		Role.registered.put(constructor.getId(), constructor);
+		Role.registered.put(constructor.getId().toLowerCase(), constructor);
 	}
 
 	public static List<Player> getPlayersOfRole(String roleId) {
@@ -171,7 +172,6 @@ public abstract class Role implements Listener {
 		if ( playerRoles.containsKey(player.getName()) && playerRoles.get(player.getName()).equalsIgnoreCase(roleId) ) return;
 
 		playerRoles.put(player.getName(), roleId);
-		player.sendMessage("Your role is now " + roleId);
 
 		plugin.getConfig().set(rolesKey + '.' + player.getName(), roleId);
 		plugin.saveConfig();
@@ -202,6 +202,34 @@ public abstract class Role implements Listener {
 		public abstract TextComponent getDisplayName();
 		public abstract TextComponent getDescription();
 
+		public TextComponent[] buildPages() {
+			return BookUtility.truncatePage(
+				Component.text()
+					.append(BookUtility.centerBookLine(getDisplayName()))
+					.append(
+						BookUtility.spaceBookLine(
+							Component.text("Reset")
+								.color(NamedTextColor.DARK_RED)
+								.decorate(TextDecoration.BOLD)
+								.decorate(TextDecoration.UNDERLINED)
+								.clickEvent(
+									ClickEvent.runCommand("/ludos:ludos role reset")
+								),
+							Component.text("Pick")
+								.color(NamedTextColor.DARK_GREEN)
+								.decorate(TextDecoration.BOLD)
+								.decorate(TextDecoration.UNDERLINED)
+								.clickEvent(
+									ClickEvent.runCommand(String.format("/ludos:ludos role set %s", getId()))
+								)
+						)
+					)
+					.append(Component.text("\n"))
+					.append(getDescription())
+				.build()
+			);
+		}
+
 		public final ItemStack createGuidebook() {
 			ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
 			BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
@@ -209,27 +237,9 @@ public abstract class Role implements Listener {
 			meta.title(getDisplayName());
 			meta.author(Component.text("Ludos"));
 
-			TextComponent page =
-				Component.text()
-					.append(
-						Utility.centerBookLine(
-							getDisplayName()
-						)
-					).append(Component.text("\n\n"))
-					// .append(getDescription()).append(Component.text("\n\n"))
-					.append(
-						Utility.centerBookLine(
-							Component.text("Select")
-								.color(NamedTextColor.BLUE)
-								.decorate(TextDecoration.BOLD)
-								.clickEvent(
-									ClickEvent.runCommand(String.format("/ludos:ludos role %s", getId()))
-								)
-						)
-					)
-				.build();
-
-			meta.addPage(page);
+			for (TextComponent page : buildPages()) {
+				meta.addPage(page);
+			}
 
 			populateGuidebook(meta);
 

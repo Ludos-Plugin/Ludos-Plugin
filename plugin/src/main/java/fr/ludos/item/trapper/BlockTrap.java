@@ -3,6 +3,7 @@ package fr.ludos.item.trapper;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public abstract class BlockTrap extends TrapperTrap {
@@ -18,12 +19,12 @@ public abstract class BlockTrap extends TrapperTrap {
 	}
 
 	@Override
-	public final void triggerEffect(Player target) {
+	public final void triggerEffect(LivingEntity target) {
 		if (this.getLocation().getBlock().getType() == this.getType()) {
 			this.getLocation().getBlock().setType(Material.AIR);
 		}
 		triggerBlockTrapEffect(target);
 	}
 
-	public abstract void triggerBlockTrapEffect(Player target);
+	public abstract void triggerBlockTrapEffect(LivingEntity target);
 }

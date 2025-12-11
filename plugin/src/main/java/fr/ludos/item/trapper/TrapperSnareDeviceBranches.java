@@ -1,26 +1,25 @@
 package fr.ludos.item.trapper;
 
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.ArrayUtils;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.item.BranchItem;
-import fr.ludos.item.SpecialItemBranches;
+import fr.ludos.item.SpecialItem;
 import io.papermc.paper.entity.LookAnchor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
-public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSnareDeviceBranches> {
+public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnareDeviceBranches> {
 	REVEALING (
 		Component.text("Revealing")
 			.color(NamedTextColor.YELLOW)
@@ -34,12 +33,12 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 
 			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), block.getType()) {
 				@Override
-				public Boolean canTriggerEffect(Player target) {
+				public Boolean canTriggerEffect(LivingEntity target) {
 					return target.getLocation().distance(this.getLocation()) < 3;
 				}
 
 				@Override
-				public void triggerBlockTrapEffect(Player target) {
+				public void triggerBlockTrapEffect(LivingEntity target) {
 					target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 20, 1));
 					// TODO: Envoyer un event au plugin pour notifier que le joueur a été révélé et declencher le reveal de la position du joueur
 					//Bukkit.getServer().getPluginManager().callEvent()
@@ -62,12 +61,12 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 
 			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), Material.COARSE_DIRT) {
 				@Override
-				public Boolean canTriggerEffect(Player target) {
+				public Boolean canTriggerEffect(LivingEntity target) {
 					return target.getLocation().distance(this.getLocation()) < 7;
 				}
 
 				@Override
-				public void triggerBlockTrapEffect(Player target) {
+				public void triggerBlockTrapEffect(LivingEntity target) {
 					target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 10, 1));
 
 					// TODO: Find an algorithm to make a web-like structure around the trap location
@@ -92,12 +91,12 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 
 			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), Material.END_ROD) {
 				@Override
-				public Boolean canTriggerEffect(Player target) {
+				public Boolean canTriggerEffect(LivingEntity target) {
 					return target.getLocation().distance(this.getLocation()) < 7;
 				}
 
 				@Override
-				public void triggerBlockTrapEffect(Player target) {
+				public void triggerBlockTrapEffect(LivingEntity target) {
 					this.getOwner().teleport(this.getLocation(), TeleportCause.ENDER_PEARL);
 					this.getOwner().lookAt(target, LookAnchor.EYES, LookAnchor.EYES);
 				}
@@ -142,25 +141,11 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 	}
 
 	@Override
-	public void onSwitchBranch(BranchItem<TrapperSnareDeviceBranches> item) {
+	public void onEquip(SpecialItem item) {
 		item.getStack().setType(type);
-		onSwitchTrapBranch(item);
 	}
-	protected void onSwitchTrapBranch(BranchItem<TrapperSnareDeviceBranches> item) { }
-
-
-	@Nullable
-	public static TrapperSnareDeviceBranches findByKey(int i) {
-		if ( i >= values.length ) {
-			return null;
-		}
-		return values[i];
-	}
-
 	@Override
-	public int index() {
-		return ArrayUtils.indexOf(values(), this);
-	}
+	public void onUnequip(SpecialItem item) {}
 
 	public abstract TrapperTrap createTrap(Player owner, Block block, BlockFace face);
 }

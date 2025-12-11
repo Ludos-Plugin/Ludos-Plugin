@@ -1,81 +1,81 @@
 package fr.ludos.item.huntsman;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Nullable;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.block.Action;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.projectiles.ProjectileSource;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.projectiles.ProjectileSource;
 
-import fr.ludos.item.BranchLevelItem;
+import fr.ludos.Ludos;
 import fr.ludos.game.Game;
-import fr.ludos.role.Role;
+import fr.ludos.item.LevelItem;
+import fr.ludos.item.MultiLevelBranchItem;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.role.HuntsmanRole;
+import fr.ludos.role.Role;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
-public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> {
+public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranches> {
+	public static final String ID = "manhuntHuntsmanCrossbow";
+	private final static Map<ItemStack, HuntsmanCrossbow> cachedItems = new HashMap<>();
 
-	public HuntsmanCrossbow(ItemStack stack, Game game) throws IllegalArgumentException {
-		super(stack, game);
+
+	public static HuntsmanCrossbow fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		HuntsmanCrossbow cached = cachedItems.get(stack);
+		if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		if (owner == null) return null;
+		Integer branchIndex = MultiLevelBranchItem.branchFromItemStack(stack, game);
+		if (branchIndex == null) return null;
+		LevelItem.LevelState[] levels = MultiLevelBranchItem.levelsFromItemStack(stack, ID, game);
+		if (levels == null) return null;
+
+		return new HuntsmanCrossbow(stack, owner, HuntsmanCrossbowBranches.values()[branchIndex], levels, game);
+	}
+	public static HuntsmanCrossbow createItem(Player owner, LevelItem.LevelState[] levels, Game game) {
+		HuntsmanCrossbow crossbow = new HuntsmanCrossbow(new ItemStack(Material.CROSSBOW), owner, HuntsmanCrossbowBranches.FLAME, levels, game);
+		crossbow.initializeItem();
+
+		return crossbow;
 	}
 
 
-	public HuntsmanCrossbow(Player owner, Game game) {
-		this(owner, HuntsmanCrossbowBranches.FLAME, game);
-	}
-	protected HuntsmanCrossbow(Player owner, int[] levels, Game game) {
-		this(owner, HuntsmanCrossbowBranches.FLAME, levels, game);
-	}
-
-	protected HuntsmanCrossbow(Player owner, HuntsmanCrossbowBranches branch, Game game) {
-		this(owner, branch, new int[HuntsmanCrossbowBranches.values.length], game);
-	}
-
-	protected HuntsmanCrossbow(Player owner, HuntsmanCrossbowBranches branch, int[] levels, Game game) {
-		this(owner, branch, levels, new double[levels.length], game);
-	}
-
-	protected HuntsmanCrossbow(Player owner, HuntsmanCrossbowBranches branch, int[] levels, double[] xps, Game game) {
-		super(new ItemStack(Material.CROSSBOW), owner, branch, levels, xps, game);
-	}
-
-	@Override
-	public HuntsmanCrossbowBranches convertToBranch(int level) {
-		return HuntsmanCrossbowBranches.findByKey(level);
-	}
-
-	@Override
-	protected HuntsmanCrossbowBranches[] getBranches() {
-		return HuntsmanCrossbowBranches.values;
+	protected HuntsmanCrossbow(ItemStack stack, Player owner, HuntsmanCrossbowBranches branch, LevelItem.LevelState[] levels, Game game) {
+		super(HuntsmanCrossbowBranches.class, stack, owner, branch, levels, game);
 	}
 
 
 	@Override
 	public String getId() {
-		return "manhuntHuntsmanCrossbow";
+		return ID;
 	}
 
 	@Override
-	protected Component getName() {
+	public Component getName() {
 		return
 			Component.text("Cursed Crossbow ")
 			.append(getBranchAnnotation())
@@ -83,51 +83,26 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 	}
 
 	@Override
-	protected List<Component> getLore() {
+	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		lore.add(
-			Component.text("Press ")
-				.color(NamedTextColor.GRAY)
-			.append(Component.text("Left Click (MB1) ")
-				.color(NamedTextColor.YELLOW))
-			.append(Component.text("to Switch Mode")
-				.color(NamedTextColor.GRAY))
-			.decoration(TextDecoration.ITALIC, false)
-		);
+		lore.add(getCycleBranchAnnotation("key.use"));
 		return lore;
 	}
 
 
-	@Nullable
-	public static HuntsmanCrossbow getItem(ItemStack stack, Game game) {
-		try {
-			HuntsmanCrossbow bow = new HuntsmanCrossbow(stack, game);
-			return bow;
-		} catch (IllegalArgumentException e) {
-			return null;
-		}
-	}
-
-	public static HuntsmanCrossbow createItem(Player owner, int[] levels, Game game) {
-		return new HuntsmanCrossbow(owner, levels, game);
-	}
-
-
-
-
-	public static class Events extends BranchLevelItem.Events<HuntsmanCrossbow, HuntsmanCrossbowBranches> {
+	public static class Events extends MultiLevelBranchItem.Events<HuntsmanCrossbow, HuntsmanCrossbowBranches> {
 		public static final String ARROW_TYPE = "arrow_type";
-		public final NamespacedKey arrowTypeKey = new NamespacedKey(game.getPlugin(), ARROW_TYPE);
+		public final NamespacedKey arrowTypeKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ARROW_TYPE);
 
 		public static final String ARROW_LEVEL = "arrow_level";
-		public final NamespacedKey arrowLevelKey = new NamespacedKey(game.getPlugin(), ARROW_LEVEL);
+		public final NamespacedKey arrowLevelKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ARROW_LEVEL);
 
 		// private BukkitTask saturationTask;
 
 
 		public Events(Game game) {
-			super(game);
+			super(game, 1);
 		}
 
 
@@ -143,12 +118,12 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 			Arrow arrowProjectile = (Arrow) event.getProjectile();
 			HuntsmanCrossbowBranches branch = crossbow.getBranch();
 			PersistentDataContainer container = arrowProjectile.getPersistentDataContainer();
-			int level = crossbow.getCurrentBranchLevel();
+			int level = crossbow.getCurrentBranchLevel().getLevel();
 
 			arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
 			arrowProjectile.setGravity(false);
 			arrowProjectile.setDamage(4);
-			container.set(arrowTypeKey, PersistentDataType.INTEGER, branch.index());
+			container.set(arrowTypeKey, PersistentDataType.INTEGER, branch.ordinal());
 			container.set(arrowLevelKey, PersistentDataType.INTEGER, level);
 
 			branch.processShotArrow(arrowProjectile, player, level, event);
@@ -179,7 +154,7 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 
 			PersistentDataContainer container = arrow.getPersistentDataContainer();
 			if (container.has(arrowTypeKey, PersistentDataType.INTEGER) && container.has(arrowLevelKey, PersistentDataType.INTEGER)) {
-				HuntsmanCrossbowBranches.values[container.get(arrowTypeKey, PersistentDataType.INTEGER)]
+				getBranches()[container.get(arrowTypeKey, PersistentDataType.INTEGER)]
 					.processLandedArrow(arrow, player, container.get(arrowLevelKey, PersistentDataType.INTEGER), event);
 			}
 
@@ -188,16 +163,14 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 		@EventHandler
 		public void onPlayerInteract(PlayerInteractEvent event) {
 			Action action = event.getAction();
-			if (action != Action.LEFT_CLICK_AIR && action != Action.LEFT_CLICK_BLOCK) return;
+			if (! action.isLeftClick()) return;
 
 			Player player = event.getPlayer();
 
 			HuntsmanCrossbow crossbow = getItem(player.getInventory().getItemInMainHand(), game);
 			if (crossbow == null) return;
 
-			if (! crossbow.refreshUseCooldown()) {
-				return;
-			}
+			if (! crossbow.refreshUseCooldown()) return;
 			event.setCancelled(true);
 
 			crossbow.cycleBranch();
@@ -206,17 +179,17 @@ public class HuntsmanCrossbow extends BranchLevelItem<HuntsmanCrossbowBranches> 
 
 		@Override
 		protected HuntsmanCrossbowBranches[] getBranches() {
-			return HuntsmanCrossbowBranches.values;
+			return HuntsmanCrossbowBranches.values();
 		}
 
 
 		@Override
 		@Nullable
 		protected HuntsmanCrossbow getItem(ItemStack stack, Game game) {
-			return HuntsmanCrossbow.getItem(stack, game);
+			return HuntsmanCrossbow.fromItemStack(stack, game);
 		}
 		@Override
-		protected HuntsmanCrossbow createItem(Player owner, int[] levels, Game game) {
+		protected HuntsmanCrossbow createItem(Player owner, LevelItem.LevelState[] levels, Game game) {
 			return HuntsmanCrossbow.createItem(owner, levels, game);
 		}
 		@Override

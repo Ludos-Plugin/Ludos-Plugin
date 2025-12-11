@@ -1,19 +1,19 @@
 package fr.ludos.item.trapper;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.HashMap;
-import javax.annotation.Nullable;
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.Map;
 
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 
-import fr.ludos.item.SpecialItemLevels;
-import fr.ludos.game.manhunt.ManhuntTimer;
+import fr.ludos.item.LevelItem;
 
 
-public enum TrapperDaggerLevels implements SpecialItemLevels<TrapperDaggerLevels> {
+public enum TrapperDaggerLevels implements LevelItem.Level<TrapperDaggerLevels> {
 	SHARTNESS   (Enchantment.DAMAGE_ALL, 3),
 	LOOTING     (Enchantment.LOOT_BONUS_MOBS, 1),
 	FIREASPECT  (Enchantment.FIRE_ASPECT, 1),
@@ -80,18 +80,7 @@ public enum TrapperDaggerLevels implements SpecialItemLevels<TrapperDaggerLevels
 	}
 
 	@Override
-	public TrapperDaggerLevels getPrevious() {
-		int index = index() - 1;
-		index = Math.max(0, index);
-		return values()[index];
-	}
-
-	@Override
-	public TrapperDaggerLevels getNext() {
-		int currentIndex = index();
-		if ( currentIndex + 1 >= values.length ) {
-			return this;
-		}
-		return values()[currentIndex + 1];
+	public Class<TrapperDaggerLevels> getLevelClass() {
+		return TrapperDaggerLevels.class;
 	}
 }

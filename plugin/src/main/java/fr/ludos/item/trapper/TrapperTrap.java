@@ -2,6 +2,7 @@ package fr.ludos.item.trapper;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public abstract class TrapperTrap {
@@ -27,6 +28,6 @@ public abstract class TrapperTrap {
 		this.world = world;
 	}
 
-	public abstract Boolean canTriggerEffect(Player target);
-	public abstract void triggerEffect(Player target);
+	public abstract Boolean canTriggerEffect(LivingEntity target);
+	public abstract void triggerEffect(LivingEntity target);
 }

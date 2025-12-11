@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   plugin:
     container_name: ludos-plugin
@@ -8,11 +6,11 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./plugin:/plugin
-      - ./data/plugins:/output
+      - ./data/plugins:/plugin/build/output
 
   server:
     container_name: ludos-server
-    image: itzg/minecraft-server:java17-jdk
+    image: itzg/minecraft-server:stable-java17
     tty: true
     stdin_open: true
     ports:
