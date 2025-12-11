@@ -26,6 +26,7 @@ import org.bukkit.entity.Player;
 
 import fr.ludos.Ludos;
 import fr.ludos.Utility;
+import fr.ludos.book.BookUtility;
 import fr.ludos.role.Role;
 
 
@@ -76,7 +77,7 @@ public abstract class Game implements Listener {
 		this.builder = builder;
 	}
 
-	public final void start() {
+	private final void start() {
 		if (started) return;
 		started = true;
 
@@ -105,10 +106,9 @@ public abstract class Game implements Listener {
 	protected void onInit() { }
 	protected void onStart() { }
 
-	public final void stop() {
+	private final void stop() {
 		if (! started) return;
 		started = false;
-
 
 		HandlerList.unregisterAll(this);
 
@@ -128,11 +128,20 @@ public abstract class Game implements Listener {
 		registered.put(builder.getId(), builder);
 	}
 
-	public static void startGame(String id) {
-		if (! registered.containsKey(id)) return;
+	public static boolean startGame(String id) {
+		if (! registered.containsKey(id)) return false;
 
-		Game game = registered.get(id).build();
+		Game game;
+		try {
+			game = registered.get(id).build();
+		} catch (Exception e) {
+			Bukkit.getServer().broadcast(Component.text("Error while starting game " + id + ": " + e.getMessage()).color(NamedTextColor.RED));
+			e.printStackTrace();
+			return false;
+		}
+
 		game.start();
+		return true;
 	}
 
 	public static void stopCurrentGame() {
@@ -153,6 +162,27 @@ public abstract class Game implements Listener {
 		public abstract TextComponent getDisplayName();
 		public abstract TextComponent getDescription();
 
+		public TextComponent[] buildPages() {
+			return BookUtility.truncatePage(
+				Component.text()
+					.append(BookUtility.centerBookLine(getDisplayName()))
+					.append(
+						BookUtility.alignRightBookLine(
+							Component.text("Start")
+								.color(NamedTextColor.DARK_GREEN)
+								.decorate(TextDecoration.BOLD)
+								.decorate(TextDecoration.UNDERLINED)
+								.clickEvent(
+									ClickEvent.runCommand(String.format("/ludos:ludos game start %s", getId()))
+								)
+						)
+					)
+					.append(Component.text("\n"))
+					.append(getDescription())
+				.build()
+			);
+		}
+
 		public final ItemStack createGuidebook() {
 			ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
 			BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
@@ -160,24 +190,9 @@ public abstract class Game implements Listener {
 			meta.title(getDisplayName());
 			meta.author(Component.text("Ludos"));
 
-
-			TextComponent page =
-				Component.text()
-					.append(Utility.centerBookLine(getDisplayName())).append(Component.text("\n\n"))
-					// .append(getDescription()).append(Component.text("\n\n"))
-					.append(
-						Utility.centerBookLine(
-							Component.text("Start")
-								.color(NamedTextColor.DARK_GREEN)
-								.decorate(TextDecoration.BOLD)
-								.clickEvent(
-									ClickEvent.runCommand(String.format("/ludos:ludos game %s start", getId()))
-								)
-						)
-					)
-				.build();
-
-			meta.addPage(page);
+			for (TextComponent page : buildPages()) {
+				meta.addPage(page);
+			}
 
 			populateGuidebook(meta);
 

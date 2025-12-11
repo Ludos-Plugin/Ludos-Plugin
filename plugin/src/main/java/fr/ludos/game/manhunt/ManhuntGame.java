@@ -165,8 +165,9 @@ public class ManhuntGame extends Game {
 
 		prey.showTitle(Title.title(
 			Component.text("You are the ")
-			.append(Component.text("Prey")
-				.color(NamedTextColor.BLUE)),
+				.append(Component.text("Prey")
+					.color(NamedTextColor.BLUE)
+				),
 			Component.text("Run for your life"),
 			Title.Times.times(
 				Duration.ofMillis(500),
@@ -364,7 +365,7 @@ public class ManhuntGame extends Game {
 		);
 
 		for (Player hunter : teamController.getHunters()) {
-			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), (ItemStack stack) -> ManhuntCompass.getItem(stack, this))) {
+			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), (ItemStack stack) -> ManhuntCompass.fromItemStack(stack, this))) {
 				compass.setLocation(prey.get());
 			}
 		}
@@ -546,7 +547,8 @@ public class ManhuntGame extends Game {
 		public TextComponent getDescription() {
 			return Component.text("A game of hide and seek.\n" +
 				"As the Prey, survive for as long as possible, while the Hunters try to find you.\n" +
-				"The Hunters possess a Compass that will update regularly to point at the Prey's position.");
+				"The Hunters possess a Compass that will update regularly to point at the Prey's position."
+			);
 		}
 
 		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
@@ -614,7 +616,7 @@ public class ManhuntGame extends Game {
 
 				setPreyName(givenPreyName);
 
-				sender.sendMessage( getPreyString() );
+				sender.sendMessage( "Prey player set to " + getPreyString() );
 				return true;
 
 			case area:
@@ -705,15 +707,18 @@ public class ManhuntGame extends Game {
 
 			case area:
 				// Options are : large, medium, small
-				return areaOptions;
+				if (args.length == 1)
+					return areaOptions;
 
 			case location:
 				// Options are : random, here
-				return locationOptions;
+				if (args.length == 1)
+					return locationOptions;
 
 			case reveal:
 				// Options are : short, medium, long
-				return revealOptions;
+				if (args.length == 1)
+					return revealOptions;
 			}
 
 			return null;

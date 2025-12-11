@@ -14,6 +14,7 @@ public class CommandUtility {
 	@Nullable
 	public static Player getPlayerFromArgsOrSender(String[] args, int index, CommandSender sender) {
 		Player target = null;
+
 		if ( args.length > index ) {
 			target = Bukkit.getPlayerExact(args[index]);
 		}

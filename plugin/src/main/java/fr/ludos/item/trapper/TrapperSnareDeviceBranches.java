@@ -1,61 +1,49 @@
 package fr.ludos.item.trapper;
 
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.ArrayUtils;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.item.BranchItem;
-import fr.ludos.item.SpecialItemBranches;
+import fr.ludos.item.SpecialItem;
+import io.papermc.paper.entity.LookAnchor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
-public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSnareDeviceBranches> {
+public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnareDeviceBranches> {
 	REVEALING (
 		Component.text("Revealing")
 			.color(NamedTextColor.YELLOW)
 			.decorate(TextDecoration.ITALIC),
-		Component.text("Revealing Description")
+		Component.text("Revealing Description"),
+		Material.ENDER_EYE
 	) {
-		private final Material type = Material.FERMENTED_SPIDER_EYE;
-
 		@Override
 		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
-			trapBlock.getLocation().getBlock().setType(Material.SUNFLOWER);
+			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), block.getType()) {
+				@Override
+				public Boolean canTriggerEffect(LivingEntity target) {
+					return target.getLocation().distance(this.getLocation()) < 3;
+				}
 
-			owner.sendMessage(block.getType().toString());
-			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), this);
-		}
-
-		@Override
-		public Boolean executeEffect(Player target, TrapperTrap info) {
-			if (target.getLocation().distance(info.getLocation()) >= 3) return false;
-			if (info.getLocation().getBlock().getType() != Material.SUNFLOWER) return true;
-
-			info.getOwner().sendMessage("Trap triggered !");
-			target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 20, 1));
-
-			info.getLocation().getBlock().setType(Material.AIR);
-
-			// TODO Envoyer un event au plugin pour notifier que le joueur a été révélé et declencher le reveal de la position du joueur
-			//Bukkit.getServer().getPluginManager().callEvent()
-
-			return true;
-		}
-
-		@Override
-		public void onSwitchBranch(BranchItem<TrapperSnareDeviceBranches> item) {
-			item.getStack().setType(type);
+				@Override
+				public void triggerBlockTrapEffect(LivingEntity target) {
+					target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 20, 1));
+					// TODO: Envoyer un event au plugin pour notifier que le joueur a été révélé et declencher le reveal de la position du joueur
+					//Bukkit.getServer().getPluginManager().callEvent()
+				}
+			};
 		}
 	},
 
@@ -64,36 +52,55 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		Component.text("Impeding")
 			.color(NamedTextColor.DARK_BLUE)
 			.decorate(TextDecoration.ITALIC),
-		Component.text("Impeding Description")
+		Component.text("Impeding Description"),
+		Material.COBWEB
 	) {
-		private final Material type = Material.COBWEB;
-
-
 		@Override
 		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
-			trapBlock.getLocation().getBlock().setType(Material.COARSE_DIRT);
+			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), Material.COARSE_DIRT) {
+				@Override
+				public Boolean canTriggerEffect(LivingEntity target) {
+					return target.getLocation().distance(this.getLocation()) < 7;
+				}
 
-			return new TrapperTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), this);
+				@Override
+				public void triggerBlockTrapEffect(LivingEntity target) {
+					target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 10, 1));
+
+					// TODO: Find an algorithm to make a web-like structure around the trap location
+					// For now, just set the block to cobweb
+					this.getLocation().getBlock().setType(Material.COBWEB);
+				}
+			};
 		}
+	},
 
+
+	REBOUND	(
+		Component.text("Rebound")
+			.color(NamedTextColor.LIGHT_PURPLE)
+			.decorate(TextDecoration.ITALIC),
+		Component.text("Rebound Description"),
+		Material.ENDER_PEARL
+	) {
 		@Override
-		public Boolean executeEffect(Player target, TrapperTrap info) {
-			if (target.getLocation().distance(info.getLocation()) >= 7) return false;
-			if (info.getLocation().getBlock().getType() != Material.COARSE_DIRT) return true;
+		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
+			Block trapBlock = block.getRelative(face);
 
-			target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 10, 1));
-			info.getOwner().sendMessage("Trap triggered !");
+			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), Material.END_ROD) {
+				@Override
+				public Boolean canTriggerEffect(LivingEntity target) {
+					return target.getLocation().distance(this.getLocation()) < 7;
+				}
 
-			info.getLocation().getBlock().setType(Material.COBWEB);
-
-			return true;
-		}
-
-		@Override
-		public void onSwitchBranch(BranchItem<TrapperSnareDeviceBranches> item) {
-			item.getStack().setType(type);
+				@Override
+				public void triggerBlockTrapEffect(LivingEntity target) {
+					this.getOwner().teleport(this.getLocation(), TeleportCause.ENDER_PEARL);
+					this.getOwner().lookAt(target, LookAnchor.EYES, LookAnchor.EYES);
+				}
+			};
 		}
 	};
 
@@ -112,26 +119,33 @@ public enum TrapperSnareDeviceBranches implements SpecialItemBranches<TrapperSna
 		return description;
 	}
 
+	private final Material type;
+	public Material getType() {
+		return type;
+	}
 
-	private TrapperSnareDeviceBranches(Component name, Component description) {
-		this.name = name;
-		this.description = description;
+	private final int limit;
+	public int getLimit() {
+		return limit;
 	}
 
 
-	@Nullable
-	public static TrapperSnareDeviceBranches findByKey(int i) {
-		if ( i >= values.length ) {
-			return null;
-		}
-		return values[i];
+	private TrapperSnareDeviceBranches(Component name, Component description, Material type) {
+		this(name, description, type, 0);
+	}
+	private TrapperSnareDeviceBranches(Component name, Component description, Material type, int limit) {
+		this.name = name;
+		this.description = description;
+		this.type = type;
+		this.limit = limit;
 	}
 
 	@Override
-	public int index() {
-		return ArrayUtils.indexOf(values(), this);
+	public void onEquip(SpecialItem item) {
+		item.getStack().setType(type);
 	}
+	@Override
+	public void onUnequip(SpecialItem item) {}
 
 	public abstract TrapperTrap createTrap(Player owner, Block block, BlockFace face);
-	public abstract Boolean executeEffect(Player target, TrapperTrap info);
 }

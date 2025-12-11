@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
 import org.bukkit.entity.HumanEntity;
@@ -19,14 +20,44 @@ import fr.ludos.game.Game;
 
 
 public class ManhuntCompass extends SpecialItem {
+	private static final String ID = "manhuntCompass";
 
-	public ManhuntCompass(ItemStack item, Game game) {
-		super(item, game);
+	public static @Nullable ManhuntCompass fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		if (owner == null) return null;
+
+		return new ManhuntCompass(stack, owner, game);
+	}
+	public static ManhuntCompass createItem(Player owner, Game game) {
+		return new ManhuntCompass(createItemStack(), owner, game);
 	}
 
-	public ManhuntCompass(Player owner, Game game) {
-		super(createItemStack(), owner, game);
+	protected ManhuntCompass(ItemStack stack, Player owner, Game game) {
+		super(stack, owner, game);
 	}
+
+
+	@Override
+	public String getId() {
+		return ID;
+	}
+
+	@Override
+	public Component getName() {
+		return Component.text("Hunter's Compass")
+			.decoration(TextDecoration.ITALIC, false);
+	}
+
+	@Override
+	public List<Component> getLore() {
+		return new ArrayList<Component>(){{
+			add(
+				Component.text("Every three minutes, the position of prey is revealed through the compass.")
+					.decoration(TextDecoration.ITALIC, false)
+			);
+		}};
+	}
+
 
 	private static ItemStack createItemStack() {
 		ItemStack stack = new ItemStack(Material.COMPASS);
@@ -56,51 +87,17 @@ public class ManhuntCompass extends SpecialItem {
 		return meta.getLodestone();
 	}
 
-	@Override
-	public String getId() {
-		return "manhuntCompass";
-	}
-
-	@Override
-	public List<Component> getLore() {
-		return new ArrayList<Component>(){{
-			add(
-				Component.text("Every three minutes, the position of prey is revealed through the compass.")
-					.decoration(TextDecoration.ITALIC, false)
-			);
-		}};
-	}
-
-	@Override
-	public Component getName() {
-		return Component.text("Hunter's Compass")
-			.decoration(TextDecoration.ITALIC, false);
-	}
-
-	@Nullable
-	public static ManhuntCompass getItem(ItemStack stack, Game game) {
-		try {
-			ManhuntCompass compass = new ManhuntCompass(stack, game);
-			return compass;
-		} catch (IllegalArgumentException e) {
-			return null;
-		}
-	}
-
-	public static ManhuntCompass createItem(Player owner, Game game) {
-		return new ManhuntCompass(owner, game);
-	}
 
 	public static class Events extends SpecialItem.Events<ManhuntCompass> {
 
 		public Events(Game game) {
-			super(game);
+			super(game, 8);
 		}
 
 		@Override
 		@Nullable
 		protected ManhuntCompass getItem(ItemStack stack, Game game) {
-			return ManhuntCompass.getItem(stack, game);
+			return ManhuntCompass.fromItemStack(stack, game);
 		}
 
 		protected ManhuntCompass createItem(Player owner, Game game) {
