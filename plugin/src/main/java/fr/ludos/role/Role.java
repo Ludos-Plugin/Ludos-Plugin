@@ -34,13 +34,14 @@ import fr.ludos.Utility;
 import fr.ludos.book.BookUtility;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.game.Game;
+import fr.ludos.game.GameProcessBase;
 
 
 /**
  * The Role class contains runtime data for the Role itself as well as the events for the Role-users
  * It contains events and Data.
  */
-public abstract class Role implements Listener {
+public abstract class Role extends GameProcessBase {
 	private static final String rolesKey = "playerRoles";
 
 	private boolean started = false;
@@ -75,7 +76,7 @@ public abstract class Role implements Listener {
 		return builder;
 	}
 
-	public Ludos getPlugin() {
+	public JavaPlugin getPlugin() {
 		return game.getPlugin();
 	}
 
@@ -91,43 +92,36 @@ public abstract class Role implements Listener {
 		itemEvents = createItemEvents(builder, game);
 	}
 
-	public final void start() {
-		if (started) return;
-		started = true;
-
-		onInit();
-
-		Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
-
+	protected final void onInit() {
+		onRoleInit();
+	}
+	@Override
+	protected final void onStart() {
 		for (SpecialItem.Events<?> events : itemEvents.values()) {
 			events.start();
 		}
 
-		try {
-			onStart();
-		} catch (Exception e) {
-			getPlugin().getLogger().severe("Error while initializing role " + builder.getId() + ": " + e.getMessage());
-			e.printStackTrace();
-			stop();
-		}
+		onRoleStart();
 	}
-	protected void onInit() { }
-	protected void onStart() { }
+
+	protected void onRoleInit() { }
+	protected void onRoleStart() { }
 
 
-	public final void stop() {
-		if (!started) return;
-		started = false;
-
-		HandlerList.unregisterAll(this);
-
+	protected final void onDeinit() {
+		onRoleDeinit();
+	}
+	@Override
+	protected final void onStop() {
 		for (SpecialItem.Events<?> events : itemEvents.values()) {
 			events.stop();
 		}
 
-		onStop();
+		onRoleStop();
 	}
-	protected void onStop() { }
+
+	protected void onRoleDeinit() { }
+	protected void onRoleStop() { }
 
 
 	protected abstract LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Builder builder, Game game);

@@ -107,7 +107,7 @@ public class ManhuntCompass extends SpecialItem {
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {
 			if (! (game instanceof ManhuntGame manhunt)) return false;
-			return manhunt.getTeamController().hunterTeam.hasEntry(owner.getName());
+			return manhunt.getGameTeamController().hunterTeam.hasEntry(owner.getName());
 		}
 
 		// @EventHandler

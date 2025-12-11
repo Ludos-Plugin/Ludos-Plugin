@@ -1,12 +1,18 @@
 package fr.ludos.game;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.entity.HumanEntity;
@@ -14,36 +20,27 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 
-public abstract class TeamController implements Listener {
-	private boolean started = false;
-	protected final Game game;
-	protected final Scoreboard scoreboard;
+public abstract class GameTeamController extends GameProcessBase {
+	private final Game game;
+	public final Game getGame() {
+		return game;
+	}
+
+	@Override
+	protected final JavaPlugin getPlugin() {
+		return getGame().getPlugin();
+	}
+
+	private final boolean autojoin;
 
 
-	public TeamController(Game game, Scoreboard scoreboard) {
+	public GameTeamController(Game game, boolean autojoin) {
 		this.game = game;
-		this.scoreboard = scoreboard;
+		this.autojoin = autojoin;
 	}
-
-	public final void start() {
-		if (started) return;
-		started = true;
-
-		Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
-
-		onStart();
+	public GameTeamController(Game game) {
+		this(game, true);
 	}
-	protected void onStart() { }
-
-	public final void stop() {
-		if (! started) return;
-		started = false;
-
-		HandlerList.unregisterAll(this);
-
-		onStop();
-	}
-	protected void onStop() { }
 
 
 	public abstract Collection<LivingEntity> getEntities();
@@ -59,6 +56,8 @@ public abstract class TeamController implements Listener {
 	public boolean areAllies(LivingEntity entity1, LivingEntity entity2) {
 		if (entity1 == null || entity2 == null) return false;
 		if (entity1.equals(entity2)) return true;
+
+		Scoreboard scoreboard = game.getScoreboard();
 
 		var entity1Team = scoreboard.getEntryTeam(entity1.getName());
 		var entity2Team = scoreboard.getEntryTeam(entity2.getName());
@@ -77,15 +76,17 @@ public abstract class TeamController implements Listener {
 			.collect(Collectors.toSet());
 	}
 
-	// public abstract void updatePlayerTeam(Player player);
+	public abstract void joinPlayer(Player player);
+	public abstract void discardPlayer(Player player);
 
-	// @EventHandler
-	// public void onPlayerJoin(PlayerJoinEvent event) {
-	// 	updatePlayerTeam(event.getPlayer());
-	// }
 
-	// @EventHandler
-	// public void onPlayerRespawn(PlayerRespawnEvent event)  {
-	// 	updatePlayerTeam(event.getPlayer());
-	// }
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		if (autojoin) {
+			joinPlayer(event.getPlayer());
+		}
+		else {
+			discardPlayer(event.getPlayer());
+		}
+	}
 }

@@ -2,25 +2,22 @@ package fr.ludos.game.manhunt;
 
 import java.util.function.Supplier;
 
-public enum ManhuntGameConfigs {
-	players ("players", () -> "[player1] [player2] ..."),
-	prey ("prey", () -> "[player]"),
-	area ("area", ManhuntAreaOptions::getUsage),
-	location ("location", ManhuntLocationOptions::getUsage),
-	reveal ("reveal", ManhuntRevealOptions::getUsage);
+import fr.ludos.game.worldborder.WorldBorderAreaOption;
+import fr.ludos.game.worldborder.WorldBorderLocationOption;
 
-	private String name;
-	public String toString() {
-		return name;
-	}
+public enum ManhuntGameConfigs {
+	players (() -> "[player1] [player2] ..."),
+	prey (() -> "[player]"),
+	area (WorldBorderAreaOption::getUsage),
+	location (WorldBorderLocationOption::getUsage),
+	reveal (ManhuntRevealOptions::getUsage);
 
 	private Supplier<String> usageGetter;
 	public String getUsage() {
 		return usageGetter.get();
 	}
 
-	private ManhuntGameConfigs(String name, Supplier<String> usageGetter) {
-		this.name = name;
+	private ManhuntGameConfigs(Supplier<String> usageGetter) {
 		this.usageGetter = usageGetter;
 	}
 }
