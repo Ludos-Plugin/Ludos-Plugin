@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 
@@ -45,17 +46,32 @@ public abstract class TeamController implements Listener {
 	protected void onStop() { }
 
 
-	public abstract Collection<Player> getPlayers();
+	public abstract Collection<LivingEntity> getEntities();
 	public abstract Collection<Team> getTeams();
 
-	public boolean areAllies(HumanEntity player1, HumanEntity player2) {
-		var player1Team = scoreboard.getEntryTeam(player1.getName());
-		var player2Team = scoreboard.getEntryTeam(player2.getName());
-		var res = player1Team != null && player1Team.equals(player2Team);
-		return res;
+	public Collection<Player> getPlayers() {
+		return getEntities().stream()
+			.filter(e -> e instanceof Player)
+			.map(e -> (Player)e)
+			.collect(Collectors.toSet());
 	}
 
-	public Set<Player> getEnemies(Player player) {
+	public boolean areAllies(LivingEntity entity1, LivingEntity entity2) {
+		if (entity1 == null || entity2 == null) return false;
+		if (entity1.equals(entity2)) return true;
+
+		var entity1Team = scoreboard.getEntryTeam(entity1.getName());
+		var entity2Team = scoreboard.getEntryTeam(entity2.getName());
+
+		return entity1Team != null && entity1Team.equals(entity2Team);
+	}
+
+	public Set<LivingEntity> getEnemies(Player player) {
+		return getEntities().stream()
+			.filter(other -> ! areAllies(player, other))
+			.collect(Collectors.toSet());
+	}
+	public Set<Player> getEnemyPlayers(Player player) {
 		return getPlayers().stream()
 			.filter(other -> ! areAllies(player, other))
 			.collect(Collectors.toSet());

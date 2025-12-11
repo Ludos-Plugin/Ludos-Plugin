@@ -1,18 +1,17 @@
 package fr.ludos.item.burrower;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.HashMap;
-import javax.annotation.Nullable;
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 
-import fr.ludos.item.SpecialItemLevels;
+import fr.ludos.item.LevelItem;
 
 
-public enum BurrowerPickLevels implements SpecialItemLevels<BurrowerPickLevels> {
+public enum BurrowerPickLevels implements LevelItem.Level<BurrowerPickLevels> {
 	WOODEN      (Material.WOODEN_PICKAXE,    25,    1, 0, Collections.emptyMap()),
 	STONE       (Material.STONE_PICKAXE,     55,    1, 0, Collections.emptyMap()),
 	STONE1      (Material.STONE_PICKAXE,     115,   1, 0, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 1); }}),
@@ -64,34 +63,13 @@ public enum BurrowerPickLevels implements SpecialItemLevels<BurrowerPickLevels> 
 	}
 
 
-	public int index() {
-		return ArrayUtils.indexOf(values, this);
-	}
 	public boolean isMax() {
-		return (index() + 1) >= values.length;
+		return (ordinal() + 1) >= values.length;
 	}
 
-	@Nullable
-	public static BurrowerPickLevels findByKey(int i) {
-		if ( i >= values.length ) {
-			return null;
-		}
-		return values()[i];
-	}
 
 	@Override
-	public BurrowerPickLevels getPrevious() {
-		int index = index() - 1;
-		index = Math.max(0, index);
-		return values()[index];
-	}
-
-	@Override
-	public BurrowerPickLevels getNext() {
-		int currentIndex = index();
-		if ( currentIndex + 1 >= values.length ) {
-			return this;
-		}
-		return values()[currentIndex + 1];
+	public Class<BurrowerPickLevels> getLevelClass() {
+		return BurrowerPickLevels.class;
 	}
 }
