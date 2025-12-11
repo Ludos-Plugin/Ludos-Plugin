@@ -17,6 +17,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.scoreboard.Team;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import fr.ludos.Utility;
@@ -130,15 +131,16 @@ public final class ManhuntTeamController extends TeamController {
 		return List.of(hunterTeam, preyTeam);
 	}
 	@Override
-	public Collection<Player> getPlayers() {
-		Set<Player> hunters = getHunters();
+	public Collection<LivingEntity> getEntities() {
+		Set<LivingEntity> entities = new HashSet<>();
+		entities.addAll(getHunters());
 
 		Optional<Player> prey = getPrey();
 		if (prey.isPresent()) {
-			hunters.add(prey.get());
+			entities.add(prey.get());
 		}
 
-		return hunters;
+		return entities;
 	}
 
 

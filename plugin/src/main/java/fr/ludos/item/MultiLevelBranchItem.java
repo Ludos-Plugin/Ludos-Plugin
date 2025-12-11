@@ -1,0 +1,206 @@
+package fr.ludos.item;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
+
+import fr.ludos.game.Game;
+import fr.ludos.item.LevelItem.LevelState;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+
+
+public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & MultiLevelBranchItem.Branch<TBranch>> extends BranchItem<TBranch> {
+	private final LevelItem.LevelState[] levelStates;
+	public List<LevelItem.LevelState> getLevelStates() {
+		return Collections.unmodifiableList(Arrays.asList(levelStates));
+	}
+
+	public static @Nullable LevelItem.LevelState[] levelsFromItemStack(ItemStack stack, String id, Game game) {
+		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
+
+		if ( ! container.has(LevelItem.levelKey, PersistentDataType.INTEGER_ARRAY) ) return null;
+		if ( ! container.has(LevelItem.xpKey, DoubleArrayPersistentDataType.INSTANCE) ) return null;
+
+		int[] levels = container.get(LevelItem.levelKey, PersistentDataType.INTEGER_ARRAY);
+		double[] xps = container.get(LevelItem.xpKey, DoubleArrayPersistentDataType.INSTANCE);
+
+		LevelItem.LevelState[] levelStates = new LevelItem.LevelState[levels.length];
+		for (int i = 0; i < levels.length; i++) {
+			levelStates[i] = new LevelItem.LevelState(levels[i], xps[i]);
+		}
+		return levelStates;
+	}
+	public static void saveLevelStates(SpecialItem item, LevelItem.LevelState[] levelStates) {
+		int[] levels = new int[levelStates.length];
+		double[] xps = new double[levelStates.length];
+
+		for (int i = 0; i < levelStates.length; i++) {
+			LevelItem.LevelState state = levelStates[i];
+			levels[i] = state.getLevel();
+			xps[i] = state.getXp();
+		}
+
+		ItemMeta meta = item.getStack().getItemMeta();
+		meta.getPersistentDataContainer().set(LevelItem.levelKey, PersistentDataType.INTEGER_ARRAY, levels);
+		meta.getPersistentDataContainer().set(LevelItem.xpKey, DoubleArrayPersistentDataType.INSTANCE, xps);
+		item.getStack().setItemMeta(meta);
+	}
+
+	public MultiLevelBranchItem(Class<TBranch> branchClass, ItemStack stack, Player owner, TBranch branch, LevelItem.LevelState[] levels, Game game) {
+		super(branchClass, stack, owner, branch, game);
+
+		if (levels.length != getBranches().length) {
+			throw new IllegalArgumentException("Levels array length does not match branches length");
+		}
+
+		for (int i = 0; i < levels.length; i++) {
+			if (levels[i] == null) {
+				levels[i] = new LevelItem.LevelState();
+			}
+		}
+		this.levelStates = levels;
+
+		for (LevelItem.LevelState state : levelStates) {
+			state.addLevelUpListener( (lvlState) -> {
+				getOwner().sendMessage(
+					LevelItem.getLevelUpMessage(this)
+				);
+			} );
+			state.addXpChangeListener( (lvlState) -> {
+				saveLevelStates(this, levelStates);
+				updateLore();
+			} );
+		}
+	}
+
+	public void setLevelStates(LevelItem.LevelState[] levels) {
+	}
+
+	@Override
+	public void onInitialize() {
+		super.onInitialize();
+
+		saveLevelStates(this, levelStates);
+	}
+
+	public LevelItem.LevelState getCurrentBranchLevel() {
+		TBranch currentBranch = getBranch();
+		return levelStates[currentBranch.ordinal()];
+	}
+
+	public void setLvl(int level) {
+		LevelItem.LevelState state = getCurrentBranchLevel();
+
+		state.setLevel(level, getMaxBranchIndex());
+	}
+	public void addLvl() {
+		LevelItem.LevelState state = getCurrentBranchLevel();
+
+		state.addLvl(getMaxBranchIndex());
+	}
+
+	public void setXp(double value) {
+		LevelItem.LevelState state = getCurrentBranchLevel();
+
+		state.setXp(value, getMaxBranchIndex(), (lvl) -> getBranch().getXpThreshold());
+	}
+	public void addXp(double xp) {
+		LevelItem.LevelState state = getCurrentBranchLevel();
+
+		state.addXp(xp, getMaxBranchIndex(), (lvl) -> getBranch().getXpThreshold());
+	}
+
+	@Override
+	public List<Component> getLore() {
+		List<Component> lore = super.getLore();
+
+		lore.add(LevelItem.getBranchLevelLoreField(this));
+		lore.add(LevelItem.getBranchXpLoreField(this));
+
+		return lore;
+	}
+
+
+	public static interface Branch<T extends Enum<T> & Branch<T>> extends BranchItem.Branch<T> {
+		public double getXpThreshold();
+	}
+
+	public static abstract class Events<T extends MultiLevelBranchItem<TBranch>, TBranch extends Enum<TBranch> & Branch<TBranch>> extends BranchItem.Events<T, TBranch> {
+		private Map<Player, LevelItem.LevelState[]> deadPlayerLevels;
+
+		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
+			super(game, slot, canDrop);
+
+			this.deadPlayerLevels = new HashMap<>();
+		}
+		public Events(Game game, @Nullable Integer slot) {
+			this(game, slot, false);
+		}
+		public Events(Game game) {
+			this(game, null, false);
+		}
+
+		@EventHandler
+		public void onPlayerDeath(PlayerDeathEvent event) {
+			Player player = event.getEntity();
+			if (! canPlayerHaveItem(player)) return;
+
+			T specialItem = SpecialItem.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
+			if ( specialItem == null ) return;
+
+			deadPlayerLevels.put(player,
+				specialItem.getLevelStates().stream()
+					.map((LevelItem.LevelState state) -> {
+						if (state.getLevel() <= 0) {
+							return new LevelItem.LevelState(0, 0.0);
+						}
+						else {
+							return new LevelItem.LevelState(state.getLevel() -1, 0.0);
+						}
+					})
+					.toArray(LevelItem.LevelState[]::new)
+			);
+		}
+
+		protected abstract TBranch[] getBranches();
+		protected abstract T createItem(Player owner, LevelItem.LevelState[] levels, Game game);
+
+		@Override
+		protected final T createItem(Player owner, Game game) {
+			LevelItem.LevelState[] levels;
+			if (owner != null && deadPlayerLevels != null && deadPlayerLevels.containsKey(owner)) {
+				levels = deadPlayerLevels.get(owner);
+			}
+			else {
+				levels = new LevelItem.LevelState[getBranches().length];
+			}
+
+			return createItem(owner, levels, game);
+		}
+
+		@EventHandler
+		public void onSwitchItem(PlayerItemHeldEvent event) {
+			BranchItem.onSwitchItem(event, (stack) -> getItem(stack, game), BranchItem::getBranch);
+		}
+	}
+}
