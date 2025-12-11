@@ -32,7 +32,7 @@ public final class GameSubcommand implements TabExecutor {
 		if (args.length == 0) return false;
 
 		String arg = args[0].toLowerCase();
-		GameSubcommandOptions option = Arrays.stream(GameSubcommandOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+		GameSubcommandOptions option = Arrays.stream(GameSubcommandOptions.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 		if (option == null) return false;
 
 		return onCommandOption(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
@@ -92,12 +92,12 @@ public final class GameSubcommand implements TabExecutor {
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length <= 1) {
 			return Arrays.stream(GameSubcommandOptions.values())
-				.map(GameSubcommandOptions::toString)
+				.map(GameSubcommandOptions::name)
 				.collect(Collectors.toList());
 		}
 
 		String arg = args[0].toLowerCase();
-		GameSubcommandOptions option = Arrays.stream(GameSubcommandOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+		GameSubcommandOptions option = Arrays.stream(GameSubcommandOptions.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 		if (option == null) return null;
 
 		return onTabCompleteOption(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
@@ -137,7 +137,7 @@ public final class GameSubcommand implements TabExecutor {
 
 		usage.append('<');
 		usage.append(
-			Arrays.stream(GameSubcommandOptions.values()).sorted().map(GameSubcommandOptions::toString)
+			Arrays.stream(GameSubcommandOptions.values()).sorted().map(GameSubcommandOptions::name)
 				.collect(Collectors.joining(" | "))
 		);
 		usage.append('>');

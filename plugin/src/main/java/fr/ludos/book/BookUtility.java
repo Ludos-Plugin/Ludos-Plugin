@@ -89,6 +89,37 @@ public class BookUtility {
 	public static final int MC_BOOK_LINE_COUNT = 14; // Number of lines in a book page
 
 
+	public static TextComponent createPaddingSpaces(int totalPadding) {
+		return createPaddingSpaces((double) totalPadding);
+	}
+	public static TextComponent createPaddingSpaces(double totalPadding) {
+		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
+
+		double totalSpaceWidths = totalPadding / spaceWidth;
+
+		if (totalSpaceWidths < 1) {
+			return Component.text(' ').decoration(TextDecoration.BOLD, totalSpaceWidths > 0.5);
+		}
+
+		int totalSpacesCount = (int) totalSpaceWidths;
+		int boldSpacesCount = (int) ((totalSpaceWidths - totalSpacesCount) * spaceWidth);
+		int normalSpacesCount = totalSpacesCount - boldSpacesCount;
+
+		StringBuilder spaces = new StringBuilder(normalSpacesCount);
+		for (int i = 0; i < normalSpacesCount; i++) {
+			spaces.append(' ');
+		}
+		StringBuilder boldSpaces = new StringBuilder(boldSpacesCount);
+		for (int i = 0; i < boldSpacesCount; i++) {
+			boldSpaces.append(' ');
+		}
+
+		return Component.text()
+			.append(Component.text(spaces.toString()))
+			.append(Component.text(boldSpaces.toString()).decorate(TextDecoration.BOLD))
+			.build();
+	}
+
 	public static final int getPixelWidth(char c) {
 		return getPixelWidth(c, false);
 	}
@@ -110,63 +141,116 @@ public class BookUtility {
 		return width > 0 ? width - 1 : 0; // Remove last spacing
 	}
 
-	// Calculate pixel width of a TextComponent, considering decorations
+	private static int getTagNodePixelWidth(TagNode tagNode, boolean bold) {
+		if (tagNode.name().equals("bold") || tagNode.name().equals("b")) {
+			bold = tagNode.parts().size() == 1 || Boolean.parseBoolean(tagNode.parts().get(1).value());
+		}
+		else if (tagNode.name().equals("!bold") || tagNode.name().equals("!b")) {
+			bold = false;
+		}
+		else if (tagNode.name().equals("reset")) {
+			bold = false;
+		}
+
+		int pixelWidth = 0;
+
+		for (Node child : tagNode.children()) {
+			pixelWidth += getNodePixelWidth(child, bold);
+		}
+
+		return pixelWidth;
+	}
+
+	private static int getNodePixelWidth(Node node, boolean bold) {
+		if (node instanceof TextNode text) {
+			return getPixelWidth(text.value(), bold);
+		}
+		else if (node instanceof TagNode tag) {
+			return getTagNodePixelWidth(tag, bold);
+		}
+		else {
+			int pixelWidth = 0;
+			for (Node child : node.children()) {
+				pixelWidth += getNodePixelWidth(child, bold);
+			}
+			return pixelWidth;
+		}
+	}
+
 	public static int getPixelWidth(TextComponent component) {
 		return getPixelWidth(component, false);
 	}
 	public static int getPixelWidth(TextComponent component, boolean parentBold) {
-		int width = 0;
-		boolean bold = component.decoration(TextDecoration.BOLD) == TextDecoration.State.TRUE;
-		String content = component.content();
-		for (int i = 0; i < content.length(); i++) {
-			char c = content.charAt(i);
-			int charWidth = getPixelWidth(c, bold);
-			width += charWidth + 1;
-		}
-		if (width > 0) width -= 1;
-		for (Component child : component.children()) {
-			if (child instanceof TextComponent tc) {
-				width += getPixelWidth(tc, bold);
-			}
-		}
-		return width;
+		MiniMessage mm = MiniMessage.miniMessage();
+
+		Root tree = mm.deserializeToTree(mm.serialize(component));
+
+		return getNodePixelWidth(tree, parentBold);
 	}
 
+	public static TextComponent spaceBookLine(TextComponent leftComponent, TextComponent rightComponent) {
+		return spaceBookLine(leftComponent, rightComponent, MC_BOOK_LINE_WIDTH);
+	}
+	public static TextComponent spaceBookLine(TextComponent leftComponent, TextComponent rightComponent, int lineWidth) {
+		int leftWidth = getPixelWidth(leftComponent);
+		int rightWidth = getPixelWidth(rightComponent);
+		int totalWidth = leftWidth + rightWidth;
 
-	// Center a TextComponent line, considering decorations (bold, italic)
-	public static TextComponent centerBookLine(TextComponent component) {
-		return centerBookLine(component, MC_BOOK_LINE_WIDTH);
+		if (totalWidth >= lineWidth) {
+			return Component.text()
+				.append(leftComponent)
+				.append(Component.text(" "))
+				.append(rightComponent)
+				.append(Component.text('\n'))
+				.build();
+		}
+
+		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
+		int totalPadding = lineWidth - totalWidth - 2;
+		return Component.text()
+			.append(leftComponent)
+			.append(createPaddingSpaces(totalPadding))
+			.append(rightComponent)
+			.append(Component.text('\n'))
+			.build();
 	}
 
-	public static TextComponent centerBookLine(TextComponent component, int lineWidth) {
+	public static TextComponent alignRightBookLine(TextComponent component) {
+		return alignRightBookLine(component, MC_BOOK_LINE_WIDTH);
+	}
+	public static TextComponent alignRightBookLine(TextComponent component, int lineWidth) {
 		int textWidth = getPixelWidth(component);
 		if (textWidth >= lineWidth) return component;
 
 		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
-		int totalPadding = lineWidth - textWidth;
-		double padding = totalPadding / 2.0;
-		double spaces = padding / spaceWidth;
-		int fullSpaces = (int) (spaces);
+		int totalPadding = lineWidth - textWidth - 1;
 
-		int extraSpacePixels = (int) ((spaces - fullSpaces) * spaceWidth);
-
-		StringBuilder normalSpaces = new StringBuilder();
-		for (int i = 0; i < fullSpaces - extraSpacePixels; i++) {
-			normalSpaces.append(' ');
-		}
-		StringBuilder boldSpaces = new StringBuilder();
-		for (int i = 0; i < extraSpacePixels; i++) {
-			boldSpaces.append(' ');
-		}
 		return Component.text()
-			.append(Component.text(normalSpaces.toString()))
-			.append(Component.text(boldSpaces.toString()).decorate(TextDecoration.BOLD))
+			.append(createPaddingSpaces(totalPadding))
 			.append(component)
 			.append(Component.text('\n'))
 			.build();
 	}
 
-	private static int ProcessTextNode(StringBuilder builder, List<String> lines, TextNode textNode, int currentLineLength, int maxLineLength) {
+	// Center a TextComponent line, considering decorations (bold, italic)
+	public static TextComponent centerBookLine(TextComponent component) {
+		return centerBookLine(component, MC_BOOK_LINE_WIDTH);
+	}
+	public static TextComponent centerBookLine(TextComponent component, int lineWidth) {
+		int textWidth = getPixelWidth(component);
+		if (textWidth >= lineWidth) return component;
+
+		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
+		double totalPadding = (lineWidth - textWidth - 1) / 2;
+
+		return Component.text()
+			.append(createPaddingSpaces(totalPadding))
+			.append(component)
+			.append(Component.text('\n'))
+			.build();
+	}
+
+	private static int truncateTextNode(StringBuilder builder, List<String> lines, TextNode textNode, int currentLineLength, int maxLineLength) {
 		String text = textNode.value();
 
 		String[] textLines = text.split("\n");
@@ -219,8 +303,8 @@ public class BookUtility {
 		return currentLineLength;
 	}
 
-	private static int ProcessTagNode(StringBuilder builder, List<String> lines, TagNode tagNode, int currentLineLength, int maxLineLength) {
-		if (tagNode.name().equals("br")) {
+	private static int truncateTagNode(StringBuilder builder, List<String> lines, TagNode tagNode, int currentLineLength, int maxLineLength) {
+		if (tagNode.name().equals("newline") || tagNode.name().equals("br")) {
 			lines.add(builder.toString());
 			builder.setLength(0);
 			return 0;
@@ -237,28 +321,31 @@ public class BookUtility {
 		builder.append('>');
 
 		for (Node child : tagNode.children()) {
-			currentLineLength = processNode(builder, lines, child, currentLineLength, maxLineLength);
+			currentLineLength = truncateNode(builder, lines, child, currentLineLength, maxLineLength);
 		}
 
 		builder.append("</").append(tagNode.name()).append('>');
 		return currentLineLength;
 	}
 
-	private static int processNode(StringBuilder builder, List<String> lines, Node node, int currentLineLength, int maxLineLength) {
+	private static int truncateNode(StringBuilder builder, List<String> lines, Node node, int currentLineLength, int maxLineLength) {
 		if (node instanceof TextNode text) {
-			return ProcessTextNode(builder, lines, text, currentLineLength, maxLineLength);
+			return truncateTextNode(builder, lines, text, currentLineLength, maxLineLength);
 		}
 		else if (node instanceof TagNode tag) {
-			return ProcessTagNode(builder, lines, tag, currentLineLength, maxLineLength);
+			return truncateTagNode(builder, lines, tag, currentLineLength, maxLineLength);
 		}
 		else {
 			for (Node child : node.children()) {
-				currentLineLength = processNode(builder, lines, child, currentLineLength, maxLineLength);
+				currentLineLength = truncateNode(builder, lines, child, currentLineLength, maxLineLength);
 			}
 			return currentLineLength;
 		}
 	}
 
+	public static TextComponent[] truncatePage(TextComponent component) {
+		return truncatePage(component, MC_BOOK_LINE_WIDTH, MC_BOOK_LINE_COUNT);
+	}
 	public static TextComponent[] truncatePage(TextComponent component, int lineWidth, int lineCount) {
 		MiniMessage mm = MiniMessage.miniMessage();
 
@@ -267,7 +354,7 @@ public class BookUtility {
 		StringBuilder builder = new StringBuilder();
 		List<String> finalLines = new ArrayList<>();
 
-		processNode(builder, finalLines, tree, 0, lineWidth);
+		truncateNode(builder, finalLines, tree, 0, lineWidth);
 
 		List<TextComponent> pages = new ArrayList<>();
 		TextComponent.Builder pageBuilder = Component.text();
@@ -287,9 +374,5 @@ public class BookUtility {
 		}
 
 		return pages.toArray(new TextComponent[0]);
-	}
-
-	public static TextComponent[] truncatePage(TextComponent component) {
-		return truncatePage(component, MC_BOOK_LINE_WIDTH, MC_BOOK_LINE_COUNT);
 	}
 }

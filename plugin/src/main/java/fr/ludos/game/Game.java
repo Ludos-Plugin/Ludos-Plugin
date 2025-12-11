@@ -166,19 +166,19 @@ public abstract class Game implements Listener {
 			return BookUtility.truncatePage(
 				Component.text()
 					.append(BookUtility.centerBookLine(getDisplayName()))
-					.append(Component.text("\n\n"))
-					.append(getDescription())
-					.append(Component.text("\n\n"))
 					.append(
-						BookUtility.centerBookLine(
+						BookUtility.alignRightBookLine(
 							Component.text("Start")
 								.color(NamedTextColor.DARK_GREEN)
 								.decorate(TextDecoration.BOLD)
+								.decorate(TextDecoration.UNDERLINED)
 								.clickEvent(
 									ClickEvent.runCommand(String.format("/ludos:ludos game start %s", getId()))
 								)
 						)
 					)
+					.append(Component.text("\n"))
+					.append(getDescription())
 				.build()
 			);
 		}

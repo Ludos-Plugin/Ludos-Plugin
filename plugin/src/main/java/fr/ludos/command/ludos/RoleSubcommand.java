@@ -33,7 +33,7 @@ public final class RoleSubcommand implements TabExecutor {
 		if (args.length == 0) return false;
 
 		String arg = args[0].toLowerCase();
-		RoleSubcommandOptions option = Arrays.stream(RoleSubcommandOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+		RoleSubcommandOptions option = Arrays.stream(RoleSubcommandOptions.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 		if (option == null) return false;
 
 		return onCommandOption(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
@@ -115,12 +115,12 @@ public final class RoleSubcommand implements TabExecutor {
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length <= 1) {
 			return Arrays.stream(RoleSubcommandOptions.values())
-				.map(RoleSubcommandOptions::toString)
+				.map(RoleSubcommandOptions::name)
 				.collect(Collectors.toList());
 		}
 
 		String arg = args[0].toLowerCase();
-		RoleSubcommandOptions option = Arrays.stream(RoleSubcommandOptions.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+		RoleSubcommandOptions option = Arrays.stream(RoleSubcommandOptions.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 		if (option == null) return null;
 
 		return onRoleTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
@@ -167,7 +167,7 @@ public final class RoleSubcommand implements TabExecutor {
 
 		usage.append('<');
 		usage.append(
-			Arrays.stream(RoleSubcommandOptions.values()).sorted().map(RoleSubcommandOptions::toString)
+			Arrays.stream(RoleSubcommandOptions.values()).sorted().map(RoleSubcommandOptions::name)
 				.collect(Collectors.joining(" | ") )
 		);
 		usage.append('>');

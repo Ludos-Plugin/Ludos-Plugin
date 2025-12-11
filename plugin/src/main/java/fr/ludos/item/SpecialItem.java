@@ -1,28 +1,27 @@
 package fr.ludos.item;
 
-import java.util.function.Function;
-import java.util.Collections;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
-import javax.annotation.Nullable;
+import java.util.function.Function;
 
-import net.kyori.adventure.text.Component;
+import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -31,24 +30,30 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public abstract class SpecialItem {
 
-	private final Game game;
-	public Game getGame() { return game; }
-
 	public static final String ID = "id";
-	private final NamespacedKey idKey;
+	private static final NamespacedKey idKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ID);
 
 	public static final String OWNER = "owner";
-	private final NamespacedKey ownerKey;
+	private static final NamespacedKey ownerKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), OWNER);
 
-	public static final int USAGE_COOLDOWN = 5;
+	public static final int USAGE_COOLDOWN = 3;
+
+	private final Game game;
+	public Game getGame() { return game; }
 
 	private final ItemStack stack;
 	public ItemStack getStack() {
@@ -60,56 +65,47 @@ public abstract class SpecialItem {
 		return owner;
 	}
 
-
-	public SpecialItem(ItemStack stack, Game game) throws IllegalArgumentException {
-		this.game = game;
-
-		if (stack == null) {
-			throw new IllegalArgumentException("Item Stack is null");
-		}
-		this.stack = stack;
+	public static @Nullable Player getSpecialItemOwner(ItemStack stack, String id, Game game) {
+		if (stack == null) return null;
 
 		ItemMeta meta = stack.getItemMeta();
-		if (meta == null) {
-			throw new IllegalArgumentException("ItemStack has no Meta");
-		}
+		if (meta == null) return null;
 
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
-		this.idKey = new NamespacedKey(game.getPlugin(), ID);
-		if (! container.has(idKey, PersistentDataType.STRING) ) {
-			throw new IllegalArgumentException("ID not found");
-		}
-		String id = container.get(idKey, PersistentDataType.STRING);
+		if (! container.has(idKey, PersistentDataType.STRING) ) return null;
+		String itemId = container.get(idKey, PersistentDataType.STRING);
+		if (! itemId.equals(id)) return null;
 
-		if (! id.equals(getId())) {
-			throw new IllegalArgumentException("Invalid ID (" + id + " instead of " + getId() + ")");
-		}
+		if (! container.has(ownerKey, PersistentDataType.STRING) ) return null;
 
 
-		this.ownerKey = new NamespacedKey(game.getPlugin(), OWNER);
-		if (! container.has(ownerKey, PersistentDataType.STRING) ) {
-			throw new IllegalArgumentException("Owner not found");
-		}
-
-		this.owner = Bukkit.getPlayer(
+		Player owner = Bukkit.getPlayer(
 			UUID.fromString(
 				getPersistentData(stack, ownerKey, PersistentDataType.STRING)
 			)
 		);
+
+		return owner;
+	}
+	public static Component getActionAnnotation(final @NotNull String keybind, Component action) {
+		return Component.text("Press ")
+				.color(NamedTextColor.GRAY)
+			.append(Component.keybind(keybind)
+				.color(NamedTextColor.YELLOW))
+			.append(Component.text(" to ")
+				.color(NamedTextColor.GRAY))
+			.append(action)
+			.decoration(TextDecoration.ITALIC, false);
 	}
 
 	protected SpecialItem(ItemStack stack, Player owner, Game game) {
 		this.game = game;
 		this.stack = stack;
 		this.owner = owner;
-
-		this.idKey = new NamespacedKey(game.getPlugin(), ID);
-		this.ownerKey = new NamespacedKey(game.getPlugin(), OWNER);
-
-		updateName();
-
+	}
+	protected final void initializeItem() {
 		ItemMeta meta = stack.getItemMeta();
 
 		meta.setUnbreakable(true);
@@ -120,10 +116,16 @@ public abstract class SpecialItem {
 		container.set(idKey, PersistentDataType.STRING, getId());
 
 		stack.setItemMeta(meta);
+
+		updateName();
+		updateLore();
+
+		onInitialize();
 	}
+	protected void onInitialize() { }
 
 
-	protected List<Component> getLore() {
+	public List<Component> getLore() {
 		return new ArrayList<>();
 	}
 
@@ -230,10 +232,23 @@ public abstract class SpecialItem {
 	public static abstract class Events<T extends SpecialItem> implements Listener {
 		private boolean isStarted = false;
 
+		private final boolean canDrop;
+		@Nullable
+		private final Integer slot;
+
 		public final Game game;
 
-		public Events(Game game) {
+		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
 			this.game = game;
+
+			this.canDrop = canDrop;
+			this.slot = slot;
+		}
+		protected Events(Game game, @Nullable Integer slot) {
+			this(game, slot, false);
+		}
+		protected Events(Game game) {
+			this(game, null, false);
 		}
 
 		public final void start() {
@@ -291,6 +306,7 @@ public abstract class SpecialItem {
 
 		@EventHandler
 		public void onPlayerDropItem(PlayerDropItemEvent event) {
+			if (canDrop) return;
 			if (! canPlayerHaveItem(event.getPlayer())) return;
 
 			ItemStack item = event.getItemDrop().getItemStack();
@@ -302,6 +318,7 @@ public abstract class SpecialItem {
 
 		@EventHandler
 		public void onInventoryClickItem(InventoryClickEvent event) {
+			if (canDrop) return;
 			if (! canPlayerHaveItem(event.getWhoClicked())) return;
 
 			ItemStack item = event.getCursor();
@@ -311,13 +328,20 @@ public abstract class SpecialItem {
 
 			if (getItem(item, game) == null) return;
 
-			if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY && event.getInventory().getType() != InventoryType.PLAYER) {
+			InventoryType invType = event.getInventory().getType();
+
+			if (
+				event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY &&
+				invType != InventoryType.PLAYER &&
+				invType != InventoryType.CRAFTING
+			) {
 				event.setResult(Result.DENY);
 			}
 		}
 
 		@EventHandler
 		public void onItemSpawn(ItemSpawnEvent event) {
+			if (canDrop) return;
 			ItemStack item = event.getEntity().getItemStack();
 
 			if (getItem(item, game) == null) return;
@@ -340,13 +364,19 @@ public abstract class SpecialItem {
 		public void updateItemInInventory(Player player) {
 			if (! canPlayerHaveItem(player)) return;
 
-			Inventory inventory = player.getInventory();
+			PlayerInventory inventory = player.getInventory();
 			if (T.containedIn(inventory, (ItemStack stack) -> getItem(stack, game))) return;
 
 			T item = createItem(player, game);
 			if (item == null) return;
 
-			player.getInventory().addItem(item.getStack());
+			int index = (slot == null) ? -1 : slot.intValue();
+
+			if (index == -1 || inventory.getItem(index) != null) {
+				inventory.addItem(item.getStack());
+			} else {
+				inventory.setItem(index, item.getStack());
+			}
 		}
 	}
 }

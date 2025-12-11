@@ -91,7 +91,7 @@ public class Ludos extends JavaPlugin implements Listener {
 		}
 
 		int gamePage = 2;
-		int rolePage = 2 + gamePages.size();
+		int rolePage = gamePage + gamePages.size();
 
 		TextComponent headerPage = Component.text()
 			.append(
@@ -103,17 +103,19 @@ public class Ludos extends JavaPlugin implements Listener {
 			)
 			.append(Component.text("\n\n\n"))
 			.append(
-				BookUtility.centerBookLine(
-					Component.text("Games: Page " + gamePage + "\n")
+				BookUtility.spaceBookLine(
+					Component.text("Games :"),
+					Component.text("Page " + gamePage)
 						.color(NamedTextColor.BLUE)
 						.decoration(TextDecoration.UNDERLINED, true)
 						.clickEvent(ClickEvent.changePage(gamePage))
 				)
 			)
-			.append(Component.text("\n"))
+			.append(Component.text('\n'))
 			.append(
-				BookUtility.centerBookLine(
-					Component.text("Roles: Page " + rolePage + "\n")
+				BookUtility.spaceBookLine(
+					Component.text("Roles :"),
+					Component.text("Page " + rolePage)
 						.color(NamedTextColor.RED)
 						.decoration(TextDecoration.UNDERLINED, true)
 						.clickEvent(ClickEvent.changePage(rolePage))

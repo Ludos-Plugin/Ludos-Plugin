@@ -31,12 +31,12 @@ public class LudosCommand implements TabExecutor {
 	@Override
 	public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length <= 1) {
-			return Arrays.stream(LudosSubcommands.values()).map(LudosSubcommands::toString)
+			return Arrays.stream(LudosSubcommands.values()).map(LudosSubcommands::name)
 				.collect(Collectors.toList());
 		}
 
 		String arg = args[0];
-		LudosSubcommands option = Arrays.stream(LudosSubcommands.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+		LudosSubcommands option = Arrays.stream(LudosSubcommands.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 		if (option == null) return null;
 
 		switch (option) {
@@ -59,7 +59,7 @@ public class LudosCommand implements TabExecutor {
 		}
 
 		String arg = args[0];
-		LudosSubcommands option = Arrays.stream(LudosSubcommands.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+		LudosSubcommands option = Arrays.stream(LudosSubcommands.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 		if (option == null) return false;
 
 		switch (option) {

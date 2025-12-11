@@ -2,34 +2,51 @@ package fr.ludos.item.huntsman;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Nullable;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-
 import org.bukkit.Material;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CrossbowMeta;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import fr.ludos.item.SpecialItem;
-import fr.ludos.role.Role;
-import fr.ludos.role.HuntsmanRole;
 import fr.ludos.game.Game;
+import fr.ludos.item.SpecialItem;
+import fr.ludos.role.HuntsmanRole;
+import fr.ludos.role.Role;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class HuntsmanArrow extends SpecialItem {
-	public HuntsmanArrow(ItemStack stack, Game game) {
-		super(stack, game);
+	private final static String ID = "manhuntHuntsmanArrow";
+	private final static Map<ItemStack, HuntsmanArrow> cachedItems = new HashMap<>();
+
+
+	public static @Nullable HuntsmanArrow fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		HuntsmanArrow cached = cachedItems.get(stack);
+		if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		if (owner == null) return null;
+
+		return new HuntsmanArrow(stack, owner, game);
 	}
-	public HuntsmanArrow(Player owner, Game game) {
-		super(new ItemStack(Material.ARROW), owner, game);
+	public static HuntsmanArrow createItem(Player owner, Game game) {
+		return new HuntsmanArrow(new ItemStack(Material.ARROW), owner, game);
 	}
+
+	protected HuntsmanArrow(ItemStack stack, Player owner, Game game) {
+		super(stack, owner, game);
+	}
+
 
 	@Override
 	public String getId() {
@@ -37,7 +54,7 @@ public class HuntsmanArrow extends SpecialItem {
 	}
 
 	@Override
-	protected Component getName(){
+	public Component getName(){
 		return Component.text("Stolen Arrow")
 			.decoration(TextDecoration.ITALIC, false);
 	}
@@ -53,7 +70,7 @@ public class HuntsmanArrow extends SpecialItem {
 		private final int reloadTime;
 
 		public Events(Game game, Integer arrowMagazineSize, int reloadTime) {
-			super(game);
+			super(game, 35);
 			this.arrowMagazineSize = arrowMagazineSize;
 			this.reloadTime = reloadTime;
 		}
@@ -130,16 +147,11 @@ public class HuntsmanArrow extends SpecialItem {
 		@Override
 		@Nullable
 		protected HuntsmanArrow getItem(ItemStack stack, Game game) {
-			try {
-				HuntsmanArrow arrow = new HuntsmanArrow(stack, game);
-				return arrow;
-			} catch (IllegalArgumentException e) {
-				return null;
-			}
+			return HuntsmanArrow.fromItemStack(stack, game);
 		}
 		@Override
 		protected HuntsmanArrow createItem(Player owner, Game game) {
-			HuntsmanArrow arrow = new HuntsmanArrow(owner, game);
+			HuntsmanArrow arrow = HuntsmanArrow.createItem(owner, game);
 			arrow.getStack().setAmount(arrowMagazineSize == null ? 64 : arrowMagazineSize);
 			return arrow;
 		}
