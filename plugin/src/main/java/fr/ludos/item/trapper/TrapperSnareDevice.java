@@ -88,7 +88,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		}
 
 		@Override
-		protected void onStart() {
+		protected void onItemStart() {
 			trapTask = new BukkitRunnable() {
 				@Override
 				public void run() {
@@ -97,7 +97,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 					for (var playerTrapEntries : traps.entrySet()) {
 						Player player = playerTrapEntries.getKey();
-						Set<LivingEntity> targets = game.getTeamController().getEnemies(player);
+						Set<LivingEntity> targets = game.getGameTeamController().getEnemies(player);
 						for (LivingEntity target : targets) {
 							Bukkit.broadcast(Component.text(target.getName()));
 						}
@@ -127,7 +127,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		}
 
 		@Override
-		protected void onStop() {
+		protected void onItemStop() {
 			traps.clear();
 
 			if (trapTask != null) {

@@ -37,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.game.GameProcessBase;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -229,7 +230,7 @@ public abstract class SpecialItem {
 	}
 
 
-	public static abstract class Events<T extends SpecialItem> implements Listener {
+	public static abstract class Events<T extends SpecialItem> extends GameProcessBase {
 		private boolean isStarted = false;
 
 		private final boolean canDrop;
@@ -237,6 +238,11 @@ public abstract class SpecialItem {
 		private final Integer slot;
 
 		public final Game game;
+
+		@Override
+		protected JavaPlugin getPlugin() {
+			return game.getPlugin();
+		}
 
 		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
 			this.game = game;
@@ -251,29 +257,35 @@ public abstract class SpecialItem {
 			this(game, null, false);
 		}
 
-		public final void start() {
-			if (isStarted) return;
-			isStarted = true;
 
-			Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
-
+		@Override
+		protected final void onInit() {
+			onItemInit();
+		}
+		@Override
+		protected final void onStart() {
 			updateAllInventories();
 
-			onStart();
+			onItemStart();
 		}
-		protected void onStart() { }
 
-		public final void stop() {
-			if (! isStarted) return;
-			isStarted = false;
+		protected void onItemInit() { }
+		protected void onItemStart() { }
 
-			HandlerList.unregisterAll(this);
 
+		@Override
+		protected final void onDeinit() {
+			onItemDeinit();
+		}
+		@Override
+		protected final void onStop() {
 			removeFromAllInventories();
 
-			onStop();
+			onItemStop();
 		}
-		protected void onStop() { }
+
+		protected void onItemDeinit() { }
+		protected void onItemStop() { }
 
 
 		@Nullable
@@ -297,7 +309,7 @@ public abstract class SpecialItem {
 		}
 
 		protected void updateAllInventories() {
-			for (Player player : game.getTeamController().getPlayers()) {
+			for (Player player : game.getGameTeamController().getPlayers()) {
 				if (canPlayerHaveItem(player)) {
 					updateItemInInventory(player);
 				}

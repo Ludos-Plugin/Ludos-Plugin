@@ -13,9 +13,9 @@ public enum ManhuntRevealOptions {
 	five_minutes ("5min", 300, BarStyle.SEGMENTED_6),
 	six_minutes ("6min", 360, BarStyle.SEGMENTED_12);
 
-	private String name;
-	public String toString() {
-		return name;
+	private String displayName;
+	public String displayName() {
+		return displayName;
 	}
 
 	private int duration;
@@ -30,7 +30,7 @@ public enum ManhuntRevealOptions {
 
 
 	private ManhuntRevealOptions(String name, int duration, BarStyle barStyle) {
-		this.name = name;
+		this.displayName = name;
 		this.duration = duration;
 		this.barStyle = barStyle;
 	}
@@ -41,7 +41,7 @@ public enum ManhuntRevealOptions {
 
 		sb.append("<");
 		sb.append(
-			Arrays.stream(ManhuntRevealOptions.values()).map(ManhuntRevealOptions::toString)
+			Arrays.stream(ManhuntRevealOptions.values()).map(ManhuntRevealOptions::name)
 				.collect(Collectors.joining( " | "))
 		);
 		sb.append(">");

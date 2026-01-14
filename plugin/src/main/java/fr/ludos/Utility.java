@@ -1,6 +1,7 @@
 package fr.ludos;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 
@@ -15,6 +16,8 @@ import com.comphenix.protocol.wrappers.EnumWrappers;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Location;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.GameMode;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.entity.Player;
@@ -80,6 +83,17 @@ public class Utility {
 					}
 				}
 			}.runTaskLater(plugin, (long)(20 * spectateSeconds));
+		}
+	}
+
+	public static void revokeAllAdvancements(Player player) {
+		Iterator<Advancement> iterator = Bukkit.getServer().advancementIterator();
+
+		for (Advancement advancement = iterator.next(); iterator.hasNext(); advancement = iterator.next()) {
+			AdvancementProgress progress = player.getAdvancementProgress(advancement);
+
+			for (String criteria : progress.getAwardedCriteria())
+				progress.revokeCriteria(criteria);
 		}
 	}
 }

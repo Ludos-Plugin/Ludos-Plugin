@@ -31,7 +31,7 @@ public class BurrowerRole extends Role {
 	}
 
 	@Override
-	protected void onStart() {
+	protected void onRoleStart() {
 		// burrowers = Role.getPlayersOfRole(id);
 
 		// passiveResourcesTask = new BukkitRunnable() {    // FIXME: Quentin, quand cette tâche s'éxecute pour la première fois, elle remplace la pelle dans l'inventaire
@@ -43,7 +43,7 @@ public class BurrowerRole extends Role {
 	}
 
 	@Override
-	public void onStop() {
+	protected void onRoleStop() {
 		// passiveResourcesTask.cancel();
 		// passiveResourcesTask = null;
 	}

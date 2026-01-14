@@ -33,7 +33,7 @@ public class TrapperRole extends Role {
 	}
 
 	@Override
-	protected void onStart() {
+	protected void onRoleStart() {
 		invisibilityTask = new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -45,7 +45,7 @@ public class TrapperRole extends Role {
 	}
 
 	@Override
-	protected void onStop() {
+	protected void onRoleStop() {
 		sneakingPlayers.clear();
 
 		if (invisibilityTask != null) {

@@ -45,103 +45,59 @@ import fr.ludos.Ludos;
 import fr.ludos.Utility;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.game.Game;
+import fr.ludos.game.GameJoinOption;
+import fr.ludos.game.worldborder.WorldBorderAreaController;
+import fr.ludos.game.worldborder.WorldBorderAreaOption;
+import fr.ludos.game.worldborder.WorldBorderLocationOption;
 
 
 public class ManhuntGame extends Game {
-	public static final String id = "manhunt";
+	public static final String ID = "manhunt";
 
 	public static final String playersKey = "players";
-	public static final String playersPath = id + '.' + playersKey;
+	public static final String playersPath = ID + '.' + playersKey;
 	public static final String preyKey = "prey";
-	public static final String preyPath = id + '.' + preyKey;
+	public static final String preyPath = ID + '.' + preyKey;
 
 	public static final String areaKey = "area";
-	public static final String areaPath = id + '.' + areaKey;
+	public static final String areaPath = ID + '.' + areaKey;
 	public static final String locationKey = "location";
-	public static final String locationPath = id + '.' + locationKey;
+	public static final String locationPath = ID + '.' + locationKey;
 	public static final String revealKey = "reveal";
-	public static final String revealPath = id + '.' + revealKey;
-
-	public static final String borderWorldUUIDKey = "borderWorldUUID";
-	public static final String borderWorldUUIDPath = id + '.' + borderWorldUUIDKey;
-	public static final String borderLocationKey = "borderLocation";
-	public static final String borderLocationPath = id + '.' + borderLocationKey;
-	public static final String borderSizeKey = "borderSize";
-	public static final String borderSizePath = id + '.' + borderSizeKey;
-
+	public static final String revealPath = ID + '.' + revealKey;
+	public static final String joinKey = "join";
+	public static final String joinPath = ID + '.' + joinKey;
 
 	private final Scoreboard scoreboard;
+	@Override
 	public Scoreboard getScoreboard() {
 		return this.scoreboard;
 	}
 
 	private final ManhuntTeamController teamController;
 	@Override
-	public ManhuntTeamController getTeamController() {
+	public ManhuntTeamController getGameTeamController() {
 		return this.teamController;
+	}
+
+	private final WorldBorderAreaController areaController;
+	@Override
+	public WorldBorderAreaController getGameAreaController() {
+		return this.areaController;
 	}
 
 	private final ManhuntCompass.Events compassEvents;
 	private final ManhuntTimer timer;
 
 	private final Builder builder;
-
-
-	private Player prey;
-	private Set<Player> hunters;
-
-
-	private WorldBorder border;
+	public Builder getManhuntBuilder() {
+		return this.builder;
+	}
 
 	private Location lastPreyLocation = null;
 	private BukkitTask actionBarTask;
 
 	private BukkitTask saturationTask;
-
-
-	@Nullable
-	public static UUID getBorderWorldUID(Ludos plugin) {
-		String value = plugin.getConfig().getString(borderWorldUUIDPath);
-
-		if (value == null) return null;
-		return UUID.fromString(value);
-	}
-	@Nullable
-	public static Location getBorderLocation(Ludos plugin) {
-		return plugin.getConfig().getLocation(borderLocationPath);
-	}
-	public static double getBorderSize(Ludos plugin) {
-		return plugin.getConfig().getDouble(borderSizePath);
-	}
-	public static void setCachedBorder(World world, Ludos plugin) {
-		FileConfiguration config = plugin.getConfig();
-		if (world == null) {
-			config.set(borderWorldUUIDPath, null);
-			config.set(borderLocationPath, null);
-			config.set(borderSizePath, null);
-			plugin.saveConfig();
-			return;
-		}
-
-		WorldBorder border = world.getWorldBorder();
-		config.set(borderWorldUUIDPath, world.getUID().toString());
-		config.set(borderLocationPath, border.getCenter());
-		config.set(borderSizePath, border.getSize());
-		plugin.saveConfig();
-	}
-	public static void resetBorder(Ludos plugin) {
-		Location location = ManhuntGame.getBorderLocation(plugin);
-		if (location == null) return;
-		World world = Bukkit.getWorld(ManhuntGame.getBorderWorldUID(plugin));
-		if (world == null) return;
-
-		double size = ManhuntGame.getBorderSize(plugin);
-		WorldBorder border = world.getWorldBorder();
-		border.setCenter(location);
-		border.setSize(size, 0);
-
-		ManhuntGame.setCachedBorder(null, plugin);
-	}
 
 
 	protected ManhuntGame(Builder builder) {
@@ -151,148 +107,42 @@ public class ManhuntGame extends Game {
 
 		this.scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
 		this.teamController = new ManhuntTeamController(this, builder.getChosenPlayers(), builder.getChosenPrey());
+		this.areaController = new WorldBorderAreaController(this, this.builder.getLocation(), this.builder.getArea());
 
 		timer = new ManhuntTimer(this, builder.getReveal());
 		compassEvents = new ManhuntCompass.Events(this);
 	}
 
-	private void setGameArea(Player prey, Set<Player> hunters, int areaDiameter, Location location) {
-		World world = prey.getWorld();
-		setCachedBorder(world, getPlugin());
-
-
-		int areaRadius = areaDiameter / 2;
-
-		prey.showTitle(Title.title(
-			Component.text("You are the ")
-				.append(Component.text("Prey")
-					.color(NamedTextColor.BLUE)
-				),
-			Component.text("Run for your life"),
-			Title.Times.times(
-				Duration.ofMillis(500),
-				Duration.ofMillis(3500),
-				Duration.ofMillis(1000)
-			)
-		));
-
-		double highestY = world.getHighestBlockYAt(location) + 1;
-		location.setY(highestY);
-
-		prey.teleport(location);
-		prey.setBedSpawnLocation(location, true);
-		prey.setGameMode(GameMode.SURVIVAL);
-		prey.setHealth(prey.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-
-		prey.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
-		prey.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 30, 1, false, false));
-		prey.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 20 * 40, 0, false, true));
-
-		Iterator<Advancement> iterator = Bukkit.getServer().advancementIterator();
-		for (Advancement advancement = iterator.next(); iterator.hasNext(); advancement = iterator.next()) {
-			AdvancementProgress progress = prey.getAdvancementProgress(advancement);
-			for (String criteria : progress.getAwardedCriteria())
-			progress.revokeCriteria(criteria);
+	@Override
+	protected void onGameInit() {
+		Player prey = teamController.getSelectedPrey();
+		if (prey == null) {
+			throw new IllegalStateException("Prey player is null");
 		}
 
-
-		for (Player hunter : hunters) {
-			hunter.showTitle(Title.title(
-				Component.text("You are a ")
-				.append(Component.text("Hunter")
-					.color(NamedTextColor.RED)),
-				Component.text("Go and seek ")
-				.append(Component.text(prey.getName())
-					.color(NamedTextColor.BLUE)),
-				Title.Times.times(
-					Duration.ofMillis(500),
-					Duration.ofMillis(3500),
-					Duration.ofMillis(1000)
-				)
-			));
-
-			Location hunterLocation = Utility.getGroundedLocationAround(location, (int)(areaRadius * 0.3), (int)(areaRadius * 0.7), location);
-
-			hunter.teleport(hunterLocation);
-			hunter.setBedSpawnLocation(hunterLocation, true);
-			hunter.setGameMode(GameMode.SURVIVAL);
-			hunter.setHealth(hunter.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-
-			hunter.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
-
-			iterator = Bukkit.getServer().advancementIterator();
-			for (Advancement advancement = iterator.next(); iterator.hasNext(); advancement = iterator.next()) {
-				AdvancementProgress progress = hunter.getAdvancementProgress(advancement);
-				for (String criteria : progress.getAwardedCriteria())
-				progress.revokeCriteria(criteria);
-			}
-		}
-
-		border = world.getWorldBorder();
-		border.setCenter(location);
-		border.setSize(areaDiameter, 3);
-
-
-		int limit = 0;
-
-		EntityType[] animals = {
-			EntityType.COW,
-			EntityType.SHEEP,
-			EntityType.PIG,
-			EntityType.CHICKEN,
-		};
-
-		Random random = new Random();
-
-
-		for (int i = 0; i < limit; i++) {
-			int x = location.getBlockX() + random.nextInt(areaRadius * 2) - areaRadius;
-			int z = location.getBlockZ() + random.nextInt(areaRadius * 2) - areaRadius;
-
-			Location spawnLocation = new Location(world, x, world.getHighestBlockYAt(x, z) + 2, z);
-			EntityType animal = animals[random.nextInt(animals.length)];
-
-			Bukkit.getServer().broadcast(Component.text(animal.toString()));
-			Bukkit.getServer().broadcast(Component.text(spawnLocation.toString()));
-
-			world.spawnEntity(spawnLocation, animal);
-		}
+		Location gameLocation = prey.getLocation();
+		areaController.setup(gameLocation);
 	}
 
 	@Override
-	protected void onInit() {
-		teamController.start();
+	protected void onGameStart() {
+		World world = areaController.getWorld();
+		world.setTime(1000);
 
-
-		Optional<Player> nullablePrey = teamController.getPrey();
-		if (nullablePrey.isEmpty()) {
-			throw new IllegalArgumentException("No players were found");
-		}
-		prey = nullablePrey.get();
-		hunters = teamController.getHunters();
-
+		Set<Player> hunters = teamController.getSelectedHunters();
+		Player prey = teamController.getSelectedPrey();
 
 		prey.getInventory().clear();
+		Utility.revokeAllAdvancements(prey);
+
+
 		for (Player hunter : hunters) {
 			hunter.getInventory().clear();
+			Utility.revokeAllAdvancements(hunter);
 		}
-	}
 
-	@Override
-	protected void onStart() {
 		compassEvents.start();
 		timer.start();
-
-		int areaDiameter = builder.getArea().getSize();
-
-		ManhuntLocationOptions locationOption = builder.getLocation();
-		Location gameLocation = prey.getLocation();
-		if (locationOption == ManhuntLocationOptions.random) {
-			gameLocation = Utility.getGroundedLocationAround(gameLocation, 300, 2500, gameLocation);
-		}
-
-		setGameArea(prey, hunters, areaDiameter, gameLocation);
-		prey.getWorld().setTime(1000);
 
 		actionBarTask = new BukkitRunnable() {
 			@Override
@@ -308,7 +158,7 @@ public class ManhuntGame extends Game {
 					);
 				}
 			}
-		}.runTaskTimer(getPlugin(), 1, 1);
+		}.runTaskTimer(getPlugin(), 0, 1);
 
 		saturationTask = new BukkitRunnable() {
 			@Override
@@ -325,14 +175,12 @@ public class ManhuntGame extends Game {
 	}
 
 	@Override
-	protected void onStop() {
-		teamController.stop();
-
+	protected void onGameStop() {
 		compassEvents.stop();
 		timer.stop();
 
 
-		resetBorder(getPlugin());
+		areaController.resetBorder();
 
 		if (actionBarTask != null) {
 			actionBarTask.cancel();
@@ -349,12 +197,10 @@ public class ManhuntGame extends Game {
 
 
 	public void revealPrey() {
-		Optional<Player> prey = teamController.getPrey();
-		if (prey.isEmpty()) {
-			return;
-		}
+		Player prey = teamController.getTeamPrey();
+		if (prey == null) return;
 
-		lastPreyLocation = prey.get().getLocation();
+		lastPreyLocation = prey.getLocation();
 
 		Bukkit.getServer().broadcast(
 			Component.text("The Prey was revealed!\n")
@@ -364,31 +210,32 @@ public class ManhuntGame extends Game {
 			.append(Component.text(" Z:" + lastPreyLocation.getBlockZ()).color(NamedTextColor.BLUE))
 		);
 
-		for (Player hunter : teamController.getHunters()) {
+		for (Player hunter : teamController.getTeamHunters()) {
 			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), (ItemStack stack) -> ManhuntCompass.fromItemStack(stack, this))) {
-				compass.setLocation(prey.get());
+				compass.setLocation(prey);
 			}
 		}
 
-		prey.get().addPotionEffect(PotionEffectType.GLOWING.createEffect(100, 0));
+		prey.addPotionEffect(PotionEffectType.GLOWING.createEffect(100, 0));
 	}
 
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		Set<Player> hunters = teamController.getHunters();
-		Optional<Player> prey = teamController.getPrey();
+		Set<Player> hunters = teamController.getTeamHunters();
+		Player prey = teamController.getTeamPrey();
 
-		if (hunters.isEmpty() || ! prey.isEmpty()) {
+		if (hunters.isEmpty() || prey == null) {
 			timer.resume();
+			return;
 		}
 
 		var player = event.getPlayer();
 
-		if (!hunters.contains(player) && !(prey.isPresent() && prey.get() == player)) {
+		if (!hunters.contains(player) && player != prey) {
 			player.setGameMode(GameMode.SPECTATOR);
 
-			player.teleport(prey.get().getLocation());
+			player.teleport(prey.getLocation());
 		}
 	}
 
@@ -396,17 +243,14 @@ public class ManhuntGame extends Game {
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 
-		var hunters = teamController.getHunters();
+		var hunters = teamController.getTeamHunters();
 		if (hunters.contains(player)) {
 			hunters.remove(player);
 		}
 
-		var prey = teamController.getPrey();
-		if (prey.isPresent() && prey.get() == player) {
-			prey = Optional.empty();
-		}
+		var prey = teamController.getTeamPrey();
 
-		if (hunters.isEmpty() && prey.isEmpty()) {
+		if (hunters.isEmpty() || prey == null) {
 			timer.pause();
 		}
 	}
@@ -424,14 +268,17 @@ public class ManhuntGame extends Game {
 		private static final String allOption = "all";
 		private static final String randomOption = "random";
 
-		public static final List<String> areaOptions = Arrays.stream(ManhuntAreaOptions.values())
-			.map(v -> v.toString())
+		public static final List<String> areaOptions = Arrays.stream(WorldBorderAreaOption.values())
+			.map(v -> v.name())
 			.collect(Collectors.toList());
-		public static final List<String> locationOptions = Arrays.stream(ManhuntLocationOptions.values())
-			.map(v -> v.toString())
+		public static final List<String> locationOptions = Arrays.stream(WorldBorderLocationOption.values())
+			.map(v -> v.name())
 			.collect(Collectors.toList());
 		public static final List<String> revealOptions = Arrays.stream(ManhuntRevealOptions.values())
-			.map(v -> v.toString())
+			.map(v -> v.name())
+			.collect(Collectors.toList());
+		public static final List<String> joinOptions = Arrays.stream(GameJoinOption.values())
+			.map(v -> v.name())
 			.collect(Collectors.toList());
 
 
@@ -455,44 +302,53 @@ public class ManhuntGame extends Game {
 			getPlugin().saveConfig();
 		}
 
-		public ManhuntAreaOptions getArea() {
+		public WorldBorderAreaOption getArea() {
 			String areaString = getPlugin().getConfig().getString(areaPath);
-			return Arrays.stream(ManhuntAreaOptions.values()).filter(o -> o.toString().equals(areaString)).findFirst()
-				.orElse(ManhuntAreaOptions.medium);
+			return Arrays.stream(WorldBorderAreaOption.values()).filter(o -> o.name().equals(areaString)).findFirst()
+				.orElse(WorldBorderAreaOption.medium);
 		}
-		public void setArea(ManhuntAreaOptions area) {
-			String value = area == null ? null : area.toString();
+		public void setArea(WorldBorderAreaOption area) {
+			String value = area == null ? null : area.name();
 			getPlugin().getConfig().set(areaPath, value);
 			getPlugin().saveConfig();
 		}
 
-		public ManhuntLocationOptions getLocation() {
+		public WorldBorderLocationOption getLocation() {
 			String locationString = getPlugin().getConfig().getString(locationPath);
-			return Arrays.stream(ManhuntLocationOptions.values()).filter(o -> o.toString().equals(locationString)).findFirst()
-				.orElse(ManhuntLocationOptions.random);
+			return Arrays.stream(WorldBorderLocationOption.values()).filter(o -> o.name().equals(locationString)).findFirst()
+				.orElse(WorldBorderLocationOption.random);
 		}
-		public void setLocation(ManhuntLocationOptions location) {
-			String value = location == null ? null : location.toString();
+		public void setLocation(WorldBorderLocationOption location) {
+			String value = location == null ? null : location.name();
 			getPlugin().getConfig().set(locationPath, value);
 			getPlugin().saveConfig();
 		}
 
 		public ManhuntRevealOptions getReveal() {
 			String revealString = getPlugin().getConfig().getString(revealPath);
-			return Arrays.stream(ManhuntRevealOptions.values()).filter(o -> o.toString().equals(revealString)).findFirst()
+			return Arrays.stream(ManhuntRevealOptions.values()).filter(o -> o.name().equals(revealString)).findFirst()
 				.orElse(ManhuntRevealOptions.three_minutes);
 		}
 		public void setReveal(ManhuntRevealOptions reveal) {
-			String value = reveal == null ? null : reveal.toString();
+			String value = reveal == null ? null : reveal.name();
 			getPlugin().getConfig().set(revealPath, value);
+			getPlugin().saveConfig();
+		}
+
+		public GameJoinOption getJoinOption() {
+			String joinString = getPlugin().getConfig().getString(joinPath);
+			return Arrays.stream(GameJoinOption.values()).filter(o -> o.name().equals(joinString)).findFirst()
+				.orElse(GameJoinOption.auto);
+		}
+		public void setJoinOption(GameJoinOption join) {
+			String value = join == null ? null : join.name();
+			getPlugin().getConfig().set(joinPath, value);
 			getPlugin().saveConfig();
 		}
 
 
 		public Builder(Ludos plugin) {
-			super( plugin );
-
-			resetBorder(plugin);
+			super(plugin);
 		}
 
 
@@ -518,9 +374,6 @@ public class ManhuntGame extends Game {
 			return Bukkit.getPlayerExact(preyName);
 		}
 
-
-
-
 		public String getPlayersString() {
 			Set<String> playerNames = this.getPlayerNames();
 			return playerNames.isEmpty() ? "All" : playerNames.stream() // TODO: Translate
@@ -535,7 +388,7 @@ public class ManhuntGame extends Game {
 
 		@Override
 		public String getId() {
-			return id;
+			return ID;
 		}
 
 		@Override
@@ -555,7 +408,7 @@ public class ManhuntGame extends Game {
 			StringBuilder usage = new StringBuilder("/" + label + " game " + getId() + " config <config> [value]");
 
 			for (ManhuntGameConfigs config : ManhuntGameConfigs.values()) {
-				usage.append("\n  ").append(config.toString()).append(" ")
+				usage.append("\n  ").append(config.name()).append(" ")
 					.append(config.getUsage());
 			}
 
@@ -569,7 +422,7 @@ public class ManhuntGame extends Game {
 			}
 
 			String arg = args[0];
-			ManhuntGameConfigs option = Arrays.stream(ManhuntGameConfigs.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+			ManhuntGameConfigs option = Arrays.stream(ManhuntGameConfigs.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 			if (option == null) return false;
 
 			return handleConfigsCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
@@ -622,49 +475,65 @@ public class ManhuntGame extends Game {
 			case area:
 				if ( args.length == 0 ) {
 					// Field is left empty, send the current config
-					sender.sendMessage( getArea().toString() );
+					sender.sendMessage( getArea().name() );
 					return true;
 				}
 
 				String givenArea = args[0];
-				ManhuntAreaOptions areaOption = Arrays.stream(ManhuntAreaOptions.values()).filter(o -> o.toString().equals(givenArea)).findFirst().orElse(null);
+				WorldBorderAreaOption areaOption = Arrays.stream(WorldBorderAreaOption.values()).filter(o -> o.name().equals(givenArea)).findFirst().orElse(null);
 				if (areaOption == null) return false;
 
 				setArea(areaOption);
 
-				sender.sendMessage("Game area set to " + areaOption.toString()); // TODO: Translate
+				sender.sendMessage("Game area set to " + areaOption.name()); // TODO: Translate
 				return true;
 
 			case location:
 				if ( args.length == 0 ) {
 					// Field is left empty, send the current config
-					sender.sendMessage( this.getLocation().toString() );
+					sender.sendMessage( this.getLocation().name() );
 					return true;
 				}
 
 				String givenLocation = args[0];
-				ManhuntLocationOptions locationOption = Arrays.stream(ManhuntLocationOptions.values()).filter(o -> o.toString().equals(givenLocation)).findFirst().orElse(null);
+				WorldBorderLocationOption locationOption = Arrays.stream(WorldBorderLocationOption.values()).filter(o -> o.name().equals(givenLocation)).findFirst().orElse(null);
 				if (locationOption == null) return false;
 
 				setLocation(locationOption);
 
-				sender.sendMessage("Game location set to " + locationOption.toString()); // TODO: Translate
+				sender.sendMessage("Game location set to " + locationOption.name()); // TODO: Translate
 				return true;
 
 			case reveal:
 				if ( args.length == 0 ) {
 					// Field is left empty, send the current config
-					sender.sendMessage( this.getReveal().toString() );
+					sender.sendMessage( this.getReveal().name() );
 					return true;
 				}
 
 				String givenReveal = args[0];
-				ManhuntRevealOptions revealOption = Arrays.stream(ManhuntRevealOptions.values()).filter(o -> o.toString().equals(givenReveal)).findFirst().orElse(null);
+				ManhuntRevealOptions revealOption = Arrays.stream(ManhuntRevealOptions.values()).filter(o -> o.name().equals(givenReveal)).findFirst().orElse(null);
 				if (revealOption == null) return false;
 
 				setReveal(revealOption);
 
-				sender.sendMessage("Prey Reveal Frequency set to " + revealOption.toString()); // TODO: Translate
+				sender.sendMessage("Prey Reveal Frequency set to " + revealOption.displayName()); // TODO: Translate
+				return true;
+
+			case join:
+				if ( args.length == 0 ) {
+					// Field is left empty, send the current config
+					sender.sendMessage( this.getJoinOption().name() );
+					return true;
+				}
+
+				String givenJoin = args[0];
+				GameJoinOption joinOption = Arrays.stream(GameJoinOption.values()).filter(o -> o.name().equals(givenJoin)).findFirst().orElse(null);
+				if (joinOption == null) return false;
+
+				setJoinOption(joinOption);
+
+				sender.sendMessage("Game Join Option set to " + joinOption.name()); // TODO: Translate
 				return true;
 			}
 
@@ -676,7 +545,7 @@ public class ManhuntGame extends Game {
 		public List<String> gameConfigTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			if (args.length <= 1) {
 				return Arrays.stream(ManhuntGameConfigs.values())
-					.map(ManhuntGameConfigs::toString)
+					.map(ManhuntGameConfigs::name)
 					.collect(Collectors.toList());
 			}
 
@@ -719,6 +588,11 @@ public class ManhuntGame extends Game {
 				// Options are : short, medium, long
 				if (args.length == 1)
 					return revealOptions;
+
+			case join:
+				// Options are : auto, manual, none
+				if (args.length == 1)
+					return joinOptions;
 			}
 
 			return null;
