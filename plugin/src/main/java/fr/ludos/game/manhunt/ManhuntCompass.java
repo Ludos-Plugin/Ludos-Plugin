@@ -29,7 +29,9 @@ public class ManhuntCompass extends SpecialItem {
 		return new ManhuntCompass(stack, owner, game);
 	}
 	public static ManhuntCompass createItem(Player owner, Game game) {
-		return new ManhuntCompass(createItemStack(), owner, game);
+		ManhuntCompass compass = new ManhuntCompass(createItemStack(), owner, game);
+		compass.initializeItem();
+		return compass;
 	}
 
 	protected ManhuntCompass(ItemStack stack, Player owner, Game game) {
@@ -52,7 +54,11 @@ public class ManhuntCompass extends SpecialItem {
 	public List<Component> getLore() {
 		return new ArrayList<Component>(){{
 			add(
-				Component.text("Every three minutes, the position of prey is revealed through the compass.")
+				Component.text("When the timer ends,")
+					.decoration(TextDecoration.ITALIC, false)
+			);
+			add(
+				Component.text("the position of the prey is revealed through the compass.")
 					.decoration(TextDecoration.ITALIC, false)
 			);
 		}};

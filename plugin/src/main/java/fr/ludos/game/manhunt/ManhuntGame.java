@@ -122,12 +122,8 @@ public class ManhuntGame extends Game {
 
 	@Override
 	protected void onGameStart() {
-		compassEvents.start();
-		timer.start();
-
 		World world = areaController.getWorld();
 		world.setTime(1000);
-
 
 		Set<Player> hunters = teamController.getSelectedHunters();
 		Player prey = teamController.getSelectedPrey();
@@ -135,11 +131,14 @@ public class ManhuntGame extends Game {
 		prey.getInventory().clear();
 		Utility.revokeAllAdvancements(prey);
 
+
 		for (Player hunter : hunters) {
 			hunter.getInventory().clear();
 			Utility.revokeAllAdvancements(hunter);
 		}
 
+		compassEvents.start();
+		timer.start();
 
 		actionBarTask = new BukkitRunnable() {
 			@Override
@@ -356,9 +355,6 @@ public class ManhuntGame extends Game {
 			}
 			return Bukkit.getPlayerExact(preyName);
 		}
-
-
-
 
 		public String getPlayersString() {
 			Set<String> playerNames = this.getPlayerNames();
