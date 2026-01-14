@@ -162,21 +162,31 @@ public abstract class Role extends GameProcessBase {
 		return (currentRole != null && currentRole.getId().equals(role));
 	}
 
-	public static void setRole(HumanEntity player, String roleId, JavaPlugin plugin) {
+	public static void setRole(HumanEntity player, String roleId) {
 		if ( playerRoles.containsKey(player.getName()) && playerRoles.get(player.getName()).equalsIgnoreCase(roleId) ) return;
 
+		Role.Builder role = getRegistered().get(roleId);
+		if (role == null) return;
+
 		playerRoles.put(player.getName(), roleId);
+
+		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 
 		plugin.getConfig().set(rolesKey + '.' + player.getName(), roleId);
 		plugin.saveConfig();
 
 	}
 
-	public static void removeRole(Player player, JavaPlugin plugin) {
+	public static void removeRole(Player player) {
 		if ( ! playerRoles.containsKey(player.getName()) ) return;
 
+		Role.Builder role = getRegistered().get(playerRoles.get(player.getName()));
+		if (role == null) return;
+
 		playerRoles.remove(player.getName());
-		player.sendMessage("Your now have no role");
+		player.sendMessage("You now have no role");
+
+		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 
 		plugin.getConfig().set(rolesKey + '.' + player.getName(), null);
 		plugin.saveConfig();
@@ -188,8 +198,8 @@ public abstract class Role extends GameProcessBase {
 	 * It contains configuration for the Role itself.
 	 */
 	public static abstract class Builder {
-		private final Ludos plugin;
-		public final Ludos getPlugin() { return plugin; }
+		private final JavaPlugin plugin;
+		public final JavaPlugin getPlugin() { return plugin; }
 
 		public abstract String getId();
 
@@ -249,7 +259,7 @@ public abstract class Role extends GameProcessBase {
 		public String getRoleConfigUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) { return null; }
 
 
-		public Builder(Ludos plugin) {
+		public Builder(JavaPlugin plugin) {
 			this.plugin = plugin;
 		}
 
