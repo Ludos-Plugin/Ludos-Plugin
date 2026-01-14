@@ -32,6 +32,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import fr.ludos.Utility;
+import fr.ludos.command.ludos.GameSubcommand;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameAreaController;
 import fr.ludos.game.GameTeamController;
@@ -40,6 +41,7 @@ import fr.ludos.game.GameTeamController;
 public final class ManhuntTeamController extends GameTeamController {
 	public Team hunterTeam;
 	public Team preyTeam;
+	public Team spectatorTeam;
 
 	private final Set<Player> selectedHunters;
 	public Set<Player> getSelectedHunters() {
@@ -52,7 +54,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<Player> players, @Nullable Player prey) {
-		super(game);
+		super(game, game.getManhuntBuilder().getJoinOption());
 
 		Set<Player> finalPlayers = new HashSet<>();
 		if (players == null) {
@@ -98,6 +100,13 @@ public final class ManhuntTeamController extends GameTeamController {
 			preyTeam = scoreboard.registerNewTeam("Prey");
 			preyTeam.color(NamedTextColor.BLUE);
 			preyTeam.setAllowFriendlyFire(false);
+		}
+
+		spectatorTeam = scoreboard.getTeam("Spectators");
+		if (spectatorTeam == null) {
+			spectatorTeam = scoreboard.registerNewTeam("Spectators");
+			spectatorTeam.color(NamedTextColor.GRAY);
+			spectatorTeam.setAllowFriendlyFire(false);
 		}
 
 
@@ -183,6 +192,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 	@Override
 	public void joinPlayer(Player player) {
+		if (preyTeam.hasEntity(player)) return;
 		joinHunter(player);
 	}
 
@@ -222,6 +232,8 @@ public final class ManhuntTeamController extends GameTeamController {
 	}
 
 	public void joinHunter(Player player) {
+		if (hunterTeam.hasEntity(player) || preyTeam.hasEntity(player)) return;
+
 		Set<Player> hunters = getTeamHunters();
 		GameAreaController areaController = getGame().getGameAreaController();
 
@@ -255,18 +267,43 @@ public final class ManhuntTeamController extends GameTeamController {
 		));
 	}
 
+	public void joinSpectator(Player player) {
+		if (hunterTeam.hasEntity(player) || preyTeam.hasEntity(player)) return;
+
+		Location gameLocation = getGame().getGameAreaController().pickRandom(0.0, 1.0);
+
+		player.teleport(gameLocation);
+		player.setBedSpawnLocation(gameLocation, true);
+		player.setGameMode(GameMode.SPECTATOR);
+
+		spectatorTeam.addEntry(player.getName());
+		player.setScoreboard(getGame().getScoreboard());
+
+		Player prey = getTeamPrey();
+		if (prey != null) {
+			player.teleport(prey.getLocation());
+		}
+
+		player.showTitle(Title.title(
+			Component.text("You are a ")
+			.append(Component.text("Spectator")
+				.color(NamedTextColor.GRAY)),
+			Component.text("Run '" + GameSubcommand.join.getUsage(prey, null, "ludos") + "' to join"),
+			Title.Times.times(
+				Duration.ofMillis(500),
+				Duration.ofMillis(3500),
+				Duration.ofMillis(1000)
+			)
+		));
+	}
+
 
 	@Override
 	public void discardPlayer(Player player) {
 		hunterTeam.removeEntry(player.getName());
 		preyTeam.removeEntry(player.getName());
 
-		player.setGameMode(GameMode.SPECTATOR);
-
-		Player prey = getTeamPrey();
-		if (prey != null) {
-			player.teleport(prey.getLocation());
-		}
+		joinSpectator(player);
 	}
 
 	// @Override

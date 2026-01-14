@@ -31,15 +31,15 @@ public abstract class GameTeamController extends GameProcessBase {
 		return getGame().getPlugin();
 	}
 
-	private final boolean autojoin;
+	private final GameJoinOption joinOption;
 
 
-	public GameTeamController(Game game, boolean autojoin) {
+	public GameTeamController(Game game, GameJoinOption joinOption) {
 		this.game = game;
-		this.autojoin = autojoin;
+		this.joinOption = joinOption;
 	}
 	public GameTeamController(Game game) {
-		this(game, true);
+		this(game, GameJoinOption.auto);
 	}
 
 
@@ -76,13 +76,20 @@ public abstract class GameTeamController extends GameProcessBase {
 			.collect(Collectors.toSet());
 	}
 
-	public abstract void joinPlayer(Player player);
-	public abstract void discardPlayer(Player player);
+	public void addPlayer(Player player) {
+		if (joinOption == GameJoinOption.none) {
+			player.sendMessage("Joining is not enabled for this game session.");
+			return;
+		}
+		joinPlayer(player);
+	}
+	protected abstract void joinPlayer(Player player);
+	protected abstract void discardPlayer(Player player);
 
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		if (autojoin) {
+		if (joinOption == GameJoinOption.auto) {
 			joinPlayer(event.getPlayer());
 		}
 		else {

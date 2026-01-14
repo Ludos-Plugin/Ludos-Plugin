@@ -105,6 +105,37 @@ public enum GameSubcommand implements Subcommand{
 				+ "> [option]";
 		}
 	},
+	join() {
+		@Override
+		public String getDescription() {
+			return "Join the current running game.";
+		}
+		@Override
+		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			if (args.length >= 1) return false;
+			if (!(sender instanceof Player player)) {
+				sender.sendMessage("Only players can join games.");
+				return true;
+			}
+
+			Game currentGame = Game.getCurrent();
+			if (currentGame == null) {
+				sender.sendMessage("No game is currently running.");
+				return true;
+			}
+
+			currentGame.getGameTeamController().addPlayer(player);
+			return true;
+		}
+		@Override
+		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			return null;
+		}
+		@Override
+		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
+			return "/" + label + " game join";
+		}
+	},
 	guidebook() {
 		@Override
 		public String getDescription() {

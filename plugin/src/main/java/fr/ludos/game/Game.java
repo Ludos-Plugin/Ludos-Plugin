@@ -65,7 +65,7 @@ public abstract class Game extends GameProcessBase {
 		return activeRoles;
 	}
 
-	private final Builder builder;
+	protected final Builder builder;
 	public Builder getBuilder() {
 		return builder;
 	}

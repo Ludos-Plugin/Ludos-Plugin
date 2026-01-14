@@ -45,6 +45,7 @@ import fr.ludos.Ludos;
 import fr.ludos.Utility;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.game.Game;
+import fr.ludos.game.GameJoinOption;
 import fr.ludos.game.worldborder.WorldBorderAreaController;
 import fr.ludos.game.worldborder.WorldBorderAreaOption;
 import fr.ludos.game.worldborder.WorldBorderLocationOption;
@@ -64,7 +65,8 @@ public class ManhuntGame extends Game {
 	public static final String locationPath = ID + '.' + locationKey;
 	public static final String revealKey = "reveal";
 	public static final String revealPath = ID + '.' + revealKey;
-
+	public static final String joinKey = "join";
+	public static final String joinPath = ID + '.' + joinKey;
 
 	private final Scoreboard scoreboard;
 	@Override
@@ -88,7 +90,9 @@ public class ManhuntGame extends Game {
 	private final ManhuntTimer timer;
 
 	private final Builder builder;
-
+	public Builder getManhuntBuilder() {
+		return this.builder;
+	}
 
 	private Location lastPreyLocation = null;
 	private BukkitTask actionBarTask;
@@ -273,6 +277,9 @@ public class ManhuntGame extends Game {
 		public static final List<String> revealOptions = Arrays.stream(ManhuntRevealOptions.values())
 			.map(v -> v.name())
 			.collect(Collectors.toList());
+		public static final List<String> joinOptions = Arrays.stream(GameJoinOption.values())
+			.map(v -> v.name())
+			.collect(Collectors.toList());
 
 
 
@@ -325,6 +332,17 @@ public class ManhuntGame extends Game {
 		public void setReveal(ManhuntRevealOptions reveal) {
 			String value = reveal == null ? null : reveal.name();
 			getPlugin().getConfig().set(revealPath, value);
+			getPlugin().saveConfig();
+		}
+
+		public GameJoinOption getJoinOption() {
+			String joinString = getPlugin().getConfig().getString(joinPath);
+			return Arrays.stream(GameJoinOption.values()).filter(o -> o.name().equals(joinString)).findFirst()
+				.orElse(GameJoinOption.auto);
+		}
+		public void setJoinOption(GameJoinOption join) {
+			String value = join == null ? null : join.name();
+			getPlugin().getConfig().set(joinPath, value);
 			getPlugin().saveConfig();
 		}
 
@@ -501,6 +519,22 @@ public class ManhuntGame extends Game {
 
 				sender.sendMessage("Prey Reveal Frequency set to " + revealOption.displayName()); // TODO: Translate
 				return true;
+
+			case join:
+				if ( args.length == 0 ) {
+					// Field is left empty, send the current config
+					sender.sendMessage( this.getJoinOption().name() );
+					return true;
+				}
+
+				String givenJoin = args[0];
+				GameJoinOption joinOption = Arrays.stream(GameJoinOption.values()).filter(o -> o.name().equals(givenJoin)).findFirst().orElse(null);
+				if (joinOption == null) return false;
+
+				setJoinOption(joinOption);
+
+				sender.sendMessage("Game Join Option set to " + joinOption.name()); // TODO: Translate
+				return true;
 			}
 
 			return false;
@@ -554,6 +588,11 @@ public class ManhuntGame extends Game {
 				// Options are : short, medium, long
 				if (args.length == 1)
 					return revealOptions;
+
+			case join:
+				// Options are : auto, manual, none
+				if (args.length == 1)
+					return joinOptions;
 			}
 
 			return null;
