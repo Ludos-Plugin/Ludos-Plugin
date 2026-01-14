@@ -64,7 +64,7 @@ public class WorldBorderAreaController extends GameAreaController {
 
 		switch (locationOption) {
 			case random:
-				gameLocation = Utility.getGroundedLocationAround(initialLocation, 300, 2500, initialLocation);
+				gameLocation = Utility.getRandomBiomeLocation(initialLocation, 2500, 0, 200, initialLocation, 5, null);
 				break;
 			default:
 			case here:

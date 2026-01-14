@@ -192,7 +192,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 	@Override
 	public void joinPlayer(Player player) {
-		if (preyTeam.hasEntity(player)) return;
+		if (preyTeam.hasPlayer(player)) return;
 		joinHunter(player);
 	}
 
@@ -232,7 +232,7 @@ public final class ManhuntTeamController extends GameTeamController {
 	}
 
 	public void joinHunter(Player player) {
-		if (hunterTeam.hasEntity(player) || preyTeam.hasEntity(player)) return;
+		if (hunterTeam.hasPlayer(player) || preyTeam.hasPlayer(player)) return;
 
 		Set<Player> hunters = getTeamHunters();
 		GameAreaController areaController = getGame().getGameAreaController();
@@ -251,7 +251,6 @@ public final class ManhuntTeamController extends GameTeamController {
 		hunterTeam.addEntry(player.getName());
 		player.setScoreboard(getGame().getScoreboard());
 
-
 		player.showTitle(Title.title(
 			Component.text("You are a ")
 			.append(Component.text("Hunter")
@@ -268,7 +267,7 @@ public final class ManhuntTeamController extends GameTeamController {
 	}
 
 	public void joinSpectator(Player player) {
-		if (hunterTeam.hasEntity(player) || preyTeam.hasEntity(player)) return;
+		if (hunterTeam.hasPlayer(player) || preyTeam.hasPlayer(player)) return;
 
 		Location gameLocation = getGame().getGameAreaController().pickRandom(0.0, 1.0);
 
