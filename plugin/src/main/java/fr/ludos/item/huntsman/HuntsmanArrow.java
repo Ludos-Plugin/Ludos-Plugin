@@ -50,7 +50,7 @@ public class HuntsmanArrow extends SpecialItem {
 
 	@Override
 	public String getId() {
-		return "manhuntHuntsmanArrow";
+		return ID;
 	}
 
 	@Override
