@@ -18,7 +18,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.event.player.PlayerQuitEvent;
+
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.Material;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import fr.ludos.Ludos;
 import fr.ludos.command.CommandUtility;
@@ -113,13 +118,9 @@ public class SheepwarsGame extends Game {
 			player.setGameMode(GameMode.SURVIVAL);
 			player.setHealth(player.getMaxHealth());
 			player.setFoodLevel(10);
-			player.setFoodLevel(10);
 			player.setSaturation(20);
 			player.setScoreboard(scoreboard);
 
-			// Donner la laine de mouton au début de la partie
-			player.getInventory().clear();
-			player.getInventory().addItem(Sheep.createNukeSheepWool());
 		}
 
 		Bukkit.broadcast(
@@ -168,7 +169,7 @@ public class SheepwarsGame extends Game {
 		}
 
 		// WorldBorder border = world.getWorldBorder();
-
+		
 		// SheepwarsAreaOptions areaOption = SheepwarsAreaOptions.medium;
 		// String areaStr = config.getString(areaPath);
 		// if (areaStr != null) {
@@ -177,7 +178,7 @@ public class SheepwarsGame extends Game {
 		// 		areaOption = configArea;
 		// 	}
 		// }
-
+		
 		// Location centerLocation = world.getSpawnLocation();
 		// String locationStr = config.getString(locationPath);
 		// if ("here".equals(locationStr)) {
@@ -187,13 +188,13 @@ public class SheepwarsGame extends Game {
 		// 	}
 		// } else if ("random".equals(locationStr)) {
 		// 	centerLocation = Utility.getGroundedLocationAround(
-		// 		world.getSpawnLocation(),
-		// 		100,
-		// 		1000,
+		// 		world.getSpawnLocation(), 
+		// 		100, 
+		// 		1000, 
 		// 		world.getSpawnLocation()
 		// 	);
 		// }
-
+		
 		// border.setCenter(centerLocation);
 		// border.setSize(areaOption.getSize() * 2);
 		// border.setWarningDistance(50);
@@ -201,9 +202,9 @@ public class SheepwarsGame extends Game {
 		// border.setDamageBuffer(10.0);
 
 		// config.set(borderWorldUUIDPath, world.getUID().toString());
-		// config.set(borderLocationPath,
-		// 	centerLocation.getX() + "," +
-		// 	centerLocation.getY() + "," +
+		// config.set(borderLocationPath, 
+		// 	centerLocation.getX() + "," + 
+		// 	centerLocation.getY() + "," + 
 		// 	centerLocation.getZ()
 		// );
 		// getBuilder().getPlugin().saveConfig();
@@ -234,20 +235,20 @@ public class SheepwarsGame extends Game {
 			player.setScoreboard(scoreboard);
 		}
 
-		// player.sendMessage(Component.text("Bienvenue sur le serveur Ludos!", NamedTextColor.AQUA, TextDecoration.BOLD));
-		// ItemStack sheepItem = new ItemStack(Material.SHEEP_SPAWN_EGG, 1);
+        // player.sendMessage(Component.text("Bienvenue sur le serveur Ludos!", NamedTextColor.AQUA, TextDecoration.BOLD));
+        // ItemStack sheepItem = new ItemStack(Material.SHEEP_SPAWN_EGG, 1);
 
-		// if (!player.getInventory().contains(sheepItem)) {
-		//     player.getInventory().addItem(sheepItem);
-		// }
+        // if (!player.getInventory().contains(sheepItem)) {
+        //     player.getInventory().addItem(sheepItem);
+        // } 
 
-		// ItemMeta meta = sheepItem.getItemMeta();
+        // ItemMeta meta = sheepItem.getItemMeta();
 
-		// List<Component> lore = meta.lore();
-		// lore.add(Component.text("Gros mouton sa mère, хорошо, хорошо, хорошо", NamedTextColor.YELLOW, TextDecoration.BOLD));
-		// meta.lore(lore);
+        // List<Component> lore = meta.lore();
+        // lore.add(Component.text("Gros mouton sa mère, хорошо, хорошо, хорошо", NamedTextColor.YELLOW, TextDecoration.BOLD));
+        // meta.lore(lore);
 
-		// sheepItem.setItemMeta(meta);
+        // sheepItem.setItemMeta(meta);
 	}
 
 	public static class Builder extends Game.Builder {

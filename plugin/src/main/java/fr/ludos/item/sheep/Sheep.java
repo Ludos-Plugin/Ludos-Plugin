@@ -30,104 +30,41 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import org.bukkit.World;
-import org.bukkit.Location;
-import org.bukkit.entity.EntityType;
-import org.bukkit.DyeColor;
-import org.bukkit.Effect;
-import org.bukkit.GameMode;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.plugin.java.JavaPlugin; 
-import org.bukkit.event.entity.EntityDeathEvent;
-
 import fr.ludos.game.Game;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.Role;
 import fr.ludos.item.ItemUtilities;
-import fr.ludos.Ludos;
 
 public class Sheep implements org.bukkit.event.Listener {
 
-    @EventHandler
-    public void onEntityDeath(EntityDeathEvent event) {
-        event.getDrops().clear();
-    }
-
-    public static ItemStack createNukeSheepWool() {
-        ItemStack sheepItem = new ItemStack(Material.BROWN_WOOL, 4);
-        ItemMeta meta = sheepItem.getItemMeta();
-        meta.displayName(Component.text("Nuke Sheep", NamedTextColor.GREEN, TextDecoration.BOLD));
-        meta.lore(List.of(Component.text("Throw this sheep to create a nuke!", NamedTextColor.YELLOW)));
-        sheepItem.setItemMeta(meta);
-        return sheepItem;
-    }
-
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
+    @EventHandler 
+    public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        Action action = event.getAction();
-        ItemStack item = event.getItem();
+        player.sendMessage(Component.text("Bienvenue sur le serveur Ludos!", NamedTextColor.AQUA, TextDecoration.BOLD));
+        ItemStack sheepItem = new ItemStack(Material.SHEEP_SPAWN_EGG, 1);
+        ItemMeta meta = sheepItem.getItemMeta();
+        meta.setDisplayName("Sac a foutre");
 
-        if (action.equals(Action.RIGHT_CLICK_AIR) || action.equals(Action.RIGHT_CLICK_BLOCK)) {
-            if (item != null && item.getType() == Material.BROWN_WOOL) {
-                event.setCancelled(true);
+        // List<Component> lore = meta.lore();
+        // lore.add(Component.text("Gros mouton sa mère, хорошо, хорошо, хорошо", NamedTextColor.YELLOW, TextDecoration.BOLD));
+        // meta.lore(lore);
 
-                item.setAmount(item.getAmount() - 1);
-
-                launchNukeSheep(player);
-
-            }
-        }
-    }
-
-    public void launchNukeSheep(Player launcher) {
-        World world = launcher.getWorld();
-        Location location = launcher.getLocation();
-
-        org.bukkit.entity.Sheep sheep = (org.bukkit.entity.Sheep) world.spawnEntity(location.add(0, 1.5, 0), EntityType.SHEEP);
-        sheep.setCustomName("jeb_");
-        sheep.setCustomNameVisible(true);
-        sheep.setAdult(); 
-        // sheep.setColor(DyeColor.BROWN); 
+        sheepItem.setItemMeta(meta);
         
-        Vector direction = launcher.getLocation().getDirection().multiply(3);
-        sheep.setVelocity(direction);
+        if (!player.getInventory().contains(sheepItem)) {
+            player.getInventory().addItem(sheepItem);
+        } 
 
-        startNukeSheepTimer(sheep);
     }
 
-    public void startNukeSheepTimer(org.bukkit.entity.Sheep sheep) {
+   
 
-        new BukkitRunnable() {
-            int flightTime = 0; 
-
-            @Override
-            public void run() {
-                if (sheep == null || sheep.isDead()) {
-                    this.cancel();
-                    return;
-                }
-
-                if (sheep.isOnGround() || sheep.getVelocity().length() < 0.1) {
-            
-                    sheep.getWorld().createExplosion(sheep.getLocation(), 3.0f);
-                    sheep.remove();
-                    this.cancel();
-                    return;
-                }
-
-                if (flightTime >= 100) {
-                    sheep.getWorld().createExplosion(sheep.getLocation(), 3.0f);
-                    sheep.remove();
-                    this.cancel();
-                    return;
-                }
-
-                sheep.getLocation().getWorld().playEffect(sheep.getLocation(), Effect.SMOKE, 0);
-                flightTime++;
-            }
-        }.runTaskTimer(JavaPlugin.getPlugin(Ludos.class), 0L, 1L);
-    }
+    // @Override
+	// protected Component getName() {
+	// 	return Component.text("хорошо", NamedTextColor.GOLD, TextDecoration.BOLD); 
+	// }
 }
+//renommer l'objet
 
+//event handler
 

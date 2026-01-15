@@ -24,6 +24,7 @@ import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
 import fr.ludos.role.TrapperRole;
+import fr.ludos.item.sheep.Sheep;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -41,6 +42,7 @@ public class Ludos extends JavaPlugin implements Listener {
 	public void onEnable() {
 		Role.loadConfigRoles(this);
 
+        getServer().getPluginManager().registerEvents(new Sheep(), this);
 
 		Game.registerGame(new ManhuntGame.Builder(this));
 		Game.registerGame(new SheepwarsGame.Builder(this));
