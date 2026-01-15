@@ -120,7 +120,10 @@ public class SheepwarsGame extends Game {
 			player.setFoodLevel(10);
 			player.setSaturation(20);
 			player.setScoreboard(scoreboard);
-
+			
+			// Donner la laine de mouton au début de la partie
+			player.getInventory().clear();
+			player.getInventory().addItem(Sheep.createNukeSheepWool());
 		}
 
 		Bukkit.broadcast(
