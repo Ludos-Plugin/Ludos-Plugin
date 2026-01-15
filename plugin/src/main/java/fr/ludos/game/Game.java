@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
 import fr.ludos.book.BookUtility;
+import fr.ludos.game.alien.AlienTeamController;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
@@ -30,16 +31,17 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
 public abstract class Game extends GameProcessBase {
 	@Nullable
 	private static Game current = null;
+
 	@Nullable
 	public static Game getCurrent() {
 		return current;
 	}
 
 	private static final Map<String, Builder> registered = new HashMap<>();
+
 	public static Map<String, Builder> getRegistered() {
 		return registered;
 	}
@@ -50,10 +52,11 @@ public abstract class Game extends GameProcessBase {
 	}
 
 	public static List<String> getGameIds() {
-		return registered.keySet().stream().collect( Collectors.toList() );
+		return registered.keySet().stream().collect(Collectors.toList());
 	}
+
 	public static List<Builder> getGameBuilders() {
-		return registered.values().stream().collect( Collectors.toList() );
+		return registered.values().stream().collect(Collectors.toList());
 	}
 
 	public static void registerGame(Builder builder) {
@@ -61,31 +64,38 @@ public abstract class Game extends GameProcessBase {
 	}
 
 	private final Map<String, Role> activeRoles = new HashMap<>();
+
 	public Map<String, Role> getActiveRoles() {
 		return activeRoles;
 	}
 
 	protected final Builder builder;
+
 	public Builder getBuilder() {
 		return builder;
 	}
+
 	@Override
 	public JavaPlugin getPlugin() {
 		return builder.getPlugin();
 	}
 
 	public abstract Scoreboard getScoreboard();
+
 	public abstract GameTeamController getGameTeamController();
+
 	public abstract GameAreaController getGameAreaController();
 
 	public static boolean startGame(String id) {
-		if (! registered.containsKey(id)) return false;
+		if (!registered.containsKey(id))
+			return false;
 
 		Game game;
 		try {
 			game = registered.get(id).build();
 		} catch (Exception e) {
-			Bukkit.getServer().broadcast(Component.text("Error while starting game " + id + ": " + e.getMessage()).color(NamedTextColor.RED));
+			Bukkit.getServer().broadcast(Component.text("Error while starting game " + id + ": " + e.getMessage())
+					.color(NamedTextColor.RED));
 			e.printStackTrace();
 			return false;
 		}
@@ -111,6 +121,7 @@ public abstract class Game extends GameProcessBase {
 
 		onGameInit();
 	}
+
 	@Override
 	protected final void onStart() {
 		getGameAreaController().start();
@@ -125,9 +136,11 @@ public abstract class Game extends GameProcessBase {
 		}
 	}
 
-	protected void onGameInit() { }
-	protected void onGameStart() { }
+	protected void onGameInit() {
+	}
 
+	protected void onGameStart() {
+	}
 
 	@Override
 	protected final void onDeinit() {
@@ -135,6 +148,7 @@ public abstract class Game extends GameProcessBase {
 
 		onGameDeinit();
 	}
+
 	@Override
 	protected final void onStop() {
 		getGameAreaController().stop();
@@ -148,47 +162,48 @@ public abstract class Game extends GameProcessBase {
 		activeRoles.clear();
 	}
 
-	protected void onGameDeinit() { }
-	protected void onGameStop() { }
+	protected void onGameDeinit() {
+	}
 
-	public LinkedHashMap<String, SpecialItem.Events<?>> modifyEvents(LinkedHashMap<String, SpecialItem.Events<?>> events) {
+	protected void onGameStop() {
+	}
+
+	public LinkedHashMap<String, SpecialItem.Events<?>> modifyEvents(
+			LinkedHashMap<String, SpecialItem.Events<?>> events) {
 		return events;
 	}
 
 	public abstract Boolean canPlayerHaveRole(Player player, String roleId);
 
-
-
 	public static abstract class Builder {
-		public final Ludos plugin;
-		public Ludos getPlugin() {
+		public final JavaPlugin plugin;
+
+		public JavaPlugin getPlugin() {
 			return plugin;
 		}
 
 		public abstract String getId();
 
 		public abstract TextComponent getDisplayName();
+
 		public abstract TextComponent getDescription();
 
 		public TextComponent[] buildPages() {
 			return BookUtility.truncatePage(
-				Component.text()
-					.append(BookUtility.centerBookLine(getDisplayName()))
-					.append(
-						BookUtility.alignRightBookLine(
-							Component.text("Start")
-								.color(NamedTextColor.DARK_GREEN)
-								.decorate(TextDecoration.BOLD)
-								.decorate(TextDecoration.UNDERLINED)
-								.clickEvent(
-									ClickEvent.runCommand(String.format("/ludos:ludos game start %s", getId()))
-								)
-						)
-					)
-					.append(Component.text("\n"))
-					.append(getDescription())
-				.build()
-			);
+					Component.text()
+							.append(BookUtility.centerBookLine(getDisplayName()))
+							.append(
+									BookUtility.alignRightBookLine(
+											Component.text("Start")
+													.color(NamedTextColor.DARK_GREEN)
+													.decorate(TextDecoration.BOLD)
+													.decorate(TextDecoration.UNDERLINED)
+													.clickEvent(
+															ClickEvent.runCommand(String
+																	.format("/ludos:ludos game start %s", getId())))))
+							.append(Component.text("\n"))
+							.append(getDescription())
+							.build());
 		}
 
 		public final ItemStack createGuidebook() {
@@ -208,18 +223,27 @@ public abstract class Game extends GameProcessBase {
 			return book;
 		}
 
-		public void populateGuidebook(BookMetaBuilder builder) { }
+		public void populateGuidebook(BookMetaBuilder builder) {
+		}
 
+		public abstract boolean executeGameConfig(@NotNull CommandSender sender, @NotNull Command command,
+				@NotNull String label, @NotNull String[] args);
 
-		public abstract boolean executeGameConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args);
-		public abstract List<String> gameConfigTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args);
-		public abstract String getGameConfigUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label);
+		public abstract List<String> gameConfigTabComplete(@NotNull CommandSender sender, @NotNull Command command,
+				@NotNull String label, @NotNull String[] args);
 
+		public abstract String getGameConfigUsage(@NotNull CommandSender sender, @NotNull Command command,
+				@NotNull String label);
 
 		public abstract Game build();
 
-		public Builder(Ludos plugin) {
+		public Builder(JavaPlugin plugin) {
 			this.plugin = plugin;
 		}
+	}
+
+	public AlienTeamController getTeamController() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getTeamController'");
 	}
 }

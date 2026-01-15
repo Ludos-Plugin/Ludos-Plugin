@@ -19,6 +19,7 @@ import fr.ludos.book.BookUtility;
 import fr.ludos.command.ludos.LudosCommand;
 import fr.ludos.game.Game;
 import fr.ludos.game.manhunt.ManhuntGame;
+import fr.ludos.game.alien.AlienGame;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
@@ -29,23 +30,22 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
 public class Ludos extends JavaPlugin implements Listener {
 
 	public static final String namespace = "ludos";
 
-	public Ludos() { }
+	public Ludos() {
+	}
 
 	@Override
 	public void onEnable() {
 		Role.loadConfigRoles(this);
 		Game.registerGame(new ManhuntGame.Builder(this));
+		Game.registerGame(new AlienGame.Builder(this));
 
 		Role.registerRole(new HuntsmanRole.Builder(this));
 		Role.registerRole(new BurrowerRole.Builder(this));
 		Role.registerRole(new TrapperRole.Builder(this));
-
-
 
 		PluginCommand cmd = getCommand("ludos");
 		LudosCommand ludosCommand = new LudosCommand();
@@ -59,19 +59,17 @@ public class Ludos extends JavaPlugin implements Listener {
 	@Override
 	public void onDisable() {
 		Game.stopCurrentGame();
-		HandlerList.unregisterAll((Listener)this);
+		HandlerList.unregisterAll((Listener) this);
 	}
-
 
 	public static ItemStack createGuidebook() {
 		ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
 		BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
 
 		meta.title(
-			Component.text("Ludos Guidebook")
-				.color(NamedTextColor.DARK_GREEN)
-				.decoration(TextDecoration.ITALIC, false)
-		);
+				Component.text("Ludos Guidebook")
+						.color(NamedTextColor.DARK_GREEN)
+						.decoration(TextDecoration.ITALIC, false));
 		meta.author(Component.text("Ludos"));
 
 		List<TextComponent> gamePages = new ArrayList<>();
@@ -92,34 +90,28 @@ public class Ludos extends JavaPlugin implements Listener {
 		int rolePage = gamePage + gamePages.size();
 
 		TextComponent headerPage = Component.text()
-			.append(
-				BookUtility.centerBookLine(
-					Component.text("Ludos Guidebook")
-						.color(NamedTextColor.DARK_GREEN)
-						.decoration(TextDecoration.BOLD, true)
-				)
-			)
-			.append(Component.text("\n\n\n"))
-			.append(
-				BookUtility.spaceBookLine(
-					Component.text("Games :"),
-					Component.text("Page " + gamePage)
-						.color(NamedTextColor.BLUE)
-						.decoration(TextDecoration.UNDERLINED, true)
-						.clickEvent(ClickEvent.changePage(gamePage))
-				)
-			)
-			.append(Component.text('\n'))
-			.append(
-				BookUtility.spaceBookLine(
-					Component.text("Roles :"),
-					Component.text("Page " + rolePage)
-						.color(NamedTextColor.RED)
-						.decoration(TextDecoration.UNDERLINED, true)
-						.clickEvent(ClickEvent.changePage(rolePage))
-				)
-			)
-			.build();
+				.append(
+						BookUtility.centerBookLine(
+								Component.text("Ludos Guidebook")
+										.color(NamedTextColor.DARK_GREEN)
+										.decoration(TextDecoration.BOLD, true)))
+				.append(Component.text("\n\n\n"))
+				.append(
+						BookUtility.spaceBookLine(
+								Component.text("Games :"),
+								Component.text("Page " + gamePage)
+										.color(NamedTextColor.BLUE)
+										.decoration(TextDecoration.UNDERLINED, true)
+										.clickEvent(ClickEvent.changePage(gamePage))))
+				.append(Component.text('\n'))
+				.append(
+						BookUtility.spaceBookLine(
+								Component.text("Roles :"),
+								Component.text("Page " + rolePage)
+										.color(NamedTextColor.RED)
+										.decoration(TextDecoration.UNDERLINED, true)
+										.clickEvent(ClickEvent.changePage(rolePage))))
+				.build();
 
 		meta.addPage(headerPage);
 		for (TextComponent page : gamePages) {
@@ -138,9 +130,9 @@ public class Ludos extends JavaPlugin implements Listener {
 		Player currentPlayer = event.getPlayer();
 
 		TextComponent message = Component.text("Click here to get a guidebook!")
-			.color(NamedTextColor.GOLD)
-			.decoration(TextDecoration.UNDERLINED, true)
-			.clickEvent(ClickEvent.runCommand("/ludos guidebook"));
+				.color(NamedTextColor.GOLD)
+				.decoration(TextDecoration.UNDERLINED, true)
+				.clickEvent(ClickEvent.runCommand("/ludos guidebook"));
 		currentPlayer.sendMessage(message);
 	}
 }
