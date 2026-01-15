@@ -55,7 +55,7 @@ public class TrapperRole extends Role {
 	}
 
 	@Override
-	protected LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
+	protected LinkedHashMap<String, SpecialItem.Events<?>> buildEvents(Role.Builder builder, Game game) {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{

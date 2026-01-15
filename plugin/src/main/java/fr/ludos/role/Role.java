@@ -1,40 +1,37 @@
 package fr.ludos.role;
 
-import java.util.Objects;
-import java.util.List;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
-import fr.ludos.Utility;
 import fr.ludos.book.BookUtility;
-import fr.ludos.item.SpecialItem;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameProcessBase;
+import fr.ludos.item.SpecialItem;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 /**
@@ -89,7 +86,7 @@ public abstract class Role extends GameProcessBase {
 	public Role(Builder builder, Game game) {
 		this.game = game;
 		this.builder = builder;
-		itemEvents = createItemEvents(builder, game);
+		itemEvents = game.modifyEvents(buildEvents(builder, game));
 	}
 
 	protected final void onInit() {
@@ -124,7 +121,7 @@ public abstract class Role extends GameProcessBase {
 	protected void onRoleStop() { }
 
 
-	protected abstract LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Builder builder, Game game);
+	protected abstract LinkedHashMap<String, SpecialItem.Events<?>> buildEvents(Builder builder, Game game);
 
 	public static void loadConfigRoles(Ludos plugin) {
 		ConfigurationSection rolesSection = plugin.getConfig().getConfigurationSection(rolesKey);
