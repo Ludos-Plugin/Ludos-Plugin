@@ -29,12 +29,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
-enum AlienState {
-	IDLE,
-	HUNTING,
-	ATTACKING,
-	FEAR
-}
+enum AlienState { IDLE, HUNTING, ATTACKING, FEAR }
 
 public class AlienMonster implements Listener {
 	private final AlienGame Game;
