@@ -65,7 +65,8 @@ public class AlienMonster implements Listener {
 		() -> HuntMode(28.0, 110.0, 20.0, 0.15),
 		() -> IdleMode(),
 		() -> AttackMode(6, 20, 5.0f),
-		() -> FearMode()
+		() -> FearMode(),
+		() -> alienMovementMode(VISION_RANGE, VISION_ANGLE, HEARING_RANGE, HEARING_VELOCITY_THRESHOLD)
 	);
 
 	private List<HashMap<NamespacedKey, Object>> alienDataMap = new java.util.ArrayList<>(
@@ -102,6 +103,7 @@ public class AlienMonster implements Listener {
 			case IDLE -> differentAlienModeList.get(1).run();
 			case ATTACKING -> differentAlienModeList.get(2).run();
 			case FEAR -> differentAlienModeList.get(3).run();
+			default -> differentAlienModeList.get(4).run();
 		}
 	}
 
