@@ -179,6 +179,8 @@ public class AlienGame extends Game {
 
 		// Location gameLocation = prey.getLocation();
 		// areaController.setup(gameLocation);
+
+		AlienMonster.runAlienMode(alien);
 	}
 
 	@Override

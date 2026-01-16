@@ -3,6 +3,8 @@ package fr.ludos.game.alien;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.bukkit.Location;
+
 public enum AlienLocationOptions {
 	here ("here"),
 	random ("random");
@@ -17,7 +19,6 @@ public enum AlienLocationOptions {
 		this.name = name;
 	}
 
-
 	public static String getUsage() {
 		StringBuilder sb = new StringBuilder();
 
@@ -29,5 +30,14 @@ public enum AlienLocationOptions {
 		sb.append(">");
 
 		return sb.toString();
+	}
+
+
+	static AlienLocationOptions fromLocation(Location spawnLocation) {
+		if (spawnLocation == null) {
+			return AlienLocationOptions.random;
+		} else {
+			return AlienLocationOptions.here;
+		}
 	}
 }
