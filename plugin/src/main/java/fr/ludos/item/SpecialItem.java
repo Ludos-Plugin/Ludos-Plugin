@@ -37,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.game.GameEvents;
 import fr.ludos.game.GameProcessBase;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -230,22 +231,15 @@ public abstract class SpecialItem {
 	}
 
 
-	public static abstract class Events<T extends SpecialItem> extends GameProcessBase {
+	public static abstract class Events<T extends SpecialItem> extends GameEvents {
 		private boolean isStarted = false;
 
 		private final boolean canDrop;
 		@Nullable
 		private final Integer slot;
 
-		public final Game game;
-
-		@Override
-		protected JavaPlugin getPlugin() {
-			return game.getPlugin();
-		}
-
 		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
-			this.game = game;
+			super(game);
 
 			this.canDrop = canDrop;
 			this.slot = slot;

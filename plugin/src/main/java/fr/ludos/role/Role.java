@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.Ludos;
 import fr.ludos.book.BookUtility;
 import fr.ludos.game.Game;
+import fr.ludos.game.GameEvents;
 import fr.ludos.game.GameProcessBase;
 import fr.ludos.item.SpecialItem;
 import net.kyori.adventure.text.Component;
@@ -77,7 +78,7 @@ public abstract class Role extends GameProcessBase {
 		return game.getPlugin();
 	}
 
-	private final Map<String, SpecialItem.Events<?>> itemEvents;
+	private final Map<String, GameEvents> gameEvents;
 
 	/**
 	 * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
@@ -86,7 +87,7 @@ public abstract class Role extends GameProcessBase {
 	public Role(Builder builder, Game game) {
 		this.game = game;
 		this.builder = builder;
-		itemEvents = game.modifyEvents(buildEvents(builder, game));
+		gameEvents = game.modifyEvents(createGameEvents(builder, game));
 	}
 
 	protected final void onInit() {
@@ -94,7 +95,7 @@ public abstract class Role extends GameProcessBase {
 	}
 	@Override
 	protected final void onStart() {
-		for (SpecialItem.Events<?> events : itemEvents.values()) {
+		for (GameEvents events : gameEvents.values()) {
 			events.start();
 		}
 
@@ -110,7 +111,7 @@ public abstract class Role extends GameProcessBase {
 	}
 	@Override
 	protected final void onStop() {
-		for (SpecialItem.Events<?> events : itemEvents.values()) {
+		for (GameEvents events : gameEvents.values()) {
 			events.stop();
 		}
 
@@ -121,7 +122,7 @@ public abstract class Role extends GameProcessBase {
 	protected void onRoleStop() { }
 
 
-	protected abstract LinkedHashMap<String, SpecialItem.Events<?>> buildEvents(Builder builder, Game game);
+	protected abstract LinkedHashMap<String, GameEvents> createGameEvents(Builder builder, Game game);
 
 	public static void loadConfigRoles(Ludos plugin) {
 		ConfigurationSection rolesSection = plugin.getConfig().getConfigurationSection(rolesKey);

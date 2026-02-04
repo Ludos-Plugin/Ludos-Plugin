@@ -9,6 +9,7 @@ import org.bukkit.util.StructureSearchResult;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.game.GameEvents;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.item.burrower.BurrowerPick;
 import fr.ludos.item.burrower.BurrowerShovel;
@@ -48,7 +49,7 @@ public class BurrowerRole extends Role {
 	}
 
 	@Override
-	protected LinkedHashMap<String, SpecialItem.Events<?>> buildEvents(Role.Builder builder, Game game) {
+	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{

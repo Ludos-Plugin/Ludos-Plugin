@@ -151,7 +151,7 @@ public abstract class Game extends GameProcessBase {
 	protected void onGameDeinit() { }
 	protected void onGameStop() { }
 
-	public LinkedHashMap<String, SpecialItem.Events<?>> modifyEvents(LinkedHashMap<String, SpecialItem.Events<?>> events) {
+	public LinkedHashMap<String, GameEvents> modifyEvents(LinkedHashMap<String, GameEvents> events) {
 		return events;
 	}
 

@@ -13,6 +13,7 @@ import org.bukkit.projectiles.ProjectileSource;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.game.GameEvents;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.item.huntsman.HuntsmanArrow;
 import fr.ludos.item.huntsman.HuntsmanBow;
@@ -31,7 +32,7 @@ public class HuntsmanRole extends Role {
 
 
 	@Override
-	protected LinkedHashMap<String, SpecialItem.Events<?>> buildEvents(Role.Builder builder, Game game) {
+	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{
