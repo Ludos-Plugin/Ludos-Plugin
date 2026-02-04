@@ -40,6 +40,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranches> {
 	public static final String ID = "manhuntHuntsmanCrossbow";
+
 	private final static Map<ItemStack, HuntsmanCrossbow> cachedItems = new HashMap<>();
 
 
@@ -54,11 +55,16 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 		LevelItem.LevelState[] levels = MultiLevelBranchItem.levelsFromItemStack(stack, ID, game);
 		if (levels == null) return null;
 
-		return new HuntsmanCrossbow(stack, owner, HuntsmanCrossbowBranches.values()[branchIndex], levels, game);
+		HuntsmanCrossbow crossbow = new HuntsmanCrossbow(stack, owner, HuntsmanCrossbowBranches.values()[branchIndex], levels, game);
+		cachedItems.put(stack, crossbow);
+
+		return crossbow;
 	}
 	public static HuntsmanCrossbow createItem(Player owner, LevelItem.LevelState[] levels, Game game) {
 		HuntsmanCrossbow crossbow = new HuntsmanCrossbow(new ItemStack(Material.CROSSBOW), owner, HuntsmanCrossbowBranches.FLAME, levels, game);
 		crossbow.initializeItem();
+
+		cachedItems.put(crossbow.getStack(), crossbow);
 
 		return crossbow;
 	}

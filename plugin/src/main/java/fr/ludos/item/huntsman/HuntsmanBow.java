@@ -26,6 +26,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class HuntsmanBow extends SpecialItem {
 	private static final String ID = "manhuntHuntsmanBow";
+
 	private final static Map<ItemStack, HuntsmanBow> cachedItems = new HashMap<>();
 
 
@@ -36,11 +37,16 @@ public class HuntsmanBow extends SpecialItem {
 		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
 		if (owner == null) return null;
 
-		return new HuntsmanBow(stack, owner, game);
+		HuntsmanBow bow = new HuntsmanBow(stack, owner, game);
+		cachedItems.put(stack, bow);
+
+		return bow;
 	}
 	public static HuntsmanBow createItem(Player owner, Game game) {
 		HuntsmanBow bow = new HuntsmanBow(new ItemStack(Material.BOW), owner, game);
 		bow.initializeItem();
+
+		cachedItems.put(bow.getStack(), bow);
 
 		return bow;
 	}

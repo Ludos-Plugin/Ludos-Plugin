@@ -1,7 +1,10 @@
 package fr.ludos.game.manhunt;
 
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
@@ -22,15 +25,27 @@ import fr.ludos.game.Game;
 public class ManhuntCompass extends SpecialItem {
 	private static final String ID = "manhuntCompass";
 
+	private static final Map<ItemStack, ManhuntCompass> cachedItems = new HashMap<>();
+
+
 	public static @Nullable ManhuntCompass fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		ManhuntCompass cached = cachedItems.get(stack);
+		if (cached != null) return cached;
+
 		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
 		if (owner == null) return null;
 
-		return new ManhuntCompass(stack, owner, game);
+		ManhuntCompass compass = new ManhuntCompass(stack, owner, game);
+		cachedItems.put(stack, compass);
+
+		return compass;
 	}
 	public static ManhuntCompass createItem(Player owner, Game game) {
 		ManhuntCompass compass = new ManhuntCompass(createItemStack(), owner, game);
 		compass.initializeItem();
+
+		cachedItems.put(compass.getStack(), compass);
+
 		return compass;
 	}
 

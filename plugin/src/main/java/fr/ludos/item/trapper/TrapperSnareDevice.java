@@ -34,6 +34,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 	private final static String ID = "trapperSnareGrimoire";
+
 	private final static Map<ItemStack, TrapperSnareDevice> cachedItems = new HashMap<>();
 
 
@@ -46,11 +47,16 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		Integer branchIndex = BranchItem.branchFromItemStack(stack, game);
 		if (branchIndex == null) return null;
 
-		return new TrapperSnareDevice(stack, owner, TrapperSnareDeviceBranches.values[branchIndex], game);
+		TrapperSnareDevice device = new TrapperSnareDevice(stack, owner, TrapperSnareDeviceBranches.values()[branchIndex], game);
+		cachedItems.put(stack, device);
+
+		return device;
 	}
 	public static TrapperSnareDevice createItem(Player owner, Game game) {
 		TrapperSnareDevice device = new TrapperSnareDevice(new ItemStack(Material.ENCHANTED_BOOK), owner, TrapperSnareDeviceBranches.REVEALING, game);
 		device.initializeItem();
+
+		cachedItems.put(device.getStack(), device);
 
 		return device;
 	}

@@ -32,11 +32,12 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class BurrowerShovel extends SpecialItem {
 	private static final String ID = "manhuntBurrowerShovel";
 
+	private final static Map<ItemStack, BurrowerShovel> cachedItems = new HashMap<>();
+
 	private static final int COOLDOWN_SECONDS = 20;
 	private static final int TUNNEL_LENGTH = 10;
 
 	private final static Map<Player, List<BlockState>> tunnelBlocks = new HashMap<>();
-	private final static Map<ItemStack, BurrowerShovel> cachedItems = new HashMap<>();
 
 
 	public static BurrowerShovel fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
@@ -46,11 +47,16 @@ public class BurrowerShovel extends SpecialItem {
 		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
 		if (owner == null) return null;
 
-		return new BurrowerShovel(stack, owner, game);
+		BurrowerShovel shovel = new BurrowerShovel(stack, owner, game);
+		cachedItems.put(stack, shovel);
+
+		return shovel;
 	}
 	public static BurrowerShovel createItem(Player owner, Game game) {
 		BurrowerShovel shovel = new BurrowerShovel(new ItemStack(Material.IRON_SHOVEL), owner, game);
 		shovel.initializeItem();
+
+		cachedItems.put(shovel.getStack(), shovel);
 
 		return shovel;
 	}

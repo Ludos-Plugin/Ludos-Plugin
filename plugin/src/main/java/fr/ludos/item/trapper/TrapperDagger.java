@@ -49,6 +49,7 @@ enum ArmorSlot {
 
 public class TrapperDagger extends LevelItem<TrapperDaggerLevels> {
 	private final static String ID = "trapperDagger";
+
 	private final static Map<ItemStack, TrapperDagger> cachedItems = new HashMap<>();
 
 
@@ -59,11 +60,16 @@ public class TrapperDagger extends LevelItem<TrapperDaggerLevels> {
 		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
 		if (owner == null) return null;
 
-		return new TrapperDagger(stack, owner, new LevelState(), game);
+		TrapperDagger dagger = new TrapperDagger(stack, owner, new LevelState(), game);
+		cachedItems.put(stack, dagger);
+
+		return dagger;
 	}
 	public static TrapperDagger createItem(Player owner, Game game) {
 		TrapperDagger dagger = new TrapperDagger(new ItemStack(Material.STONE_SWORD), owner, new LevelState(), game);
 		dagger.initializeItem();
+
+		cachedItems.put(dagger.getStack(), dagger);
 
 		return dagger;
 	}
