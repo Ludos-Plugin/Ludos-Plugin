@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.scoreboard.Team;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import fr.ludos.game.Game;
@@ -126,5 +127,10 @@ public final class SheepwarsTeamController extends TeamController {
 					.color(NamedTextColor.GOLD)
 			);
 		}
+	}
+
+	@Override
+	public Collection<LivingEntity> getEntities() {
+		return new ArrayList<>(selectedPlayers);
 	}
 }

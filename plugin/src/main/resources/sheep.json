@@ -1,0 +1,82 @@
+[
+    {
+        "name": "Freeze Sheep",
+        "description": "Throw this sheep to create a freeze effect!",
+        "material": "LIGHT_BLUE_WOOL"
+    },
+    {
+        "name": "Nuke Sheep",
+        "description": "Throw this sheep to create a nuke!",
+        "material": "BROWN_WOOL"
+    },
+    {
+        "name": "Medium Explosion Sheep",
+        "description": "Throw this sheep to create a medium explosion!",
+        "material": "ORANGE_WOOL"
+    },
+    {
+        "name": "Large Explosion Sheep",
+        "description": "Throw this sheep to create a large explosion!",
+        "material": "RED_WOOL"
+    },
+    {
+        "name": "Lava Sheep",
+        "description": "Throw this sheep to create a lava pool!",
+        "material": "YELLOW_WOOL"
+    },
+    {
+        "name": "All Aboard Sheep",
+        "description": "Throw this sheep to go on the enemy's boat!",
+        "material": "WHITE_WOOL"
+    },
+    {
+        "name": "Water Sheep",
+        "description": "Throw this sheep to create a water pool!",
+        "material": "BLUE_WOOL"
+    },
+    {
+        "name": "Blind Sheep",
+        "description": "Throw this sheep to blind nearby enemies!",
+        "material": "BLACK_WOOL"
+    },
+    {
+        "name": "Heal Sheep",
+        "description": "Throw this sheep to heal nearby allies!",
+        "material": "PINK_WOOL"
+    },
+    {
+        "name": "Fireball Sheep",
+        "description": "Throw this sheep to launch a fireball!",
+        "material": "CYAN_WOOL"
+    },
+    {
+        "name": "Poison Sheep",
+        "description": "Throw this sheep to poison nearby enemies!",
+        "material": "MAGENTA_WOOL"
+    },
+    {
+        "name": "Teleport Sheep",
+        "description": "Throw this sheep to teleport to its landing spot!",
+        "material": "PURPLE_WOOL"
+    },
+    {
+        "name": "Grass Sheep",
+        "description": "Throw this sheep to create a grass patch!",
+        "material": "GREEN_WOOL"
+    },
+    {
+        "name": "Nausea Sheep",
+        "description": "Throw this sheep to give nearby enemies nausea!",
+        "material": "LIME_WOOL"
+    },
+    {
+        "name": "Anvil Sheep",
+        "description": "Throw this sheep to drop an anvil!",
+        "material": "GRAY_WOOL"
+    },
+    {
+        "name": "Monster Sheep",
+        "description": "Throw this sheep to spawn monsters!",
+        "material": "LIGHT_GRAY_WOOL"
+    }
+]

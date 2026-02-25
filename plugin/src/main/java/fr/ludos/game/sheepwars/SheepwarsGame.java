@@ -5,6 +5,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.io.File;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Paths;
+
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Bukkit;
@@ -22,6 +30,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.Material;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -30,6 +40,7 @@ import fr.ludos.command.CommandUtility;
 import fr.ludos.game.Game;
 import fr.ludos.game.TeamController;
 import fr.ludos.item.sheep.Sheep;
+import fr.ludos.listener.sheep.SheepDrop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -56,11 +67,17 @@ public class SheepwarsGame extends Game {
 	private Scoreboard scoreboard;
 	private final Sheep sheepEvents;
 
+	private List<Sheep> sheepList = null;
+	private SheepDrop sheepDrop;
+
+	private File path;
+
 	public SheepwarsGame(Builder builder) {
 		super(builder);
 		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 
-		this.sheepEvents = new Sheep();
+		this.sheepEvents = new Sheep(null, null, null);
+		this.path = new File(builder.getPlugin().getDataFolder(), "sheep.json");
 	}
 
 	public Scoreboard getScoreboard() {
@@ -105,6 +122,41 @@ public class SheepwarsGame extends Game {
 		} catch (IllegalArgumentException e) {
 			throw new RuntimeException("Failed to initialize team controller: " + e.getMessage());
 		}
+
+		JSONArray sheepJsonArray = new JSONArray();
+		
+		if (!path.exists()) {
+			path.getParentFile().mkdirs();
+			InputStream inputStream = JavaPlugin.getPlugin(Ludos.class).getResource("sheep.json");
+			
+			if (inputStream != null) {
+				try (InputStreamReader reader = new InputStreamReader(inputStream)) {
+					sheepJsonArray = (JSONArray) new JSONParser().parse(reader);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		if (path.exists() && sheepJsonArray.isEmpty()) {
+			try (FileReader reader = new FileReader(path)) {
+				sheepJsonArray = (JSONArray) new JSONParser().parse(reader);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		// try (FileReader reader = new FileReader(path)) {
+		// 	sheepJsonArray = (JSONArray) new JSONParser().parse(reader);
+		// } catch (Exception e) {
+		// 	e.printStackTrace();
+		// }
+
+		Bukkit.getLogger().info("the cureent path where sheep.json finding : " + path.toString());
+
+		sheepList = (List<Sheep>) sheepJsonArray.stream().map(obj -> {
+			return Sheep.fromJsonObject((org.json.simple.JSONObject) obj);
+		}).filter(sheep -> sheep != null).collect(Collectors.toList());
 	}
 
 	@Override
@@ -121,19 +173,32 @@ public class SheepwarsGame extends Game {
 			player.setSaturation(20);
 			player.setScoreboard(scoreboard);
 			
-			// Donner la laine de mouton au début de la partie
 			player.getInventory().clear();
-			player.getInventory().addItem(Sheep.createNukeSheepWool());
+			
+			for(Sheep currentSheep : sheepList) {
+				player.getInventory().addItem(currentSheep.createSheepItem(4));
+			}
+
 		}
 
 		Bukkit.broadcast(
-			Component.text("Sheepwars has started! Use your Sheep Eggs wisely!")
+			Component.text("Sheepwars has started! Use your Sheep Wool wisely!")
 				.color(NamedTextColor.GREEN)
 		);
+
+		// Start the wool drop timer (every 15 seconds)
+		sheepDrop = new SheepDrop(getPlugin(), teamController.getSelectedPlayers(), sheepList);
+		sheepDrop.start();
 	}
 
 	@Override
 	protected void onStop() {
+		// Stop the wool drop timer
+		if (sheepDrop != null) {
+			sheepDrop.stop();
+			sheepDrop = null;
+		}
+
 		if (teamController != null) {
 			teamController.stop();
 		}
