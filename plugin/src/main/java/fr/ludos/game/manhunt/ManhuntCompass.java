@@ -2,6 +2,7 @@ package fr.ludos.game.manhunt;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -19,32 +20,36 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
 import fr.ludos.item.SpecialItem;
+import fr.ludos.item.burrower.BurrowerPick;
 import fr.ludos.game.Game;
 
 
 public class ManhuntCompass extends SpecialItem {
 	private static final String ID = "manhuntCompass";
 
-	private static final Map<ItemStack, ManhuntCompass> cachedItems = new HashMap<>();
+	// private static final Map<UUID, ManhuntCompass> cachedItems = new HashMap<>();
 
 
 	public static @Nullable ManhuntCompass fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		ManhuntCompass cached = cachedItems.get(stack);
-		if (cached != null) return cached;
+		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		if (itemId == null) return null;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		// ManhuntCompass cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
 		ManhuntCompass compass = new ManhuntCompass(stack, owner, game);
-		cachedItems.put(stack, compass);
+		// cachedItems.put(itemId, compass);
 
 		return compass;
 	}
 	public static ManhuntCompass createItem(Player owner, Game game) {
 		ManhuntCompass compass = new ManhuntCompass(createItemStack(), owner, game);
-		compass.initializeItem();
+		UUID itemId = compass.initializeItem();
 
-		cachedItems.put(compass.getStack(), compass);
+		// cachedItems.put(itemId, compass);
 
 		return compass;
 	}
@@ -55,7 +60,7 @@ public class ManhuntCompass extends SpecialItem {
 
 
 	@Override
-	public String getId() {
+	public String getTypeId() {
 		return ID;
 	}
 

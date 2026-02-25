@@ -44,10 +44,13 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public abstract class SpecialItem {
+public abstract class SpecialItem implements SpecialItemInterface {
 
-	public static final String ID = "id";
-	private static final NamespacedKey idKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ID);
+	public static final String TYPE_ID = "type_id";
+	private static final NamespacedKey typeIdKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), TYPE_ID);
+
+	public static final String ITEM_ID = "item_id";
+	private static final NamespacedKey itemIdKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ITEM_ID);
 
 	public static final String OWNER = "owner";
 	private static final NamespacedKey ownerKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), OWNER);
@@ -67,7 +70,7 @@ public abstract class SpecialItem {
 		return owner;
 	}
 
-	public static @Nullable Player getSpecialItemOwner(ItemStack stack, String id, Game game) {
+	public static @Nullable UUID getSpecialItemId(ItemStack stack, String id, Game game) {
 		if (stack == null) return null;
 
 		ItemMeta meta = stack.getItemMeta();
@@ -76,12 +79,28 @@ public abstract class SpecialItem {
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
-		if (! container.has(idKey, PersistentDataType.STRING) ) return null;
-		String itemId = container.get(idKey, PersistentDataType.STRING);
+		if (! container.has(typeIdKey, PersistentDataType.STRING) ) return null;
+		String itemId = container.get(typeIdKey, PersistentDataType.STRING);
+
 		if (! itemId.equals(id)) return null;
 
-		if (! container.has(ownerKey, PersistentDataType.STRING) ) return null;
+		if (! container.has(itemIdKey, PersistentDataType.STRING) ) return null;
 
+		return UUID.fromString(
+			getPersistentData(stack, itemIdKey, PersistentDataType.STRING)
+		);
+	}
+
+	public static @Nullable Player getSpecialItemOwner(ItemStack stack, Game game) {
+		if (stack == null) return null;
+
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) return null;
+
+
+		PersistentDataContainer container = meta.getPersistentDataContainer();
+
+		if (! container.has(ownerKey, PersistentDataType.STRING) ) return null;
 
 		Player owner = Bukkit.getPlayer(
 			UUID.fromString(
@@ -107,15 +126,18 @@ public abstract class SpecialItem {
 		this.stack = stack;
 		this.owner = owner;
 	}
-	protected final void initializeItem() {
+	protected final UUID initializeItem() {
 		ItemMeta meta = stack.getItemMeta();
 
 		meta.setUnbreakable(true);
 		meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
 
+		UUID itemId = UUID.randomUUID();
+
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 		container.set(ownerKey, PersistentDataType.STRING, owner.getUniqueId().toString());
-		container.set(idKey, PersistentDataType.STRING, getId());
+		container.set(typeIdKey, PersistentDataType.STRING, getTypeId());
+		container.set(itemIdKey, PersistentDataType.STRING, itemId.toString());
 
 		stack.setItemMeta(meta);
 
@@ -123,6 +145,8 @@ public abstract class SpecialItem {
 		updateLore();
 
 		onInitialize();
+
+		return itemId;
 	}
 	protected void onInitialize() { }
 
@@ -131,7 +155,7 @@ public abstract class SpecialItem {
 		return new ArrayList<>();
 	}
 
-	protected abstract String getId();
+	protected abstract String getTypeId();
 	protected abstract Component getName();
 
 
@@ -146,6 +170,12 @@ public abstract class SpecialItem {
 		ItemMeta meta = stack.getItemMeta();
 		meta.lore(getLore());
 		stack.setItemMeta(meta);
+	}
+
+	@Override
+	public void update() {
+		updateName();
+		updateLore();
 	}
 
 	protected final boolean refreshUseCooldown() {

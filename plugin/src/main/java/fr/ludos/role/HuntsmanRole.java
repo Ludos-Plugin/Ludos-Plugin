@@ -56,7 +56,7 @@ public class HuntsmanRole extends Role {
 
 		if (! Role.isPlayerRole(player, id)) return;
 
-		player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, (int)(20 * 2.5), 2));
+		player.addPotionEffect(PotionEffectType.SPEED.createEffect((int)(20 * 2.5), 2));
 	}
 
 

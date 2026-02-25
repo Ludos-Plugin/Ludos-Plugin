@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -32,7 +33,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class BurrowerShovel extends SpecialItem {
 	private static final String ID = "manhuntBurrowerShovel";
 
-	private final static Map<ItemStack, BurrowerShovel> cachedItems = new HashMap<>();
+	// private final static Map<UUID, BurrowerShovel> cachedItems = new HashMap<>();
 
 	private static final int COOLDOWN_SECONDS = 20;
 	private static final int TUNNEL_LENGTH = 10;
@@ -41,22 +42,25 @@ public class BurrowerShovel extends SpecialItem {
 
 
 	public static BurrowerShovel fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		BurrowerShovel cached = cachedItems.get(stack);
-		if (cached != null) return cached;
+		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		if (itemId == null) return null;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		// BurrowerShovel cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
 		BurrowerShovel shovel = new BurrowerShovel(stack, owner, game);
-		cachedItems.put(stack, shovel);
+		// cachedItems.put(itemId, shovel);
 
 		return shovel;
 	}
 	public static BurrowerShovel createItem(Player owner, Game game) {
 		BurrowerShovel shovel = new BurrowerShovel(new ItemStack(Material.IRON_SHOVEL), owner, game);
-		shovel.initializeItem();
+		UUID itemId = shovel.initializeItem();
 
-		cachedItems.put(shovel.getStack(), shovel);
+		// cachedItems.put(itemId, shovel);
 
 		return shovel;
 	}
@@ -67,7 +71,7 @@ public class BurrowerShovel extends SpecialItem {
 
 
 	@Override
-	public String getId() {
+	public String getTypeId() {
 		return ID;
 	}
 

@@ -40,6 +40,7 @@ public class TrapperRole extends Role {
 			public void run() {
 				for (Player sneakingPlayer : sneakingPlayers) {
 					sneakingPlayer.addPotionEffect(PotionEffectType.INVISIBILITY.createEffect(10,0));
+					sneakingPlayer.setArrowsStuck(0);
 				}
 			}
 		}.runTaskTimer(getGame().getPlugin(), 0, 1);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -27,6 +28,7 @@ import org.bukkit.scheduler.BukkitTask;
 import fr.ludos.game.Game;
 import fr.ludos.item.BranchItem;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.item.burrower.BurrowerPick;
 import fr.ludos.role.Role;
 import fr.ludos.role.TrapperRole;
 import net.kyori.adventure.text.Component;
@@ -35,28 +37,31 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 	private final static String ID = "trapperSnareGrimoire";
 
-	private final static Map<ItemStack, TrapperSnareDevice> cachedItems = new HashMap<>();
+	// private final static Map<UUID, TrapperSnareDevice> cachedItems = new HashMap<>();
 
 
 	public static TrapperSnareDevice fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		TrapperSnareDevice cached = cachedItems.get(stack);
-		if (cached != null) return cached;
+		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		if (itemId == null) return null;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		// TrapperSnareDevice cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 		Integer branchIndex = BranchItem.branchFromItemStack(stack, game);
 		if (branchIndex == null) return null;
 
 		TrapperSnareDevice device = new TrapperSnareDevice(stack, owner, TrapperSnareDeviceBranches.values()[branchIndex], game);
-		cachedItems.put(stack, device);
+		// cachedItems.put(itemId, device);
 
 		return device;
 	}
 	public static TrapperSnareDevice createItem(Player owner, Game game) {
 		TrapperSnareDevice device = new TrapperSnareDevice(new ItemStack(Material.ENCHANTED_BOOK), owner, TrapperSnareDeviceBranches.REVEALING, game);
-		device.initializeItem();
+		UUID itemId = device.initializeItem();
 
-		cachedItems.put(device.getStack(), device);
+		// cachedItems.put(itemId, device);
 
 		return device;
 	}
@@ -67,7 +72,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 
 	@Override
-	public String getId() {
+	public String getTypeId() {
 		return ID;
 	}
 
@@ -104,9 +109,6 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 					for (var playerTrapEntries : traps.entrySet()) {
 						Player player = playerTrapEntries.getKey();
 						Set<LivingEntity> targets = game.getGameTeamController().getEnemies(player);
-						for (LivingEntity target : targets) {
-							Bukkit.broadcast(Component.text(target.getName()));
-						}
 
 						for (var branchTrapEntries : playerTrapEntries.getValue().entrySet()) {
 							TrapperSnareDeviceBranches branch = branchTrapEntries.getKey();

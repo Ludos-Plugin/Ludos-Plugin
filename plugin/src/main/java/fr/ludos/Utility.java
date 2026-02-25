@@ -89,7 +89,6 @@ public class Utility {
 		do {
 			Biome randomBiome = biomes.stream().skip(random.nextInt(biomes.size())).findFirst().orElse(null);
 			biomes.remove(randomBiome);
-			Bukkit.broadcastMessage(randomBiome.toString());
 
 			biomeLocation = world.locateNearestBiome(searchOrigin, randomBiome, biomeSearchSize, 16);
 			biomeSearchRetries--;
