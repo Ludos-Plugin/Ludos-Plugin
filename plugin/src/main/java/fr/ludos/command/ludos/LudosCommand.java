@@ -7,10 +7,13 @@ import java.util.stream.Collectors;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.Ludos;
+import fr.ludos.command.CommandUtility;
 
 public class LudosCommand implements TabExecutor {
 	private final Ludos plugin;
@@ -20,20 +23,20 @@ public class LudosCommand implements TabExecutor {
 	public LudosCommand(Ludos plugin) {
 		this.plugin = plugin;
 
-		this.gameCommand = new GameSubcommand(plugin);
-		this.roleCommand = new RoleSubcommand(plugin);
+		this.gameCommand = new GameSubcommand(this.plugin);
+		this.roleCommand = new RoleSubcommand(this.plugin);
 	}
 
 
 	@Override
 	public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length <= 1) {
-			return Arrays.stream(LudosSubcommands.values()).map(LudosSubcommands::toString)
+			return Arrays.stream(LudosSubcommands.values()).map(LudosSubcommands::name)
 				.collect(Collectors.toList());
 		}
 
 		String arg = args[0];
-		LudosSubcommands option = Arrays.stream(LudosSubcommands.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+		LudosSubcommands option = Arrays.stream(LudosSubcommands.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 		if (option == null) return null;
 
 		switch (option) {
@@ -41,6 +44,8 @@ public class LudosCommand implements TabExecutor {
 				return gameCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 			case role:
 				return roleCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+			case guidebook:
+				return CommandUtility.getOnlinePlayerNames();
 			default:
 				return null;
 		}
@@ -54,7 +59,7 @@ public class LudosCommand implements TabExecutor {
 		}
 
 		String arg = args[0];
-		LudosSubcommands option = Arrays.stream(LudosSubcommands.values()).filter(o -> o.toString().equals(arg)).findFirst().orElse(null);
+		LudosSubcommands option = Arrays.stream(LudosSubcommands.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 		if (option == null) return false;
 
 		switch (option) {
@@ -62,6 +67,13 @@ public class LudosCommand implements TabExecutor {
 				return gameCommand.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 			case role:
 				return roleCommand.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+			case guidebook:
+				Player player = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
+				if (player != null) {
+					ItemStack book = Ludos.createGuidebook();
+					player.getInventory().addItem(book);
+				}
+				return true;
 			case help:
 				sender.sendMessage(getUsage(sender, command, label));
 				return true;
