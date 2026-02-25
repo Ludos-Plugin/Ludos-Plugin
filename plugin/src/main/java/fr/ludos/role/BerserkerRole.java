@@ -1,7 +1,9 @@
 package fr.ludos.role;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -12,7 +14,9 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Color;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -31,6 +35,9 @@ public class BerserkerRole extends Role {
 
 	private static final Set<UUID> ragingPlayers = new HashSet<>();
 	private BukkitTask particleTask;
+
+	private final Set<UUID> bleedingEntities = new HashSet<>();
+	private final Map<UUID, BukkitTask> bleedTasks = new HashMap<>();
 
 	public BerserkerRole(Builder builder, Game game) {
 		super(builder, game);
@@ -80,13 +87,18 @@ public class BerserkerRole extends Role {
 			particleTask = null;
 		}
 		clearRage();
+		bleedTasks.values().forEach(BukkitTask::cancel);
+		bleedTasks.clear();
+		bleedingEntities.clear();
 	}
 
 	@EventHandler
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
 		if (!(event.getDamager() instanceof Player player)) return;
 		if (!Role.isPlayerRole(player, id)) return;
-		if (!BerserkerAxe.isHoldingBerserkerAxe(player, getGame())) return;
+
+		BerserkerAxe axe = BerserkerAxe.getItem(player.getInventory().getItemInMainHand(), getGame());
+		if (axe == null) return;
 
 		double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
 		if (maxHealth <= 0) return;
@@ -105,8 +117,55 @@ public class BerserkerRole extends Role {
 		double finalDamage = event.getDamage() * multiplier;
 		event.setDamage(finalDamage);
 
-		double healAmount = finalDamage * 0.10;
-		player.setHealth(Math.min(maxHealth, player.getHealth() + healAmount));
+		if (axe.getVariant() == BerserkerAxe.Variant.FIRST) {
+			double healAmount = finalDamage * 0.10;
+			player.setHealth(Math.min(maxHealth, player.getHealth() + healAmount));
+			spawnLifestealParticles(player);
+			player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.8f);
+		} else if (event.getEntity() instanceof LivingEntity target
+				&& !bleedingEntities.contains(target.getUniqueId())) {
+			applyBleed(player, target);
+		}
+	}
+
+	private void applyBleed(Player source, LivingEntity target) {
+		UUID targetId = target.getUniqueId();
+		bleedingEntities.add(targetId);
+
+		BukkitTask task = new BukkitRunnable() {
+			int count = 0;
+
+			@Override
+			public void run() {
+				if (count >= 3 || !target.isValid() || target.isDead()) {
+					bleedingEntities.remove(targetId);
+					bleedTasks.remove(targetId);
+					cancel();
+					return;
+				}
+				if (source.isOnline()) {
+					target.damage(0.5, source);
+				}
+				target.getWorld().spawnParticle(
+					Particle.REDSTONE,
+					target.getLocation().add(0, 1, 0),
+					5, 0.3, 0.6, 0.3,
+					new Particle.DustOptions(Color.fromRGB(120, 0, 0), 1.2f)
+				);
+				count++;
+			}
+		}.runTaskTimer(getGame().getPlugin(), 10, 10);
+
+		bleedTasks.put(targetId, task);
+	}
+
+	private void spawnLifestealParticles(Player player) {
+		player.getWorld().spawnParticle(
+			Particle.REDSTONE,
+			player.getLocation().add(0, 1, 0),
+			8, 0.3, 0.6, 0.3,
+			new Particle.DustOptions(Color.fromRGB(0, 200, 50), 1.0f)
+		);
 	}
 
 	private void spawnRageParticles(Player player) {

@@ -88,10 +88,17 @@ public class BerserkerAxe extends SpecialItem {
 
 	@Override
 	protected List<Component> getLore() {
-		return List.of(
-			Component.text("Twin axes with independent swings.")
-				.decoration(TextDecoration.ITALIC, false)
-		);
+		if (variant == Variant.FIRST) {
+			return List.of(
+				Component.text("Main blade — rage scaling and lifesteal.")
+					.decoration(TextDecoration.ITALIC, false)
+			);
+		} else {
+			return List.of(
+				Component.text("Off blade — causes bleed on hit.")
+					.decoration(TextDecoration.ITALIC, false)
+			);
+		}
 	}
 
 

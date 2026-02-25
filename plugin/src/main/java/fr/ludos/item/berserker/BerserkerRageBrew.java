@@ -6,6 +6,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Attribute;
@@ -119,7 +120,12 @@ public class BerserkerRageBrew extends SpecialItem {
 			long availableAt = cooldowns.getOrDefault(player.getUniqueId(), 0L);
 			if (availableAt > now) {
 				long remaining = (availableAt - now) / 1000;
-				player.sendMessage("Rage Brew on cooldown (" + remaining + "s).");
+				player.sendMessage(
+				Component.text("Rage Brew", NamedTextColor.DARK_RED)
+					.append(Component.text(" en cooldown (", NamedTextColor.RED))
+					.append(Component.text(remaining + "s", NamedTextColor.YELLOW))
+					.append(Component.text(").", NamedTextColor.RED))
+			);
 				return;
 			}
 
