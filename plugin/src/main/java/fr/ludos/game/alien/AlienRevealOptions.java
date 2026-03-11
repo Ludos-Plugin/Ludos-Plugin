@@ -6,28 +6,29 @@ import java.util.stream.Collectors;
 import org.bukkit.boss.BarStyle;
 
 public enum AlienRevealOptions {
-	one_minute ("1min", 60, BarStyle.SEGMENTED_6),
-	two_minutes ("2min", 120, BarStyle.SEGMENTED_12),
-	three_minutes ("3min", 180, BarStyle.SEGMENTED_6),
-	four_minutes ("4min", 240, BarStyle.SEGMENTED_12),
-	five_minutes ("5min", 300, BarStyle.SEGMENTED_6),
-	six_minutes ("6min", 360, BarStyle.SEGMENTED_12);
+	one_minute("1min", 60, BarStyle.SEGMENTED_6),
+	two_minutes("2min", 120, BarStyle.SEGMENTED_12),
+	three_minutes("3min", 180, BarStyle.SEGMENTED_6),
+	four_minutes("4min", 240, BarStyle.SEGMENTED_12),
+	five_minutes("5min", 300, BarStyle.SEGMENTED_6),
+	six_minutes("6min", 360, BarStyle.SEGMENTED_12);
 
-	private String name;
+	private final String name;
+	private final int duration;
+	private final BarStyle barStyle;
+
+	@Override
 	public String toString() {
 		return name;
 	}
 
-	private int duration;
 	public int getDuration() {
 		return duration;
 	}
 
-	private BarStyle barStyle;
 	public BarStyle getBarStyle() {
 		return barStyle;
 	}
-
 
 	private AlienRevealOptions(String name, int duration, BarStyle barStyle) {
 		this.name = name;
@@ -35,17 +36,9 @@ public enum AlienRevealOptions {
 		this.barStyle = barStyle;
 	}
 
-
 	public static String getUsage() {
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("<");
-		sb.append(
-			Arrays.stream(AlienRevealOptions.values()).map(AlienRevealOptions::toString)
-				.collect(Collectors.joining( " | "))
-		);
-		sb.append(">");
-
-		return sb.toString();
+		return "<" + Arrays.stream(AlienRevealOptions.values())
+				.map(AlienRevealOptions::toString)
+				.collect(Collectors.joining(" | ")) + ">";
 	}
 }

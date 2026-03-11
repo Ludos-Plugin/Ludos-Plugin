@@ -3,18 +3,21 @@ package fr.ludos.game.alien;
 import java.util.function.Supplier;
 
 public enum AlienGameConfigs {
-	players ("players", () -> "[player1] [player2] ..."),
-	prey ("prey", () -> "[player]"),
-	location ("location", AlienLocationOptions::getUsage),
-	spawn ("spawn", () -> "[here]"),
-	reveal ("reveal", AlienRevealOptions::getUsage);
+	players("players", () -> "[player1] [player2] ..."),
+	prey("prey", () -> "[player]"),
+	location("location", AlienLocationOptions::getUsage),
+	spawn("spawn", () -> "[here]"),
+	reveal("reveal", AlienRevealOptions::getUsage),
+	alien_spawn_distance("alien_spawn_distance", () -> "[number]");
 
-	private String name;
+	private final String name;
+	private final Supplier<String> usageGetter;
+
+	@Override
 	public String toString() {
 		return name;
 	}
 
-	private Supplier<String> usageGetter;
 	public String getUsage() {
 		return usageGetter.get();
 	}
