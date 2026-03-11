@@ -185,13 +185,16 @@ public class AlienGame extends Game {
 
 	@Override
 	protected void onGameInit() {
-		// Player prey = teamController.getSelectedPrey();
-		// if (prey == null) {
-		// throw new IllegalStateException("Prey player is null");
-		// }
+		Location base = builder.getSpawnLocation();
+		if (base == null) {
+			Player anchor = teamController.getSelectedPrey();
+			if (anchor == null) {
+				throw new IllegalStateException("No player available to initialize Alien game.");
+			}
+			base = anchor.getLocation();
+		}
 
-		// Location gameLocation = prey.getLocation();
-		// areaController.setup(gameLocation);
+		areaController.setup(base);
 	}
 
 	@Override

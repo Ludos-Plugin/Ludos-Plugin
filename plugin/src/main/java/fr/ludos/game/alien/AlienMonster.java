@@ -1,8 +1,7 @@
 package fr.ludos.game.alien;
 
+import java.util.Comparator;
 import java.util.Optional;
-
-import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -23,206 +22,191 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.NamespacedKey;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import fr.ludos.Ludos;
-
 public class AlienMonster implements Listener {
-	private final AlienGame Game;
-	private final LivingEntity AlienEntity;
-	private BukkitTask task;
-	private Player currentTarget = null;
-
 	private static final double VISION_RANGE = 20.0;
 	private static final double VISION_ANGLE = Math.toRadians(120.0);
 	private static final double HEARING_RANGE = 30.0;
 	private static final double HEARING_VELOCITY_THRESHOLD = 0.1;
+	private static final double KILL_RANGE = 2.0;
 
-	AlienMonster(AlienGame game, LivingEntity alienEntity) {
-		this.Game = game;
-		this.AlienEntity = alienEntity;
+	private final AlienGame game;
+	private final LivingEntity alienEntity;
 
-		// Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
+	private BukkitTask task;
+	private Player currentTarget;
 
-		// startAI();
-		// // Log des paramètres de perception pour vérification runtime
-		// game.getPlugin().getLogger()
-		// .info(String.format("Alien spawned at %s — VISION_RANGE=%.1f,
-		// VISION_ANGLE=%.1f°, HEARING_RANGE=%.1f",
-		// entity.getLocation(), VISION_RANGE, Math.toDegrees(VISION_A
-		// GLE), HEARING_RANGE));
-	}
+	private AlienMonster(AlienGame game, LivingEntity alienEntity) {
+		this.game = game;
+		this.alienEntity = alienEntity;
 
-	//
-	// this.entity.setCustomName("Alien");
-	// this.entity.setCustomNameVisible(true);
-	// this.entity.setRemoveWhenFarAway(false);
-	// this.entity.setInvulnerable(true);
+		this.alienEntity.customName(net.kyori.adventure.text.Component.text("Alien"));
+		this.alienEntity.setCustomNameVisible(true);
+		this.alienEntity.setRemoveWhenFarAway(false);
+		this.alienEntity.setInvulnerable(true);
+		this.alienEntity.setSilent(false);
 
-	private AlienGame getGame() {
-		return this.Game;
-	}
+		if (this.alienEntity.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED) != null) {
+			this.alienEntity.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0.35);
+		}
 
-	private LivingEntity getEntity() {
-		return this.AlienEntity;
+		Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
 	}
 
 	public static AlienMonster spawn(AlienGame game, Location location) {
 		World world = location.getWorld();
-		if (world == null)
+		if (world == null) {
 			throw new IllegalArgumentException("Spawn world is null");
+		}
 
-		// Pour l'instant on spawn un PILLAGER en tant qu'asset PNJ temporaire
-		Entity e = world.spawnEntity(location, EntityType.PILLAGER);
-		if (!(e instanceof LivingEntity))
+		Entity entity = world.spawnEntity(location, EntityType.PILLAGER);
+		if (!(entity instanceof LivingEntity living)) {
 			return null;
+		}
 
-		return new AlienMonster(game, (LivingEntity) e);
+		return new AlienMonster(game, living);
 	}
 
-	public static void startAI() {
-		// Task périodique: chercher le joueur le plus pertinent (priorité aux joueurs
-		// vus, sinon aux joueurs entendus)
-		this.task = new BukkitRunnable() {
+	public LivingEntity getEntity() {
+		return alienEntity;
+	}
+
+	public void startAI() {
+		if (task != null) {
+			task.cancel();
+		}
+
+		task = new BukkitRunnable() {
 			@Override
 			public void run() {
-				if (this.getEntity() == null || this.getEntity().isDead()) {
+				if (alienEntity == null || alienEntity.isDead()) {
 					return;
 				}
 
-				Vector back = getEntity().getLocation().getDirection().multiply(-0.4).setY(0.1);
-				getEntity().setVelocity(back);
-			}
-		}.runTaskTimer(getGame().getPlugin(), 1, 1);
-	}
-
-	public void alienMovementMode(double VISION_RANGE, double VISION_ANGLE, double HEARING_RANGE,
-			double HEARING_VELOCITY_THRESHOLD) {
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				if (getEntity() == null || getEntity().isDead())
-					return;
-
-				Optional<Player> nearest = Bukkit.getOnlinePlayers().stream()
-						.filter(p -> p.isOnline())
-						.filter(p -> p.getGameMode() != org.bukkit.GameMode.SPECTATOR)
-						.map(p -> (Player) p)
+				Optional<Player> nearest = game.getTeamController().getLivingPlayers().stream()
+						.filter(Player::isOnline)
+						.filter(p -> p.getGameMode() != GameMode.SPECTATOR)
+						.filter(p -> p.getWorld().equals(alienEntity.getWorld()))
 						.filter(p -> canSeePlayer(p) || canHearPlayer(p))
-						.min((a, b) -> {
-							boolean aSeen = canSeePlayer(a);
-							boolean bSeen = canSeePlayer(b);
+						.min(Comparator
+								.comparingDouble(p -> p.getLocation().distanceSquared(alienEntity.getLocation())));
 
-							if (aSeen != bSeen)
-								return aSeen ? -1 : 1; // priorité aux joueurs vus
-
-							return Double.compare(a.getLocation().distanceSquared(entity.getLocation()),
-									b.getLocation().distanceSquared(entity.getLocation()));
-						});
-
-				if (nearest.isPresent()) {
-					Player player = nearest.get();
-					double dist = player.getLocation().distance(entity.getLocation());
-
-					// Si trop loin par rapport au range maximal (vision ou ouïe), on désengage
-					if (dist > Math.max(VISION_RANGE, HEARING_RANGE)) {
-						currentTarget = null;
-
-						if (entity instanceof Creature)
-							((Creature) entity).setTarget(null);
-
-						return;
+				if (nearest.isEmpty()) {
+					currentTarget = null;
+					if (alienEntity instanceof Creature creature) {
+						creature.setTarget(null);
 					}
+					return;
+				}
 
-					boolean seen = canSeePlayer(player);
+				Player player = nearest.get();
 
-					// Si nouveau target: jouer un bruit adapté
-					if (currentTarget == null || !currentTarget.equals(player)) {
-						currentTarget = player;
+				boolean seen = canSeePlayer(player);
+				boolean heard = canHearPlayer(player);
 
-						if (seen)
-							playEndermanSound();
-						else
-							playHearingSound();
+				if (!seen && !heard) {
+					return;
+				}
+
+				if (currentTarget == null || !currentTarget.equals(player)) {
+					currentTarget = player;
+					if (seen) {
+						playEndermanSound();
+					} else {
+						playHearingSound();
 					}
+				}
 
-					// Forcer la cible si possible
-					if (entity instanceof Creature)
-						((Creature) entity).setTarget(player);
+				if (alienEntity instanceof Creature creature) {
+					creature.setTarget(player);
+				}
+
+				if (alienEntity.getLocation().distance(player.getLocation()) <= KILL_RANGE) {
+					player.setHealth(0.0);
 				}
 			}
-		}.runTaskTimer(game.getPlugin(), 20, 20);
+		}.runTaskTimer(game.getPlugin(), 0L, 10L);
 	}
 
 	private void playEndermanSound() {
-		if (entity == null || entity.isDead())
-
+		if (alienEntity == null || alienEntity.isDead()) {
 			return;
-
-		entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ENDERMAN_SCREAM, 1.0f, 1.0f);
+		}
+		alienEntity.getWorld().playSound(alienEntity.getLocation(), Sound.ENTITY_ENDERMAN_SCREAM, 1.0f, 1.0f);
 	}
 
-	// Son pour quand il entend quelqu'un (différent du son de repérage visuel)
 	private void playHearingSound() {
-		if (entity == null || entity.isDead())
+		if (alienEntity == null || alienEntity.isDead()) {
 			return;
-
-		entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_WOLF_GROWL, 1.0f, 1.0f);
+		}
+		alienEntity.getWorld().playSound(alienEntity.getLocation(), Sound.ENTITY_WOLF_GROWL, 1.0f, 0.8f);
 	}
 
-	// Champ de vision: regarde si le joueur est devant et sans obstacle
 	private boolean canSeePlayer(Player player) {
-		if (entity == null || player == null)
+		if (alienEntity == null || player == null) {
 			return false;
-
-		if (!player.getWorld().equals(entity.getWorld()))
+		}
+		if (!player.getWorld().equals(alienEntity.getWorld())) {
 			return false;
+		}
 
-		double dist = player.getLocation().distance(entity.getLocation());
-
-		if (dist > VISION_RANGE)
+		double dist = player.getLocation().distance(alienEntity.getLocation());
+		if (dist > VISION_RANGE) {
 			return false;
+		}
 
-		Vector toPlayer = player.getEyeLocation().toVector().subtract(entity.getEyeLocation().toVector()).normalize();
-		Vector forward = entity.getEyeLocation().getDirection().normalize();
+		Vector toPlayer = player.getEyeLocation().toVector().subtract(alienEntity.getEyeLocation().toVector())
+				.normalize();
+		Vector forward = alienEntity.getEyeLocation().getDirection().normalize();
 		double dot = forward.dot(toPlayer);
 
-		if (dot < Math.cos(VISION_ANGLE / 2.0))
+		if (dot < Math.cos(VISION_ANGLE / 2.0)) {
 			return false;
+		}
 
-		return entity.hasLineOfSight(player);
+		return alienEntity.hasLineOfSight(player);
 	}
 
 	private boolean canHearPlayer(Player player) {
-		if (entity == null || player == null)
+		if (alienEntity == null || player == null) {
 			return false;
-		if (!player.getWorld().equals(entity.getWorld()))
+		}
+		if (!player.getWorld().equals(alienEntity.getWorld())) {
 			return false;
-		double dist = player.getLocation().distance(entity.getLocation());
-		if (dist > HEARING_RANGE)
+		}
+
+		double dist = player.getLocation().distance(alienEntity.getLocation());
+		if (dist > HEARING_RANGE) {
 			return false;
-		if (player.isSprinting())
+		}
+
+		if (player.isSprinting()) {
 			return true;
-		if (player.getVelocity() != null && player.getVelocity().length() > HEARING_VELOCITY_THRESHOLD)
-			return true;
-		return false;
+		}
+
+		return player.getVelocity() != null && player.getVelocity().length() > HEARING_VELOCITY_THRESHOLD;
 	}
 
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event) {
 		Player player = event.getPlayer();
-		if (entity == null || entity.isDead())
+
+		if (alienEntity == null || alienEntity.isDead()) {
 			return;
-		if (currentTarget != null && currentTarget.equals(player))
+		}
+		if (!game.getTeamController().getLivingPlayers().contains(player)) {
 			return;
+		}
+		if (currentTarget != null && currentTarget.equals(player)) {
+			return;
+		}
+
 		if (canHearPlayer(player) && !canSeePlayer(player)) {
 			currentTarget = player;
-			if (entity instanceof Creature) {
-				((Creature) entity).setTarget(player);
+			if (alienEntity instanceof Creature creature) {
+				creature.setTarget(player);
 			}
 			playHearingSound();
 		}
@@ -230,24 +214,26 @@ public class AlienMonster implements Listener {
 
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
-		if (event.getEntity() == entity) {
+		if (event.getEntity().equals(alienEntity)) {
 			event.setCancelled(true);
 		}
 	}
 
 	@EventHandler
-	public void onEntityDamageByEntity(EntityDamageEvent event) {
-		if (event.getEntity() == entity && event instanceof EntityDamageByEntityEvent ede) {
-			Entity damager = ede.getDamager();
+	public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+		if (!event.getEntity().equals(alienEntity)) {
+			return;
+		}
+		event.setCancelled(true);
 
-			if (damager instanceof Player)
-				playEndermanSound();
+		if (event.getDamager() instanceof Player) {
+			playEndermanSound();
 		}
 	}
 
 	@EventHandler
 	public void onEntityTarget(EntityTargetEvent event) {
-		if (event.getEntity() == entity && event.getTarget() instanceof Player) {
+		if (event.getEntity().equals(alienEntity) && event.getTarget() instanceof Player) {
 			playEndermanSound();
 		}
 	}
@@ -260,10 +246,15 @@ public class AlienMonster implements Listener {
 	}
 
 	public void despawn() {
+		if (task != null) {
+			task.cancel();
+			task = null;
+		}
+
 		HandlerList.unregisterAll(this);
 
-		if (entity != null && !entity.isDead()) {
-			entity.remove();
+		if (alienEntity != null && !alienEntity.isDead()) {
+			alienEntity.remove();
 		}
 	}
 }
