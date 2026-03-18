@@ -49,8 +49,12 @@ public class Utility {
 		add(Biome.SMALL_END_ISLANDS); add(Biome.END_MIDLANDS); add(Biome.END_HIGHLANDS); add(Biome.END_BARRENS);
 	}};
 	private static HashSet<Biome> forbiddenOverworldBiomes = new HashSet<Biome>(){{
-		add(Biome.THE_VOID); add(Biome.OCEAN); add(Biome.DEEP_OCEAN); add(Biome.FROZEN_OCEAN); add(Biome.DEEP_FROZEN_OCEAN); add(Biome.DRIPSTONE_CAVES); add(Biome.LUSH_CAVES);
-		add(Biome.RIVER); add(Biome.FROZEN_RIVER); addAll(netherBiomes); addAll(endBiomes);
+		add(Biome.THE_VOID);
+		add(Biome.OCEAN); add(Biome.WARM_OCEAN); add(Biome.LUKEWARM_OCEAN); add(Biome.COLD_OCEAN); add(Biome.FROZEN_OCEAN);
+		add(Biome.DEEP_OCEAN); add(Biome.DEEP_LUKEWARM_OCEAN); add(Biome.DEEP_COLD_OCEAN); add(Biome.DEEP_FROZEN_OCEAN);
+		add(Biome.DRIPSTONE_CAVES); add(Biome.LUSH_CAVES);
+		add(Biome.RIVER); add(Biome.FROZEN_RIVER);
+		addAll(netherBiomes); addAll(endBiomes);
 	}};
 
 	private static HashSet<Biome> getOverworldBiomes() {
