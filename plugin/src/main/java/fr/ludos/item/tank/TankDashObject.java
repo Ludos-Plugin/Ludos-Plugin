@@ -1,7 +1,8 @@
 package fr.ludos.item.tank;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
@@ -17,6 +18,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import org.bukkit.entity.Entity;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import fr.ludos.item.SpecialItem;
@@ -48,9 +51,44 @@ public class TankDashObject extends SpecialItem {
 		return dasher;
 	}
 
+	private static final double COLLISION_RADIUS = 1.5;
+	private static final double COLLISION_DAMAGE = 4.0;
+	private static final double COLLISION_KNOCKBACK = 1.5;
+	private static final int DASH_DURATION_TICKS = 10;
+
 	public void useDash(Vector direction) {
 		Player player = this.getOwner();
 		player.setVelocity(direction.normalize().multiply(dashpower));
+
+		Set<UUID> alreadyHit = new HashSet<>();
+
+		new BukkitRunnable() {
+			int ticks = 0;
+
+			@Override
+			public void run() {
+				if (ticks++ >= DASH_DURATION_TICKS) {
+					cancel();
+					return;
+				}
+
+				for (Entity entity : player.getNearbyEntities(COLLISION_RADIUS, COLLISION_RADIUS, COLLISION_RADIUS)) {
+					if (!(entity instanceof Player target)) continue;
+					if (alreadyHit.contains(target.getUniqueId())) continue;
+
+					alreadyHit.add(target.getUniqueId());
+
+					target.damage(COLLISION_DAMAGE, player);
+
+					Vector knockback = target.getLocation().toVector()
+						.subtract(player.getLocation().toVector())
+						.normalize()
+						.multiply(COLLISION_KNOCKBACK)
+						.setY(0.4);
+					target.setVelocity(knockback);
+				}
+			}
+		}.runTaskTimer(this.getGame().getPlugin(), 0, 1);
 	}
 
 	@Override
@@ -98,16 +136,15 @@ public class TankDashObject extends SpecialItem {
 				return;
 			if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK)
 				return;
-			event.setCancelled(true);
+			 
 			Player player = event.getPlayer();
 			ItemStack item = player.getInventory().getItemInMainHand();
 
 			TankDashObject dasher = TankDashObject.fromItemStack(item, game);
-			if (dasher == null)
-				return;
+			if (dasher == null) return;
+			event.setCancelled(true);
 
-			if (player.getCooldown(Material.FIREWORK_ROCKET) > 0)
-				return;
+			if (player.getCooldown(Material.FIREWORK_ROCKET) > 0) return;
 
 			dasher.useDash(player.getLocation().getDirection());
 
