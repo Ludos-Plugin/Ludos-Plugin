@@ -1,6 +1,7 @@
 package fr.ludos.item.berserker;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -9,10 +10,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-import org.bukkit.Attribute;
-import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.attribute.AttributeModifier.Operation;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
@@ -31,13 +29,14 @@ import fr.ludos.role.Role;
 
 
 public class BerserkerRageBrew extends SpecialItem {
-	private static final UUID ATTACK_SPEED_MODIFIER_ID = UUID.fromString("d32dc47e-95f6-4491-b3a7-6f3be8336b48");
 
-	public BerserkerRageBrew(ItemStack stack, Game game) throws IllegalArgumentException {
-		super(stack, game);
+	// Used to read/detect an existing ItemStack
+	protected BerserkerRageBrew(ItemStack stack, Player owner, Game game) throws IllegalArgumentException {
+		super(stack, owner, game);
 	}
 
-	public BerserkerRageBrew(Player owner, Game game) {
+	// Used to create a new brew
+	protected BerserkerRageBrew(Player owner, Game game) {
 		super(new ItemStack(Material.SUSPICIOUS_STEW), owner, game);
 	}
 
@@ -47,17 +46,17 @@ public class BerserkerRageBrew extends SpecialItem {
 	}
 
 	@Override
-	protected Component getName() {
+	public Component getName() {
 		return Component.text("Rage Brew")
 			.decoration(TextDecoration.ITALIC, false);
 	}
 
 	@Override
-	protected java.util.List<Component> getLore() {
-		return java.util.List.of(
-			Component.text("Right Click: unleash rage for 10s.")
+	public List<Component> getLore() {
+		return List.of(
+			Component.text("Clic droit : déchaîner la rage pendant 10s.")
 				.decoration(TextDecoration.ITALIC, false),
-			Component.text("Cooldown: 30s, then short fatigue.")
+			Component.text("Recharge : 30s, puis courte fatigue.")
 				.decoration(TextDecoration.ITALIC, false)
 		);
 	}
@@ -65,15 +64,19 @@ public class BerserkerRageBrew extends SpecialItem {
 
 	@Nullable
 	public static BerserkerRageBrew getItem(ItemStack stack, Game game) {
+		Player owner = SpecialItem.getSpecialItemOwner(stack, "berserkerRageBrew", game);
+		if (owner == null) return null;
 		try {
-			return new BerserkerRageBrew(stack, game);
+			return new BerserkerRageBrew(stack, owner, game);
 		} catch (IllegalArgumentException e) {
 			return null;
 		}
 	}
 
 	public static BerserkerRageBrew createItem(Player owner, Game game) {
-		return new BerserkerRageBrew(owner, game);
+		BerserkerRageBrew brew = new BerserkerRageBrew(owner, game);
+		brew.initializeItem();
+		return brew;
 	}
 
 
@@ -83,8 +86,19 @@ public class BerserkerRageBrew extends SpecialItem {
 		private static final int RAGE_DURATION_TICKS = 20 * 10;
 		private static final int FATIGUE_TICKS = 20 * 5;
 
-		public Events(Game game) {
+		private final BerserkerRole role;
+
+		public Events(Game game, BerserkerRole role) {
 			super(game);
+			this.role = role;
+		}
+
+		@Override
+		protected void onStop() {
+			cooldowns.clear();
+			for (Player player : Bukkit.getOnlinePlayers()) {
+				role.setRage(player, false);
+			}
 		}
 
 		@Override
@@ -121,11 +135,11 @@ public class BerserkerRageBrew extends SpecialItem {
 			if (availableAt > now) {
 				long remaining = (availableAt - now) / 1000;
 				player.sendMessage(
-				Component.text("Rage Brew", NamedTextColor.DARK_RED)
-					.append(Component.text(" en cooldown (", NamedTextColor.RED))
-					.append(Component.text(remaining + "s", NamedTextColor.YELLOW))
-					.append(Component.text(").", NamedTextColor.RED))
-			);
+					Component.text("Rage Brew", NamedTextColor.DARK_RED)
+						.append(Component.text(" en cooldown (", NamedTextColor.RED))
+						.append(Component.text(remaining + "s", NamedTextColor.YELLOW))
+						.append(Component.text(").", NamedTextColor.RED))
+				);
 				return;
 			}
 
@@ -135,44 +149,19 @@ public class BerserkerRageBrew extends SpecialItem {
 		}
 
 		private void triggerRage(Player player) {
-			BerserkerRole.setRage(player, true);
+			role.setRage(player, true);
 
 			player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, RAGE_DURATION_TICKS, 1, false, false));
-			player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, RAGE_DURATION_TICKS, 1, false, false));
-			applyAttackSpeedBuff(player);
+			player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, RAGE_DURATION_TICKS, 0, false, false));
 
 			player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1f, 0.8f);
 
 			game.getPlugin().getServer().getScheduler().runTaskLater(game.getPlugin(), () -> {
-				removeAttackSpeedBuff(player);
-				BerserkerRole.setRage(player, false);
+				role.setRage(player, false);
 
 				player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, FATIGUE_TICKS, 0, false, false));
 				player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, FATIGUE_TICKS, 0, false, false));
 			}, RAGE_DURATION_TICKS);
-		}
-
-		private void applyAttackSpeedBuff(Player player) {
-			AttributeInstance attribute = player.getAttribute(Attribute.GENERIC_ATTACK_SPEED);
-			if (attribute == null) return;
-
-			removeAttackSpeedBuff(player);
-			AttributeModifier modifier = new AttributeModifier(
-				ATTACK_SPEED_MODIFIER_ID,
-				"berserker_rage_attack_speed",
-				0.5,
-				Operation.MULTIPLY_SCALAR_1
-			);
-			attribute.addTransientModifier(modifier);
-		}
-
-		private void removeAttackSpeedBuff(Player player) {
-			AttributeInstance attribute = player.getAttribute(Attribute.GENERIC_ATTACK_SPEED);
-			if (attribute == null) return;
-			attribute.getModifiers().stream()
-				.filter(modifier -> modifier.getUniqueId().equals(ATTACK_SPEED_MODIFIER_ID))
-				.findFirst()
-				.ifPresent(attribute::removeModifier);
 		}
 	}
 }

@@ -7,21 +7,32 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Color;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerAnimationEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.RayTraceResult;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
@@ -33,21 +44,27 @@ import fr.ludos.item.berserker.BerserkerRageBrew;
 public class BerserkerRole extends Role {
 	public static final String id = "berserker";
 
-	private static final Set<UUID> ragingPlayers = new HashSet<>();
+	private static final int AXE_COOLDOWN_TICKS = 20;      // 1s par hache hors rage
+	private static final int RAGE_COOLDOWN_TICKS = 15;     // 0.75s par hache pendant la rage
+	private static final double[] XP_THRESHOLDS = {20.0, 45.0, 80.0, 130.0, 190.0};
+
+	private final Set<UUID> ragingPlayers = new HashSet<>();
 	private BukkitTask particleTask;
 
-	private final Set<UUID> bleedingEntities = new HashSet<>();
-	private final Map<UUID, BukkitTask> bleedTasks = new HashMap<>();
+	private final Set<UUID> offHandDamageSource = new HashSet<>();
+
+	private final Map<UUID, Double> playerXP = new HashMap<>();
+	private final Map<UUID, Integer> playerLevel = new HashMap<>();
 
 	public BerserkerRole(Builder builder, Game game) {
 		super(builder, game);
 	}
 
-	public static boolean isRaging(Player player) {
+	public boolean isRaging(Player player) {
 		return ragingPlayers.contains(player.getUniqueId());
 	}
 
-	public static void setRage(Player player, boolean active) {
+	public void setRage(Player player, boolean active) {
 		if (active) {
 			ragingPlayers.add(player.getUniqueId());
 		} else {
@@ -55,16 +72,17 @@ public class BerserkerRole extends Role {
 		}
 	}
 
-	public static void clearRage() {
-		ragingPlayers.clear();
+	public int getPlayerLevel(Player player) {
+		if (playerLevel == null) return 0;
+		return playerLevel.getOrDefault(player.getUniqueId(), 0);
 	}
 
 	@Override
 	protected LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
-		return new LinkedHashMap<>() {{
-			put("axe", new BerserkerAxe.Events(game));
-			put("rage_brew", new BerserkerRageBrew.Events(game));
-		}};
+		LinkedHashMap<String, SpecialItem.Events<?>> map = new LinkedHashMap<>();
+		map.put("axe", new BerserkerAxe.Events(game, this));
+		map.put("rage_brew", new BerserkerRageBrew.Events(game, this));
+		return map;
 	}
 
 	@Override
@@ -86,77 +104,165 @@ public class BerserkerRole extends Role {
 			particleTask.cancel();
 			particleTask = null;
 		}
-		clearRage();
-		bleedTasks.values().forEach(BukkitTask::cancel);
-		bleedTasks.clear();
-		bleedingEntities.clear();
+		ragingPlayers.clear();
+		offHandDamageSource.clear();
+		playerXP.clear();
+		playerLevel.clear();
 	}
 
-	@EventHandler
+	// LOWEST = on intercepte avant tout autre handler → la cancellation est la plus tôt possible
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onArmSwing(PlayerAnimationEvent event) {
+		if (!Role.isPlayerRole(event.getPlayer(), id)) return;
+
+		Player player = event.getPlayer();
+		BerserkerAxe axe = BerserkerAxe.getItem(player.getInventory().getItemInMainHand(), getGame());
+		if (axe == null) return;
+
+		if (player.getCooldown(axe.getStack().getType()) > 0) {
+			event.setCancelled(true);
+		}
+	}
+
+	// HIGH = on s'assure que notre cancellation passe après les autres mais avant la résolution finale
+	@EventHandler(priority = EventPriority.HIGH)
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
 		if (!(event.getDamager() instanceof Player player)) return;
 		if (!Role.isPlayerRole(player, id)) return;
+		if (offHandDamageSource.contains(player.getUniqueId())) return;
 
 		BerserkerAxe axe = BerserkerAxe.getItem(player.getInventory().getItemInMainHand(), getGame());
 		if (axe == null) return;
 
+		Material mat = axe.getStack().getType();
+
+		// Same cooldown gate as off-hand: cancel if still cooling down
+		if (player.getCooldown(mat) > 0) {
+			event.setCancelled(true);
+			return;
+		}
+		player.setCooldown(mat, isRaging(player) ? RAGE_COOLDOWN_TICKS : AXE_COOLDOWN_TICKS);
+
+		if (!isRaging(player)) return;
+
 		double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
 		if (maxHealth <= 0) return;
 
-		double ratio = player.getHealth() / maxHealth;
-		double multiplier = 1.0;
+		double healAmount = event.getFinalDamage() * 0.10;
+		player.setHealth(Math.min(maxHealth, player.getHealth() + healAmount));
+		spawnLifestealParticles(player);
+		player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.8f);
+	}
 
-		if (isRaging(player) || ratio < 0.2) {
-			multiplier = 1.35;
-		} else if (ratio < 0.4) {
-			multiplier = 1.20;
-		} else if (ratio < 0.7) {
-			multiplier = 1.10;
+	@EventHandler
+	public void onOffHandAttack(PlayerInteractEvent event) {
+		if (event.getHand() != EquipmentSlot.HAND) return;
+		Action action = event.getAction();
+		if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return;
+		if (!Role.isPlayerRole(event.getPlayer(), id)) return;
+
+		Player player = event.getPlayer();
+
+		// Off-hand attack only works in dual-axe stance: main hand must hold the FIRST axe
+		BerserkerAxe mainAxe = BerserkerAxe.getItem(player.getInventory().getItemInMainHand(), getGame());
+		if (mainAxe == null || mainAxe.getVariant() != BerserkerAxe.Variant.FIRST) return;
+
+		BerserkerAxe axe = BerserkerAxe.getItem(player.getInventory().getItemInOffHand(), getGame());
+		if (axe == null || axe.getVariant() != BerserkerAxe.Variant.SECOND) return;
+
+		// Cancel immediately so holding the button does nothing
+		event.setCancelled(true);
+
+		// player.getCooldown() is the single source of truth — drives the visual bar and blocks hold-spam
+		if (player.getCooldown(Material.GOLDEN_AXE) > 0) return;
+		player.setCooldown(Material.GOLDEN_AXE, isRaging(player) ? RAGE_COOLDOWN_TICKS : AXE_COOLDOWN_TICKS);
+
+		player.swingOffHand();
+
+		RayTraceResult ray = player.getWorld().rayTraceEntities(
+			player.getEyeLocation(),
+			player.getEyeLocation().getDirection(),
+			4.0,
+			e -> e != player && e instanceof LivingEntity
+		);
+		if (ray == null || !(ray.getHitEntity() instanceof LivingEntity target)) return;
+
+		double baseDamage = player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getValue();
+		if (axe.getLevel() >= 1) {
+			baseDamage += 0.5 * axe.getSharpnessLevel();
 		}
 
-		double finalDamage = event.getDamage() * multiplier;
-		event.setDamage(finalDamage);
+		offHandDamageSource.add(player.getUniqueId());
+		target.damage(baseDamage, player);
+		offHandDamageSource.remove(player.getUniqueId());
 
-		if (axe.getVariant() == BerserkerAxe.Variant.FIRST) {
-			double healAmount = finalDamage * 0.10;
-			player.setHealth(Math.min(maxHealth, player.getHealth() + healAmount));
-			spawnLifestealParticles(player);
-			player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.8f);
-		} else if (event.getEntity() instanceof LivingEntity target
-				&& !bleedingEntities.contains(target.getUniqueId())) {
-			applyBleed(player, target);
+		if (isRaging(player)) {
+			double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+			if (maxHealth > 0) {
+				double healAmount = baseDamage * 0.10;
+				player.setHealth(Math.min(maxHealth, player.getHealth() + healAmount));
+				spawnLifestealParticles(player);
+				player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.8f);
+			}
 		}
 	}
 
-	private void applyBleed(Player source, LivingEntity target) {
-		UUID targetId = target.getUniqueId();
-		bleedingEntities.add(targetId);
+	@EventHandler(ignoreCancelled = true)
+	public void onPlayerTakeDamage(EntityDamageEvent event) {
+		if (!(event.getEntity() instanceof Player player)) return;
+		if (!Role.isPlayerRole(player, id)) return;
+		if (event.getFinalDamage() <= 0) return;
 
-		BukkitTask task = new BukkitRunnable() {
-			int count = 0;
+		addXP(player, event.getFinalDamage());
+	}
 
-			@Override
-			public void run() {
-				if (count >= 3 || !target.isValid() || target.isDead()) {
-					bleedingEntities.remove(targetId);
-					bleedTasks.remove(targetId);
-					cancel();
-					return;
-				}
-				if (source.isOnline()) {
-					target.damage(0.5, source);
-				}
-				target.getWorld().spawnParticle(
-					Particle.REDSTONE,
-					target.getLocation().add(0, 1, 0),
-					5, 0.3, 0.6, 0.3,
-					new Particle.DustOptions(Color.fromRGB(120, 0, 0), 1.2f)
-				);
-				count++;
+	private void addXP(Player player, double damage) {
+		UUID uuid = player.getUniqueId();
+		double currentXP = playerXP.getOrDefault(uuid, 0.0) + damage;
+		playerXP.put(uuid, currentXP);
+
+		int currentLevel = playerLevel.getOrDefault(uuid, 0);
+		int newLevel = currentLevel;
+
+		for (int i = currentLevel; i < XP_THRESHOLDS.length; i++) {
+			if (currentXP >= XP_THRESHOLDS[i]) {
+				newLevel = i + 1;
+			} else {
+				break;
 			}
-		}.runTaskTimer(getGame().getPlugin(), 10, 10);
+		}
 
-		bleedTasks.put(targetId, task);
+		if (newLevel > currentLevel) {
+			playerLevel.put(uuid, newLevel);
+			levelUp(player, newLevel);
+		}
+	}
+
+	private void levelUp(Player player, int newLevel) {
+		upgradeAxesToLevel(player, newLevel);
+		player.sendMessage(
+			Component.text("Niveau ", NamedTextColor.GOLD)
+				.append(Component.text(newLevel, NamedTextColor.YELLOW))
+				.append(Component.text(" atteint ! Vos haches ont été améliorées.", NamedTextColor.GOLD))
+		);
+		player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
+	}
+
+	private void upgradeAxesToLevel(Player player, int newLevel) {
+		PlayerInventory inv = player.getInventory();
+		ItemStack[] contents = inv.getContents();
+
+		for (int i = 0; i < contents.length; i++) {
+			if (contents[i] == null) continue;
+			BerserkerAxe axe = BerserkerAxe.getItem(contents[i], getGame());
+			if (axe == null) continue;
+			inv.setItem(i, BerserkerAxe.createItem(player, axe.getVariant(), newLevel, getGame()).getStack());
+		}
+
+		BerserkerAxe offHandAxe = BerserkerAxe.getItem(inv.getItemInOffHand(), getGame());
+		if (offHandAxe != null) {
+			inv.setItemInOffHand(BerserkerAxe.createItem(player, offHandAxe.getVariant(), newLevel, getGame()).getStack());
+		}
 	}
 
 	private void spawnLifestealParticles(Player player) {
@@ -169,30 +275,13 @@ public class BerserkerRole extends Role {
 	}
 
 	private void spawnRageParticles(Player player) {
-		double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-		if (maxHealth <= 0) return;
-
-		double ratio = player.getHealth() / maxHealth;
-		Color color = null;
-
-		if (isRaging(player) || ratio < 0.2) {
-			color = Color.fromRGB(15, 15, 15);
-		} else if (ratio < 0.4) {
-			color = Color.fromRGB(90, 0, 0);
-		} else if (ratio < 0.7) {
-			color = Color.fromRGB(180, 0, 0);
-		}
-
-		if (color == null) return;
+		if (!isRaging(player)) return;
 
 		player.getWorld().spawnParticle(
 			Particle.REDSTONE,
 			player.getLocation().add(0, 1, 0),
-			6,
-			0.4,
-			0.8,
-			0.4,
-			new Particle.DustOptions(color, 1.25f)
+			6, 0.4, 0.8, 0.4,
+			new Particle.DustOptions(Color.fromRGB(15, 15, 15), 1.25f)
 		);
 	}
 
@@ -216,7 +305,7 @@ public class BerserkerRole extends Role {
 
 		@Override
 		public TextComponent getDescription() {
-			return Component.text("Dual axes, rage scaling damage, lifesteal and a rage brew.")
+			return Component.text("Double haches et potion de rage (vampirisme, vitesse, force). Prenez des dégâts pour monter de niveau (Lv.1: 20 | Lv.2: 45 | Lv.3: 80 | Lv.4: 130 | Lv.5: 190) et améliorer vos haches.")
 				.color(NamedTextColor.GRAY)
 				.decoration(TextDecoration.ITALIC, false);
 		}
