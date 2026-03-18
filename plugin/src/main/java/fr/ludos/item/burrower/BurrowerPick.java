@@ -3,6 +3,7 @@ package fr.ludos.item.burrower;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -28,6 +29,7 @@ import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.LevelBranchItem;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.item.huntsman.HuntsmanArrow;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
@@ -38,47 +40,45 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, BurrowerPickLevels> {
 	private static final String ID = "manhuntBurrowerPick";
 
-	private final static Map<ItemStack, BurrowerPick> cachedItems = new HashMap<>();
+	// private final static Map<UUID, BurrowerPick> cachedItems = new HashMap<>();
 
 
 	public static BurrowerPick fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		BurrowerPick cached = cachedItems.get(stack);
-		if (cached != null) return cached;
+		// UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		// if (itemId == null) return null;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		// BurrowerPick cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 		Integer branchIndex = BranchItem.branchFromItemStack(stack, game);
 		if (branchIndex == null) return null;
 		LevelState levelState = LevelItem.levelFromItemStack(stack, ID, game);
 		if (levelState == null) return null;
 
-		return new BurrowerPick(stack, owner, BurrowerPickBranches.values()[branchIndex], levelState, game);
+		BurrowerPick burrowerPick = new BurrowerPick(stack, owner, BurrowerPickBranches.values()[branchIndex], levelState, game);
+		// cachedItems.put(itemId, burrowerPick);
+
+		return burrowerPick;
 	}
 	public static BurrowerPick createItem(Player owner, LevelState level, Game game) {
 		BurrowerPickLevels lvl = BurrowerPickLevels.values()[level.getLevel()];
 		BurrowerPick burrowerPick = new BurrowerPick(new ItemStack(lvl.getMaterial()), owner, BurrowerPickBranches.Pickaxe, level, game);
-		burrowerPick.initializeItem();
+		UUID itemId = burrowerPick.initializeItem();
+
+		// cachedItems.put(itemId, burrowerPick);
 
 		return burrowerPick;
 	}
 
 	protected BurrowerPick(ItemStack stack, Player owner, BurrowerPickBranches branch, LevelState level, Game game) {
 		super(BurrowerPickBranches.class, BurrowerPickLevels.class, stack, owner, branch, level, game);
-
-		this.getLevelState().addLevelUpListener((lvlState) -> {
-			BurrowerPickLevels lvl = getLevel(lvlState.getLevel());
-
-			ItemStack item = getStack();
-			item.setType(lvl.getMaterial());
-			item.removeEnchantment(Enchantment.DIG_SPEED);
-			item.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
-			item.addEnchantments(lvl.getEnchantments());
-		});
 	}
 
 
 	@Override
-	public String getId() {
+	public String getTypeId() {
 		return ID;
 	}
 
@@ -94,7 +94,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		BurrowerPickLevels level = getLvl();
+		BurrowerPickLevels level = getLvlObject();
 		int size = 1 + level.getRadius() * 2;
 		int depth = level.getDepth() + 1;
 
@@ -129,9 +129,11 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 
 		Boolean isDepthAxisPositive = face == BlockFace.EAST || face == BlockFace.UP || face == BlockFace.SOUTH;
 
-		BurrowerPickLevels level = getLvl();
+		BurrowerPickLevels level = getLvlObject();
 		int radius = level.getRadius();
 		int depth = level.getDepth();
+
+		float blockHardness = block.getType().getHardness();
 
 		for (int depthOffset = 0; depthOffset <= depth; depthOffset++) {
 			for (int xOffset = -radius; xOffset <= radius; xOffset++) {
@@ -141,7 +143,8 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 
 					if (
 						ItemUtilities.isBreakable(relativeBlock) &&
-						relativeBlock.isPreferredTool(getStack())
+						relativeBlock.isPreferredTool(getStack()) &&
+						relativeBlock.getType().getHardness() == blockHardness
 					) {
 						awardBreak(relativeBlock);
 						relativeBlock.breakNaturally(getStack());

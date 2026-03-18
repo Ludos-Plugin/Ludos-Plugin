@@ -25,14 +25,17 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>> extends SpecialItem {
-	public static final String BRANCH = "branch";
-	public static final NamespacedKey branchKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), BRANCH);
+public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>> extends SpecialItem implements BranchItemInterface<TBranch> {
+	public static final String BRANCH_KEY = "branch";
+	public static final NamespacedKey branchKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), BRANCH_KEY);
 
 
-	private TBranch branch;
+	protected TBranch branch;
 	public TBranch getBranch() {
 		return branch;
+	}
+	public void setBranch(TBranch branch) {
+		this.branch = branch;
 	}
 	private final TBranch[] branches;
 	public TBranch[] getBranches() {
@@ -70,8 +73,15 @@ public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Bran
 			.decoration(TextDecoration.ITALIC, false);
 	}
 
-	public static <TItem extends SpecialItem, TBranch extends Enum<TBranch> & Branch<TBranch>> void setItemBranch(TItem item, TBranch newBranch, Function<TItem, TBranch> getBranch, BiConsumer<TItem, TBranch> setBranch) {
-		TBranch oldBranch = getBranch.apply(item);
+	/**
+	 * Utility function to handle branch switching when player switches branches.
+	 * @param <TItem> The type of the item, must extend SpecialItem
+	 * @param <TBranch> The type of the branch, must be an enum that implements BranchItem.Branch
+	 * @param item The item whose branch is being switched
+	 * @param newBranch The new branch to switch to
+	 */
+	public static <TItem extends SpecialItem & BranchItemInterface<TBranch>, TBranch extends Enum<TBranch> & Branch<TBranch>> void setItemBranch(TItem item, TBranch newBranch) {
+		TBranch oldBranch = item.getBranch();
 
 		ItemStack itemStack = item.getStack();
 
@@ -79,18 +89,25 @@ public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Bran
 		meta.getPersistentDataContainer().set(branchKey, PersistentDataType.INTEGER, newBranch.ordinal());
 		itemStack.setItemMeta(meta);
 
-		setBranch.accept(item, newBranch);
+		item.setBranch(newBranch);
 
 		if (oldBranch != null) {
-			oldBranch.onUnequip(item);
+			oldBranch.onDeselectBranch(item);
 		}
-		newBranch.onEquip(item);
+		newBranch.onSelectBranch(item);
 
-		item.updateLore();
-		item.updateName();
+		item.update();
 	}
 
-	public static <TItem extends SpecialItem, TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem, Function<TItem, TBranch> getBranch) {
+	/**
+	 * Utility function to handle branch switching when player switches items.
+	 * @param <TItem> The type of the item, must extend SpecialItem
+	 * @param <TBranch> The type of the branch, must be an enum that implements BranchItem.Branch
+	 * @param event The PlayerItemHeldEvent to handle
+	 * @param getItem An "SpecialItem from ItemStack" function, used to get the item being switched from/to
+	 * @param getBranch A "Branch from Item" function, used to get the branch of the item being switched from/to
+	 */
+	public static <TItem extends SpecialItem & BranchItemInterface<TBranch>, TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem) {
 		Player player = event.getPlayer();
 
 		TItem oldItem = getItem.apply(player.getInventory().getItem(event.getPreviousSlot()));
@@ -98,10 +115,10 @@ public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Bran
 		if (oldItem == null && newItem == null) return;
 
 		if (oldItem != null) {
-			getBranch.apply(oldItem).onUnequip(oldItem);
+			oldItem.getBranch().onUnequip(oldItem);
 		}
 		if (newItem != null) {
-			getBranch.apply(newItem).onEquip(newItem);
+			newItem.getBranch().onEquip(newItem);
 		}
 	}
 
@@ -121,20 +138,25 @@ public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Bran
 	protected void onInitialize() {
 		super.onInitialize();
 
-		setBranch(branch);
+		switchBranch(branch);
 	}
 
 
 	public void cycleBranch() {
-		TBranch newBranch = branches[(getBranch().ordinal() + 1) % branches.length];
-		setBranch(newBranch);
+		TBranch currentBranch = getBranch();
+		int oldBranchIndex = currentBranch.ordinal();
+		int newBranchIndex = (oldBranchIndex + 1) % branches.length;
+		TBranch newBranch = branches[newBranchIndex];
+		if (newBranch == currentBranch) return;
+
+		switchBranch(newBranch);
 
 		Player owner = getOwner();
 		owner.playSound(owner.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 0.25f, 1);
 	}
 
-	public void setBranch(TBranch branch) {
-		setItemBranch(this, branch, BranchItem::getBranch, (item, newBranch) -> item.branch = newBranch);
+	public void switchBranch(TBranch branch) {
+		setItemBranch(this, branch);
 	}
 
 	protected Component getBranchAnnotation() {
@@ -155,8 +177,28 @@ public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Bran
 		public Component getName();
 		public Component getDescription();
 
+		/**
+		 * Called when item is equipped (mainhand) while the branch is selected.
+		 * @param item The item being equipped
+		 */
 		public void onEquip(SpecialItem item);
+		/**
+		 * Called when item is unequipped (mainhand) while the branch is selected.
+		 * @param item The item being unequipped
+		 */
 		public void onUnequip(SpecialItem item);
+
+		/**
+		 * Called when the branch is deselected (another branch is selected).
+		 * @param item The item whose branch is being deselected
+		 */
+		public void onDeselectBranch(SpecialItem item);
+
+		/**
+		 * Called when the branch is selected.
+		 * @param item The item whose branch is being selected
+		 */
+		public void onSelectBranch(SpecialItem item);
 	}
 
 	public static abstract class Events<T extends BranchItem<TBranch>, TBranch extends Enum<TBranch> & Branch<TBranch>> extends SpecialItem.Events<T> {

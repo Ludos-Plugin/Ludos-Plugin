@@ -2,19 +2,19 @@ package fr.ludos.role;
 
 import java.util.LinkedHashMap;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StructureSearchResult;
 import org.bukkit.generator.structure.StructureType;
+import org.bukkit.util.StructureSearchResult;
 
 import fr.ludos.Ludos;
+import fr.ludos.game.Game;
+import fr.ludos.game.GameEvents;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.item.burrower.BurrowerPick;
 import fr.ludos.item.burrower.BurrowerShovel;
-import fr.ludos.game.Game;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 
 public class BurrowerRole extends Role {
@@ -49,7 +49,7 @@ public class BurrowerRole extends Role {
 	}
 
 	@Override
-	protected LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
+	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{

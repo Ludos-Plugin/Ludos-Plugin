@@ -14,6 +14,7 @@ import org.bukkit.potion.PotionEffect;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.game.GameEvents;
 import fr.ludos.item.SpecialItem.Events;
 import fr.ludos.role.Role;
 import fr.ludos.role.Role.Builder;
@@ -29,7 +30,7 @@ public class TankRole extends Role {
 	}
 
 	@Override
-	protected LinkedHashMap<String, Events<?>> createItemEvents(Role.Builder builder, Game game) {
+	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
 		return new LinkedHashMap<>() {
 			{
 				put("tankShield", new fr.ludos.item.tank.TankShield.Events(game));

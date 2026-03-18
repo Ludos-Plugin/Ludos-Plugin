@@ -22,7 +22,10 @@ import org.bukkit.entity.Entity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.item.trapper.TrapperDagger;
+import fr.ludos.item.trapper.TrapperDaggerBranches;
 import fr.ludos.game.Game;
 import fr.ludos.role.Role;
 import fr.ludos.role.TankRole;
@@ -37,16 +40,26 @@ public class TankDashObject extends SpecialItem {
 	}
 
 	public static @Nullable TankDashObject fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
-		if (owner == null)
-			return null;
+		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		if (itemId == null) return null;
 
-		return new TankDashObject(stack, owner, game);
+		// TrapperDagger cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		if (owner == null) return null;
+
+		TankDashObject dasher = new TankDashObject(stack, owner, game);
+		// cachedItems.put(itemId, dagger);
+
+		return dasher;
 	}
 
 	public static TankDashObject createItem(Player owner, Game game) {
 		TankDashObject dasher = new TankDashObject(createItemStack(), owner, game);
 		dasher.initializeItem();
+
+		// cachedItems.put(itemId, dagger);
 
 		return dasher;
 	}
@@ -92,7 +105,7 @@ public class TankDashObject extends SpecialItem {
 	}
 
 	@Override
-	public String getId() {
+	public String getTypeId() {
 		return ID;
 	}
 
@@ -136,7 +149,7 @@ public class TankDashObject extends SpecialItem {
 				return;
 			if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK)
 				return;
-			 
+
 			Player player = event.getPlayer();
 			ItemStack item = player.getInventory().getItemInMainHand();
 

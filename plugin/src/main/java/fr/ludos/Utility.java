@@ -32,6 +32,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.generator.BiomeProvider;
 
 public class Utility {
+	private static final Random random = new Random();
 
 	public static Location getGroundedLocationAround(Location searchOrigin, int min, int max, Location fallback) {
 		return getGroundedLocationAround(searchOrigin, min, max, fallback, 0);
@@ -48,8 +49,12 @@ public class Utility {
 		add(Biome.SMALL_END_ISLANDS); add(Biome.END_MIDLANDS); add(Biome.END_HIGHLANDS); add(Biome.END_BARRENS);
 	}};
 	private static HashSet<Biome> forbiddenOverworldBiomes = new HashSet<Biome>(){{
-		add(Biome.OCEAN); add(Biome.DEEP_OCEAN); add(Biome.FROZEN_OCEAN); add(Biome.DRIPSTONE_CAVES); add(Biome.LUSH_CAVES);
-		add(Biome.RIVER); add(Biome.FROZEN_RIVER); addAll(netherBiomes); addAll(endBiomes);
+		add(Biome.THE_VOID);
+		add(Biome.OCEAN); add(Biome.WARM_OCEAN); add(Biome.LUKEWARM_OCEAN); add(Biome.COLD_OCEAN); add(Biome.FROZEN_OCEAN);
+		add(Biome.DEEP_OCEAN); add(Biome.DEEP_LUKEWARM_OCEAN); add(Biome.DEEP_COLD_OCEAN); add(Biome.DEEP_FROZEN_OCEAN);
+		add(Biome.DRIPSTONE_CAVES); add(Biome.LUSH_CAVES);
+		add(Biome.RIVER); add(Biome.FROZEN_RIVER);
+		addAll(netherBiomes); addAll(endBiomes);
 	}};
 
 	private static HashSet<Biome> getOverworldBiomes() {
@@ -67,8 +72,6 @@ public class Utility {
 	}
 
 	public static Location getRandomBiomeLocation(Location searchOrigin, int biomeSearchSize, int min, int max, Location fallback, int retries, Set<Biome> avoidBiomes) {
-		Random rand = new Random();
-
 		World world = searchOrigin.getWorld();
 
 		Set<Biome> biomes;
@@ -88,9 +91,8 @@ public class Utility {
 		int biomeSearchRetries = retries;
 
 		do {
-			Biome randomBiome = biomes.stream().skip(rand.nextInt(biomes.size())).findFirst().orElse(null);
+			Biome randomBiome = biomes.stream().skip(random.nextInt(biomes.size())).findFirst().orElse(null);
 			biomes.remove(randomBiome);
-			Bukkit.broadcastMessage(randomBiome.toString());
 
 			biomeLocation = world.locateNearestBiome(searchOrigin, randomBiome, biomeSearchSize, 16);
 			biomeSearchRetries--;
@@ -99,34 +101,14 @@ public class Utility {
 
 		if (biomeLocation == null) return fallback.clone();
 
-
-		Location searchLocation = biomeLocation.clone();
-
-		do {
-			searchLocation.setX(biomeLocation.getBlockX() + rand.nextInt(min, max + 1) * (rand.nextBoolean() ? 1 : -1) + 0.5);
-			searchLocation.setZ(biomeLocation.getBlockZ() + rand.nextInt(min, max + 1) * (rand.nextBoolean() ? 1 : -1) + 0.5);
-			searchLocation.setY(searchLocation.getWorld().getHighestBlockYAt(searchLocation));
-
-			retries--;
-		}
-		while (searchLocation.getBlock().isLiquid() && retries >= 0);
-
-		if (retries == 0) {
-			Bukkit.getServer().broadcast(Component.text("Could not find valid play area"));
-			return fallback.clone();
-		}
-
-		searchLocation.setY(searchLocation.getY() + 1);
-		return searchLocation;
+		return getGroundedLocationAround(biomeLocation, min, max, fallback, retries);
 	}
 
 	public static Location getGroundedLocationAround(Location searchOrigin, int min, int max, Location fallback, int retries) {
-		Random rand = new Random();
-
 		Location location = searchOrigin.clone();
 		do {
-			location.setX(searchOrigin.getBlockX() + rand.nextInt(min, max + 1) * (rand.nextBoolean() ? 1 : -1) + 0.5);
-			location.setZ(searchOrigin.getBlockZ() + rand.nextInt(min, max + 1) * (rand.nextBoolean() ? 1 : -1) + 0.5);
+			location.setX(searchOrigin.getBlockX() + random.nextInt(min, max + 1) * (random.nextBoolean() ? 1 : -1) + 0.5);
+			location.setZ(searchOrigin.getBlockZ() + random.nextInt(min, max + 1) * (random.nextBoolean() ? 1 : -1) + 0.5);
 			location.setY(location.getWorld().getHighestBlockYAt(location));
 
 			retries--;

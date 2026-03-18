@@ -165,7 +165,7 @@ public class SoulVial implements Listener {
 			int souls = soulCounts.getOrDefault(player, 0);
 			int level = souls / 50 + 1;
 
-			player.addPotionEffect(new PotionEffect(effectType, 20 * 60 * level, level - 1));
+			player.addPotionEffect(effectType.createEffect(20 * 60 * level, level - 1));
 
 			player.sendMessage("You have chosen the effect: " + effectType.getName() + " Level " + level);
 			player.closeInventory();

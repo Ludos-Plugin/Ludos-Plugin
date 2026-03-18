@@ -32,162 +32,173 @@ import fr.ludos.role.Role;
 import fr.ludos.role.TankRole;
 
 public class TankShield extends SpecialItem {
-    private static final String ID = "tankShield";
-    private static final int MAX_HITS_BEFORE_COOLDOWN = 5;
-    private static final int COOLDOWN_DURATION = 5 * 20;
+	private static final String ID = "tankShield";
+	private static final int MAX_HITS_BEFORE_COOLDOWN = 5;
+	private static final int COOLDOWN_DURATION = 5 * 20;
 
-    public static @Nullable TankShield fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-        Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
-        if (owner == null)
-            return null;
-        return new TankShield(stack, owner, game);
-    }
+	public static @Nullable TankShield fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		if (itemId == null) return null;
 
-    public static TankShield createItem(Player owner, Game game) {
-        TankShield shield = new TankShield(createItemStack(), owner, game);
-        shield.initializeItem();
+		// TrapperDagger cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
 
-        ItemMeta meta = shield.getStack().getItemMeta();
-        meta.setUnbreakable(false);
-        shield.getStack().setItemMeta(meta);
+		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		if (owner == null) return null;
 
-        return shield;
-    }
+		TankShield shield = new TankShield(stack, owner, game);
+		// cachedItems.put(itemId, dagger);
 
-    protected TankShield(ItemStack stack, Player owner, Game game) {
-        super(stack, owner, game);
-    }
+		return shield;
+	}
 
-    @Override
-    public String getId() {
-        return ID;
-    }
+	public static TankShield createItem(Player owner, Game game) {
+		TankShield shield = new TankShield(createItemStack(), owner, game);
+		shield.initializeItem();
 
-    @Override
-    public Component getName() {
-        return Component.text("Tank Shield")
-                .decoration(TextDecoration.ITALIC, false);
-    }
+		ItemMeta meta = shield.getStack().getItemMeta();
+		meta.setUnbreakable(false);
+		shield.getStack().setItemMeta(meta);
 
-    private static ItemStack createItemStack() {
-        ItemStack stack = new ItemStack(Material.SHIELD);
-        return stack;
-    }
+		// cachedItems.put(itemId, dagger);
 
-    public static class Events extends SpecialItem.Events<TankShield> {
-        private final Map<UUID, Integer> hitCounts = new HashMap<>();
-        // private final Map<UUID, Boolean> isInCooldown = new HashMap<>();
+		return shield;
+	}
 
-        public Events(Game game) {
-            super(game, 40);
-        }
+	protected TankShield(ItemStack stack, Player owner, Game game) {
+		super(stack, owner, game);
+	}
 
-        @Override
-        @Nullable
-        protected TankShield getItem(ItemStack stack, Game game) {
-            return TankShield.fromItemStack(stack, game);
-        }
+	@Override
+	public String getTypeId() {
+		return ID;
+	}
 
-        protected TankShield createItem(Player owner, Game game) {
-            return TankShield.createItem(owner, game);
-        }
+	@Override
+	public Component getName() {
+		return Component.text("Tank Shield")
+				.decoration(TextDecoration.ITALIC, false);
+	}
 
-        @Override
-        protected Boolean canPlayerHaveItem(HumanEntity owner) {
-            return Role.isPlayerRole(owner, TankRole.id);
-        }
+	private static ItemStack createItemStack() {
+		ItemStack stack = new ItemStack(Material.SHIELD);
+		return stack;
+	}
 
-        @EventHandler
-        public void onPlayerBlockWithShield(EntityDamageByEntityEvent event) {
-            if (!(event.getEntity() instanceof Player defender))
-                return;
+	public static class Events extends SpecialItem.Events<TankShield> {
+		private final Map<UUID, Integer> hitCounts = new HashMap<>();
+		// private final Map<UUID, Boolean> isInCooldown = new HashMap<>();
 
-            if (!defender.isBlocking())
-                return;
+		public Events(Game game) {
+			super(game, 40);
+		}
 
-            if (defender.getCooldown(Material.SHIELD) > 0)
-                return;
+		@Override
+		@Nullable
+		protected TankShield getItem(ItemStack stack, Game game) {
+			return TankShield.fromItemStack(stack, game);
+		}
 
-            ItemStack offHand = defender.getInventory().getItemInOffHand();
+		protected TankShield createItem(Player owner, Game game) {
+			return TankShield.createItem(owner, game);
+		}
 
-            TankShield shield = TankShield.fromItemStack(offHand, game);
-            if (shield == null)
-                return;
+		@Override
+		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+			return Role.isPlayerRole(owner, TankRole.id);
+		}
 
-            UUID playerId = defender.getUniqueId();
+		@EventHandler
+		public void onPlayerBlockWithShield(EntityDamageByEntityEvent event) {
+			if (!(event.getEntity() instanceof Player defender))
+				return;
 
-            int currentHits = hitCounts.getOrDefault(playerId, 0) + 1;
-            hitCounts.put(playerId, currentHits);
+			if (!defender.isBlocking())
+				return;
 
-            // defender.sendMessage(Component.text("Blocked shots: " + currentHits + "/" + MAX_HITS_BEFORE_COOLDOWN).color(NamedTextColor.YELLOW));
-            ItemStack stack = shield.getStack();
-            ItemMeta meta = stack.getItemMeta();
+			if (defender.getCooldown(Material.SHIELD) > 0)
+				return;
 
-            boolean makeCooldown = currentHits >= MAX_HITS_BEFORE_COOLDOWN;
+			ItemStack offHand = defender.getInventory().getItemInOffHand();
 
-            int newDamage;
-            if (makeCooldown) {
-                newDamage = 0;
-            }
-            else {
-                float durabilityRatio = (float)(MAX_HITS_BEFORE_COOLDOWN - (MAX_HITS_BEFORE_COOLDOWN - currentHits)) / MAX_HITS_BEFORE_COOLDOWN;
-                newDamage = Math.max((int)(durabilityRatio * (float)(stack.getType().getMaxDurability())), 1);
-            }
-            if (meta instanceof Damageable damageable) {
-                damageable.setDamage(newDamage);
-                stack.setItemMeta(damageable);
-            }
+			TankShield shield = TankShield.fromItemStack(offHand, game);
+			if (shield == null)
+				return;
 
-            if (makeCooldown) {
-                PlayerInventory defenderInventory = defender.getInventory();
-                defenderInventory.setItemInOffHand(null);
+			UUID playerId = defender.getUniqueId();
 
-                startCooldown(defender, stack, defenderInventory);
-            }
-        }
+			int currentHits = hitCounts.getOrDefault(playerId, 0) + 1;
+			hitCounts.put(playerId, currentHits);
 
-        @EventHandler(priority = EventPriority.HIGHEST)
-        public void onShieldInteract(PlayerInteractEvent event) {
-            if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+			// defender.sendMessage(Component.text("Blocked shots: " + currentHits + "/" + MAX_HITS_BEFORE_COOLDOWN).color(NamedTextColor.YELLOW));
+			ItemStack stack = shield.getStack();
+			ItemMeta meta = stack.getItemMeta();
 
-            Player player = event.getPlayer();
-            if (player.getCooldown(Material.SHIELD) <= 0) return;
+			boolean makeCooldown = currentHits >= MAX_HITS_BEFORE_COOLDOWN;
 
-            ItemStack offHand = player.getInventory().getItemInOffHand();
-            if (TankShield.fromItemStack(offHand, game) == null) return;
+			int newDamage;
+			if (makeCooldown) {
+				newDamage = 0;
+			}
+			else {
+				float durabilityRatio = (float)(MAX_HITS_BEFORE_COOLDOWN - (MAX_HITS_BEFORE_COOLDOWN - currentHits)) / MAX_HITS_BEFORE_COOLDOWN;
+				newDamage = Math.max((int)(durabilityRatio * (float)(stack.getType().getMaxDurability())), 1);
+			}
+			if (meta instanceof Damageable damageable) {
+				damageable.setDamage(newDamage);
+				stack.setItemMeta(damageable);
+			}
 
-            event.setCancelled(true);
-        }
+			if (makeCooldown) {
+				PlayerInventory defenderInventory = defender.getInventory();
+				defenderInventory.setItemInOffHand(null);
 
-        @EventHandler(priority = EventPriority.HIGHEST)
-        public void onShieldDamage(PlayerItemDamageEvent event) {
-            Player player = event.getPlayer();
-            ItemStack item = event.getItem();
-            
-            TankShield shield = TankShield.fromItemStack(item, game);
-            if (shield == null)
-                return;
+				startCooldown(defender, stack, defenderInventory);
+			}
+		}
 
-            event.setCancelled(true);
-        }
+		@EventHandler(priority = EventPriority.HIGHEST)
+		public void onShieldInteract(PlayerInteractEvent event) {
+			if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 
-        private void startCooldown(Player player, ItemStack shieldItem, PlayerInventory inventory) {
-            UUID playerId = player.getUniqueId();
+			Player player = event.getPlayer();
+			if (player.getCooldown(Material.SHIELD) <= 0) return;
 
-            hitCounts.put(playerId, 0);
+			ItemStack offHand = player.getInventory().getItemInOffHand();
+			if (TankShield.fromItemStack(offHand, game) == null) return;
 
-            player.setCooldown(Material.SHIELD, COOLDOWN_DURATION);
-            player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BREAK, 1.0f, 1.0f);
+			event.setCancelled(true);
+		}
 
-            new BukkitRunnable() {
-                public void run() { inventory.setItemInOffHand(shieldItem); }
-            }.runTaskLater(game.getPlugin(), COOLDOWN_DURATION);
-        }
+		@EventHandler(priority = EventPriority.HIGHEST)
+		public void onShieldDamage(PlayerItemDamageEvent event) {
+			Player player = event.getPlayer();
+			ItemStack item = event.getItem();
 
-        public void resetPlayer(Player player) {
-            UUID playerId = player.getUniqueId();
-            hitCounts.remove(playerId);
-            player.setCooldown(Material.SHIELD, 0);
-        }
-    }
+			TankShield shield = TankShield.fromItemStack(item, game);
+			if (shield == null)
+				return;
+
+			event.setCancelled(true);
+		}
+
+		private void startCooldown(Player player, ItemStack shieldItem, PlayerInventory inventory) {
+			UUID playerId = player.getUniqueId();
+
+			hitCounts.put(playerId, 0);
+
+			player.setCooldown(Material.SHIELD, COOLDOWN_DURATION);
+			player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BREAK, 1.0f, 1.0f);
+
+			new BukkitRunnable() {
+				public void run() { inventory.setItemInOffHand(shieldItem); }
+			}.runTaskLater(game.getPlugin(), COOLDOWN_DURATION);
+		}
+
+		public void resetPlayer(Player player) {
+			UUID playerId = player.getUniqueId();
+			hitCounts.remove(playerId);
+			player.setCooldown(Material.SHIELD, 0);
+		}
+	}
 }

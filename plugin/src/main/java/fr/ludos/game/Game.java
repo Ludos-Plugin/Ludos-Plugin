@@ -1,6 +1,7 @@
 package fr.ludos.game;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -12,8 +13,6 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
@@ -23,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
 import fr.ludos.book.BookUtility;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -151,6 +151,9 @@ public abstract class Game extends GameProcessBase {
 	protected void onGameDeinit() { }
 	protected void onGameStop() { }
 
+	public LinkedHashMap<String, GameEvents> modifyEvents(LinkedHashMap<String, GameEvents> events) {
+		return events;
+	}
 
 	public abstract Boolean canPlayerHaveRole(Player player, String roleId);
 

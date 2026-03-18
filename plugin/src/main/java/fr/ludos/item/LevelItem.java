@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 
 import javax.annotation.Nullable;
@@ -47,17 +48,14 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		return levelState;
 	}
 	private final TLevel[] levels;
-	public TLevel getLevel(int levelIndex) {
-		return levels[levelIndex];
-	}
-	public TLevel getLevel() {
-		return getLevel(levelState.getLevel());
-	}
 	public int getMaxLevelIndex() {
 		return levels.length - 1;
 	}
 
-	public TLevel getLvl() {
+	public int getLvl() {
+		return levelState.getLevel();
+	}
+	public TLevel getLvlObject() {
 		return levels[levelState.getLevel()];
 	}
 	public double getXp() {
@@ -110,19 +108,21 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 	}
 	public static <TLevel extends Enum<TLevel> & Level<TLevel>> Component getXpLoreField(LevelItem<TLevel> item) {
 		int maxLevel = item.getMaxLevelIndex();
-		TLevel level = item.getLevel();
+		TLevel level = item.getLvlObject();
+		int levelNum = level.ordinal();
 
-		boolean isMax = maxLevel >= 0 && level.ordinal() >= maxLevel;
+		boolean isMax = maxLevel >= 0 && levelNum >= maxLevel;
 		double levelThreshold = isMax ? 0 : level.getXpThreshold();
 
 		return getXpLoreField(isMax, levelThreshold, item.getLevelState().getXp());
 	}
 	public static <TBranch extends Enum<TBranch> & MultiLevelBranchItem.Branch<TBranch>> Component getBranchXpLoreField(MultiLevelBranchItem<TBranch> item) {
 		int maxLevel = item.getMaxBranchIndex();
-		LevelState level = item.getCurrentBranchLevel();
+		LevelState level = item.getLevelState();
+		int levelNum = level.getLevel();
 
-		boolean isMax = maxLevel >= 0 && level.getLevel() >= maxLevel;
-		double levelThreshold = isMax ? 0 : item.getBranch().getXpThreshold();
+		boolean isMax = maxLevel >= 0 && levelNum >= maxLevel;
+		double levelThreshold = isMax ? 0 : item.getBranch().getXpThreshold(levelNum);
 
 		return getXpLoreField(isMax, levelThreshold, level.getXp());
 	}
@@ -139,7 +139,7 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		return getLevelLoreField(item.getLevelState().getLevel());
 	}
 	public static <TBranch extends Enum<TBranch> & MultiLevelBranchItem.Branch<TBranch>> Component getBranchLevelLoreField(MultiLevelBranchItem<TBranch> item) {
-		return getLevelLoreField(item.getCurrentBranchLevel().getLevel());
+		return getLevelLoreField(item.getLevelState().getLevel());
 	}
 
 
@@ -150,6 +150,7 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		this.levels = levelClass.getEnumConstants();
 
 		this.levelState.addLevelUpListener( (lvlState) -> {
+			this.getLvlObject().onSetLevel(this);
 			getOwner().sendMessage(
 				LevelItem.getLevelUpMessage(this)
 			);
@@ -182,12 +183,12 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 	public final void setXp(double value) {
 		LevelItem.LevelState state = getLevelState();
 
-		state.setXp(value, getMaxLevelIndex(), (lvl) -> levels[lvl].getXpThreshold());
+		state.setXp(value, getMaxLevelIndex(), (level) -> levels[level].getXpThreshold());
 	}
 	public final void addXp(double xp) {
 		LevelItem.LevelState state = getLevelState();
 
-		state.addXp(xp, getMaxLevelIndex(), (lvl) -> levels[lvl].getXpThreshold());
+		state.addXp(xp, getMaxLevelIndex(), (level) -> levels[level].getXpThreshold());
 	}
 
 	@Override
@@ -203,8 +204,18 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 
 	public static interface Level<T extends Enum<T> & Level<T>> {
 		public Class<T> getLevelClass();
-
 		public double getXpThreshold();
+
+		/**
+		 * Called when the level is set on the item, including when the item is created with a non-zero level. Should be used to apply the level's effects.
+		 * @param item The item on which the level is being set
+		 */
+		public void onSetLevel(SpecialItem item);
+		/**
+		 * Called when the level is unset on the item, including when the item is created with a non-zero level. Should be used to remove the level's effects.
+		 * @param item The item on which the level is being unset
+		 */
+		public void onUnsetLevel(SpecialItem item);
 	}
 
 	public static class LevelState {
@@ -322,7 +333,7 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 				return;
 			}
 
-			deadPlayerLevels.put( player, specialItem.getLevelState().copy() );
+			deadPlayerLevels.put(player, specialItem.getLevelState().copy());
 		}
 
 		@Override

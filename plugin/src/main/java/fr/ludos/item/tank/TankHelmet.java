@@ -1,6 +1,7 @@
 package fr.ludos.item.tank;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.ArrayList;
 import javax.annotation.Nullable;
 
@@ -23,29 +24,39 @@ import fr.ludos.role.TankRole;
 
 public class TankHelmet extends SpecialItem {
 	private static final String ID = "tank_helmet";
-	
+
 	protected TankHelmet(ItemStack stack, Player owner, Game game) {
 		super(stack, owner, game);
 	}
 
 	public static @Nullable TankHelmet fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
-		if (owner == null)
-			return null;
+		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		if (itemId == null) return null;
 
-		return new TankHelmet(stack, owner, game);
+		// TrapperDagger cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		if (owner == null) return null;
+
+		TankHelmet helmet = new TankHelmet(stack, owner, game);
+		// cachedItems.put(itemId, dagger);
+
+		return helmet;
 	}
 
 	public static TankHelmet createItem(Player owner, Game game) {
 		TankHelmet helmet = new TankHelmet(createItemStack(), owner, game);
 		helmet.initializeItem();
-		
+
+		// cachedItems.put(itemId, dagger);
+
 		return helmet;
 	}
 
 
 	@Override
-	public String getId() {
+	public String getTypeId() {
 		return ID;
 	}
 
@@ -61,35 +72,35 @@ public class TankHelmet extends SpecialItem {
 		stack.addUnsafeEnchantment(Enchantment.THORNS, 1);
 		stack.addUnsafeEnchantment(Enchantment.DURABILITY, 3);
 
-		
+
 		return stack;
 	}
 
 	public static class Events extends SpecialItem.Events<TankHelmet> {
-        
-        public Events(Game game) {
-            super(game, 39 , false);
-        }
-        
-        @Override
-        @Nullable
-        protected TankHelmet getItem(ItemStack stack, Game game) {
-            return TankHelmet.fromItemStack(stack, game);
-        }
-        
-        @Override
-        protected TankHelmet createItem(Player owner, Game game) {
-            return TankHelmet.createItem(owner, game);
-        }
-        
-        @Override
-        protected Boolean canPlayerHaveItem(HumanEntity owner) {
-            return Role.isPlayerRole(owner, TankRole.id);
-        }
-    }
-	
-		
-		
 
-	
+		public Events(Game game) {
+			super(game, 39 , false);
+		}
+
+		@Override
+		@Nullable
+		protected TankHelmet getItem(ItemStack stack, Game game) {
+			return TankHelmet.fromItemStack(stack, game);
+		}
+
+		@Override
+		protected TankHelmet createItem(Player owner, Game game) {
+			return TankHelmet.createItem(owner, game);
+		}
+
+		@Override
+		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+			return Role.isPlayerRole(owner, TankRole.id);
+		}
+	}
+
+
+
+
+
 }

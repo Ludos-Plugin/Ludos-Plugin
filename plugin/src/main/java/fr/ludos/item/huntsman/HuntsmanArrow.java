@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -27,20 +28,31 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class HuntsmanArrow extends SpecialItem {
 	private final static String ID = "manhuntHuntsmanArrow";
-	private final static Map<ItemStack, HuntsmanArrow> cachedItems = new HashMap<>();
+
+	// private final static Map<UUID, HuntsmanArrow> cachedItems = new HashMap<>();
 
 
 	public static @Nullable HuntsmanArrow fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		HuntsmanArrow cached = cachedItems.get(stack);
-		if (cached != null) return cached;
+		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		if (itemId == null) return null;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		// HuntsmanArrow cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		return new HuntsmanArrow(stack, owner, game);
+		HuntsmanArrow arrow = new HuntsmanArrow(stack, owner, game);
+		// cachedItems.put(itemId, arrow);
+
+		return arrow;
 	}
 	public static HuntsmanArrow createItem(Player owner, Game game) {
-		return new HuntsmanArrow(new ItemStack(Material.ARROW), owner, game);
+		HuntsmanArrow arrow = new HuntsmanArrow(new ItemStack(Material.ARROW), owner, game);
+		UUID itemId = arrow.initializeItem();
+		// cachedItems.put(itemId, arrow);
+
+		return arrow;
 	}
 
 	protected HuntsmanArrow(ItemStack stack, Player owner, Game game) {
@@ -49,8 +61,8 @@ public class HuntsmanArrow extends SpecialItem {
 
 
 	@Override
-	public String getId() {
-		return "manhuntHuntsmanArrow";
+	public String getTypeId() {
+		return ID;
 	}
 
 	@Override
