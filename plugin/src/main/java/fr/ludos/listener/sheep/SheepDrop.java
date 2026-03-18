@@ -14,7 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.Ludos;
-import fr.ludos.item.sheep.Sheep;
+import fr.ludos.item.sheep.AbstractSheep;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -56,7 +56,7 @@ public class SheepDrop {
     
     private final JavaPlugin plugin;
     private final Set<Player> players;
-    private final List<Sheep> sheepList;
+    private final List<AbstractSheep> sheepList;
     private final int dropIntervalSeconds;
     
     private BukkitTask timerTask;
@@ -71,7 +71,7 @@ public class SheepDrop {
      * @param sheepList The list of available sheep types
      * @param dropIntervalSeconds The interval in seconds between drops (default 15)
      */
-    public SheepDrop(JavaPlugin plugin, Set<Player> players, List<Sheep> sheepList, int dropIntervalSeconds) {
+    public SheepDrop(JavaPlugin plugin, Set<Player> players, List<AbstractSheep> sheepList, int dropIntervalSeconds) {
         this.plugin = plugin;
         this.players = players;
         this.sheepList = sheepList;
@@ -83,7 +83,7 @@ public class SheepDrop {
     /**
      * Creates a new SheepDrop manager with default 15 second interval.
      */
-    public SheepDrop(JavaPlugin plugin, Set<Player> players, List<Sheep> sheepList) {
+    public SheepDrop(JavaPlugin plugin, Set<Player> players, List<AbstractSheep> sheepList) {
         this(plugin, players, sheepList, 15);
     }
     
@@ -181,22 +181,22 @@ public class SheepDrop {
     public void giveRandomWool(Player player) {
         Material selectedMaterial = getRandomWoolMaterial();
         
-        // Find the corresponding Sheep in the list
-        Sheep selectedSheep = null;
-        for (Sheep sheep : sheepList) {
+        // Find the corresponding AbstractSheep in the list
+        AbstractSheep selectedAbstractSheep = null;
+        for (AbstractSheep sheep : sheepList) {
             if (sheep.getMaterial() == selectedMaterial) {
-                selectedSheep = sheep;
+                selectedAbstractSheep = sheep;
                 break;
             }
         }
-        
-        if (selectedSheep != null) {
-            ItemStack woolItem = selectedSheep.createSheepItem(1);
+
+        if (selectedAbstractSheep != null) {
+            ItemStack woolItem = selectedAbstractSheep.createSheepItem(1);
             player.getInventory().addItem(woolItem);
-            
+
             // Notify the player
             player.sendMessage(Component.text("+ 1 ", NamedTextColor.GREEN)
-                .append(Component.text(selectedSheep.getName(), getRarityColor(selectedMaterial))));
+                .append(Component.text(selectedAbstractSheep.getName(), getRarityColor(selectedMaterial))));
         }
     }
     

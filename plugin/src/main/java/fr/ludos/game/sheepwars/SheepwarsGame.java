@@ -39,7 +39,8 @@ import fr.ludos.Ludos;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.game.Game;
 import fr.ludos.game.TeamController;
-import fr.ludos.item.sheep.Sheep;
+import fr.ludos.item.sheep.AbstractSheep;
+import fr.ludos.item.sheep.SheepRegistry;
 import fr.ludos.listener.sheep.SheepDrop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -65,9 +66,9 @@ public class SheepwarsGame extends Game {
 
 	private SheepwarsTeamController teamController;
 	private Scoreboard scoreboard;
-	private final Sheep sheepEvents;
+	private final SheepRegistry sheepRegistry;
 
-	private List<Sheep> sheepList = null;
+	private List<AbstractSheep> sheepList = null;
 	private SheepDrop sheepDrop;
 
 	private File path;
@@ -76,7 +77,7 @@ public class SheepwarsGame extends Game {
 		super(builder);
 		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 
-		this.sheepEvents = new Sheep(null, null, null);
+		this.sheepRegistry = new SheepRegistry();
 		this.path = new File(builder.getPlugin().getDataFolder(), "sheep.json");
 	}
 
@@ -154,15 +155,25 @@ public class SheepwarsGame extends Game {
 
 		Bukkit.getLogger().info("the cureent path where sheep.json finding : " + path.toString());
 
-		sheepList = (List<Sheep>) sheepJsonArray.stream().map(obj -> {
-			return Sheep.fromJsonObject((org.json.simple.JSONObject) obj);
-		}).filter(sheep -> sheep != null).collect(Collectors.toList());
+		sheepList =  SheepRegistry.loadFromJson(sheepJsonArray);
+
+		// Register all sheep in the registry
+		for (AbstractSheep sheep : sheepList) {
+			sheepRegistry.register(sheep);
+		}
 	}
 
 	@Override
 	protected void onStart() {
 		teamController.start();
-		Bukkit.getPluginManager().registerEvents(sheepEvents, this.getBuilder().getPlugin());
+
+		// Register the sheep registry (handles interaction events)
+		Bukkit.getPluginManager().registerEvents(sheepRegistry, this.getBuilder().getPlugin());
+
+		// Also register the first sheep for shared event handlers (damage, death, movement)
+		if (!sheepList.isEmpty()) {
+			Bukkit.getPluginManager().registerEvents(sheepList.get(0), this.getBuilder().getPlugin());
+		}
 
 		setupWorldBorder();
 
@@ -174,8 +185,8 @@ public class SheepwarsGame extends Game {
 			player.setScoreboard(scoreboard);
 			
 			player.getInventory().clear();
-			
-			for(Sheep currentSheep : sheepList) {
+
+			for(AbstractSheep currentSheep : sheepList) {
 				player.getInventory().addItem(currentSheep.createSheepItem(4));
 			}
 
@@ -203,7 +214,11 @@ public class SheepwarsGame extends Game {
 			teamController.stop();
 		}
 
-		HandlerList.unregisterAll(sheepEvents);
+		// Unregister both sheep registry and shared event handlers
+		HandlerList.unregisterAll(sheepRegistry);
+		if (!sheepList.isEmpty()) {
+			HandlerList.unregisterAll(sheepList.get(0));
+		}
 
 		resetWorldBorder();
 
