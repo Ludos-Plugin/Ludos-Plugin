@@ -29,7 +29,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & MultiLevelBranchItem.Branch<TBranch>> extends BranchItem<TBranch> {
+public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & MultiLevelBranchItem.Branch<TBranch>> extends BranchItem<TBranch> implements LevelItemInterface {
 	private final LevelItem.LevelState[] levelStates;
 	public List<LevelItem.LevelState> getLevelStates() {
 		return Collections.unmodifiableList(Arrays.asList(levelStates));
@@ -82,7 +82,7 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 
 		for (LevelItem.LevelState state : levelStates) {
 			state.addLevelUpListener( (lvlState) -> {
-				getOwnerKey().sendMessage(
+				getOwner().sendMessage(
 					LevelItem.getLevelUpMessage(this)
 				);
 			} );
@@ -93,9 +93,6 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 		}
 	}
 
-	public void setLevelStates(LevelItem.LevelState[] levels) {
-	}
-
 	@Override
 	public void onInitialize() {
 		super.onInitialize();
@@ -103,31 +100,41 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 		saveLevelStates(this, levelStates);
 	}
 
-	public LevelItem.LevelState getCurrentBranchLevel() {
+	public LevelItem.LevelState getLevelState() {
 		TBranch currentBranch = getBranch();
 		return levelStates[currentBranch.ordinal()];
 	}
 
+	public int getLvl() {
+		LevelItem.LevelState state = getLevelState();
+
+		return state.getLevel();
+	}
 	public void setLvl(int level) {
-		LevelItem.LevelState state = getCurrentBranchLevel();
+		LevelItem.LevelState state = getLevelState();
 
 		state.setLevel(level, getMaxBranchIndex());
 	}
 	public void addLvl() {
-		LevelItem.LevelState state = getCurrentBranchLevel();
+		LevelItem.LevelState state = getLevelState();
 
 		state.addLvl(getMaxBranchIndex());
 	}
 
-	public void setXp(double value) {
-		LevelItem.LevelState state = getCurrentBranchLevel();
+	public double getXp() {
+		LevelItem.LevelState state = getLevelState();
 
-		state.setXp(value, getMaxBranchIndex(), (lvl) -> getBranch().getXpThreshold());
+		return state.getXp();
+	}
+	public void setXp(double value) {
+		LevelItem.LevelState state = getLevelState();
+
+		state.setXp(value, getMaxBranchIndex(), (level) -> getBranch().getXpThreshold(level));
 	}
 	public void addXp(double xp) {
-		LevelItem.LevelState state = getCurrentBranchLevel();
+		LevelItem.LevelState state = getLevelState();
 
-		state.addXp(xp, getMaxBranchIndex(), (lvl) -> getBranch().getXpThreshold());
+		state.addXp(xp, getMaxBranchIndex(), (level) -> getBranch().getXpThreshold(level));
 	}
 
 	@Override
@@ -142,7 +149,18 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 
 
 	public static interface Branch<T extends Enum<T> & Branch<T>> extends BranchItem.Branch<T> {
-		public double getXpThreshold();
+		public double getXpThreshold(int level);
+
+		/**
+		 * Called when the level is set on the item, including when the item is created with a non-zero level. Should be used to apply the level's effects.
+		 * @param item The item on which the level is being set
+		 */
+		public void onSetLevel(int level, SpecialItem item);
+		/**
+		 * Called when the level is unset on the item, including when the item is created with a non-zero level. Should be used to remove the level's effects.
+		 * @param item The item on which the level is being unset
+		 */
+		public void onUnsetLevel(int level, SpecialItem item);
 	}
 
 	public static abstract class Events<T extends MultiLevelBranchItem<TBranch>, TBranch extends Enum<TBranch> & Branch<TBranch>> extends BranchItem.Events<T, TBranch> {
@@ -200,7 +218,7 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 
 		@EventHandler
 		public void onSwitchItem(PlayerItemHeldEvent event) {
-			BranchItem.onSwitchItem(event, (stack) -> getItem(stack, game), BranchItem::getBranch);
+			BranchItem.onSwitchItem(event, (stack) -> getItem(stack, game));
 		}
 	}
 }

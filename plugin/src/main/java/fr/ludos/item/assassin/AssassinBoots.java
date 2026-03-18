@@ -3,6 +3,8 @@ package fr.ludos.item.assassin;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
+
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
@@ -24,99 +26,110 @@ import fr.ludos.role.AssassinRole;
 import fr.ludos.game.Game;
 
 public class AssassinBoots extends SpecialItem {
-    public static final String ID = "assassin_boots";
+	public static final String ID = "assassin_boots";
 
-    public static @Nullable AssassinBoots fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+	public static @Nullable AssassinBoots fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		if (itemId == null) return null;
+
+		// AssassinBoots cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		return new AssassinBoots(stack, owner, game);
+		AssassinBoots boots = new AssassinBoots(stack, owner, game);
+		// cachedItems.put(itemId, boots);
+
+		return boots;
 	}
 
 	public static AssassinBoots createItem(Player owner, Game game) {
 		AssassinBoots boots = new AssassinBoots(new ItemStack(Material.IRON_BOOTS), owner, game);
 		boots.initializeItem();
 
+		// cachedItems.put(itemId, boots);
+
 		return boots;
 	}
 
-    public AssassinBoots(ItemStack stack, Player player, Game game) {
-        super(stack, player, game);
-    }
+	public AssassinBoots(ItemStack stack, Player player, Game game) {
+		super(stack, player, game);
+	}
 
-    @Override
-    public String getId() {
-        return ID;
-    }
+	@Override
+	public String getTypeId() {
+		return ID;
+	}
 
-    @Override
-    protected Component getName(){
-        return Component.text("Bottes d'Assassin")
-            .decoration(TextDecoration.ITALIC, false);
-    }
+	@Override
+	protected Component getName(){
+		return Component.text("Bottes d'Assassin")
+			.decoration(TextDecoration.ITALIC, false);
+	}
 
-    @Override
-    public List<Component> getLore(){
-        return new ArrayList<>(Arrays.asList(
-            Component.text("Vitesse augmentée"),
-            Component.text("Saut amélioré"),
-            Component.text("Résistance aux dégâts de chute (+2 blocs)")
-        ));
-    }
-
-
+	@Override
+	public List<Component> getLore(){
+		return new ArrayList<>(Arrays.asList(
+			Component.text("Vitesse augmentée"),
+			Component.text("Saut amélioré"),
+			Component.text("Résistance aux dégâts de chute (+2 blocs)")
+		));
+	}
 
 
-    public static class Events extends SpecialItem.Events<AssassinBoots> {
-        public Events(Game game) {
-            super(game);
-        }
 
-        @EventHandler
-        public void onPlayerMove(PlayerMoveEvent event) {
-            Player player = event.getPlayer();
-            if (! Role.isPlayerRole(player, AssassinRole.id)) return;
 
-            ItemStack bootsStack = player.getInventory().getBoots();
-            if (getItem(bootsStack, game) == null) return;
+	public static class Events extends SpecialItem.Events<AssassinBoots> {
+		public Events(Game game) {
+			super(game);
+		}
 
-            // Vitesse constante
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 2, 1, true, false));
-        }
+		@EventHandler
+		public void onPlayerMove(PlayerMoveEvent event) {
+			Player player = event.getPlayer();
+			if (! Role.isPlayerRole(player, AssassinRole.id)) return;
 
-        @EventHandler
-        public void onFallDamage(EntityDamageEvent event) {
-            if (! (event.getEntity() instanceof Player player)) return;
-            if (! Role.isPlayerRole(player, AssassinRole.id)) return;
-            if (event.getCause() != EntityDamageEvent.DamageCause.FALL) return;
+			ItemStack bootsStack = player.getInventory().getBoots();
+			if (getItem(bootsStack, game) == null) return;
 
-            ItemStack bootsStack = player.getInventory().getBoots();
-            if (getItem(bootsStack, game) == null) return;
+			// Vitesse constante
+			player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 2, 1, true, false));
+		}
 
-            double fallDistance = player.getFallDistance();
-            if (fallDistance <= 4) {
-                event.setCancelled(true);
-            } else {
-                double reducedDistance = fallDistance - 4;
-                double damage = Math.max(0, reducedDistance - 3.0) * 0.5;
-                event.setDamage(damage);
-            }
-        }
+		@EventHandler
+		public void onFallDamage(EntityDamageEvent event) {
+			if (! (event.getEntity() instanceof Player player)) return;
+			if (! Role.isPlayerRole(player, AssassinRole.id)) return;
+			if (event.getCause() != EntityDamageEvent.DamageCause.FALL) return;
 
-        @Override
-        @Nullable
-        protected AssassinBoots getItem(ItemStack stack, Game game) {
-            return AssassinBoots.fromItemStack(stack, game);
-        }
-        
-        @Override
-        protected AssassinBoots createItem(Player owner, Game game) {
-            return AssassinBoots.createItem(owner, game);
-        }
+			ItemStack bootsStack = player.getInventory().getBoots();
+			if (getItem(bootsStack, game) == null) return;
 
-        @Override
-        protected Boolean canPlayerHaveItem(HumanEntity owner) {
-            return Role.isPlayerRole(owner, AssassinRole.id);
-        }
-    }
+			double fallDistance = player.getFallDistance();
+			if (fallDistance <= 4) {
+				event.setCancelled(true);
+			} else {
+				double reducedDistance = fallDistance - 4;
+				double damage = Math.max(0, reducedDistance - 3.0) * 0.5;
+				event.setDamage(damage);
+			}
+		}
+
+		@Override
+		@Nullable
+		protected AssassinBoots getItem(ItemStack stack, Game game) {
+			return AssassinBoots.fromItemStack(stack, game);
+		}
+
+		@Override
+		protected AssassinBoots createItem(Player owner, Game game) {
+			return AssassinBoots.createItem(owner, game);
+		}
+
+		@Override
+		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+			return Role.isPlayerRole(owner, AssassinRole.id);
+		}
+	}
 }

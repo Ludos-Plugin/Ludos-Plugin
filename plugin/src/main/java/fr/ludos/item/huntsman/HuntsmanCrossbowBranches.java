@@ -51,6 +51,16 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 		public void onEquip(SpecialItem item) { }
 		@Override
 		public void onUnequip(SpecialItem item) { }
+
+		@Override
+		public void onDeselectBranch(SpecialItem item) { }
+		@Override
+		public void onSelectBranch(SpecialItem item) { }
+
+		@Override
+		public void onUnsetLevel(int level, SpecialItem item) { }
+		@Override
+		public void onSetLevel(int level, SpecialItem item) { }
 	},
 
 
@@ -70,7 +80,7 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 		public void processLandedArrow(Arrow arrow, HumanEntity player, int level, ProjectileHitEvent event) {
 			if (level > 1 && level == getMaxLevel()) {
 				// spawn an AEC that applies levitation as a splash
-				PotionEffect levitationEffect = new PotionEffect(PotionEffectType.LEVITATION, 10, 2);
+				PotionEffect levitationEffect = PotionEffectType.LEVITATION.createEffect(10, 2);
 
 				arrow.getWorld().createExplosion(arrow.getLocation(), 0, true, false, null);
 
@@ -100,6 +110,16 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 		public void onEquip(SpecialItem item) { }
 		@Override
 		public void onUnequip(SpecialItem item) { }
+
+		@Override
+		public void onDeselectBranch(SpecialItem item) { }
+		@Override
+		public void onSelectBranch(SpecialItem item) { }
+
+		@Override
+		public void onUnsetLevel(int level, SpecialItem item) { }
+		@Override
+		public void onSetLevel(int level, SpecialItem item) { }
 	},
 
 
@@ -149,6 +169,16 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 		public void onEquip(SpecialItem item) { }
 		@Override
 		public void onUnequip(SpecialItem item) { }
+
+		@Override
+		public void onDeselectBranch(SpecialItem item) { }
+		@Override
+		public void onSelectBranch(SpecialItem item) { }
+
+		@Override
+		public void onUnsetLevel(int level, SpecialItem item) { }
+		@Override
+		public void onSetLevel(int level, SpecialItem item) { }
 	};
 
 
@@ -164,13 +194,8 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 	}
 
 	private double xpThreshold;
-	public double getXpThreshold() {
+	public double getXpThreshold(int level) {
 		return xpThreshold;
-	}
-
-	private List<HuntsmanCrossbowBranches> evolutions;
-	public List<HuntsmanCrossbowBranches> getEvolutions() {
-		return evolutions;
 	}
 
 

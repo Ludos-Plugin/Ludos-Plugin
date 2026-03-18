@@ -51,10 +51,10 @@ public class Ludos extends JavaPlugin implements Listener {
 
 
 		PluginCommand cmd = getCommand("ludos");
-		LudosCommand ludosCommand = new LudosCommand(this);
+		LudosCommand ludosCommand = new LudosCommand();
 		cmd.setExecutor(ludosCommand);
 		cmd.setTabCompleter(ludosCommand);
-		// cmd.setUsage(ludosCommand.getUsage());
+		cmd.setUsage(ludosCommand.getUsage());
 
 		Bukkit.getPluginManager().registerEvents(this, this);
 	}
