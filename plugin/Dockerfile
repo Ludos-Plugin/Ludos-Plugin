@@ -1,4 +1,4 @@
-FROM gradle:jdk17
+FROM gradle:8.5-jdk17
 WORKDIR /plugin
 
 ENTRYPOINT ["gradle", "build"]
