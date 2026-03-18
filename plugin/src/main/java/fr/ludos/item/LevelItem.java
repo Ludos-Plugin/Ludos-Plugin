@@ -150,7 +150,7 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		this.levels = levelClass.getEnumConstants();
 
 		this.levelState.addLevelUpListener( (lvlState) -> {
-			getOwner().sendMessage(
+			getOwnerKey().sendMessage(
 				LevelItem.getLevelUpMessage(this)
 			);
 		} );

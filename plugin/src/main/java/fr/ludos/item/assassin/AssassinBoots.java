@@ -23,18 +23,30 @@ import fr.ludos.role.Role;
 import fr.ludos.role.AssassinRole;
 import fr.ludos.game.Game;
 
-
 public class AssassinBoots extends SpecialItem {
-    public AssassinBoots(ItemStack stack, Game game) {
-        super(stack, game);
-    }
-    public AssassinBoots(Player owner, Game game) {
-        super(new ItemStack(Material.IRON_BOOTS), owner, game);
+    public static final String ID = "assassin_boots";
+
+    public static @Nullable AssassinBoots fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		if (owner == null) return null;
+
+		return new AssassinBoots(stack, owner, game);
+	}
+
+	public static AssassinBoots createItem(Player owner, Game game) {
+		AssassinBoots boots = new AssassinBoots(new ItemStack(Material.IRON_BOOTS), owner, game);
+		boots.initializeItem();
+
+		return boots;
+	}
+
+    public AssassinBoots(ItemStack stack, Player player, Game game) {
+        super(stack, player, game);
     }
 
     @Override
     public String getId() {
-        return "assassinBoots";
+        return ID;
     }
 
     @Override
@@ -51,6 +63,8 @@ public class AssassinBoots extends SpecialItem {
             Component.text("Résistance aux dégâts de chute (+2 blocs)")
         ));
     }
+
+
 
 
     public static class Events extends SpecialItem.Events<AssassinBoots> {
@@ -92,17 +106,14 @@ public class AssassinBoots extends SpecialItem {
         @Override
         @Nullable
         protected AssassinBoots getItem(ItemStack stack, Game game) {
-            try {
-                AssassinBoots boots = new AssassinBoots(stack, game);
-                return boots;
-            } catch (IllegalArgumentException e) {
-                return null;
-            }
+            return AssassinBoots.fromItemStack(stack, game);
         }
+        
         @Override
         protected AssassinBoots createItem(Player owner, Game game) {
-            return new AssassinBoots(owner, game);
+            return AssassinBoots.createItem(owner, game);
         }
+
         @Override
         protected Boolean canPlayerHaveItem(HumanEntity owner) {
             return Role.isPlayerRole(owner, AssassinRole.id);

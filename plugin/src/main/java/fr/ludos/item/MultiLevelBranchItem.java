@@ -82,7 +82,7 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 
 		for (LevelItem.LevelState state : levelStates) {
 			state.addLevelUpListener( (lvlState) -> {
-				getOwner().sendMessage(
+				getOwnerKey().sendMessage(
 					LevelItem.getLevelUpMessage(this)
 				);
 			} );

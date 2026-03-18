@@ -61,6 +61,7 @@ public class TrapperDagger extends LevelItem<TrapperDaggerLevels> {
 
 		return new TrapperDagger(stack, owner, new LevelState(), game);
 	}
+
 	public static TrapperDagger createItem(Player owner, Game game) {
 		TrapperDagger dagger = new TrapperDagger(new ItemStack(Material.STONE_SWORD), owner, new LevelState(), game);
 		dagger.initializeItem();
@@ -77,12 +78,12 @@ public class TrapperDagger extends LevelItem<TrapperDaggerLevels> {
 	protected String getId() {
 		return ID;
 	}
+
 	@Override
 	public Component getName() {
 		return Component.text("Trapper Dagger")
 			.decoration(TextDecoration.ITALIC, false);
 	}
-
 
 	public static class Events extends SpecialItem.Events<TrapperDagger> {
 		private final int luck = 2;

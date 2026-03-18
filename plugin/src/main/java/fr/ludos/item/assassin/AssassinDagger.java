@@ -24,16 +24,29 @@ import fr.ludos.game.Game;
 
 
 public class AssassinDagger extends SpecialItem {
-    public AssassinDagger(ItemStack stack, Game game) {
-        super(stack, game);
-    }
-    public AssassinDagger(Player owner, Game game) {
-        super(new ItemStack(Material.IRON_SWORD), owner, game);
+    public static final String ID = "assassin_dagger";
+
+    public static @Nullable AssassinDagger fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		if (owner == null) return null;
+
+		return new AssassinDagger(stack, owner, game);
+	}
+
+	public static AssassinDagger createItem(Player owner, Game game) {
+		AssassinDagger dagger = new AssassinDagger(new ItemStack(Material.IRON_SWORD), owner, game);
+		dagger.initializeItem();
+
+		return dagger;
+	}
+
+    public AssassinDagger(ItemStack stack, Player player, Game game) {
+        super(stack, player, game);
     }
 
     @Override
     public String getId() {
-        return "assassinDagger";
+        return ID;
     }
 
     @Override
@@ -76,16 +89,11 @@ public class AssassinDagger extends SpecialItem {
         @Override
         @Nullable
         protected AssassinDagger getItem(ItemStack stack, Game game) {
-            try {
-                AssassinDagger dagger = new AssassinDagger(stack, game);
-                return dagger;
-            } catch (IllegalArgumentException e) {
-                return null;
-            }
+            return AssassinDagger.fromItemStack(stack, game);
         }
         @Override
         protected AssassinDagger createItem(Player owner, Game game) {
-            return new AssassinDagger(owner, game);
+            return AssassinDagger.createItem(owner, game);
         }
         @Override
         protected Boolean canPlayerHaveItem(HumanEntity owner) {

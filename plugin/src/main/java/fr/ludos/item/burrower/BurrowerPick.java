@@ -54,6 +54,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 
 		return new BurrowerPick(stack, owner, BurrowerPickBranches.values()[branchIndex], levelState, game);
 	}
+	
 	public static BurrowerPick createItem(Player owner, LevelState level, Game game) {
 		BurrowerPickLevels lvl = BurrowerPickLevels.values()[level.getLevel()];
 		BurrowerPick burrowerPick = new BurrowerPick(new ItemStack(lvl.getMaterial()), owner, BurrowerPickBranches.Pickaxe, level, game);

@@ -28,6 +28,7 @@ public class ManhuntCompass extends SpecialItem {
 
 		return new ManhuntCompass(stack, owner, game);
 	}
+	
 	public static ManhuntCompass createItem(Player owner, Game game) {
 		return new ManhuntCompass(createItemStack(), owner, game);
 	}
@@ -35,7 +36,6 @@ public class ManhuntCompass extends SpecialItem {
 	protected ManhuntCompass(ItemStack stack, Player owner, Game game) {
 		super(stack, owner, game);
 	}
-
 
 	@Override
 	public String getId() {

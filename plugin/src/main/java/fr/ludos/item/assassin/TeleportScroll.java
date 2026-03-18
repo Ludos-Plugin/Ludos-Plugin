@@ -33,18 +33,44 @@ import fr.ludos.game.Game;
 import fr.ludos.game.manhunt.ManhuntGame;
 import fr.ludos.game.manhunt.ManhuntAreaOptions;
 
-
 public class TeleportScroll extends SpecialItem {
-    public TeleportScroll(ItemStack stack, Game game) {
-        super(stack, game);
-    }
-    public TeleportScroll(Player owner, Game game) {
-        super(new ItemStack(Material.PAPER), owner, game);
+    public static final String ID = "teleport_scroll";
+
+    // public static @Nullable TeleportScroll fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+	// 	Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+	// 	if (owner == null) return null;
+
+	// 	return new TeleportScroll(stack, owner, game);
+	// }
+	public static @Nullable TeleportScroll fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+		// TeleportScroll cached = cachedItems.get(stack);
+		// if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		if (owner == null) return null;
+
+		TeleportScroll scroll = new TeleportScroll(stack, owner, game);
+		// cachedItems.put(stack, scroll);
+
+		return scroll;
+	}
+
+	public static TeleportScroll createItem(Player owner, Game game) {
+		TeleportScroll scroll = new TeleportScroll(new ItemStack(Material.PAPER), owner, game);
+		scroll.initializeItem();
+
+		// cachedItems.put(scroll.getStack(), scroll);
+
+		return scroll;
+	}
+
+    public TeleportScroll(ItemStack stack, Player player, Game game) {
+        super(stack, player, game);
     }
 
     @Override
     public String getId() {
-        return "teleportScroll";
+        return ID;
     }
 
     @Override
@@ -57,13 +83,12 @@ public class TeleportScroll extends SpecialItem {
     public List<Component> getLore(){
         return new ArrayList<>(Arrays.asList(
             Component.text("Téléporte-toi aléatoirement"),
-            Component.text("Cooldown : 30 secondes")
+            Component.text("Cooldown : 5 secondes")
         ));
     }
 
-
     public static class Events extends SpecialItem.Events<TeleportScroll> {
-        private static final int COOLDOWN = 20 * 30; // 30 secondes
+        private static final int COOLDOWN = 20 * 5; // 5 secondes
         private static final int MAX_ATTEMPTS = 100;
         private static final int INVULNERABILITY_DURATION = 20; // 1 seconde
         private final Random random = new Random();
@@ -101,28 +126,16 @@ public class TeleportScroll extends SpecialItem {
                 }.runTaskLater(game.getPlugin(), INVULNERABILITY_DURATION);
 
                 player.setCooldown(Material.ENDER_PEARL, COOLDOWN);
-
-                if (itemInHand.getAmount() > 1) {
-                    itemInHand.setAmount(itemInHand.getAmount() - 1);
-                } else {
-                    player.getInventory().setItemInMainHand(null);
-                }
             }
         }
 
         private Location findSafeLocation(World world) {
-            // Récupérer la taille de la map depuis le jeu Manhunt
-            int mapSize = 250; // Valeur par défaut
-
-            Game currentGame = Game.getCurrent();
-            if (currentGame != null && currentGame instanceof ManhuntGame) {
-                ManhuntGame manhuntGame = (ManhuntGame) currentGame;
-                //mapSize = manhuntGame.ManhuntAreaOptions.getSize();
-            }
+            Location borderCenter = world.getWorldBorder().getCenter();
+            double borderSize = world.getWorldBorder().getSize() / 2;
 
             for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-                int x = random.nextInt(-mapSize, mapSize);
-                int z = random.nextInt(-mapSize, mapSize);
+                int x = random.nextInt((int)(borderCenter.getX() - borderSize), (int)(borderCenter.getX() + borderSize));
+                int z = random.nextInt((int)(borderCenter.getZ() - borderSize), (int)(borderCenter.getZ() + borderSize));
 
                 int highestY = world.getHighestBlockYAt(x, z);
                 Block blockAtY = world.getBlockAt(x, highestY, z);
@@ -148,17 +161,14 @@ public class TeleportScroll extends SpecialItem {
         @Override
         @Nullable
         protected TeleportScroll getItem(ItemStack stack, Game game) {
-            try {
-                TeleportScroll scroll = new TeleportScroll(stack, game);
-                return scroll;
-            } catch (IllegalArgumentException e) {
-                return null;
-            }
+            return TeleportScroll.fromItemStack(stack, game);
         }
+
         @Override
         protected TeleportScroll createItem(Player owner, Game game) {
-            return new TeleportScroll(owner, game);
+            return TeleportScroll.createItem(owner, game);
         }
+        
         @Override
         protected Boolean canPlayerHaveItem(HumanEntity owner) {
             return Role.isPlayerRole(owner, AssassinRole.id);

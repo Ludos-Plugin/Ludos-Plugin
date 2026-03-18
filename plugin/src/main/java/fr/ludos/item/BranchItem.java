@@ -129,7 +129,7 @@ public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Bran
 		TBranch newBranch = branches[(getBranch().ordinal() + 1) % branches.length];
 		setBranch(newBranch);
 
-		Player owner = getOwner();
+		Player owner = getOwnerKey();
 		owner.playSound(owner.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 0.25f, 1);
 	}
 

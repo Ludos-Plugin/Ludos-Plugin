@@ -86,10 +86,10 @@ public class BurrowerShovel extends SpecialItem {
 
 
 	public void useAbility() {
-		if (getOwner().hasCooldown(getStack().getType())) {
+		if (getOwnerKey().hasCooldown(getStack().getType())) {
 			return;
 		}
-		List<BlockState> playerBlocks = tunnelBlocks.get(getOwner());
+		List<BlockState> playerBlocks = tunnelBlocks.get(getOwnerKey());
 
 
 		if (playerBlocks != null) {
@@ -111,7 +111,7 @@ public class BurrowerShovel extends SpecialItem {
 
 
 	private void digTunnel() {
-		List<Block> lastTwoTargetBlocks = getOwner().getLastTwoTargetBlocks(null, 20);
+		List<Block> lastTwoTargetBlocks = getOwnerKey().getLastTwoTargetBlocks(null, 20);
 		if (lastTwoTargetBlocks.size() != 2) return;
 		Block targetBlock = lastTwoTargetBlocks.get(1);
 		Block adjacentBlock = lastTwoTargetBlocks.get(0);
@@ -121,8 +121,8 @@ public class BurrowerShovel extends SpecialItem {
 		List<BlockState> playerBlocks = new ArrayList<>();
 
 		for (int i = 1; i <= TUNNEL_LENGTH; i++) {
-			tunnelBlock(getOwner(), currentLocation, playerBlocks);
-			tunnelBlock(getOwner(), currentLocation.clone().add(0, -1, 0), playerBlocks);
+			tunnelBlock(getOwnerKey(), currentLocation, playerBlocks);
+			tunnelBlock(getOwnerKey(), currentLocation.clone().add(0, -1, 0), playerBlocks);
 			currentLocation.add(face.getDirection().multiply(-1));
 		}
 
@@ -130,8 +130,8 @@ public class BurrowerShovel extends SpecialItem {
 			return;
 		}
 
-		tunnelBlocks.put(getOwner(), playerBlocks);
-		getOwner().setCooldown(getStack().getType(), 5);
+		tunnelBlocks.put(getOwnerKey(), playerBlocks);
+		getOwnerKey().setCooldown(getStack().getType(), 5);
 	}
 
     private void tunnelBlock(Player player, Location location, List<BlockState> blockBuffer) {
@@ -150,7 +150,7 @@ public class BurrowerShovel extends SpecialItem {
 
 
 	private void revertTunnel() {
-		List<BlockState> playerBlocks = tunnelBlocks.get(getOwner());
+		List<BlockState> playerBlocks = tunnelBlocks.get(getOwnerKey());
 		if (playerBlocks == null) {
 			return;
 		}
@@ -163,9 +163,9 @@ public class BurrowerShovel extends SpecialItem {
 			currentBlock.setType(blockState.getType(), true);
         });
 
-		tunnelBlocks.remove(getOwner());
+		tunnelBlocks.remove(getOwnerKey());
 
-		getOwner().setCooldown(getStack().getType(), COOLDOWN_SECONDS * 20);
+		getOwnerKey().setCooldown(getStack().getType(), COOLDOWN_SECONDS * 20);
 	}
 
 

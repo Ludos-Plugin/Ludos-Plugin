@@ -44,7 +44,7 @@ public abstract class LevelBranchItem<TBranch extends Enum<TBranch> & BranchItem
 	public void cycleBranch() {
 		setBranch(getBranches()[(getBranch().ordinal() + 1) % getBranches().length]);
 
-		Player owner = getOwner();
+		Player owner = getOwnerKey();
 		owner.playSound(owner.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 0.25f, 1);
 	}
 

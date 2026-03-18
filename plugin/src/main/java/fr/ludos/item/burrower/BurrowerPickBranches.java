@@ -40,7 +40,7 @@ public enum BurrowerPickBranches implements BranchItem.Branch<BurrowerPickBranch
 	) {
 		@Override
 		public void onBreakBlock(BurrowerPick pick, BlockBreakEvent event) {
-			Player player = pick.getOwner();
+			Player player = pick.getOwnerKey();
 
 			List<Block> lastTwoTargetBlocks = player.getLastTwoTargetBlocks(null, 100);
 			if (lastTwoTargetBlocks.size() != 2) return;
@@ -56,12 +56,12 @@ public enum BurrowerPickBranches implements BranchItem.Branch<BurrowerPickBranch
 
 		@Override
 		public void onEquip(SpecialItem item) {
-			Player owner = item.getOwner();
+			Player owner = item.getOwnerKey();
 			owner.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, Integer.MAX_VALUE, 0, false, false));
 		}
 		@Override
 		public void onUnequip(SpecialItem item) {
-			Player owner = item.getOwner();
+			Player owner = item.getOwnerKey();
 			owner.removePotionEffect(PotionEffectType.SLOW_DIGGING);
 		}
 	};

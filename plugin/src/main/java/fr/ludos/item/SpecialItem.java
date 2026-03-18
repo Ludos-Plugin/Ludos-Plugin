@@ -44,11 +44,11 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public abstract class SpecialItem {
 
-	public static final String ID = "id";
-	private static final NamespacedKey idKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ID);
+	public static final String ID_KEY = "id";
+	private static final NamespacedKey idKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ID_KEY);
 
-	public static final String OWNER = "owner";
-	private static final NamespacedKey ownerKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), OWNER);
+	public static final String OWNER_KEY = "owner";
+	private static final NamespacedKey ownerKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), OWNER_KEY);
 
 	public static final int USAGE_COOLDOWN = 3;
 
@@ -61,7 +61,7 @@ public abstract class SpecialItem {
 	}
 
 	private final Player owner;
-	public Player getOwner() {
+	public Player getOwnerKey() {
 		return owner;
 	}
 
@@ -122,6 +122,7 @@ public abstract class SpecialItem {
 
 		onInitialize();
 	}
+	
 	protected void onInitialize() { }
 
 
@@ -147,7 +148,7 @@ public abstract class SpecialItem {
 	}
 
 	protected final boolean refreshUseCooldown() {
-		Player owner = getOwner();
+		Player owner = getOwnerKey();
 		Material itemType = getStack().getType();
 
 		int cooldown = owner.getCooldown(itemType);
