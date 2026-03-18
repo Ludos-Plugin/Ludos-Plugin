@@ -27,7 +27,7 @@ import fr.ludos.role.TankRole;
 public class TankDashObject extends SpecialItem {
 	private static final String ID = "tank_dasher";
 	private static final int COOLDOWN_DURATION = 30;
-	public static final double dashpower = 2.0;
+	public static final double dashpower = 5.0;
 
 	protected TankDashObject(ItemStack stack, Player owner, Game game) {
 		super(stack, owner, game);
@@ -89,7 +89,7 @@ public class TankDashObject extends SpecialItem {
 
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {
-			return Role.isPlayerRole(owner, TankRole.ID);
+			return Role.isPlayerRole(owner, TankRole.id);
 		}
 
 		@EventHandler

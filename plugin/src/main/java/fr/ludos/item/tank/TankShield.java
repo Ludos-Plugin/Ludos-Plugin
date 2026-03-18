@@ -20,7 +20,9 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -43,8 +45,12 @@ public class TankShield extends SpecialItem {
 
     public static TankShield createItem(Player owner, Game game) {
         TankShield shield = new TankShield(createItemStack(), owner, game);
-        shield.initializeItem(false);
-        
+        shield.initializeItem();
+
+        ItemMeta meta = shield.getStack().getItemMeta();
+        meta.setUnbreakable(false);
+        shield.getStack().setItemMeta(meta);
+
         return shield;
     }
 
@@ -88,7 +94,7 @@ public class TankShield extends SpecialItem {
 
         @Override
         protected Boolean canPlayerHaveItem(HumanEntity owner) {
-            return Role.isPlayerRole(owner, TankRole.ID);
+            return Role.isPlayerRole(owner, TankRole.id);
         }
 
         @EventHandler
@@ -133,15 +139,24 @@ public class TankShield extends SpecialItem {
             }
 
             if (makeCooldown) {
-                startCooldown(defender, offHand);
-
                 PlayerInventory defenderInventory = defender.getInventory();
-
                 defenderInventory.setItemInOffHand(null);
-                new BukkitRunnable() {
-                    public void run() { defenderInventory.setItemInOffHand(stack); }
-                }.runTaskLater(game.getPlugin(), 1);
+
+                startCooldown(defender, stack, defenderInventory);
             }
+        }
+
+        @EventHandler(priority = EventPriority.HIGHEST)
+        public void onShieldInteract(PlayerInteractEvent event) {
+            if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+
+            Player player = event.getPlayer();
+            if (player.getCooldown(Material.SHIELD) <= 0) return;
+
+            ItemStack offHand = player.getInventory().getItemInOffHand();
+            if (TankShield.fromItemStack(offHand, game) == null) return;
+
+            event.setCancelled(true);
         }
 
         @EventHandler(priority = EventPriority.HIGHEST)
@@ -156,13 +171,17 @@ public class TankShield extends SpecialItem {
             event.setCancelled(true);
         }
 
-        private void startCooldown(Player player, ItemStack shieldItem) {
+        private void startCooldown(Player player, ItemStack shieldItem, PlayerInventory inventory) {
             UUID playerId = player.getUniqueId();
-            
+
             hitCounts.put(playerId, 0);
-            
+
             player.setCooldown(Material.SHIELD, COOLDOWN_DURATION);
             player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BREAK, 1.0f, 1.0f);
+
+            new BukkitRunnable() {
+                public void run() { inventory.setItemInOffHand(shieldItem); }
+            }.runTaskLater(game.getPlugin(), COOLDOWN_DURATION);
         }
 
         public void resetPlayer(Player player) {

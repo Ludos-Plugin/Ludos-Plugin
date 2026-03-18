@@ -30,7 +30,13 @@ public class TankRole extends Role {
 
 	@Override
 	protected LinkedHashMap<String, Events<?>> createItemEvents(Role.Builder builder, Game game) {
-		return new LinkedHashMap<>();
+		return new LinkedHashMap<>() {
+			{
+				put("tankShield", new fr.ludos.item.tank.TankShield.Events(game));
+				put("tankHelmet", new fr.ludos.item.tank.TankHelmet.Events(game));
+				put("tankDasher", new fr.ludos.item.tank.TankDashObject.Events(game));
+			}
+		};
 	}
 
 	public static void setAttributePlayer(List<Player> players, PotionEffect AbsorbEffect,
@@ -38,7 +44,7 @@ public class TankRole extends Role {
 	}
 
 	@Override
-	protected void onStart() {
+	protected void onRoleStart() {
 		List<Player> players = Role.getPlayersOfRole(id);
 
 		PotionEffect absordEffect = new PotionEffect(
@@ -59,7 +65,7 @@ public class TankRole extends Role {
 	}
 
 	@Override
-	protected void onStop() {
+	protected void onRoleStop() {
 		for (Player player : TanksRolePlayers()) {
 			player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20.0);
 			for (PotionEffect potion : player.getActivePotionEffects()) {
