@@ -12,11 +12,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.google.gson.*;
 
 public final class ResourcePackLoader {
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    // private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     
     private final JavaPlugin plugin;
     private final Path baseResourcePath;
-    
+
     private final ConcurrentHashMap<String, ModelData> models = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Material, List<ModelData>> materialModels = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Material, TextureProvider> materialProviders = new ConcurrentHashMap<>();
@@ -42,8 +42,8 @@ public final class ResourcePackLoader {
         
         try (Stream<Path> files = Files.list(providerPath)) {
             files.filter(Files::isRegularFile)
-                 .filter(p -> p.toString().endsWith(".json"))
-                 .forEach(file -> processModel(file, provider));
+                 .filter(fileName -> fileName.toString().endsWith(".json"))
+                 .forEach(pathFile -> processModel(pathFile, provider));
         } catch (IOException e) {
             plugin.getLogger().warning("Failed to load models for " + provider.getTextureId() + ": " + e.getMessage());
         }
@@ -88,7 +88,9 @@ public final class ResourcePackLoader {
             .or(() -> !"normal".equals(mode) ? getModel(provider, variant.replaceAll("[0-9]+$", ""), "normal") : Optional.empty());
     }
     
-    public int getModelCount() { return models.size(); }
+    public int getModelCount() { 
+        return models.size();
+    }
     
     // private void generateOverrides() {
     //     materialModels.forEach((material, modelList) -> {

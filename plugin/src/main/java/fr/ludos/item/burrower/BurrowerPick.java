@@ -101,6 +101,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 
 		applyTexture();
 		updateWielding();
+		
 		updateLore();
 		updateName();
 	}
@@ -225,7 +226,7 @@ public class BurrowerPick extends LevelItem<BurrowerPickLevels> {
 			.append(Component.text(hammerMode ? "Hammer" : "Pickaxe")
 				.color(hammerMode ? NamedTextColor.RED : NamedTextColor.AQUA))
 			.append(Component.text(")"))
-			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
+			.decoration(TextDecoration.ITALIC, false);
 	}
 
 	@Override

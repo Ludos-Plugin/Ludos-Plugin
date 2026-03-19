@@ -4,7 +4,6 @@ api: test
 api-version: 1.19
 main: fr.ludos.Ludos
 
-
 commands:
    ludos:
       description: "The Main Ludos command"
