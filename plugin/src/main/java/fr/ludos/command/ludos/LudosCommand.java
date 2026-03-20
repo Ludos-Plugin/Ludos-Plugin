@@ -16,50 +16,24 @@ import fr.ludos.Ludos;
 import fr.ludos.command.CommandUtility;
 
 public class LudosCommand implements TabExecutor {
-	private final Ludos plugin;
-	private final GameSubcommand gameCommand;
-	private final RoleSubcommand roleCommand;
+	private final GameSubcommandManager gameCommand;
+	private final RoleSubcommandManager roleCommand;
 
-	public LudosCommand(Ludos plugin) {
-		this.plugin = plugin;
-
-		this.gameCommand = new GameSubcommand(this.plugin);
-		this.roleCommand = new RoleSubcommand(this.plugin);
+	public LudosCommand() {
+		this.gameCommand = new GameSubcommandManager();
+		this.roleCommand = new RoleSubcommandManager();
 	}
 
-
-	@Override
-	public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		if (args.length <= 1) {
-			return Arrays.stream(LudosSubcommands.values()).map(LudosSubcommands::name)
-				.collect(Collectors.toList());
-		}
-
-		String arg = args[0];
-		LudosSubcommands option = Arrays.stream(LudosSubcommands.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
-		if (option == null) return null;
-
-		switch (option) {
-			case game:
-				return gameCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-			case role:
-				return roleCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-			case guidebook:
-				return CommandUtility.getOnlinePlayerNames();
-			default:
-				return null;
-		}
-	}
 
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length == 0) {
-			sender.sendMessage(getUsage(sender, command, label));
+			sender.sendMessage(getUsage());
 			return true;
 		}
 
 		String arg = args[0];
-		LudosSubcommands option = Arrays.stream(LudosSubcommands.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
+		LudosSubcommand option = Arrays.stream(LudosSubcommand.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 		if (option == null) return false;
 
 		switch (option) {
@@ -75,24 +49,46 @@ public class LudosCommand implements TabExecutor {
 				}
 				return true;
 			case help:
-				sender.sendMessage(getUsage(sender, command, label));
+				sender.sendMessage(getUsage());
 				return true;
 			default:
 				return false;
 		}
 	}
 
-	public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-		StringBuilder usage = new StringBuilder("/" + label + " ");
+	@Override
+	public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+		if (args.length <= 1) {
+			return Arrays.stream(LudosSubcommand.values()).map(LudosSubcommand::name)
+				.collect(Collectors.toList());
+		}
+
+		String arg = args[0];
+		LudosSubcommand option = Arrays.stream(LudosSubcommand.values()).filter(o -> o.name().equalsIgnoreCase(arg)).findFirst().orElse(null);
+		if (option == null) return null;
+
+		switch (option) {
+			case game:
+				return gameCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+			case role:
+				return roleCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+			case guidebook:
+				return CommandUtility.getOnlinePlayerNames();
+			default:
+				return null;
+		}
+	}
+
+	public String getUsage() {
+		StringBuilder usage = new StringBuilder("/ludos ");
 
 		usage.append('<');
 		usage.append(
-			Arrays.stream(LudosSubcommands.values()).map(LudosSubcommands::toString)
+			Arrays.stream(LudosSubcommand.values()).map(LudosSubcommand::name)
 				.collect(Collectors.joining(" | "))
 		);
 		usage.append('>');
 
 		return usage.toString();
 	}
-
 }

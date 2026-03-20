@@ -19,6 +19,7 @@ import fr.ludos.book.BookUtility;
 import fr.ludos.command.ludos.LudosCommand;
 import fr.ludos.game.Game;
 import fr.ludos.game.manhunt.ManhuntGame;
+import fr.ludos.role.AssassinRole;
 import fr.ludos.role.BurrowerRole;
 import fr.ludos.role.BerserkerRole;
 import fr.ludos.role.HuntsmanRole;
@@ -40,19 +41,21 @@ public class Ludos extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		Role.loadConfigRoles(this);
+
 		Game.registerGame(new ManhuntGame.Builder(this));
 
 		Role.registerRole(new HuntsmanRole.Builder(this));
 		Role.registerRole(new BurrowerRole.Builder(this));
 		Role.registerRole(new TrapperRole.Builder(this));
+		Role.registerRole(new AssassinRole.Builder(this));
 		Role.registerRole(new BerserkerRole.Builder(this));
 
 
 		PluginCommand cmd = getCommand("ludos");
-		LudosCommand ludosCommand = new LudosCommand(this);
+		LudosCommand ludosCommand = new LudosCommand();
 		cmd.setExecutor(ludosCommand);
 		cmd.setTabCompleter(ludosCommand);
-		// cmd.setUsage(ludosCommand.getUsage());
+		cmd.setUsage(ludosCommand.getUsage());
 
 		Bukkit.getPluginManager().registerEvents(this, this);
 	}

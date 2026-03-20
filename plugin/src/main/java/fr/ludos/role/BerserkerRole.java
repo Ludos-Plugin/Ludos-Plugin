@@ -36,13 +36,14 @@ import org.bukkit.util.RayTraceResult;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.game.GameEvents;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.item.berserker.BerserkerAxe;
 import fr.ludos.item.berserker.BerserkerRageBrew;
 
 
 public class BerserkerRole extends Role {
-	public static final String id = "berserker";
+	public static final String ID = "berserker";
 
 	private static final int AXE_COOLDOWN_TICKS = 20;      // 1s par hache hors rage
 	private static final int RAGE_COOLDOWN_TICKS = 15;     // 0.75s par hache pendant la rage
@@ -78,19 +79,19 @@ public class BerserkerRole extends Role {
 	}
 
 	@Override
-	protected LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
-		LinkedHashMap<String, SpecialItem.Events<?>> map = new LinkedHashMap<>();
+	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
+		LinkedHashMap<String, GameEvents> map = new LinkedHashMap<>();
 		map.put("axe", new BerserkerAxe.Events(game, this));
 		map.put("rage_brew", new BerserkerRageBrew.Events(game, this));
 		return map;
 	}
 
 	@Override
-	protected void onStart() {
+	protected void onRoleStart() {
 		particleTask = new BukkitRunnable() {
 			@Override
 			public void run() {
-				for (Player player : Role.getPlayersOfRole(id)) {
+				for (Player player : Role.getPlayersOfRole(ID)) {
 					if (player == null || !player.isOnline()) continue;
 					spawnRageParticles(player);
 				}
@@ -99,7 +100,7 @@ public class BerserkerRole extends Role {
 	}
 
 	@Override
-	protected void onStop() {
+	protected void onRoleStop() {
 		if (particleTask != null) {
 			particleTask.cancel();
 			particleTask = null;
@@ -113,7 +114,7 @@ public class BerserkerRole extends Role {
 	// LOWEST = on intercepte avant tout autre handler → la cancellation est la plus tôt possible
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onArmSwing(PlayerAnimationEvent event) {
-		if (!Role.isPlayerRole(event.getPlayer(), id)) return;
+		if (!Role.isPlayerRole(event.getPlayer(), ID)) return;
 
 		Player player = event.getPlayer();
 		BerserkerAxe axe = BerserkerAxe.getItem(player.getInventory().getItemInMainHand(), getGame());
@@ -128,7 +129,7 @@ public class BerserkerRole extends Role {
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
 		if (!(event.getDamager() instanceof Player player)) return;
-		if (!Role.isPlayerRole(player, id)) return;
+		if (!Role.isPlayerRole(player, ID)) return;
 		if (offHandDamageSource.contains(player.getUniqueId())) return;
 
 		BerserkerAxe axe = BerserkerAxe.getItem(player.getInventory().getItemInMainHand(), getGame());
@@ -159,7 +160,7 @@ public class BerserkerRole extends Role {
 		if (event.getHand() != EquipmentSlot.HAND) return;
 		Action action = event.getAction();
 		if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return;
-		if (!Role.isPlayerRole(event.getPlayer(), id)) return;
+		if (!Role.isPlayerRole(event.getPlayer(), ID)) return;
 
 		Player player = event.getPlayer();
 
@@ -188,8 +189,8 @@ public class BerserkerRole extends Role {
 		if (ray == null || !(ray.getHitEntity() instanceof LivingEntity target)) return;
 
 		double baseDamage = player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getValue();
-		if (axe.getLevel() >= 1) {
-			baseDamage += 0.5 * axe.getSharpnessLevel();
+		if (axe.getLvl() >= 1) {
+			baseDamage += 0.5 * axe.getLvlObject().getDamageBonus();
 		}
 
 		offHandDamageSource.add(player.getUniqueId());
@@ -204,64 +205,6 @@ public class BerserkerRole extends Role {
 				spawnLifestealParticles(player);
 				player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.8f);
 			}
-		}
-	}
-
-	@EventHandler(ignoreCancelled = true)
-	public void onPlayerTakeDamage(EntityDamageEvent event) {
-		if (!(event.getEntity() instanceof Player player)) return;
-		if (!Role.isPlayerRole(player, id)) return;
-		if (event.getFinalDamage() <= 0) return;
-
-		addXP(player, event.getFinalDamage());
-	}
-
-	private void addXP(Player player, double damage) {
-		UUID uuid = player.getUniqueId();
-		double currentXP = playerXP.getOrDefault(uuid, 0.0) + damage;
-		playerXP.put(uuid, currentXP);
-
-		int currentLevel = playerLevel.getOrDefault(uuid, 0);
-		int newLevel = currentLevel;
-
-		for (int i = currentLevel; i < XP_THRESHOLDS.length; i++) {
-			if (currentXP >= XP_THRESHOLDS[i]) {
-				newLevel = i + 1;
-			} else {
-				break;
-			}
-		}
-
-		if (newLevel > currentLevel) {
-			playerLevel.put(uuid, newLevel);
-			levelUp(player, newLevel);
-		}
-	}
-
-	private void levelUp(Player player, int newLevel) {
-		upgradeAxesToLevel(player, newLevel);
-		player.sendMessage(
-			Component.text("Niveau ", NamedTextColor.GOLD)
-				.append(Component.text(newLevel, NamedTextColor.YELLOW))
-				.append(Component.text(" atteint ! Vos haches ont été améliorées.", NamedTextColor.GOLD))
-		);
-		player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
-	}
-
-	private void upgradeAxesToLevel(Player player, int newLevel) {
-		PlayerInventory inv = player.getInventory();
-		ItemStack[] contents = inv.getContents();
-
-		for (int i = 0; i < contents.length; i++) {
-			if (contents[i] == null) continue;
-			BerserkerAxe axe = BerserkerAxe.getItem(contents[i], getGame());
-			if (axe == null) continue;
-			inv.setItem(i, BerserkerAxe.createItem(player, axe.getVariant(), newLevel, getGame()).getStack());
-		}
-
-		BerserkerAxe offHandAxe = BerserkerAxe.getItem(inv.getItemInOffHand(), getGame());
-		if (offHandAxe != null) {
-			inv.setItemInOffHand(BerserkerAxe.createItem(player, offHandAxe.getVariant(), newLevel, getGame()).getStack());
 		}
 	}
 
@@ -294,7 +237,7 @@ public class BerserkerRole extends Role {
 
 		@Override
 		public String getId() {
-			return id;
+			return ID;
 		}
 
 		@Override

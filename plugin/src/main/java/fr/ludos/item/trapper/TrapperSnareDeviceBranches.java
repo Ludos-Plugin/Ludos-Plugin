@@ -39,7 +39,7 @@ public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnare
 
 				@Override
 				public void triggerBlockTrapEffect(LivingEntity target) {
-					target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20 * 20, 1));
+					target.addPotionEffect(PotionEffectType.GLOWING.createEffect(20 * 20, 1));
 					// TODO: Envoyer un event au plugin pour notifier que le joueur a été révélé et declencher le reveal de la position du joueur
 					//Bukkit.getServer().getPluginManager().callEvent()
 				}
@@ -67,7 +67,7 @@ public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnare
 
 				@Override
 				public void triggerBlockTrapEffect(LivingEntity target) {
-					target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20 * 10, 1));
+					target.addPotionEffect(PotionEffectType.SLOW.createEffect(20 * 10, 1));
 
 					// TODO: Find an algorithm to make a web-like structure around the trap location
 					// For now, just set the block to cobweb
@@ -141,11 +141,16 @@ public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnare
 	}
 
 	@Override
-	public void onEquip(SpecialItem item) {
+	public void onEquip(SpecialItem item) { }
+	@Override
+	public void onUnequip(SpecialItem item) { }
+
+	@Override
+	public void onSelectBranch(SpecialItem item) {
 		item.getStack().setType(type);
 	}
 	@Override
-	public void onUnequip(SpecialItem item) {}
+	public void onDeselectBranch(SpecialItem item) { }
 
 	public abstract TrapperTrap createTrap(Player owner, Block block, BlockFace face);
 }
