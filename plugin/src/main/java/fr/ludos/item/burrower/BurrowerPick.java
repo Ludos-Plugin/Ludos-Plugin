@@ -198,7 +198,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 	public static class Events extends LevelBranchItem.Events<BurrowerPick, BurrowerPickBranches, BurrowerPickLevels> {
 
 		public Events(Game game) {
-			super(game, BurrowerPickLevels.WOODEN, 0);
+			super(game, 0);
 		}
 
 		@EventHandler

@@ -378,22 +378,16 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 	}
 
 	public static abstract class Events<T extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & Level<TLevel>> extends SpecialItem.Events<T> {
-		protected final TLevel baseLevel;
 		protected final Map<Player, LevelItem.LevelState> deadPlayerLevels = new HashMap<>();
 
-		protected Events(Game game, TLevel baseLevel, @Nullable Integer slot, boolean canDrop) {
+		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
 			super(game, slot, canDrop);
-			if (baseLevel == null) {
-				throw new IllegalArgumentException("Base level cannot be null");
-			}
-
-			this.baseLevel = baseLevel;
 		}
-		protected Events(Game game, TLevel baseLevel, @Nullable Integer slot) {
-			this(game, baseLevel, slot, false);
+		protected Events(Game game, @Nullable Integer slot) {
+			this(game, slot, false);
 		}
-		protected Events(Game game, TLevel baseLevel) {
-			this(game, baseLevel, null, false);
+		protected Events(Game game) {
+			this(game, null, false);
 		}
 
 
