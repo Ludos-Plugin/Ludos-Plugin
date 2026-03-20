@@ -44,8 +44,8 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 
 
 	public static BurrowerPick fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		// UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
-		// if (itemId == null) return null;
+		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		if (itemId == null) return null;
 
 		// BurrowerPick cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
@@ -54,7 +54,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 		if (owner == null) return null;
 		Integer branchIndex = BranchItem.branchFromItemStack(stack, game);
 		if (branchIndex == null) return null;
-		LevelState levelState = LevelItem.levelFromItemStack(stack, ID, game);
+		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
 		if (levelState == null) return null;
 
 		BurrowerPick burrowerPick = new BurrowerPick(stack, owner, BurrowerPickBranches.values()[branchIndex], levelState, game);

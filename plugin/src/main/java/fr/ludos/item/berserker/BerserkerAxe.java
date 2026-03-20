@@ -106,7 +106,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		LevelState levelState = LevelItem.levelFromItemStack(stack, ID, game);
+		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
 		if (levelState == null) return null;
 		Variant variant = getSpecialItemVariant(stack, game);
 		if (variant == null) return null;
