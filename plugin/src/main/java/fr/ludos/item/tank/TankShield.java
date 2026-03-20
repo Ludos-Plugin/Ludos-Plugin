@@ -149,25 +149,17 @@ public class TankShield extends SpecialItem {
 				stack.setItemMeta(damageable);
 			}
 
+
 			if (makeCooldown) {
+				startCooldown(defender, offHand);
+
 				PlayerInventory defenderInventory = defender.getInventory();
+
 				defenderInventory.setItemInOffHand(null);
-
-				startCooldown(defender, stack, defenderInventory);
+				new BukkitRunnable() {
+					public void run() { defenderInventory.setItemInOffHand(stack); }
+				}.runTaskLater(game.getPlugin(), 1);
 			}
-		}
-
-		@EventHandler(priority = EventPriority.HIGHEST)
-		public void onShieldInteract(PlayerInteractEvent event) {
-			if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-
-			Player player = event.getPlayer();
-			if (player.getCooldown(Material.SHIELD) <= 0) return;
-
-			ItemStack offHand = player.getInventory().getItemInOffHand();
-			if (TankShield.fromItemStack(offHand, game) == null) return;
-
-			event.setCancelled(true);
 		}
 
 		@EventHandler(priority = EventPriority.HIGHEST)
@@ -182,23 +174,21 @@ public class TankShield extends SpecialItem {
 			event.setCancelled(true);
 		}
 
-		private void startCooldown(Player player, ItemStack shieldItem, PlayerInventory inventory) {
+		private void startCooldown(Player player, ItemStack shieldItem) {
 			UUID playerId = player.getUniqueId();
 
 			hitCounts.put(playerId, 0);
 
 			player.setCooldown(Material.SHIELD, COOLDOWN_DURATION);
+			player.setShieldBlockingDelay(COOLDOWN_DURATION);
 			player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BREAK, 1.0f, 1.0f);
-
-			new BukkitRunnable() {
-				public void run() { inventory.setItemInOffHand(shieldItem); }
-			}.runTaskLater(game.getPlugin(), COOLDOWN_DURATION);
 		}
 
 		public void resetPlayer(Player player) {
 			UUID playerId = player.getUniqueId();
 			hitCounts.remove(playerId);
 			player.setCooldown(Material.SHIELD, 0);
+			player.setShieldBlockingDelay(0);
 		}
 	}
 }
