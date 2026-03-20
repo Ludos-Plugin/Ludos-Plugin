@@ -135,7 +135,7 @@ public class BerserkerRageBrew extends SpecialItem {
 			Player player = event.getPlayer();
 			if (!canPlayerHaveItem(player)) return;
 
-			event.setCancelled(true);
+			event.setReplacement(brew.getStack());
 
 			long now = System.currentTimeMillis();
 			long availableAt = cooldowns.getOrDefault(player.getUniqueId(), 0L);

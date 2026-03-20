@@ -7,17 +7,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -30,13 +35,16 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.FireworkEffectMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
+import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.item.berserker.BerserkerAxe;
 import fr.ludos.item.berserker.BerserkerRageBrew;
@@ -45,17 +53,12 @@ import fr.ludos.item.berserker.BerserkerRageBrew;
 public class BerserkerRole extends Role {
 	public static final String ID = "berserker";
 
-	private static final int AXE_COOLDOWN_TICKS = 20;      // 1s par hache hors rage
-	private static final int RAGE_COOLDOWN_TICKS = 15;     // 0.75s par hache pendant la rage
-	private static final double[] XP_THRESHOLDS = {20.0, 45.0, 80.0, 130.0, 190.0};
+	private static final int AXE_COOLDOWN_TICKS = 32;
+	private static final int RAGE_COOLDOWN_TICKS = 16;
 
 	private final Set<UUID> ragingPlayers = new HashSet<>();
 	private BukkitTask particleTask;
 
-	private final Set<UUID> offHandDamageSource = new HashSet<>();
-
-	private final Map<UUID, Double> playerXP = new HashMap<>();
-	private final Map<UUID, Integer> playerLevel = new HashMap<>();
 
 	public BerserkerRole(Builder builder, Game game) {
 		super(builder, game);
@@ -73,9 +76,8 @@ public class BerserkerRole extends Role {
 		}
 	}
 
-	public int getPlayerLevel(Player player) {
-		if (playerLevel == null) return 0;
-		return playerLevel.getOrDefault(player.getUniqueId(), 0);
+	public int calculateCooldown(Player player) {
+		return isRaging(player) ? RAGE_COOLDOWN_TICKS : AXE_COOLDOWN_TICKS;
 	}
 
 	@Override
@@ -106,125 +108,105 @@ public class BerserkerRole extends Role {
 			particleTask = null;
 		}
 		ragingPlayers.clear();
-		offHandDamageSource.clear();
-		playerXP.clear();
-		playerLevel.clear();
 	}
 
-	// LOWEST = on intercepte avant tout autre handler → la cancellation est la plus tôt possible
-	@EventHandler(priority = EventPriority.LOWEST)
-	public void onArmSwing(PlayerAnimationEvent event) {
-		if (!Role.isPlayerRole(event.getPlayer(), ID)) return;
-
-		Player player = event.getPlayer();
-		BerserkerAxe axe = BerserkerAxe.getItem(player.getInventory().getItemInMainHand(), getGame());
-		if (axe == null) return;
-
-		if (player.getCooldown(axe.getStack().getType()) > 0) {
-			event.setCancelled(true);
-		}
-	}
-
-	// HIGH = on s'assure que notre cancellation passe après les autres mais avant la résolution finale
-	@EventHandler(priority = EventPriority.HIGH)
+	@EventHandler
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
+		Bukkit.broadcastMessage(event.getDamage() + "");
 		if (!(event.getDamager() instanceof Player player)) return;
+		if (!(event.getEntity() instanceof LivingEntity target)) return;
 		if (!Role.isPlayerRole(player, ID)) return;
-		if (offHandDamageSource.contains(player.getUniqueId())) return;
-
-		BerserkerAxe axe = BerserkerAxe.getItem(player.getInventory().getItemInMainHand(), getGame());
-		if (axe == null) return;
-
-		Material mat = axe.getStack().getType();
-
-		// Same cooldown gate as off-hand: cancel if still cooling down
-		if (player.getCooldown(mat) > 0) {
-			event.setCancelled(true);
-			return;
-		}
-		player.setCooldown(mat, isRaging(player) ? RAGE_COOLDOWN_TICKS : AXE_COOLDOWN_TICKS);
 
 		if (!isRaging(player)) return;
 
 		double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
 		if (maxHealth <= 0) return;
 
-		double healAmount = event.getFinalDamage() * 0.10;
+		double healAmount = event.getFinalDamage() * 0.25;
 		player.setHealth(Math.min(maxHealth, player.getHealth() + healAmount));
-		spawnLifestealParticles(player);
+		spawnLifestealParticles(player, target);
 		player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.8f);
 	}
 
 	@EventHandler
 	public void onOffHandAttack(PlayerInteractEvent event) {
 		if (event.getHand() != EquipmentSlot.HAND) return;
+
 		Action action = event.getAction();
-		if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return;
+		if (!action.isRightClick()) return;
+
 		if (!Role.isPlayerRole(event.getPlayer(), ID)) return;
 
 		Player player = event.getPlayer();
 
-		// Off-hand attack only works in dual-axe stance: main hand must hold the FIRST axe
-		BerserkerAxe mainAxe = BerserkerAxe.getItem(player.getInventory().getItemInMainHand(), getGame());
-		if (mainAxe == null || mainAxe.getVariant() != BerserkerAxe.Variant.FIRST) return;
-
-		BerserkerAxe axe = BerserkerAxe.getItem(player.getInventory().getItemInOffHand(), getGame());
-		if (axe == null || axe.getVariant() != BerserkerAxe.Variant.SECOND) return;
-
-		// Cancel immediately so holding the button does nothing
-		event.setCancelled(true);
-
-		// player.getCooldown() is the single source of truth — drives the visual bar and blocks hold-spam
-		if (player.getCooldown(Material.GOLDEN_AXE) > 0) return;
-		player.setCooldown(Material.GOLDEN_AXE, isRaging(player) ? RAGE_COOLDOWN_TICKS : AXE_COOLDOWN_TICKS);
+		BerserkerAxe offHandAxe = BerserkerAxe.getItem(player.getInventory().getItemInOffHand(), getGame());
+		if (offHandAxe == null) return;
 
 		player.swingOffHand();
 
-		RayTraceResult ray = player.getWorld().rayTraceEntities(
-			player.getEyeLocation(),
-			player.getEyeLocation().getDirection(),
-			4.0,
-			e -> e != player && e instanceof LivingEntity
-		);
-		if (ray == null || !(ray.getHitEntity() instanceof LivingEntity target)) return;
+		Entity target = player.getTargetEntity(4);
+		if (!(target instanceof LivingEntity livingTarget)) return;
 
-		double baseDamage = player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getValue();
-		if (axe.getLvl() >= 1) {
-			baseDamage += 0.5 * axe.getLvlObject().getDamageBonus();
+		Material offHandAxeMaterial = offHandAxe.getStack().getType();
+		if (player.getCooldown(offHandAxeMaterial) > 0) return;
+		player.setCooldown(offHandAxeMaterial, calculateCooldown(player));
+
+		BerserkerAxe mainHandAxe = BerserkerAxe.getItem(player.getInventory().getItemInMainHand(), getGame());
+		if (mainHandAxe != null) {
+			Material mainHandAxeMaterial = mainHandAxe.getStack().getType();
+			player.setCooldown(mainHandAxeMaterial, calculateCooldown(player));
 		}
 
-		offHandDamageSource.add(player.getUniqueId());
-		target.damage(baseDamage, player);
-		offHandDamageSource.remove(player.getUniqueId());
+		AttributeModifier damageModifier = new AttributeModifier("berserker_offhand_damage", 4.0, AttributeModifier.Operation.ADD_NUMBER);
+		AttributeInstance attackDamageAttribute = player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+		if (attackDamageAttribute == null) return;
+		attackDamageAttribute.addModifier(damageModifier);
 
-		if (isRaging(player)) {
-			double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-			if (maxHealth > 0) {
-				double healAmount = baseDamage * 0.10;
-				player.setHealth(Math.min(maxHealth, player.getHealth() + healAmount));
-				spawnLifestealParticles(player);
-				player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.8f);
-			}
-		}
+		player.attack(target);
+		event.setCancelled(true);
+
+		attackDamageAttribute.removeModifier(damageModifier);
 	}
 
-	private void spawnLifestealParticles(Player player) {
-		player.getWorld().spawnParticle(
-			Particle.REDSTONE,
-			player.getLocation().add(0, 1, 0),
-			8, 0.3, 0.6, 0.3,
-			new Particle.DustOptions(Color.fromRGB(0, 200, 50), 1.0f)
-		);
+	private void spawnLifestealParticles(Player player, LivingEntity target) {
+		new BukkitRunnable() {
+			double progress = 0.0;
+			final double increment = 1.0 / 10;
+
+			public void run() {
+				if (progress >= 1.0) {
+					this.cancel();
+					return;
+				}
+
+				Location start = target.getLocation();
+				Location end = player.getLocation();
+
+				// Linear interpolation (lerp) between start and end
+				double x = start.getX() + (end.getX() - start.getX()) * progress;
+				double y = start.getY() + (end.getY() - start.getY()) * progress;
+				double z = start.getZ() + (end.getZ() - start.getZ()) * progress;
+
+				Location particleLoc = new Location(start.getWorld(), x, y, z);
+				player.getWorld().spawnParticle(
+					Particle.REDSTONE,
+					particleLoc,
+					6, 0.3, 0.3, 0.3,
+					new Particle.DustOptions(Color.RED, 1.0f)
+				);
+
+				progress += increment;
+			}
+		}.runTaskTimer(getPlugin(), 0, 1); // Run every tick for 10 ticks
 	}
 
 	private void spawnRageParticles(Player player) {
 		if (!isRaging(player)) return;
 
 		player.getWorld().spawnParticle(
-			Particle.REDSTONE,
+			Particle.VILLAGER_ANGRY,
 			player.getLocation().add(0, 1, 0),
-			6, 0.4, 0.8, 0.4,
-			new Particle.DustOptions(Color.fromRGB(15, 15, 15), 1.25f)
+			4, 0.4, 0.4, 0.4
 		);
 	}
 
