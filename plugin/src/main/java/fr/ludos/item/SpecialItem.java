@@ -70,20 +70,18 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		return owner;
 	}
 
-	public static @Nullable UUID getSpecialItemId(ItemStack stack, String id, Game game) {
+	public static @Nullable UUID getSpecialItemId(ItemStack stack, String typeId, Game game) {
 		if (stack == null) return null;
 
 		ItemMeta meta = stack.getItemMeta();
 		if (meta == null) return null;
 
-
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
 		if (! container.has(typeIdKey, PersistentDataType.STRING) ) return null;
-		String itemId = container.get(typeIdKey, PersistentDataType.STRING);
+		String found = container.get(typeIdKey, PersistentDataType.STRING);
 
-		if (! itemId.equals(id)) return null;
-
+		if (! found.equals(typeId)) return null;
 		if (! container.has(itemIdKey, PersistentDataType.STRING) ) return null;
 
 		return UUID.fromString(
