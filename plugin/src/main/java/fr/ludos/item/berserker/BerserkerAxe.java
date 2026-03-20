@@ -144,11 +144,19 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		meta.getPersistentDataContainer().set(variantKey, PersistentDataType.INTEGER, variant.key());
 
 		// Set damage to sword baseline: 1 (base) + 5 = 6 damage, same as iron sword
-		// Attack speed is NOT set here — timing is managed via player.setCooldown() in BerserkerRole
 		if (variant == Variant.FIRST) {
+			// meta.addAttributeModifier(
+			// 	Attribute.GENERIC_ATTACK_DAMAGE,
+			// 	new AttributeModifier(DAMAGE_MODIFIER_ID, "berserker_axe_damage", BASE_DAMAGE_BONUS, Operation.ADD_NUMBER, EquipmentSlot.HAND)
+			// );
+		} else {
 			meta.addAttributeModifier(
 				Attribute.GENERIC_ATTACK_DAMAGE,
-				new AttributeModifier(DAMAGE_MODIFIER_ID, "berserker_axe_damage", BASE_DAMAGE_BONUS, Operation.ADD_NUMBER, EquipmentSlot.HAND)
+				new AttributeModifier(UUID.randomUUID(), "berserker_variant_axe_extra_damage", -3.0, Operation.ADD_NUMBER, EquipmentSlot.OFF_HAND)
+			);
+			meta.addAttributeModifier(
+				Attribute.GENERIC_ATTACK_SPEED,
+				new AttributeModifier(UUID.randomUUID(), "berserker_variant_axe_less_speed", 0.5, Operation.ADD_NUMBER, EquipmentSlot.OFF_HAND)
 			);
 		}
 
@@ -191,7 +199,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 	}
 
 
-	public static class Events extends SpecialItem.Events<BerserkerAxe> {
+	public static class Events extends LevelItem.Events<BerserkerAxe, BerserkerAxeLevels> {
 
 		private final BerserkerRole role;
 
@@ -204,7 +212,10 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		public void updateItemInInventory(Player player) {
 			if (!canPlayerHaveItem(player)) return;
 
-			int playerLevel = role.getPlayerLevel(player);
+			LevelState playerLevel = deadPlayerLevels.get(player);
+			if (playerLevel == null) {
+				playerLevel = new LevelState();
+			}
 
 			List<BerserkerAxe> axes = SpecialItem.findAllIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
 			BerserkerAxe offHandAxe = getItem(player.getInventory().getItemInOffHand(), game);
@@ -214,12 +225,12 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 				|| (offHandAxe != null && offHandAxe.getVariant() == Variant.SECOND);
 
 			if (!hasFirst) {
-				player.getInventory().addItem(BerserkerAxe.createItem(player, Variant.FIRST, new LevelState(playerLevel), game).getStack());
+				player.getInventory().addItem(BerserkerAxe.createItem(player, Variant.FIRST, playerLevel, game).getStack());
 			}
 
 			if (!hasSecond) {
 				ItemStack currentOffHand = player.getInventory().getItemInOffHand();
-				BerserkerAxe secondAxe = BerserkerAxe.createItem(player, Variant.SECOND, new LevelState(playerLevel), game);
+				BerserkerAxe secondAxe = BerserkerAxe.createItem(player, Variant.SECOND, playerLevel, game);
 				if (currentOffHand == null || currentOffHand.getType().isAir()) {
 					player.getInventory().setItemInOffHand(secondAxe.getStack());
 				} else {
@@ -248,8 +259,8 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		}
 
 		@Override
-		protected BerserkerAxe createItem(Player owner, Game game) {
-			return BerserkerAxe.createItem(owner, Variant.FIRST, new LevelState(role.getPlayerLevel(owner)), game);
+		protected BerserkerAxe createItem(Player owner, LevelState level, Game game) {
+			return BerserkerAxe.createItem(owner, Variant.FIRST, level, game);
 		}
 
 		@Override
