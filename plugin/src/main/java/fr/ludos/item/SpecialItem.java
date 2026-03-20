@@ -37,18 +37,23 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.game.GameEvents;
+import fr.ludos.game.GameProcessBase;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public abstract class SpecialItem {
+public abstract class SpecialItem implements SpecialItemInterface {
 
-	public static final String ID = "id";
-	private static final NamespacedKey idKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ID);
+	public static final String TYPE_ID = "type_id";
+	private static final NamespacedKey typeIdKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), TYPE_ID);
 
-	public static final String OWNER = "owner";
-	private static final NamespacedKey ownerKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), OWNER);
+	public static final String ITEM_ID_KEY = "item_id";
+	private static final NamespacedKey itemIdKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ITEM_ID_KEY);
+
+	public static final String OWNER_KEY = "owner";
+	private static final NamespacedKey ownerKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), OWNER_KEY);
 
 	public static final int USAGE_COOLDOWN = 3;
 
@@ -65,7 +70,7 @@ public abstract class SpecialItem {
 		return owner;
 	}
 
-	public static @Nullable Player getSpecialItemOwner(ItemStack stack, String id, Game game) {
+	public static @Nullable UUID getSpecialItemId(ItemStack stack, String id, Game game) {
 		if (stack == null) return null;
 
 		ItemMeta meta = stack.getItemMeta();
@@ -74,12 +79,28 @@ public abstract class SpecialItem {
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
-		if (! container.has(idKey, PersistentDataType.STRING) ) return null;
-		String itemId = container.get(idKey, PersistentDataType.STRING);
+		if (! container.has(typeIdKey, PersistentDataType.STRING) ) return null;
+		String itemId = container.get(typeIdKey, PersistentDataType.STRING);
+
 		if (! itemId.equals(id)) return null;
 
-		if (! container.has(ownerKey, PersistentDataType.STRING) ) return null;
+		if (! container.has(itemIdKey, PersistentDataType.STRING) ) return null;
 
+		return UUID.fromString(
+			getPersistentData(stack, itemIdKey, PersistentDataType.STRING)
+		);
+	}
+
+	public static @Nullable Player getSpecialItemOwner(ItemStack stack, Game game) {
+		if (stack == null) return null;
+
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) return null;
+
+
+		PersistentDataContainer container = meta.getPersistentDataContainer();
+
+		if (! container.has(ownerKey, PersistentDataType.STRING) ) return null;
 
 		Player owner = Bukkit.getPlayer(
 			UUID.fromString(
@@ -105,15 +126,18 @@ public abstract class SpecialItem {
 		this.stack = stack;
 		this.owner = owner;
 	}
-	protected final void initializeItem() {
+	protected final UUID initializeItem() {
 		ItemMeta meta = stack.getItemMeta();
 
 		meta.setUnbreakable(true);
 		meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
 
+		UUID itemId = UUID.randomUUID();
+
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 		container.set(ownerKey, PersistentDataType.STRING, owner.getUniqueId().toString());
-		container.set(idKey, PersistentDataType.STRING, getId());
+		container.set(typeIdKey, PersistentDataType.STRING, getTypeId());
+		container.set(itemIdKey, PersistentDataType.STRING, itemId.toString());
 
 		stack.setItemMeta(meta);
 
@@ -121,7 +145,10 @@ public abstract class SpecialItem {
 		updateLore();
 
 		onInitialize();
+
+		return itemId;
 	}
+
 	protected void onInitialize() { }
 
 
@@ -129,7 +156,7 @@ public abstract class SpecialItem {
 		return new ArrayList<>();
 	}
 
-	protected abstract String getId();
+	protected abstract String getTypeId();
 	protected abstract Component getName();
 
 
@@ -144,6 +171,12 @@ public abstract class SpecialItem {
 		ItemMeta meta = stack.getItemMeta();
 		meta.lore(getLore());
 		stack.setItemMeta(meta);
+	}
+
+	@Override
+	public void update() {
+		updateName();
+		updateLore();
 	}
 
 	protected final boolean refreshUseCooldown() {
@@ -229,17 +262,15 @@ public abstract class SpecialItem {
 	}
 
 
-	public static abstract class Events<T extends SpecialItem> implements Listener {
+	public static abstract class Events<T extends SpecialItem> extends GameEvents {
 		private boolean isStarted = false;
 
 		private final boolean canDrop;
 		@Nullable
 		private final Integer slot;
 
-		public final Game game;
-
 		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
-			this.game = game;
+			super(game);
 
 			this.canDrop = canDrop;
 			this.slot = slot;
@@ -251,29 +282,35 @@ public abstract class SpecialItem {
 			this(game, null, false);
 		}
 
-		public final void start() {
-			if (isStarted) return;
-			isStarted = true;
 
-			Bukkit.getPluginManager().registerEvents(this, game.getPlugin());
-
+		@Override
+		protected final void onInit() {
+			onItemInit();
+		}
+		@Override
+		protected final void onStart() {
 			updateAllInventories();
 
-			onStart();
+			onItemStart();
 		}
-		protected void onStart() { }
 
-		public final void stop() {
-			if (! isStarted) return;
-			isStarted = false;
+		protected void onItemInit() { }
+		protected void onItemStart() { }
 
-			HandlerList.unregisterAll(this);
 
+		@Override
+		protected final void onDeinit() {
+			onItemDeinit();
+		}
+		@Override
+		protected final void onStop() {
 			removeFromAllInventories();
 
-			onStop();
+			onItemStop();
 		}
-		protected void onStop() { }
+
+		protected void onItemDeinit() { }
+		protected void onItemStop() { }
 
 
 		@Nullable
@@ -297,7 +334,7 @@ public abstract class SpecialItem {
 		}
 
 		protected void updateAllInventories() {
-			for (Player player : game.getTeamController().getPlayers()) {
+			for (Player player : game.getGameTeamController().getPlayers()) {
 				if (canPlayerHaveItem(player)) {
 					updateItemInInventory(player);
 				}

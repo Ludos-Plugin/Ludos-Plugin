@@ -16,6 +16,7 @@ import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -23,12 +24,19 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.item.SpecialItem;
+import fr.ludos.item.burrower.BurrowerShovel;
 import fr.ludos.game.Game;
 import fr.ludos.role.BerserkerRole;
 import fr.ludos.role.Role;
 
 
 public class BerserkerRageBrew extends SpecialItem {
+	public static final String ID = "berserkerRageBrew";
+
+	@Override
+	public String getTypeId() {
+		return ID;
+	}
 
 	// Used to read/detect an existing ItemStack
 	protected BerserkerRageBrew(ItemStack stack, Player owner, Game game) throws IllegalArgumentException {
@@ -40,10 +48,30 @@ public class BerserkerRageBrew extends SpecialItem {
 		super(new ItemStack(Material.SUSPICIOUS_STEW), owner, game);
 	}
 
-	@Override
-	public String getId() {
-		return "berserkerRageBrew";
+
+	@Nullable
+	public static BerserkerRageBrew getItem(ItemStack stack, Game game) {
+		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		if (itemId == null) return null;
+
+		// BerserkerRageBrew cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		if (owner == null) return null;
+
+		BerserkerRageBrew brew = new BerserkerRageBrew(stack, owner, game);
+		// cachedItems.put(itemId, brew);
+
+		return brew;
 	}
+
+	public static BerserkerRageBrew createItem(Player owner, Game game) {
+		BerserkerRageBrew brew = new BerserkerRageBrew(owner, game);
+		brew.initializeItem();
+		return brew;
+	}
+
 
 	@Override
 	public Component getName() {
@@ -62,24 +90,6 @@ public class BerserkerRageBrew extends SpecialItem {
 	}
 
 
-	@Nullable
-	public static BerserkerRageBrew getItem(ItemStack stack, Game game) {
-		Player owner = SpecialItem.getSpecialItemOwner(stack, "berserkerRageBrew", game);
-		if (owner == null) return null;
-		try {
-			return new BerserkerRageBrew(stack, owner, game);
-		} catch (IllegalArgumentException e) {
-			return null;
-		}
-	}
-
-	public static BerserkerRageBrew createItem(Player owner, Game game) {
-		BerserkerRageBrew brew = new BerserkerRageBrew(owner, game);
-		brew.initializeItem();
-		return brew;
-	}
-
-
 	public static class Events extends SpecialItem.Events<BerserkerRageBrew> {
 		private final Map<UUID, Long> cooldowns = new HashMap<>();
 		private static final long COOLDOWN_MS = 30_000;
@@ -94,7 +104,7 @@ public class BerserkerRageBrew extends SpecialItem {
 		}
 
 		@Override
-		protected void onStop() {
+		protected void onItemStop() {
 			cooldowns.clear();
 			for (Player player : Bukkit.getOnlinePlayers()) {
 				role.setRage(player, false);
@@ -114,14 +124,11 @@ public class BerserkerRageBrew extends SpecialItem {
 
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {
-			return Role.isPlayerRole(owner, BerserkerRole.id);
+			return Role.isPlayerRole(owner, BerserkerRole.ID);
 		}
 
 		@EventHandler
-		public void onPlayerInteract(PlayerInteractEvent event) {
-			Action action = event.getAction();
-			if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return;
-
+		public void onPlayerInteract(PlayerItemConsumeEvent event) {
 			BerserkerRageBrew brew = getItem(event.getItem(), game);
 			if (brew == null) return;
 
@@ -152,7 +159,7 @@ public class BerserkerRageBrew extends SpecialItem {
 			role.setRage(player, true);
 
 			player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, RAGE_DURATION_TICKS, 1, false, false));
-			player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, RAGE_DURATION_TICKS, 0, false, false));
+			player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, RAGE_DURATION_TICKS, 0, false, true));
 
 			player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1f, 0.8f);
 
@@ -160,7 +167,7 @@ public class BerserkerRageBrew extends SpecialItem {
 				role.setRage(player, false);
 
 				player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, FATIGUE_TICKS, 0, false, false));
-				player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, FATIGUE_TICKS, 0, false, false));
+				player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, FATIGUE_TICKS, 0, false, true));
 			}, RAGE_DURATION_TICKS);
 		}
 	}
