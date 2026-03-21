@@ -15,15 +15,15 @@ import fr.ludos.Ludos;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.role.Role;
 
-public final class RoleSubcommandManager implements TabExecutor {
-	public static final String arg = "role";
+public final class StructureSubcommandManager implements TabExecutor {
+	public static final String arg = "structure";
 
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length == 0) return false;
 
 		String arg = args[0].toLowerCase();
-		RoleSubcommand option = Arrays.stream(RoleSubcommand.values()).filter(o -> o.name().equalsIgnoreCase(arg)).findFirst().orElse(null);
+		StructureSubcommand option = Arrays.stream(StructureSubcommand.values()).filter(o -> o.name().equalsIgnoreCase(arg)).findFirst().orElse(null);
 		if (option == null) return false;
 
 		return option.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
@@ -32,13 +32,13 @@ public final class RoleSubcommandManager implements TabExecutor {
 	@Override
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length <= 1) {
-			return Arrays.stream(RoleSubcommand.values())
-				.map(RoleSubcommand::name)
+			return Arrays.stream(StructureSubcommand.values())
+				.map(StructureSubcommand::name)
 				.collect(Collectors.toList());
 		}
 
 		String arg = args[0].toLowerCase();
-		RoleSubcommand option = Arrays.stream(RoleSubcommand.values()).filter(o -> o.name().equalsIgnoreCase(arg)).findFirst().orElse(null);
+		StructureSubcommand option = Arrays.stream(StructureSubcommand.values()).filter(o -> o.name().equalsIgnoreCase(arg)).findFirst().orElse(null);
 		if (option == null) return null;
 
 		return option.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
@@ -49,9 +49,9 @@ public final class RoleSubcommandManager implements TabExecutor {
 
 		usage.append('<');
 		usage.append(
-			Arrays.stream(RoleSubcommand.values())
-				.filter(o -> o != RoleSubcommand.help)
-				.map(RoleSubcommand::name).sorted()
+			Arrays.stream(StructureSubcommand.values())
+				.filter(o -> o != StructureSubcommand.help)
+				.map(StructureSubcommand::name).sorted()
 				.collect(Collectors.joining(" | "))
 		);
 		usage.append('>');

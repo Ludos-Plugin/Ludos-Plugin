@@ -141,6 +141,54 @@ public enum LudosSubcommand implements Subcommand {
 			return "/" + label + " guidebook [player]";
 		}
 	},
+	structure() {
+		@Override
+		public String getDescription() {
+			return "Manage Ludos structures.";
+		}
+		@Override
+		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			if (args.length == 0) return false;
+
+			String arg = args[0].toLowerCase();
+			StructureSubcommand option = Arrays.stream(StructureSubcommand.values()).filter(o -> o.name().equalsIgnoreCase(arg)).findFirst().orElse(null);
+			if (option == null) return false;
+
+			return option.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+		}
+
+		@Override
+		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			if (args.length <= 1) {
+				return Arrays.stream(StructureSubcommand.values())
+					.map(StructureSubcommand::name)
+					.collect(Collectors.toList());
+			}
+
+			String arg = args[0].toLowerCase();
+			StructureSubcommand option = Arrays.stream(StructureSubcommand.values()).filter(o -> o.name().equalsIgnoreCase(arg)).findFirst().orElse(null);
+			if (option == null) return null;
+
+			return option.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+		}
+
+		@Override
+		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
+			StringBuilder usage = new StringBuilder("/" + label + " structure ");
+
+			usage.append('<');
+			usage.append(
+				Arrays.stream(StructureSubcommand.values()).sorted().map(StructureSubcommand::name)
+					.collect(Collectors.joining(" | "))
+			);
+			usage.append('>');
+
+			usage.append(' ');
+			usage.append("[option]");
+
+			return usage.toString();
+		}
+	},
 	help() {
 		@Override
 		public String getDescription() {
