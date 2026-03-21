@@ -16,21 +16,12 @@ import fr.ludos.game.Game;
 import fr.ludos.game.GameAreaController;
 
 public class WorldBorderAreaController extends GameAreaController {
-	public static final String borderWorldUUIDKey = "borderWorldUUID";
-	public String borderWorldUUIDPath() {
-		return getGame().getBuilder().getId() + '.' + borderWorldUUIDKey;
-	}
-	public static final String borderLocationKey = "borderLocation";
-	public String borderLocationPath() {
-		return getGame().getBuilder().getId() + '.' + borderLocationKey;
-	}
-	public static final String borderSizeKey = "borderSize";
-	public String borderSizePath() {
-		return getGame().getBuilder().getId() + '.' + borderSizeKey;
-	}
 
 	private final WorldBorderLocationOption locationOption;
-	private Location initialLocation;
+
+	private Location fallbackLocation;
+	private double fallbackBorderSize;
+
 	private Location gameLocation;
 
 	public World getWorld() {
@@ -55,23 +46,19 @@ public class WorldBorderAreaController extends GameAreaController {
 
 	@Override
 	protected void onStart() {
-		World world = initialLocation.getWorld();
+		World world = fallbackLocation.getWorld();
 		if (world == null) {
 			throw new IllegalStateException("Initial location world is null");
 		}
 
-		setCachedBorder(world);
-
 		switch (locationOption) {
 			case random:
-				gameLocation = Utility.getRandomBiomeLocation(initialLocation, 2500, 0, 200, initialLocation, 5, null);
+				gameLocation = Utility.getRandomBiomeLocation(fallbackLocation, 2500, 0, 200, fallbackLocation, 5, null);
 				break;
 			default:
-			case here:
-				gameLocation = initialLocation;
+				gameLocation = fallbackLocation.clone();
 				break;
 		}
-
 
 		double highestY = world.getHighestBlockYAt(gameLocation) + 1;
 		gameLocation.setY(highestY);
@@ -87,60 +74,21 @@ public class WorldBorderAreaController extends GameAreaController {
 	}
 
 
-	@Nullable
-	public UUID getCachedBorderWorldUID() {
-		JavaPlugin plugin = getPlugin();
-		String value = plugin.getConfig().getString(borderWorldUUIDPath());
-
-		if (value == null) return null;
-		return UUID.fromString(value);
-	}
-	@Nullable
-	public Location getCachedBorderLocation() {
-		JavaPlugin plugin = getPlugin();
-		return plugin.getConfig().getLocation(borderLocationPath());
-	}
-	public double getCachedBorderSize() {
-		JavaPlugin plugin = getPlugin();
-		return plugin.getConfig().getDouble(borderSizePath());
-	}
-	public void setCachedBorder(World world) {
-		JavaPlugin plugin = getPlugin();
-		FileConfiguration config = plugin.getConfig();
-
-		if (world == null) {
-			config.set(borderWorldUUIDPath(), null);
-			config.set(borderLocationPath(), null);
-			config.set(borderSizePath(), null);
-			plugin.saveConfig();
-			return;
-		}
-
-		WorldBorder border = world.getWorldBorder();
-		config.set(borderWorldUUIDPath(), world.getUID().toString());
-		config.set(borderLocationPath(), border.getCenter());
-		config.set(borderSizePath(), border.getSize());
-		plugin.saveConfig();
-	}
 	public void resetBorder() {
-		Location location = getCachedBorderLocation();
-		if (location == null) return;
+		if (fallbackLocation == null || fallbackBorderSize == 0) return;
 
-		World world = Bukkit.getWorld(getCachedBorderWorldUID());
-		if (world == null) return;
+		WorldBorder border = fallbackLocation.getWorld().getWorldBorder();
+		border.setCenter(fallbackLocation);
+		border.setSize(fallbackBorderSize, 0);
 
-		double size = getCachedBorderSize();
-		WorldBorder border = world.getWorldBorder();
-		border.setCenter(location);
-		border.setSize(size, 0);
-
-		setCachedBorder(null);
+		fallbackLocation = null;
+		fallbackBorderSize = 0;
 	}
 
 	@Override
 	public void setup(Location base) {
-		this.initialLocation = base;
-		this.gameLocation = base;
+		this.fallbackLocation = base;
+		this.fallbackBorderSize = base.getWorld().getWorldBorder().getSize();
 	}
 
 	@Override
