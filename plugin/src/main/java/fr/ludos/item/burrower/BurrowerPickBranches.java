@@ -1,6 +1,7 @@
 package fr.ludos.item.burrower;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
@@ -8,14 +9,21 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 
 import fr.ludos.item.BranchItem;
+import fr.ludos.item.Categories;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.role.BurrowerRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-
 
 public enum BurrowerPickBranches implements BranchItem.Branch<BurrowerPickBranches> {
 	Pickaxe (
@@ -26,7 +34,7 @@ public enum BurrowerPickBranches implements BranchItem.Branch<BurrowerPickBranch
 		public void onBreakBlock(BurrowerPick pick, BlockBreakEvent event) {
 			Block targetBlock = event.getBlock();
 
-			pick.awardBreak(targetBlock);
+			BurrowerRole.awardBreak(event.getPlayer(), targetBlock, pick.getGame());
 		}
 
 		@Override
@@ -55,7 +63,7 @@ public enum BurrowerPickBranches implements BranchItem.Branch<BurrowerPickBranch
 
 			BlockFace face = targetBlock.getFace(adjacentBlock);
 
-			pick.breakRadius(targetBlock, face);
+			pick.breakRadius(targetBlock, face, player);
 		}
 
 

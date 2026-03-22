@@ -1,8 +1,9 @@
 package fr.ludos.item.burrower;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -19,6 +20,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
@@ -121,7 +123,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 		return lore;
 	}
 
-	public void breakRadius(Block block, BlockFace face) {
+	public void breakRadius(Block block, BlockFace face, Player breaker) {
 		TriFunction<Integer, Integer, Integer, Vector> vectorGetter =
 			face == BlockFace.EAST || face == BlockFace.WEST ? (x, y, z) -> new Vector(z, x, y) :
 			face == BlockFace.UP || face == BlockFace.DOWN ? (x, y, z) -> new Vector(x, z, y) :
@@ -147,8 +149,8 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 						relativeBlock.isPreferredTool(getStack()) &&
 						relativeBlock.getType().getHardness() == blockHardness
 					) {
-						awardBreak(relativeBlock);
-						relativeBlock.breakNaturally(getStack());
+						BurrowerRole.awardBreak(breaker, relativeBlock, getGame());
+						relativeBlock.breakNaturally(getStack(), true);
 					}
 				}
 			}
@@ -156,49 +158,9 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 	}
 
 
-	public void awardBreak(Block block) {
-		double oreXp = BurrowerPick.getOreReward(block);
-		if (oreXp != 0) {
-			addXp(oreXp);
-		}
-	}
-
-
-	public static double getOreReward(Block ore) {
-		Material material = ore.getType();
-		switch (material) {
-			case ANCIENT_DEBRIS:
-				return 60;
-			case EMERALD_ORE:
-				return 50;
-			case DIAMOND_ORE:
-				return 45;
-			case GOLD_ORE:
-				return 40;
-			case REDSTONE_ORE:
-				return 35;
-			case LAPIS_ORE:
-				return 30;
-			case NETHER_QUARTZ_ORE:
-				return 25;
-			case IRON_ORE:
-				return 20;
-			case OBSIDIAN:
-				return 15;
-			case COAL_ORE:
-				return 10;
-			case COPPER_ORE:
-				return 5;
-			default:
-				return material.getHardness();
-		}
-	}
-
-
 	public static class Events extends LevelBranchItem.Events<BurrowerPick, BurrowerPickBranches, BurrowerPickLevels> {
-
 		public Events(Game game) {
-			super(game, 0);
+			super(game, 1);
 		}
 
 		@EventHandler
@@ -226,7 +188,6 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 
 			pick.getBranch().onBreakBlock(pick, event);
 		}
-
 
 		@Override
 		@Nullable

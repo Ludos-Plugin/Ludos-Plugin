@@ -15,17 +15,17 @@ import fr.ludos.item.SpecialItem;
 
 public enum BurrowerPickLevels implements LevelItem.Level<BurrowerPickLevels> {
 	WOODEN      (Material.WOODEN_PICKAXE,    25,    1, 0, Collections.emptyMap()),
-	STONE       (Material.STONE_PICKAXE,     55,    1, 0, Collections.emptyMap()),
-	STONE1      (Material.STONE_PICKAXE,     115,   1, 0, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 1); }}),
-	IRON        (Material.IRON_PICKAXE,      175,   1, 1, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 2); }}),
-	IRON1       (Material.IRON_PICKAXE,      269,   1, 1, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 3); }}),
-	IRON2       (Material.IRON_PICKAXE,      387,   1, 1, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 3); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
-	DIAMOND     (Material.DIAMOND_PICKAXE,   499,   1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 3); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
-	DIAMOND1    (Material.DIAMOND_PICKAXE,   1396,  1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
-	DIAMOND2    (Material.DIAMOND_PICKAXE,   2094,  1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
-	NETHERITE   (Material.NETHERITE_PICKAXE, 6238,  1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
-	NETHERITE1  (Material.NETHERITE_PICKAXE, 13275, 1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 5); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
-	NETHERITE2  (Material.NETHERITE_PICKAXE, 27450, 1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 5); put(Enchantment.LOOT_BONUS_BLOCKS, 3);}});
+	STONE       (Material.STONE_PICKAXE,     50,    1, 0, Collections.emptyMap()),
+	STONE1      (Material.STONE_PICKAXE,     100,   1, 0, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 1); }}),
+	IRON        (Material.IRON_PICKAXE,      200,   1, 1, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 2); }}),
+	IRON1       (Material.IRON_PICKAXE,      500,   1, 1, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 3); }}),
+	IRON2       (Material.IRON_PICKAXE,      1000,   1, 1, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 3); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
+	DIAMOND     (Material.DIAMOND_PICKAXE,   1500,   1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 3); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
+	DIAMOND1    (Material.DIAMOND_PICKAXE,   2000,  1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
+	DIAMOND2    (Material.DIAMOND_PICKAXE,   2500,  1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
+	NETHERITE   (Material.NETHERITE_PICKAXE, 3000,  1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
+	NETHERITE1  (Material.NETHERITE_PICKAXE, 4500, 1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 5); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
+	NETHERITE2  (Material.NETHERITE_PICKAXE, 6000, 1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 5); put(Enchantment.LOOT_BONUS_BLOCKS, 3);}});
 
 
 	private final static BurrowerPickLevels[] values = BurrowerPickLevels.values();

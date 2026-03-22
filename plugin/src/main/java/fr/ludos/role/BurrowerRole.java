@@ -1,17 +1,46 @@
 package fr.ludos.role;
 
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.EnumMap;
+import java.util.Collections;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.generator.structure.StructureType;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.StructureSearchResult;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
+import fr.ludos.item.Categories;
+import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.item.burrower.BurrowerPick;
+import fr.ludos.item.burrower.BurrowerScythe;
 import fr.ludos.item.burrower.BurrowerShovel;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -19,6 +48,25 @@ import net.kyori.adventure.text.TextComponent;
 
 public class BurrowerRole extends Role {
 	public static final String id = "burrower";
+	private static final NamespacedKey explosiveChestplateKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), "burrower_explosive_chestplate");
+	private static final String explosiveModeLorePrefix = ChatColor.DARK_GRAY + "Mode: ";
+	private static final String explosiveModeLoreEnabled = explosiveModeLorePrefix + ChatColor.RED + "Explosif";
+	private static final String explosiveModeLoreDisabled = explosiveModeLorePrefix + ChatColor.GREEN + "Normal";
+
+	private static final double EXPLOSIVE_RADIUS = 3.0;
+	private static final double EXPLOSIVE_RADIUS_SQUARED = EXPLOSIVE_RADIUS * EXPLOSIVE_RADIUS;
+
+	public static final Map<Material, Double> CHESTPLATE_EXPLOSIVE_DAMAGE;
+
+	static {
+		EnumMap<Material, Double> damageMap = new EnumMap<>(Material.class);
+		for (int i = 0; i < Categories.CHESTPLATES.size(); i++) {
+			Material material = Categories.CHESTPLATES.stream().skip(i).findFirst().orElseThrow();
+			damageMap.put(material, 2.0 * (i + 1));
+		}
+
+		CHESTPLATE_EXPLOSIVE_DAMAGE = Collections.unmodifiableMap(damageMap);
+	}
 
 
 	// public static List<Player> burrowers;
@@ -53,9 +101,118 @@ public class BurrowerRole extends Role {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{
+					put("scythe", new BurrowerScythe.Events(game));
 					put("pick", new BurrowerPick.Events(game));
 					put("shovel", new BurrowerShovel.Events(game));
 				}};
+		}
+	}
+
+	@EventHandler
+	public void onBurrowerToggleExplosiveChestplate(PlayerInteractEvent event) {
+		Action action = event.getAction();
+
+		if (action.isRightClick()) return;
+
+		Player player = event.getPlayer();
+		if (!Role.isPlayerRole(player, id)) return;
+
+		ItemStack item = event.getItem();
+		if (!Categories.isChestplate(item)) return;
+
+		boolean explosive = isExplosiveChestplate(item);
+
+		if ( action.isLeftClick() ) setExplosiveChestplate(item, !explosive);
+
+		// event.setCancelled(true);
+	}
+
+	@EventHandler
+	public void onBurrowerExplosiveChestplateProximity(PlayerMoveEvent event) {
+		Player burrower = event.getPlayer();
+		if (!Role.isPlayerRole(burrower, id)) return;
+		if (event.getTo() == null) return;
+
+		if (
+			event.getFrom().getBlockX() == event.getTo().getBlockX() &&
+			event.getFrom().getBlockY() == event.getTo().getBlockY() &&
+			event.getFrom().getBlockZ() == event.getTo().getBlockZ()
+		) return;
+
+		ItemStack chestplate = burrower.getInventory().getChestplate();
+
+		if (!Categories.isChestplate(chestplate)) return;
+		if (!isExplosiveChestplate(chestplate)) return;
+
+		List<Player> enemies = getGame().getGameTeamController().getEnemyPlayers(burrower).stream()
+			.filter(enemy -> enemy.getWorld().equals(burrower.getWorld()))
+			.filter(enemy -> enemy.getLocation().distanceSquared(burrower.getLocation()) <= EXPLOSIVE_RADIUS_SQUARED)
+			.collect(Collectors.toList());
+
+		if (enemies.isEmpty()) return;
+
+		double damage = CHESTPLATE_EXPLOSIVE_DAMAGE.get(chestplate.getType());
+
+		burrower.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, burrower.getLocation(), 1, 0.0, 0.0, 0.0, 0.0);
+		burrower.getWorld().playSound(burrower.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 1.0f);
+
+		for (Player enemy : enemies) {
+			enemy.damage(damage, burrower);
+			damageEquipmentByThird(enemy);
+		}
+
+		burrower.setVelocity(burrower.getLocation().getDirection().multiply(-0.5).setY(0.5));
+
+		// burrower.getInventory().setChestplate(null);
+	}
+
+	private static final Set<BiFunction<ItemStack, Game, LevelItem<?>>> levelItemGetters = Set.of(
+		BurrowerScythe::fromItemStack,
+		BurrowerPick::fromItemStack,
+		BurrowerShovel::fromItemStack
+	);
+	public static void awardBreak(Player player, Block block, Game game) {
+		if (player == null || block == null) return;
+		if (!Role.isPlayerRole(player, id)) return;
+
+		Inventory inventory = player.getInventory();
+		if (inventory == null) return;
+
+		double oreXp = getOreReward(block);
+		if (oreXp == 0) return;
+		for (var test : levelItemGetters) {
+			LevelItem.findAllIn(inventory, (itemStack) -> test.apply(itemStack, game)).forEach(item -> item.addXp(oreXp));
+		}
+	}
+
+
+	public static double getOreReward(Block ore) {
+		Material material = ore.getType();
+		switch (material) {
+			case ANCIENT_DEBRIS:
+				return 60;
+			case EMERALD_ORE:
+				return 50;
+			case DIAMOND_ORE:
+				return 45;
+			case GOLD_ORE:
+				return 40;
+			case REDSTONE_ORE:
+				return 35;
+			case LAPIS_ORE:
+				return 30;
+			case NETHER_QUARTZ_ORE:
+				return 25;
+			case IRON_ORE:
+				return 20;
+			case OBSIDIAN:
+				return 15;
+			case COAL_ORE:
+				return 10;
+			case COPPER_ORE:
+				return 5;
+			default:
+				return material.getHardness();
 		}
 	}
 
@@ -92,6 +249,65 @@ public class BurrowerRole extends Role {
 		} catch (Exception e) {
 
 		}
+	}
+
+
+	private static boolean isExplosiveChestplate(ItemStack item) {
+		if (!Categories.isChestplate(item)) return false;
+
+		ItemMeta meta = item.getItemMeta();
+		if (meta == null) return false;
+
+		PersistentDataContainer container = meta.getPersistentDataContainer();
+		if (!container.has(explosiveChestplateKey, PersistentDataType.BYTE)) return false;
+
+		Byte value = container.get(explosiveChestplateKey, PersistentDataType.BYTE);
+		return value != null && value == (byte) 1;
+	}
+
+	private static void setExplosiveChestplate(ItemStack item, boolean explosive) {
+		if (!Categories.isChestplate(item)) return;
+
+		ItemMeta meta = item.getItemMeta();
+		PersistentDataContainer container = meta.getPersistentDataContainer();
+
+		container.set(explosiveChestplateKey, PersistentDataType.BYTE, explosive ? (byte)1 : (byte)0);
+
+		List<String> lore = meta.getLore() == null ? new ArrayList<>() : new ArrayList<>(meta.getLore());
+		lore.removeIf(line -> line != null && line.startsWith(explosiveModeLorePrefix));
+		lore.add(explosive ? explosiveModeLoreEnabled : explosiveModeLoreDisabled);
+		meta.setLore(lore);
+
+		item.setItemMeta(meta);
+	}
+
+	private static void damageEquipmentByThird(Player player) {
+		for (ItemStack item : player.getInventory().getArmorContents()) {
+			damageItemByThird(item);
+		}
+	}
+
+	private static void damageItemByThird(ItemStack item) {
+		if (item == null || item.getType() == Material.AIR) return;
+		if (!Categories.IMPORTANT_DURABILITY.contains(item.getType())) return;
+
+		int maxDurability = item.getType().getMaxDurability();
+		if (maxDurability <= 0) return;
+
+		ItemMeta meta = item.getItemMeta();
+		if (!(meta instanceof Damageable damageable)) return;
+
+		int toDamage = Math.max(1, (int)Math.ceil(maxDurability / 3.0));
+		int nextDamage = Math.min(maxDurability, damageable.getDamage() + toDamage);
+
+		damageable.setDamage(nextDamage);
+		item.setItemMeta(meta);
+
+		item.setDurability((short) (maxDurability - nextDamage));
+
+		// if (nextDamage >= maxDurability) {
+		// 	item.setAmount(0);
+		// }
 	}
 
 	// @EventHandler
