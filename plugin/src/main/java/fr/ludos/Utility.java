@@ -1,5 +1,6 @@
 package fr.ludos;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import com.comphenix.protocol.ProtocolLibrary;
@@ -157,6 +159,35 @@ public class Utility {
 				}
 			}.runTaskLater(plugin, (long)(20 * spectateSeconds));
 		}
+	}
+
+	public static void deleteRecursive(File file) {
+		if (file.isDirectory()) {
+			for (File subFile : file.listFiles()) {
+				deleteRecursive(subFile);
+			}
+		}
+		file.delete();
+	}
+
+	public static void deleteWorld(World world) {
+		if (world == null) {
+			throw new IllegalArgumentException("World cannot be null");
+		}
+
+		File folder = world.getWorldFolder();
+
+		if (!folder.isDirectory()) {
+			throw new IllegalArgumentException("World folder is not a directory");
+		}
+
+		Bukkit.unloadWorld(world, false);
+		deleteRecursive(folder);
+
+		File worldFolder = new File(Bukkit.getWorldContainer().getAbsolutePath() + "/" + world.getName());
+		worldFolder.delete();
+
+		Bukkit.getWorlds().remove(world);
 	}
 
 	public static void revokeAllAdvancements(Player player) {

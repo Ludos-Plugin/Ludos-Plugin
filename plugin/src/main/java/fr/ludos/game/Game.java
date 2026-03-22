@@ -9,7 +9,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.WorldCreator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -17,12 +20,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
+import fr.ludos.Utility;
 import fr.ludos.book.BookUtility;
-import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -60,6 +65,7 @@ public abstract class Game extends GameProcessBase {
 		registered.put(builder.getId(), builder);
 	}
 
+
 	private final Map<String, Role> activeRoles = new HashMap<>();
 	public Map<String, Role> getActiveRoles() {
 		return activeRoles;
@@ -75,8 +81,8 @@ public abstract class Game extends GameProcessBase {
 	}
 
 	public abstract Scoreboard getScoreboard();
-	public abstract GameTeamController getGameTeamController();
-	public abstract GameAreaController getGameAreaController();
+	public abstract GameTeamController getTeamController();
+	public abstract GameAreaController getAreaController();
 
 	public static boolean startGame(String id) {
 		if (! registered.containsKey(id)) return false;
@@ -100,7 +106,7 @@ public abstract class Game extends GameProcessBase {
 		}
 	}
 
-	public Game(Builder builder) {
+	protected Game(Builder builder) {
 		this.builder = builder;
 	}
 
@@ -113,8 +119,8 @@ public abstract class Game extends GameProcessBase {
 	}
 	@Override
 	protected final void onStart() {
-		getGameAreaController().start();
-		getGameTeamController().start();
+		getAreaController().start();
+		getTeamController().start();
 
 		onGameStart();
 
@@ -137,8 +143,8 @@ public abstract class Game extends GameProcessBase {
 	}
 	@Override
 	protected final void onStop() {
-		getGameAreaController().stop();
-		getGameTeamController().stop();
+		getAreaController().stop();
+		getTeamController().stop();
 
 		onGameStop();
 

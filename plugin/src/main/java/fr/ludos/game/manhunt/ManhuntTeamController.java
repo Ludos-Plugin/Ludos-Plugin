@@ -206,7 +206,7 @@ public final class ManhuntTeamController extends GameTeamController {
 	}
 
 	public void joinPrey(Player player) {
-		Location gameLocation = getGame().getGameAreaController().pickRandom(0.0, 0.2);
+		Location gameLocation = getGame().getAreaController().pickRandom(0.0, 0.2);
 
 		joinAnyPlayer(player, gameLocation);
 
@@ -235,7 +235,7 @@ public final class ManhuntTeamController extends GameTeamController {
 		if (hunterTeam.hasPlayer(player) || preyTeam.hasPlayer(player)) return;
 
 		Set<Player> hunters = getTeamHunters();
-		GameAreaController areaController = getGame().getGameAreaController();
+		GameAreaController areaController = getGame().getAreaController();
 
 		Location hunterLocation;
 		if (!hunters.isEmpty()) {
@@ -269,7 +269,7 @@ public final class ManhuntTeamController extends GameTeamController {
 	public void joinSpectator(Player player) {
 		if (hunterTeam.hasPlayer(player) || preyTeam.hasPlayer(player)) return;
 
-		Location gameLocation = getGame().getGameAreaController().pickRandom(0.0, 1.0);
+		Location gameLocation = getGame().getAreaController().pickRandom(0.0, 1.0);
 
 		player.teleport(gameLocation);
 		player.setBedSpawnLocation(gameLocation, true);

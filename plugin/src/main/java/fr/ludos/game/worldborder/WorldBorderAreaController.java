@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
+import org.bukkit.WorldCreator;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,14 +20,9 @@ public class WorldBorderAreaController extends GameAreaController {
 
 	private final WorldBorderLocationOption locationOption;
 
-	private Location fallbackLocation;
-	private double fallbackBorderSize;
+	private double initialBorderSize;
 
 	private Location gameLocation;
-
-	public World getWorld() {
-		return gameLocation.getWorld();
-	}
 
 	private final WorldBorderAreaOption areaOption;
 	public final int getAreaDiameter() {
@@ -37,58 +33,68 @@ public class WorldBorderAreaController extends GameAreaController {
 	}
 
 
-	public WorldBorderAreaController(Game game, WorldBorderLocationOption location, WorldBorderAreaOption area) {
-		super(game);
+	public WorldBorderAreaController(Game game, Location returnLocation, WorldCreator worldCreator, WorldBorderLocationOption location, WorldBorderAreaOption area) {
+		super(game, returnLocation, worldCreator);
 
 		this.locationOption = location;
 		this.areaOption = area;
 	}
 
 	@Override
-	protected void onStart() {
-		World world = fallbackLocation.getWorld();
-		if (world == null) {
-			throw new IllegalStateException("Initial location world is null");
-		}
+	protected void onAreaInit() {
+		initialBorderSize = getInitialLocation().getWorld().getWorldBorder().getSize();
+	}
+
+	@Override
+	protected void onAreaStart() {
+		Location initialLocation = getInitialLocation();
+		World world = getWorld();
 
 		switch (locationOption) {
 			case random:
-				gameLocation = Utility.getRandomBiomeLocation(fallbackLocation, 2500, 0, 200, fallbackLocation, 5, null);
+				gameLocation = Utility.getRandomBiomeLocation(initialLocation, 2500, 0, 200, initialLocation, 5, null);
 				break;
 			default:
-				gameLocation = fallbackLocation.clone();
+				gameLocation = initialLocation.clone();
 				break;
 		}
 
 		double highestY = world.getHighestBlockYAt(gameLocation) + 1;
 		gameLocation.setY(highestY);
 
-		WorldBorder border = world.getWorldBorder();
-		border.setCenter(gameLocation);
-		border.setSize(getAreaDiameter(), 3);
+		setBorder(gameLocation, getAreaDiameter(), 3);
 	}
 
 	@Override
-	protected void onStop() {
+	protected void onAreaStop() {
 		resetBorder();
 	}
 
+	public void setBorder(Location center, double size, long time) {
+		if (initialBorderSize != 0) return;
 
-	public void resetBorder() {
-		if (fallbackLocation == null || fallbackBorderSize == 0) return;
+		Location initialLocation = getInitialLocation();
+		WorldBorder border = initialLocation.getWorld().getWorldBorder();
 
-		WorldBorder border = fallbackLocation.getWorld().getWorldBorder();
-		border.setCenter(fallbackLocation);
-		border.setSize(fallbackBorderSize, 0);
+		initialBorderSize = border.getSize();
 
-		fallbackLocation = null;
-		fallbackBorderSize = 0;
+		border.setCenter(center);
+		border.setSize(size, time);
 	}
 
-	@Override
-	public void setup(Location base) {
-		this.fallbackLocation = base;
-		this.fallbackBorderSize = base.getWorld().getWorldBorder().getSize();
+	public void resetBorder(long time) {
+		if (initialBorderSize == 0) return;
+
+		Location initialLocation = getInitialLocation();
+		WorldBorder border = initialLocation.getWorld().getWorldBorder();
+
+		border.setCenter(initialLocation);
+		border.setSize(initialBorderSize, time);
+
+		initialBorderSize = 0;
+	}
+	public void resetBorder() {
+		resetBorder(0);
 	}
 
 	@Override

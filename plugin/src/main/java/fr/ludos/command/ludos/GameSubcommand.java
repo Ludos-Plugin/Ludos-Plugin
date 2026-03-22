@@ -124,7 +124,7 @@ public enum GameSubcommand implements Subcommand{
 				return true;
 			}
 
-			currentGame.getGameTeamController().addPlayer(player);
+			currentGame.getTeamController().addPlayer(player);
 			return true;
 		}
 		@Override

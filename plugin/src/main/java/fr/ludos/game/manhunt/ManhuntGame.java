@@ -2,6 +2,7 @@ package fr.ludos.game.manhunt;
 
 import java.util.Optional;
 import java.util.Iterator;
+import java.io.File;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -20,9 +21,14 @@ import net.kyori.adventure.title.Title;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
+import org.bukkit.World.Environment;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -30,12 +36,14 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -76,13 +84,13 @@ public class ManhuntGame extends Game {
 
 	private final ManhuntTeamController teamController;
 	@Override
-	public ManhuntTeamController getGameTeamController() {
+	public ManhuntTeamController getTeamController() {
 		return this.teamController;
 	}
 
 	private final WorldBorderAreaController areaController;
 	@Override
-	public WorldBorderAreaController getGameAreaController() {
+	public WorldBorderAreaController getAreaController() {
 		return this.areaController;
 	}
 
@@ -106,22 +114,21 @@ public class ManhuntGame extends Game {
 		this.builder = builder;
 
 		this.scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
-		this.teamController = new ManhuntTeamController(this, builder.getChosenPlayers(), builder.getChosenPrey());
-		this.areaController = new WorldBorderAreaController(this, this.builder.getLocation(), this.builder.getArea());
+		this.teamController = new ManhuntTeamController(
+			this,
+			builder.getChosenPlayers(),
+			builder.getChosenPrey()
+		);
+		this.areaController = new WorldBorderAreaController(
+			this,
+			this.teamController.getSelectedPrey().getLocation(),
+			builder.createWorldCreator(),
+			this.builder.getLocation(),
+			this.builder.getArea()
+		);
 
 		timer = new ManhuntTimer(this, builder.getReveal());
 		compassEvents = new ManhuntCompass.Events(this);
-	}
-
-	@Override
-	protected void onGameInit() {
-		Player prey = teamController.getSelectedPrey();
-		if (prey == null) {
-			throw new IllegalStateException("Prey player is null");
-		}
-
-		Location gameLocation = prey.getLocation();
-		areaController.setup(gameLocation);
 	}
 
 	@Override
@@ -178,7 +185,6 @@ public class ManhuntGame extends Game {
 	protected void onGameStop() {
 		compassEvents.stop();
 		timer.stop();
-
 
 		areaController.resetBorder();
 
@@ -263,7 +269,6 @@ public class ManhuntGame extends Game {
 
 		return true;
 	}
-
 	public static class Builder extends Game.Builder {
 		private static final String allOption = "all";
 		private static final String randomOption = "random";
@@ -596,6 +601,15 @@ public class ManhuntGame extends Game {
 			}
 
 			return null;
+		}
+
+		public @Nullable WorldCreator createWorldCreator() {
+			String worldName = "manhunt_" + UUID.randomUUID();
+			return new WorldCreator(worldName, new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), worldName))
+				.environment(Environment.NORMAL)
+				.type(WorldType.NORMAL)
+				.generateStructures(true)
+				.seed(new Random().nextLong());
 		}
 
 		@Override

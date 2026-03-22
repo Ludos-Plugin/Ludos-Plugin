@@ -332,7 +332,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		}
 
 		protected void updateAllInventories() {
-			for (Player player : game.getGameTeamController().getPlayers()) {
+			for (Player player : game.getTeamController().getPlayers()) {
 				if (canPlayerHaveItem(player)) {
 					updateItemInInventory(player);
 				}

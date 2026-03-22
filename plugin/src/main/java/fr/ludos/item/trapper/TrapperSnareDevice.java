@@ -108,7 +108,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 					for (var playerTrapEntries : traps.entrySet()) {
 						Player player = playerTrapEntries.getKey();
-						Set<LivingEntity> targets = game.getGameTeamController().getEnemies(player);
+						Set<LivingEntity> targets = game.getTeamController().getEnemies(player);
 
 						for (var branchTrapEntries : playerTrapEntries.getValue().entrySet()) {
 							TrapperSnareDeviceBranches branch = branchTrapEntries.getKey();
