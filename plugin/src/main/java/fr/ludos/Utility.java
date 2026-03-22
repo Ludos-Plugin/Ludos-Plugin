@@ -2,6 +2,7 @@ package fr.ludos;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -10,6 +11,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -19,6 +22,12 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 
+import fr.ludos.item.ItemUtilities;
+import fr.ludos.item.burrower.BurrowerPickLevels;
+import fr.ludos.role.BurrowerRole;
+
+import org.apache.commons.lang3.function.TriFunction;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Location;
@@ -26,8 +35,11 @@ import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.block.Biome;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.GameMode;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.BiomeProvider;
 
@@ -157,6 +169,102 @@ public class Utility {
 				}
 			}.runTaskLater(plugin, (long)(20 * spectateSeconds));
 		}
+	}
+
+	public static Vector getVectorFacing(double x, double y, double z, BlockFace face) {
+		return switch (face) {
+			case EAST -> new Vector(-z, y, -x);
+			case WEST -> new Vector(z, y, x);
+			case UP -> new Vector(x, -z, y);
+			case DOWN -> new Vector(x, z, y);
+			case SOUTH -> new Vector(x, y, -z);
+			case NORTH -> new Vector(-x, y, z);
+			default -> new Vector(x, y, z);
+		};
+	}
+	public static Vector getVectorFacing(Vector vector, BlockFace face) {
+		return getVectorFacing(vector.getX(), vector.getY(), vector.getZ(), face);
+	}
+
+	public static Iterable<Block> getAllBlocks(Block block, BlockFace face, Pair<Integer, Integer> boundsX, Pair<Integer, Integer> boundsY, Pair<Integer, Integer> boundsZ) {
+		if (boundsX.getLeft() > boundsX.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsX);
+		if (boundsY.getLeft() > boundsY.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsY);
+		if (boundsZ.getLeft() > boundsZ.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsZ);
+
+		return IntStream.rangeClosed(boundsZ.getLeft(), boundsZ.getRight())
+			.boxed()
+			.flatMap(zOffset ->
+				IntStream.rangeClosed(boundsX.getLeft(), boundsX.getRight())
+					.boxed()
+					.flatMap(xOffset ->
+						IntStream.rangeClosed(boundsY.getLeft(), boundsY.getRight())
+							.mapToObj(yOffset -> {
+								Vector vector = getVectorFacing(xOffset, yOffset, zOffset, face);
+								return block.getRelative(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+							})
+					)
+			)
+			.toList();
+	}
+	public static Collection<List<Block>> getAllBlockColumns(Block block, BlockFace face, Pair<Integer, Integer> boundsX, Pair<Integer, Integer> boundsY, Pair<Integer, Integer> boundsZ) {
+		if (boundsX.getLeft() > boundsX.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsX);
+		if (boundsY.getLeft() > boundsY.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsY);
+		if (boundsZ.getLeft() > boundsZ.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsZ);
+
+		return IntStream.rangeClosed(boundsX.getLeft(), boundsX.getRight())
+			.boxed()
+			.flatMap(xOffset ->
+				IntStream.rangeClosed(boundsZ.getLeft(), boundsZ.getRight())
+					.mapToObj(zOffset ->
+						IntStream.rangeClosed(boundsY.getLeft(), boundsY.getRight())
+							.mapToObj(yOffset -> {
+								Vector vector = getVectorFacing(xOffset, yOffset, zOffset, face);
+								return block.getRelative(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+							})
+							.toList()
+					)
+			)
+			.toList();
+	}
+	public static Collection<List<Block>> getAllBlockRows(Block block, BlockFace face, Pair<Integer, Integer> boundsX, Pair<Integer, Integer> boundsY, Pair<Integer, Integer> boundsZ) {
+		if (boundsX.getLeft() > boundsX.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsX);
+		if (boundsY.getLeft() > boundsY.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsY);
+		if (boundsZ.getLeft() > boundsZ.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsZ);
+
+		return IntStream.rangeClosed(boundsY.getLeft(), boundsY.getRight())
+			.boxed()
+			.flatMap(yOffset ->
+				IntStream.rangeClosed(boundsZ.getLeft(), boundsZ.getRight())
+					.mapToObj(zOffset ->
+						IntStream.rangeClosed(boundsX.getLeft(), boundsX.getRight())
+							.mapToObj(xOffset -> {
+								Vector vector = getVectorFacing(xOffset, yOffset, zOffset, face);
+								return block.getRelative(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+							})
+							.toList()
+					)
+			)
+			.toList();
+	}
+	public static Collection<List<Block>> getAllBlockLayers(Block block, BlockFace face, Pair<Integer, Integer> boundsX, Pair<Integer, Integer> boundsY, Pair<Integer, Integer> boundsZ) {
+		if (boundsX.getLeft() > boundsX.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsX);
+		if (boundsY.getLeft() > boundsY.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsY);
+		if (boundsZ.getLeft() > boundsZ.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsZ);
+
+		return IntStream.rangeClosed(boundsY.getLeft(), boundsY.getRight())
+			.boxed()
+			.flatMap(yOffset ->
+				IntStream.rangeClosed(boundsX.getLeft(), boundsX.getRight())
+					.mapToObj(xOffset ->
+						IntStream.rangeClosed(boundsZ.getLeft(), boundsZ.getRight())
+							.mapToObj(zOffset -> {
+								Vector vector = getVectorFacing(xOffset, yOffset, zOffset, face);
+								return block.getRelative(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+							})
+							.toList()
+					)
+			)
+			.toList();
 	}
 
 	public static void revokeAllAdvancements(Player player) {

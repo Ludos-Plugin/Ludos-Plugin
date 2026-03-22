@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -25,6 +26,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
+import fr.ludos.Utility;
 import fr.ludos.game.Game;
 import fr.ludos.item.BranchItem;
 import fr.ludos.item.ItemUtilities;
@@ -124,35 +126,26 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 	}
 
 	public void breakRadius(Block block, BlockFace face, Player breaker) {
-		TriFunction<Integer, Integer, Integer, Vector> vectorGetter =
-			face == BlockFace.EAST || face == BlockFace.WEST ? (x, y, z) -> new Vector(z, x, y) :
-			face == BlockFace.UP || face == BlockFace.DOWN ? (x, y, z) -> new Vector(x, z, y) :
-			face == BlockFace.SOUTH || face == BlockFace.NORTH ? (x, y, z) -> new Vector(x, y, z) :
-			(x, y, z) -> new Vector();
-
-		Boolean isDepthAxisPositive = face == BlockFace.EAST || face == BlockFace.UP || face == BlockFace.SOUTH;
-
 		BurrowerPickLevels level = getLvlObject();
 		int radius = level.getRadius();
 		int depth = level.getDepth();
 
 		float blockHardness = block.getType().getHardness();
 
-		for (int depthOffset = 0; depthOffset <= depth; depthOffset++) {
-			for (int xOffset = -radius; xOffset <= radius; xOffset++) {
-				for (int yOffset = -radius; yOffset <= radius; yOffset++) {
-					Vector vector = vectorGetter.apply(xOffset, yOffset, isDepthAxisPositive ? -depthOffset : depthOffset);
-					Block relativeBlock = block.getRelative(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
-
-					if (
-						ItemUtilities.isBreakable(relativeBlock) &&
-						relativeBlock.isPreferredTool(getStack()) &&
-						relativeBlock.getType().getHardness() == blockHardness
-					) {
-						BurrowerRole.awardBreak(breaker, relativeBlock, getGame());
-						relativeBlock.breakNaturally(getStack(), true);
-					}
-				}
+		for (Block relativeBlock : Utility.getAllBlocks(
+				block, face,
+				Pair.of(-radius, radius),
+				Pair.of(-radius, radius),
+				Pair.of(0, depth)
+			)
+		) {
+			if (
+				ItemUtilities.isBreakable(relativeBlock) &&
+				relativeBlock.isPreferredTool(getStack()) &&
+				relativeBlock.getType().getHardness() == blockHardness
+			) {
+				BurrowerRole.awardBreak(breaker, relativeBlock, getGame());
+				relativeBlock.breakNaturally(getStack(), true);
 			}
 		}
 	}

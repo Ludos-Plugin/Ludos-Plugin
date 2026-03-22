@@ -1,6 +1,8 @@
 package fr.ludos.item.burrower;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,8 +10,11 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -20,7 +25,9 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import fr.ludos.Utility;
 import fr.ludos.game.Game;
 import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.LevelItem;
@@ -40,7 +47,7 @@ public class BurrowerShovel extends LevelItem<BurrowerShovelLevels> {
 	private static final int COOLDOWN_SECONDS = 20;
 	private static final int TUNNEL_LENGTH = 10;
 
-	private final static Map<Player, List<BlockState>> tunnelBlocks = new HashMap<>();
+	private final static Map<Player, List<List<BlockState>>> tunnelBlocks = new HashMap<>();
 
 
 	public static BurrowerShovel fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
@@ -102,13 +109,11 @@ public class BurrowerShovel extends LevelItem<BurrowerShovelLevels> {
 
 
 	public void useAbility() {
-		if (getOwner().hasCooldown(getStack().getType())) {
-			return;
-		}
-		List<BlockState> playerBlocks = tunnelBlocks.get(getOwner());
+		if (! refreshUseCooldown()) return;
+		boolean tunnelActive = tunnelBlocks.containsKey(getOwner());
 
 
-		if (playerBlocks != null) {
+		if (tunnelActive) {
 			// sendHUDIcon(false);
 			revertTunnel();
 		} else {
@@ -126,64 +131,102 @@ public class BurrowerShovel extends LevelItem<BurrowerShovelLevels> {
 	// }
 
 
-	private void digTunnel() {
+	private boolean digTunnel() {
+		if (tunnelBlocks.containsKey(getOwner())) return false;
+
 		List<Block> lastTwoTargetBlocks = getOwner().getLastTwoTargetBlocks(null, 20);
-		if (lastTwoTargetBlocks.size() != 2) return;
+		if (lastTwoTargetBlocks.size() != 2) return false;
+		tunnelBlocks.put(getOwner(), null);
+
+
 		Block targetBlock = lastTwoTargetBlocks.get(1);
 		Block adjacentBlock = lastTwoTargetBlocks.get(0);
-
 		BlockFace face = targetBlock.getFace(adjacentBlock);
-		Location currentLocation = targetBlock.getLocation();
-		List<BlockState> playerBlocks = new ArrayList<>();
+		World world = targetBlock.getWorld();
 
-		for (int i = 1; i <= TUNNEL_LENGTH; i++) {
-			tunnelBlock(getOwner(), currentLocation, playerBlocks);
-			tunnelBlock(getOwner(), currentLocation.clone().add(0, -1, 0), playerBlocks);
-			currentLocation.add(face.getDirection().multiply(-1));
+		Collection<List<Block>> digBlocks;
+		if (face == BlockFace.UP || face == BlockFace.DOWN) {
+			digBlocks = Utility.getAllBlockRows(
+				targetBlock, face,
+				Pair.of(0, 0),
+				Pair.of(0, 0),
+				Pair.of(0, TUNNEL_LENGTH)
+			);
+		} else {
+			digBlocks = Utility.getAllBlockColumns(
+				targetBlock, face,
+				Pair.of(0, 0),
+				Pair.of(-1, 0),
+				Pair.of(0, TUNNEL_LENGTH)
+			);
 		}
 
-		if (playerBlocks.size() == 0) {
-			return;
-		}
+		if (digBlocks.size() == 0) return false;
+		List<List<BlockState>> digBlocksState = digBlocks.stream()
+			.map(blockColumn -> blockColumn.stream()
+				.map(Block::getState)
+				.toList()
+			).toList();
 
-		tunnelBlocks.put(getOwner(), playerBlocks);
-		getOwner().setCooldown(getStack().getType(), 5);
+
+		new BukkitRunnable() {
+			int current = 0;
+
+			@Override
+			public void run() {
+				List<Block> blockColumn = ((List<Block>) digBlocks.toArray()[current]);
+				for (Block block : blockColumn) {
+					if (! ItemUtilities.isBreakable(block)) continue;
+					world.playEffect(block.getLocation(), org.bukkit.Effect.STEP_SOUND, block.getType());
+					block.setType(Material.AIR, false);
+				}
+
+				current++;
+				if (current >= digBlocks.size()) {
+					tunnelBlocks.put(getOwner(), digBlocksState);
+					cancel();
+				}
+			}
+		}.runTaskTimer(getGame().getPlugin(), 0, 1);
+
+		return true;
 	}
 
-	private void tunnelBlock(Player player, Location location, List<BlockState> blockBuffer) {
-		Block eyeBlock = location.getBlock();
 
-		if (! ItemUtilities.isBreakable(eyeBlock)) {
-			return;
-		}
-		if (blockBuffer.stream().anyMatch( state -> state.getLocation().equals(location) )) {
-			return;
-		}
-
-		blockBuffer.add(eyeBlock.getState());
-		eyeBlock.setType(Material.AIR, false);
-	}
+	private boolean revertTunnel() {
+		List<List<BlockState>> blocks = tunnelBlocks.get(getOwner());
+		if (blocks == null) return false;
+		tunnelBlocks.put(getOwner(), null);
 
 
-	private void revertTunnel() {
-		List<BlockState> playerBlocks = tunnelBlocks.get(getOwner());
-		if (playerBlocks == null) {
-			return;
-		}
+		new BukkitRunnable() {
+			int current = 0;
 
-		playerBlocks.forEach(blockState -> {
-			Location currentBlockLocation = blockState.getLocation();
-			Block currentBlock = currentBlockLocation.getBlock();
+			@Override
+			public void run() {
+				List<BlockState> blockColumn = ((List<BlockState>) blocks.toArray()[current]);
+				for (BlockState state : blockColumn) {
+					Location location = state.getLocation();
+					Block block = location.getBlock();
+					World world = location.getWorld();
 
-			currentBlock.breakNaturally();
-			currentBlock.setType(blockState.getType(), true);
-		});
+					world.playEffect(location, org.bukkit.Effect.STEP_SOUND, state.getType());
+					block.setBlockData(state.getBlockData(), false);
+				}
 
-		tunnelBlocks.remove(getOwner());
+				current++;
+				if (current >= blocks.size()) {
+					tunnelBlocks.remove(getOwner());
+					cancel();
+				}
+			}
+
+		}.runTaskTimer(getGame().getPlugin(), 0, 1);
+
 
 		getOwner().setCooldown(getStack().getType(), COOLDOWN_SECONDS * 20);
+		return true;
 	}
-
 
 
 	public static class Events extends LevelItem.Events<BurrowerShovel, BurrowerShovelLevels> {

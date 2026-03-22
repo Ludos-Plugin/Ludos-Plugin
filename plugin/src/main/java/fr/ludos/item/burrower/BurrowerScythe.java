@@ -1,17 +1,24 @@
 package fr.ludos.item.burrower;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -22,9 +29,11 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import fr.ludos.Utility;
 import fr.ludos.game.Game;
 import fr.ludos.item.BranchItem;
 import fr.ludos.item.LevelItem;
@@ -43,7 +52,7 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 	private static final int SCYTHE_MAX_TARGETS = 5;
 	private static final double SCYTHE_CONE_DOT = 0.35;
 	private static final int WALL_COOLDOWN_TICKS = 20 * 8;
-	private static final int WALL_DISTANCE = 2;
+	private static final int WALL_DISTANCE_DEFAULT = 2;
 	private static final int WALL_WIDTH = 5;
 	private static final int WALL_HEIGHT = 3;
 	private static final int WALL_DURATION_TICKS = 20 * 4;
@@ -96,113 +105,72 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
 	}
 
-	private record BlockSnapshot(Block block, Material type, BlockData data) { }
 
-	public Map<Block, BlockSnapshot> castEarthWall() {
+	public void castEarthWall(@Nullable Block anchor) {
 		Player owner = getOwner();
-		if (owner == null || owner.getWorld() == null) return Map.of();
+		if (owner == null || owner.getWorld() == null) return;
 
-		Vector forward = getForwardVector(owner);
-		Vector right = getRightVector(forward);
+		Block baseBlock;
+		if (anchor == null) {
+			Vector forward = owner.getFacing().getDirection().multiply(WALL_DISTANCE_DEFAULT);
+			Block potentialAnchor = owner.getLocation().getBlock().getRelative(forward.getBlockX(), -1, forward.getBlockZ());
+			while (potentialAnchor.getType().isAir()) {
+				potentialAnchor = potentialAnchor.getRelative(BlockFace.DOWN);
+			}
 
-		int forwardX = forward.getBlockX();
-		int forwardZ = forward.getBlockZ();
-		int rightX = right.getBlockX();
-		int rightZ = right.getBlockZ();
-
-		Block anchor = owner.getLocation().getBlock().getRelative(forwardX * WALL_DISTANCE, 0, forwardZ * WALL_DISTANCE);
-		Map<Block, BlockSnapshot> replacedStates = new HashMap<>();
+			baseBlock = potentialAnchor;
+		}
+		else {
+			baseBlock = anchor;
+		}
+		World world = baseBlock.getWorld();
 
 		int halfWidth = WALL_WIDTH / 2;
-		for (int lateral = -halfWidth; lateral <= halfWidth; lateral++) {
-			Block columnBase = anchor.getRelative(rightX * lateral, 0, rightZ * lateral);
-			liftGroundColumn(columnBase, replacedStates);
-		}
+		for (List<Block> immutableColumn : Utility.getAllBlockColumns(
+			baseBlock, owner.getFacing(),
+			Pair.of(-halfWidth, halfWidth),
+			Pair.of(-(WALL_HEIGHT - 1), 0),
+			Pair.of(0, 0)
+		)) {
+			List<Block> column = new ArrayList<>(immutableColumn);
+			Collections.reverse(column);
 
-		return replacedStates;
-	}
+			new BukkitRunnable() {
+				int currentHeight = 0;
+				int maxHeight = WALL_HEIGHT;
 
-	private void liftGroundColumn(Block base, Map<Block, BlockSnapshot> replacedStates) {
-		Material fallback = resolveWallMaterial(base);
-		Material[] liftedMaterials = new Material[WALL_HEIGHT];
+				@Override
+				public void run() {
+					for (int i = 0; i < column.size(); i++) {
+						Block block = column.get(i);
 
-		List<Block> blocksSource = new ArrayList<>();
-		List<Block> blocksDestination = new ArrayList<>();
+						Block aboveBlock = block.getRelative(BlockFace.UP);
+						if (aboveBlock.getType().isCollidable()) {
+							cancel();
+							return;
+						}
 
-		for (int layer = 0; layer < WALL_HEIGHT; layer++) {
-			int sourceDepth = WALL_HEIGHT - 1 - layer;
-			blocksSource.add(base.getRelative(BlockFace.DOWN, sourceDepth));
-			blocksDestination.add(base.getRelative(BlockFace.UP, layer));
+						BlockData aboveBlockData = aboveBlock.getBlockData().clone();
+						BlockData blockData = block.getBlockData().clone();
+						aboveBlock.setBlockData(blockData, false);
+						block.setBlockData(aboveBlockData, false);
 
-			snapshotBlock(replacedStates, blocksSource.get(layer));
-			snapshotBlock(replacedStates, blocksDestination.get(layer));
+						world.playEffect(aboveBlock.getLocation(), org.bukkit.Effect.STEP_SOUND, aboveBlock.getType());
 
-			Material sourceType = blocksSource.get(layer).getType();
-			if (sourceType == Material.AIR || sourceType == Material.CAVE_AIR || sourceType == Material.VOID_AIR) {
-				sourceType = fallback;
-			}
+						column.set(i, aboveBlock);
+					}
 
-			liftedMaterials[layer] = sourceType;
-		}
-
-		for (int depth = 1; depth < WALL_HEIGHT; depth++) {
-			snapshotBlock(replacedStates, blocksSource.get(depth));
-			blocksSource.get(depth).setType(Material.AIR, false);
-		}
-
-		for (int layer = 0; layer < WALL_HEIGHT; layer++) {
-			blocksDestination.get(layer).setType(liftedMaterials[layer], false);
-		}
-	}
-
-	private void snapshotBlock(Map<Block, BlockSnapshot> replacedStates, Block block) {
-		replacedStates.putIfAbsent(block, new BlockSnapshot(block, block.getType(), block.getBlockData().clone()));
-	}
-
-	private static void restoreSnapshots(Map<Block, BlockSnapshot> snapshots) {
-		for (BlockSnapshot snapshot : snapshots.values()) {
-			Block block = snapshot.block();
-
-			if (!block.getChunk().isLoaded()) {
-				block.getChunk().load();
-			}
-
-			block.setType(snapshot.type(), false);
-			block.setBlockData(snapshot.data(), false);
+					currentHeight++;
+					if (currentHeight >= maxHeight) {
+						cancel();
+					}
+				}
+			}.runTaskTimer(getGame().getPlugin(), 0, 3);
 		}
 	}
-
-	private Vector getForwardVector(Player player) {
-		Vector direction = player.getLocation().getDirection().setY(0);
-		if (direction.lengthSquared() <= 0.0001) {
-			return new Vector(0, 0, 1);
-		}
-
-		direction.normalize();
-		if (Math.abs(direction.getX()) >= Math.abs(direction.getZ())) {
-			return new Vector(Math.signum(direction.getX()), 0, 0);
-		}
-
-		return new Vector(0, 0, Math.signum(direction.getZ()));
-	}
-
-	private Vector getRightVector(Vector forward) {
-		return new Vector(-forward.getZ(), 0, forward.getX());
-	}
-
-	private Material resolveWallMaterial(Block base) {
-		Material below = base.getRelative(BlockFace.DOWN).getType();
-
-		if (below.isSolid() && below != Material.BEDROCK) return below;
-
-		return Material.DIRT;
-	}
-
 
 	public static class Events extends LevelItem.Events<BurrowerScythe, BurrowerScytheLevels> {
 		private final Set<UUID> slashingPlayers = new HashSet<>();
-		private final Map<UUID, BukkitTask> activeWallTasks = new HashMap<>();
-		private final Map<UUID, Map<Block, BlockSnapshot>> activeWallSnapshots = new HashMap<>();
 
 		public Events(Game game) {
 			super(game, 0);
@@ -280,32 +248,12 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 			BurrowerScythe scythe = getItem(player.getInventory().getItemInMainHand(), game);
 			if (scythe == null) return;
 
-			if (!scythe.refreshUseCooldown()) return;
+			if (player.hasCooldown(scythe.getStack().getType())) return;
 			player.setCooldown(scythe.getStack().getType(), WALL_COOLDOWN_TICKS);
 
-			UUID playerId = player.getUniqueId();
-			BukkitTask previousTask = activeWallTasks.remove(playerId);
-			if (previousTask != null && !previousTask.isCancelled()) {
-				previousTask.cancel();
-			}
+			event.setCancelled(true);
 
-			Map<Block, BlockSnapshot> previousSnapshots = activeWallSnapshots.remove(playerId);
-			if (previousSnapshots != null && !previousSnapshots.isEmpty()) {
-				restoreSnapshots(previousSnapshots);
-			}
-
-			Map<Block, BlockSnapshot> snapshots = scythe.castEarthWall();
-			if (snapshots.isEmpty()) return;
-
-			activeWallSnapshots.put(playerId, snapshots);
-			BukkitTask task = game.getPlugin().getServer().getScheduler().runTaskLater(game.getPlugin(), () -> {
-				Map<Block, BlockSnapshot> toRestore = activeWallSnapshots.remove(playerId);
-				if (toRestore != null && !toRestore.isEmpty()) {
-					restoreSnapshots(toRestore);
-				}
-				activeWallTasks.remove(playerId);
-			}, WALL_DURATION_TICKS);
-			activeWallTasks.put(playerId, task);
+			scythe.castEarthWall(event.getClickedBlock());
 		}
 
 		private void tryLightningProc(Player target) {
