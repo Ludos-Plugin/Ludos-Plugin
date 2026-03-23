@@ -18,7 +18,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.WitherSkeleton;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -32,7 +31,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 	private static final double MAX_HEALTH = 360.0;
 	private static final int ATTACK_COOLDOWN_TICKS = 45;
-	private static final int ROCK_GOLEM_MODEL_DATA = 9310001;
 
 	private int attackTick = 0;
 	private int phase = 1;
@@ -79,13 +77,7 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 		boss.getEquipment().setChestplate(tintedLeather(Material.LEATHER_CHESTPLATE, Color.fromRGB(12, 12, 12)));
 		boss.getEquipment().setLeggings(tintedLeather(Material.LEATHER_LEGGINGS, Color.fromRGB(18, 18, 18)));
 		boss.getEquipment().setBoots(tintedLeather(Material.LEATHER_BOOTS, Color.fromRGB(10, 10, 10)));
-		ItemStack bossWeapon = new ItemStack(Material.NETHERITE_SWORD);
-		ItemMeta bossWeaponMeta = bossWeapon.getItemMeta();
-		if (bossWeaponMeta != null) {
-			bossWeaponMeta.setCustomModelData(ROCK_GOLEM_MODEL_DATA);
-			bossWeapon.setItemMeta(bossWeaponMeta);
-		}
-		boss.getEquipment().setItemInMainHand(bossWeapon);
+		boss.getEquipment().setItemInMainHand(new ItemStack(Material.NETHERITE_SWORD));
 		boss.getEquipment().setItemInMainHandDropChance(0.0f);
 
 		boss.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, false, false));
