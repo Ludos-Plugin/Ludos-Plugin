@@ -18,7 +18,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import fr.ludos.book.BookUtility;
 import fr.ludos.command.ludos.LudosCommand;
 import fr.ludos.game.Game;
-import fr.ludos.game.arena.ArenaGame;
 import fr.ludos.game.manhunt.ManhuntGame;
 import fr.ludos.game.sheepwars.SheepwarsGame;
 import fr.ludos.item.texture.TextureListener;
@@ -50,7 +49,6 @@ public class Ludos extends JavaPlugin implements Listener {
 		Role.loadConfigRoles(this);
 
 		Game.registerGame(new ManhuntGame.Builder(this));
-		Game.registerGame(new ArenaGame.Builder(this));
 		Game.registerGame(new SheepwarsGame.Builder(this));
 
 		Role.registerRole(new HuntsmanRole.Builder(this));

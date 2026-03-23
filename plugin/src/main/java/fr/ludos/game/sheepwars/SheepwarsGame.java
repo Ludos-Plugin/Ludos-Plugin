@@ -33,7 +33,11 @@ import fr.ludos.Ludos;
 import fr.ludos.Utility;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.game.Game;
-import fr.ludos.game.TeamController;
+import fr.ludos.game.GameAreaController;
+import fr.ludos.game.GameTeamController;
+import fr.ludos.game.worldborder.WorldBorderAreaController;
+import fr.ludos.game.worldborder.WorldBorderAreaOption;
+import fr.ludos.game.worldborder.WorldBorderLocationOption;
 
 
 public class SheepwarsGame extends Game {
@@ -54,6 +58,7 @@ public class SheepwarsGame extends Game {
 	public static final String borderLocationPath = id + '.' + borderLocationKey;
 
 	private SheepwarsTeamController teamController;
+	private WorldBorderAreaController areaController;
 	private Scoreboard scoreboard;
 
 	public SheepwarsGame(Builder builder) {
@@ -66,8 +71,13 @@ public class SheepwarsGame extends Game {
 	}
 
 	@Override
-	public TeamController getTeamController() {
+	public GameTeamController getGameTeamController() {
 		return teamController;
+	}
+
+	@Override
+	public GameAreaController getGameAreaController() {
+		return areaController;
 	}
 
 	@Override
@@ -77,7 +87,7 @@ public class SheepwarsGame extends Game {
 	}
 
 	@Override
-	protected void onInit() {
+	protected void onGameInit() {
 		FileConfiguration config = getBuilder().getPlugin().getConfig();
 
 		Set<Player> players = null;
@@ -100,15 +110,20 @@ public class SheepwarsGame extends Game {
 
 		try {
 			teamController = new SheepwarsTeamController(this, players, teamCount);
+			areaController = new WorldBorderAreaController(this, mapLocationOption(config), mapAreaOption(config));
+			Optional<Player> centerPlayer = teamController.getSelectedPlayers().stream().findFirst();
+			if (centerPlayer.isPresent()) {
+				areaController.setup(centerPlayer.get().getLocation());
+			} else {
+				areaController.setup(Bukkit.getWorlds().get(0).getSpawnLocation());
+			}
 		} catch (IllegalArgumentException e) {
 			throw new RuntimeException("Failed to initialize team controller: " + e.getMessage());
 		}
 	}
 
 	@Override
-	protected void onStart() {
-		teamController.start();
-
+	protected void onGameStart() {
 		setupWorldBorder();
 
 		for (Player player : teamController.getSelectedPlayers()) {
@@ -126,11 +141,7 @@ public class SheepwarsGame extends Game {
 	}
 
 	@Override
-	protected void onStop() {
-		if (teamController != null) {
-			teamController.stop();
-		}
-
+	protected void onGameStop() {
 		resetWorldBorder();
 
 		for (Player player : Bukkit.getOnlinePlayers()) {
@@ -144,82 +155,59 @@ public class SheepwarsGame extends Game {
 	}
 
 	private void setupWorldBorder() {
-		FileConfiguration config = getBuilder().getPlugin().getConfig();
-		
-		String worldUUIDStr = config.getString(borderWorldUUIDPath);
-		World world = null;
-		
-		if (worldUUIDStr != null) {
-			try {
-				UUID worldUUID = UUID.fromString(worldUUIDStr);
-				world = Bukkit.getWorld(worldUUID);
-			} catch (IllegalArgumentException e) { 
-                e.printStackTrace();
-            }
+		if (areaController == null) {
+			return;
 		}
-		
+
+		World world = areaController.getCenter().getWorld();
 		if (world == null) {
-			world = Bukkit.getWorlds().get(0);
+			return;
 		}
 
 		WorldBorder border = world.getWorldBorder();
-		
-		SheepwarsAreaOptions areaOption = SheepwarsAreaOptions.medium;
-		String areaStr = config.getString(areaPath);
-		if (areaStr != null) {
-			SheepwarsAreaOptions configArea = EnumUtils.getEnum(SheepwarsAreaOptions.class, areaStr);
-			if (configArea != null) {
-				areaOption = configArea;
-			}
-		}
-		
-		Location centerLocation = world.getSpawnLocation();
-		String locationStr = config.getString(locationPath);
-		if ("here".equals(locationStr)) {
-			Optional<Player> firstPlayer = teamController.getSelectedPlayers().stream().findFirst();
-			if (firstPlayer.isPresent()) {
-				centerLocation = firstPlayer.get().getLocation();
-			}
-		} else if ("random".equals(locationStr)) {
-			centerLocation = Utility.getGroundedLocationAround(
-				world.getSpawnLocation(), 
-				100, 
-				1000, 
-				world.getSpawnLocation()
-			);
-		}
-		
-		border.setCenter(centerLocation);
-		border.setSize(areaOption.getSize() * 2);
 		border.setWarningDistance(50);
 		border.setDamageAmount(1.0);
 		border.setDamageBuffer(10.0);
-
-		config.set(borderWorldUUIDPath, world.getUID().toString());
-		config.set(borderLocationPath, 
-			centerLocation.getX() + "," + 
-			centerLocation.getY() + "," + 
-			centerLocation.getZ()
-		);
-		getBuilder().getPlugin().saveConfig();
 	}
 
 	private void resetWorldBorder() {
-		FileConfiguration config = getBuilder().getPlugin().getConfig();
-		String worldUUIDStr = config.getString(borderWorldUUIDPath);
-		
-		if (worldUUIDStr != null) {
-			try {
-				UUID worldUUID = UUID.fromString(worldUUIDStr);
-				World world = Bukkit.getWorld(worldUUID);
-				if (world != null) {
-					WorldBorder border = world.getWorldBorder();
-					border.reset();
-				}
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			}
+		if (areaController != null) {
+			areaController.resetBorder();
 		}
+	}
+
+	private WorldBorderAreaOption mapAreaOption(FileConfiguration config) {
+		String areaStr = config.getString(areaPath);
+		if (areaStr == null) {
+			return WorldBorderAreaOption.medium;
+		}
+
+		SheepwarsAreaOptions option = EnumUtils.getEnum(SheepwarsAreaOptions.class, areaStr);
+		if (option == null) {
+			return WorldBorderAreaOption.medium;
+		}
+
+		return switch (option) {
+			case small -> WorldBorderAreaOption.small;
+			case medium -> WorldBorderAreaOption.medium;
+			case large -> WorldBorderAreaOption.large;
+		};
+	}
+
+	private WorldBorderLocationOption mapLocationOption(FileConfiguration config) {
+		String locationStr = config.getString(locationPath);
+		if (locationStr == null) {
+			return WorldBorderLocationOption.here;
+		}
+
+		SheepwarsLocationOptions option = EnumUtils.getEnum(SheepwarsLocationOptions.class, locationStr);
+		if (option == null) {
+			return WorldBorderLocationOption.here;
+		}
+
+		return option == SheepwarsLocationOptions.random
+			? WorldBorderLocationOption.random
+			: WorldBorderLocationOption.here;
 	}
 
 	@EventHandler

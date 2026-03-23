@@ -14,14 +14,15 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
-import fr.ludos.game.Game;
-import fr.ludos.game.TeamController;
+import fr.ludos.game.GameTeamController;
 
 
-public final class SheepwarsTeamController extends TeamController {
+public final class SheepwarsTeamController extends GameTeamController {
 	private List<Team> teams;
 	private Set<Player> selectedPlayers;
 	private int teamCount;
@@ -31,7 +32,7 @@ public final class SheepwarsTeamController extends TeamController {
 	}
 
 	public SheepwarsTeamController(SheepwarsGame game, @Nullable Set<Player> players, int teamCount) {
-		super(game, game.getScoreboard());
+		super(game);
 		
 		this.teamCount = teamCount;
 		this.teams = new ArrayList<>();
@@ -52,6 +53,8 @@ public final class SheepwarsTeamController extends TeamController {
 
 	@Override
 	protected void onStart() {
+		Scoreboard scoreboard = getGame().getScoreboard();
+
 		NamedTextColor[] teamColors = {
 			NamedTextColor.RED,
 			NamedTextColor.BLUE, 
@@ -98,12 +101,12 @@ public final class SheepwarsTeamController extends TeamController {
 	}
 
 	@Override
-	public Collection<Player> getPlayers() {
-		return selectedPlayers;
+	public Collection<LivingEntity> getEntities() {
+		return new ArrayList<>(selectedPlayers);
 	}
 
 	public Team getPlayerTeam(Player player) {
-		return scoreboard.getEntryTeam(player.getName());
+		return getGame().getScoreboard().getEntryTeam(player.getName());
 	}
 
 	public List<Player> getTeamPlayers(Team team) {
@@ -126,5 +129,15 @@ public final class SheepwarsTeamController extends TeamController {
 					.color(NamedTextColor.GOLD)
 			);
 		}
+	}
+
+	@Override
+	protected void joinPlayer(Player player) {
+		selectedPlayers.add(player);
+	}
+
+	@Override
+	protected void discardPlayer(Player player) {
+		selectedPlayers.remove(player);
 	}
 }
