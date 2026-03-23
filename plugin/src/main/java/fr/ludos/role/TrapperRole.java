@@ -2,6 +2,7 @@ package fr.ludos.role;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -11,12 +12,14 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.item.trapper.TrapperDaggerBranches;
 import fr.ludos.item.trapper.TrapperSnareDevice;
 import fr.ludos.item.trapper.TrapperDagger;
 
@@ -106,6 +109,14 @@ public class TrapperRole extends Role {
 		@Override
 		public TextComponent getDescription() {
 			return Component.text("");
+		}
+
+		@Override
+		public List<ItemStack> createArenaLoadout(Player player, Game game) {
+			return List.of(
+				TrapperDagger.createItem(player, maxMultiLevels(TrapperDaggerBranches.values(), 3), game).getStack(),
+				TrapperSnareDevice.createItem(player, game).getStack()
+			);
 		}
 	}
 }

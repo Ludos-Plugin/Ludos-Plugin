@@ -1,12 +1,15 @@
 package fr.ludos.role;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
@@ -18,6 +21,7 @@ import fr.ludos.item.SpecialItem;
 import fr.ludos.item.huntsman.HuntsmanArrow;
 import fr.ludos.item.huntsman.HuntsmanBow;
 import fr.ludos.item.huntsman.HuntsmanCrossbow;
+import fr.ludos.item.huntsman.HuntsmanCrossbowBranches;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 
@@ -85,6 +89,18 @@ public class HuntsmanRole extends Role {
 		@Override
 		public TextComponent getDescription() {
 			return Component.text("");
+		}
+
+		@Override
+		public List<ItemStack> createArenaLoadout(Player player, Game game) {
+			ItemStack arrows = HuntsmanArrow.createItem(player, game).getStack();
+			arrows.setAmount(64);
+
+			return List.of(
+				HuntsmanBow.createItem(player, game).getStack(),
+				HuntsmanCrossbow.createItem(player, maxMultiLevels(HuntsmanCrossbowBranches.values(), 2), game).getStack(),
+				arrows
+			);
 		}
 	}
 }

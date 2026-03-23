@@ -34,6 +34,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
+import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.Utility;
 import fr.ludos.game.arena.monster.DarkKnightBoss;
@@ -51,6 +52,8 @@ public final class ArenaWaveController extends ArenaGame {
 	private final Set<UUID> aliveWaveMonsters = new HashSet<>();
 	private DarkKnightBoss currentBoss;
 	private int wave = 0;
+	private boolean preparationPhase = false;
+	private BukkitTask preparationTask;
 	private BukkitTask waveCheckTask;
 
 	protected ArenaWaveController(Builder builder) {
@@ -59,12 +62,12 @@ public final class ArenaWaveController extends ArenaGame {
 
 	@Override
 	protected void onGameStart() {
-		teleportArenaPlayersForRound();
 		startNextWave();
 	}
 
 	@Override
 	protected void onGameStop() {
+		preparationTask = Utility.cancelTask(preparationTask);
 		waveCheckTask = Utility.cancelTask(waveCheckTask);
 		despawnAllMonsters();
 		getGameAreaController().resetBorder();
@@ -78,6 +81,9 @@ public final class ArenaWaveController extends ArenaGame {
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event) {
 		if (!isArenaPlayer(event.getPlayer())) return;
+		if (!preparationPhase) return;
+		if (isSamePosition(event.getFrom(), event.getTo())) return;
+
 		event.setTo(event.getFrom());
 	}
 
@@ -85,6 +91,7 @@ public final class ArenaWaveController extends ArenaGame {
 	public void onEntityDamage(EntityDamageEvent event) {
 		if (!(event.getEntity() instanceof Player player)) return;
 		if (!isArenaPlayer(player)) return;
+		if (!preparationPhase) return;
 
 		event.setCancelled(true);
 	}
@@ -93,20 +100,24 @@ public final class ArenaWaveController extends ArenaGame {
 	public void onFoodLevelChange(FoodLevelChangeEvent event) {
 		if (!(event.getEntity() instanceof Player player)) return;
 		if (!isArenaPlayer(player)) return;
+		if (!preparationPhase) return;
+
 		event.setCancelled(true);
 	}
 
 	@EventHandler
 	public void onEntityDeath(EntityDeathEvent event) {
 		Entity entity = event.getEntity();
-		if (aliveWaveMonsters.remove(entity.getUniqueId())) {
-			event.getDrops().clear();
-			event.setDroppedExp(0);
-		}
-		if (currentBoss != null && currentBoss.getEntity() != null && currentBoss.getEntity().getUniqueId().equals(entity.getUniqueId())) {
-			currentBoss.onDeath();
-			currentBoss = null;
-		}
+		event.getDrops().clear();
+
+		// if (aliveWaveMonsters.remove(entity.getUniqueId())) {
+		// 	event.getDrops().clear();
+		// 	event.setDroppedExp(0);
+		// }
+		// if (currentBoss != null && currentBoss.getEntity() != null && currentBoss.getEntity().getUniqueId().equals(entity.getUniqueId())) {
+		// 	currentBoss.onDeath();
+		// 	currentBoss = null;
+		// }
 	}
 
 	@EventHandler
@@ -119,29 +130,55 @@ public final class ArenaWaveController extends ArenaGame {
 		if (wave >= getConfiguredRounds()) {
 			Bukkit.broadcast(Component.text("Arena Waves complete!").color(NamedTextColor.GOLD));
 			Game.stopCurrentGame();
+
 			return;
 		}
+
 		wave++;
+
+		startWavePreparation();
+	}
+
+	private void startWavePreparation() {
+		preparationPhase = true;
 		teleportArenaPlayersForRound();
-		startWaveCombat();
+
+		for (Player player : getArenaPlayers()) {
+			Game.joinAnyPlayer(player, null);
+			player.getInventory().addItem(Ludos.createGuidebook());
+		}
+
+		preparationTask = startPreparationCountdownTask(
+			"Wave",
+			() -> wave,
+			"Wave starts in",
+			this::startWaveCombat
+		);
 	}
 
 	private void startWaveCombat() {
+		preparationPhase = false;
+		preparationTask = Utility.cancelTask(preparationTask);
+
 		for (Player player : getArenaPlayers()) {
 			applyArenaCombatLoadout(player);
 		}
+
 		spawnWaveContent();
 		waveCheckTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), this::evaluateWaveState, 0L, 10L);
 	}
 
 	private void spawnWaveContent() {
 		aliveWaveMonsters.clear();
+
 		if (shouldSpawnBossWave()) {
 			spawnBossWave();
 			return;
 		}
+
 		int amount = Math.min(MAX_MOB_COUNT, BASE_MOB_COUNT + (wave * MOBS_PER_WAVE));
 		Location center = getGameAreaController().getCenter();
+
 		for (int i = 0; i < amount; i++) {
 			Location spawn = center.clone().add(
 				ThreadLocalRandom.current().nextDouble(-18, 18),
@@ -149,11 +186,16 @@ public final class ArenaWaveController extends ArenaGame {
 				ThreadLocalRandom.current().nextDouble(-18, 18)
 			);
 			moveToHighestGround(spawn);
+
 			LivingEntity mob = spawnRegularMob(spawn);
+
 			if (mob == null) continue;
+
 			configureWaveMob(mob);
+
 			aliveWaveMonsters.add(mob.getUniqueId());
 		}
+
 		Bukkit.broadcast(Component.text("Wave " + wave + " spawned: " + aliveWaveMonsters.size() + " monsters").color(NamedTextColor.DARK_RED));
 	}
 
@@ -161,12 +203,17 @@ public final class ArenaWaveController extends ArenaGame {
 		Location center = getGameAreaController().getCenter().clone();
 		moveToHighestGround(center);
 		center.add(0, 1.0, 0);
+
 		currentBoss = new DarkKnightBoss(this);
+
 		currentBoss.spawn(center);
+
 		if (currentBoss.getEntity() != null) {
 			aliveWaveMonsters.add(currentBoss.getEntity().getUniqueId());
 		}
+
 		Bukkit.broadcast(Component.text("Boss Wave: The Dark Knight emerges").color(NamedTextColor.DARK_PURPLE));
+
 		center.getWorld().strikeLightningEffect(center);
 		center.getWorld().playSound(center, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.7f);
 	}
@@ -204,29 +251,40 @@ public final class ArenaWaveController extends ArenaGame {
 		if (mob instanceof Monster monster && !alivePlayers.isEmpty()) {
 			monster.setTarget(alivePlayers.get(ThreadLocalRandom.current().nextInt(alivePlayers.size())));
 		}
+
 		mob.setRemoveWhenFarAway(false);
 		mob.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, true, false));
+
 		if (mob instanceof Zombie zombie) {
 			zombie.setShouldBurnInDay(false);
 		}
+
 		if (mob instanceof AbstractSkeleton skeleton) {
 			skeleton.setShouldBurnInDay(false);
 		}
+
 		double hp = 18.0 + (wave * 2.25);
+
 		setBaseValue(mob, Attribute.GENERIC_MAX_HEALTH, hp);
 		if (mob.getAttribute(Attribute.GENERIC_MAX_HEALTH) != null) {
 			mob.setHealth(hp);
 		}
+
 		double damage = 3.5 + Math.min(12.0, wave * 0.42);
 		setBaseValue(mob, Attribute.GENERIC_ATTACK_DAMAGE, damage);
+
 		double speed = 0.25 + Math.min(0.13, wave * 0.004);
 		setBaseValue(mob, Attribute.GENERIC_MOVEMENT_SPEED, speed);
+
 		double kbRes = Math.min(0.65, wave * 0.015);
 		setBaseValue(mob, Attribute.GENERIC_KNOCKBACK_RESISTANCE, kbRes);
+
 		applyScaledEquipment(mob);
+
 		if (wave >= 10) {
 			mob.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Integer.MAX_VALUE, Math.min(2, wave / 15), true, false));
 		}
+
 		mob.getWorld().spawnParticle(Particle.SMOKE_LARGE, mob.getLocation(), 12, 0.3, 0.4, 0.3, 0.01);
 		mob.getWorld().playSound(mob.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 0.5f, 0.7f);
 	}

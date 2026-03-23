@@ -2,6 +2,7 @@ package fr.ludos.role;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
@@ -129,6 +131,15 @@ public class AssassinRole extends Role {
 		@Override
 		public TextComponent getDescription() {
 			return Component.text("Se camoufle pour surprendre ses ennemis et les éliminer");
+		}
+
+		@Override
+		public List<ItemStack> createArenaLoadout(Player player, Game game) {
+			return List.of(
+				AssassinDagger.createItem(player, game).getStack(),
+				AssassinBoots.createItem(player, game).getStack(),
+				TeleportScroll.createItem(player, game).getStack()
+			);
 		}
 	}
 }

@@ -376,5 +376,19 @@ public class HarvesterRole extends Role {
 		public TextComponent getDescription() {
 			return Component.text("");
 		}
+
+		@Override
+		public List<ItemStack> createArenaLoadout(Player player, Game game) {
+			return List.of(
+				HarvesterPick.createItem(player, maxLevelState(fr.ludos.item.harvester.HarvesterPickLevels.values()), game).getStack(),
+				HarvesterScythe.createItem(player, maxLevelState(fr.ludos.item.harvester.HarvesterScytheLevels.values()), game).getStack(),
+				HarvesterSpade.createItem(player, maxLevelState(fr.ludos.item.harvester.HarvesterSpadeLevels.values()), game).getStack()
+			);
+		}
+
+		@Override
+		public void onArenaLoadoutApplied(Player player, Game game) {
+			setExplosiveChestplateMode(player.getInventory().getChestplate(), true);
+		}
 	}
 }
