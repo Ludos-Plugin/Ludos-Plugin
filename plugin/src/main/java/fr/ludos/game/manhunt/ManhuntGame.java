@@ -119,13 +119,13 @@ public class ManhuntGame extends Game {
 			builder.getChosenPlayers(),
 			builder.getChosenPrey()
 		);
-		this.areaController = new WorldBorderAreaController(
+		this.areaController = (WorldBorderAreaController) new WorldBorderAreaController(
 			this,
 			this.teamController.getSelectedPrey().getLocation(),
-			builder.createWorldCreator(),
 			this.builder.getLocation(),
 			this.builder.getArea()
-		);
+		)
+			.withinWorld(builder.createWorldCreator());
 
 		timer = new ManhuntTimer(this, builder.getReveal());
 		compassEvents = new ManhuntCompass.Events(this);

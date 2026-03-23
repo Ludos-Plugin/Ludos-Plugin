@@ -26,39 +26,59 @@ public abstract class GameAreaController extends GameProcessBase {
 	}
 
 	private final Location returnLocation;
-	public Location getReturnLocation() {
+	public final Location getReturnLocation() {
 		return returnLocation;
 	}
 
-	private @Nullable Location initialLocation;
-	public @Nullable Location getInitialLocation() {
+	private Location initialLocation;
+	public final Location getInitialLocation() {
 		return initialLocation;
 	}
 
-	private final @Nullable WorldCreator worldCreator;
-	public @Nullable WorldCreator getWorldCreator() {
-		return worldCreator;
-	}
-	private @Nullable World world;
-	public @Nullable World getWorld() {
+	private @Nullable WorldCreator worldCreator;
+
+	private World world;
+	public final World getWorld() {
 		return world;
 	}
 
-	private GameAreaController(Game game, Location returnLocation, @Nullable Location initialLocation, @Nullable WorldCreator worldCreator) {
+	private boolean isOwnWorld;
+	public final boolean isOwnWorld() {
+		return isOwnWorld;
+	}
+
+	protected GameAreaController(Game game, Location returnLocation) {
 		if (game == null) {
 			throw new IllegalArgumentException("Game cannot be null");
 		}
 
 		this.game = game;
 		this.returnLocation = returnLocation;
-		this.initialLocation = initialLocation;
+	}
+
+	public final GameAreaController withinWorld(WorldCreator worldCreator) {
+		if (isStarted()) return this;
+		this.initialLocation = null;
+		this.world = null;
 		this.worldCreator = worldCreator;
+		this.isOwnWorld = true;
+		return this;
 	}
-	protected GameAreaController(Game game, Location returnLocation, Location initialLocation) {
-		this(game, returnLocation, initialLocation, null);
+	public final GameAreaController withinWorld(World world, boolean isOwnWorld) {
+		if (isStarted()) return this;
+		this.initialLocation = world.getSpawnLocation();
+		this.world = world;
+		this.worldCreator = null;
+		this.isOwnWorld = isOwnWorld;
+		return this;
 	}
-	protected GameAreaController(Game game, Location returnLocation, WorldCreator worldCreator) {
-		this(game, returnLocation, null, worldCreator);
+	public final GameAreaController startingAt(Location initialLocation) {
+		if (isStarted()) return this;
+		this.initialLocation = initialLocation;
+		this.world = initialLocation.getWorld();
+		this.worldCreator = null;
+		this.isOwnWorld = false;
+		return this;
 	}
 
 	@Override
@@ -76,10 +96,11 @@ public abstract class GameAreaController extends GameProcessBase {
 
 	@Override
 	public final void onInit() {
-		if (worldCreator != null) {
-			this.world = worldCreator.createWorld();
-			this.world.setAutoSave(false);
-			this.world.setKeepSpawnInMemory(false);
+		if (isOwnWorld && worldCreator != null && world == null) {
+			World world = worldCreator.createWorld();
+			world.setAutoSave(false);
+			world.setKeepSpawnInMemory(false);
+			this.world = world;
 
 			this.initialLocation = world.getSpawnLocation();
 		}
@@ -92,9 +113,10 @@ public abstract class GameAreaController extends GameProcessBase {
 		onAreaDeinit();
 
 		Location returnLocation = getReturnLocation();
-		World tempWorld = world;
 
-		if (world != null) {
+		if (world != null && isOwnWorld) {
+			World tempWorld = world;
+
 			new BukkitRunnable() {
 				public void run() {
 					List<Player> playersInWorld = tempWorld.getPlayers();

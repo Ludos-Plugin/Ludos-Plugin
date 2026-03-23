@@ -33,8 +33,8 @@ public class WorldBorderAreaController extends GameAreaController {
 	}
 
 
-	public WorldBorderAreaController(Game game, Location returnLocation, WorldCreator worldCreator, WorldBorderLocationOption location, WorldBorderAreaOption area) {
-		super(game, returnLocation, worldCreator);
+	public WorldBorderAreaController(Game game, Location returnLocation, WorldBorderLocationOption location, WorldBorderAreaOption area) {
+		super(game, returnLocation);
 
 		this.locationOption = location;
 		this.areaOption = area;
@@ -48,7 +48,7 @@ public class WorldBorderAreaController extends GameAreaController {
 	@Override
 	protected void onAreaStart() {
 		Location initialLocation = getInitialLocation();
-		World world = getWorld();
+		World world = initialLocation.getWorld();
 
 		switch (locationOption) {
 			case random:
