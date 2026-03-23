@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import fr.ludos.game.Game;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.assassin.AssassinBoots;
 import fr.ludos.item.assassin.AssassinDagger;
@@ -60,8 +59,7 @@ public final class ArenaLoadoutService {
 		PlayerInventory inventory = player.getInventory();
 		inventory.clear();
 
-		ItemStack sword = new ItemStack(Material.DIAMOND_SWORD);
-		sword.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 3);
+		ItemStack sword = enchantedItem(Material.DIAMOND_SWORD, Enchantment.DAMAGE_ALL, 3);
 		inventory.setItem(0, sword);
 
 		ItemStack helmet = enchantedArmor(Material.DIAMOND_HELMET);
@@ -72,8 +70,12 @@ public final class ArenaLoadoutService {
 	}
 
 	private ItemStack enchantedArmor(Material type) {
+		return enchantedItem(type, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
+	}
+
+	private ItemStack enchantedItem(Material type, Enchantment enchantment, int level) {
 		ItemStack stack = new ItemStack(type);
-		stack.addUnsafeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 3);
+		stack.addUnsafeEnchantment(enchantment, level);
 		return stack;
 	}
 

@@ -219,7 +219,7 @@ public class SheepwarsGame extends Game {
 	}
 
 	public static class Builder extends Game.Builder {
-		
+
 		public Builder(Ludos plugin) {
 			super(plugin);
 		}
@@ -259,7 +259,7 @@ public class SheepwarsGame extends Game {
 
 			String configKey = args[0];
 			SheepwarsGameConfigs config = EnumUtils.getEnum(SheepwarsGameConfigs.class, configKey);
-			
+
 			if (config == null) {
 				sender.sendMessage(Component.text("Unknown config option: " + configKey)
 					.color(NamedTextColor.RED));
@@ -329,7 +329,7 @@ public class SheepwarsGame extends Game {
 			if (args.length == 2) {
 				String configKey = args[0];
 				SheepwarsGameConfigs config = EnumUtils.getEnum(SheepwarsGameConfigs.class, configKey);
-				
+
 				if (config != null) {
 					switch (config) {
 						case players -> {

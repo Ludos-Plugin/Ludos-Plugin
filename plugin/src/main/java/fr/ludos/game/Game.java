@@ -9,7 +9,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -17,7 +20,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
@@ -122,6 +127,38 @@ public abstract class Game extends GameProcessBase {
 			Role role = roleBuilder.build(this);
 			activeRoles.put(roleBuilder.getId(), role);
 			role.start();
+		}
+	}
+
+	public static void worldInitialization(World world) {
+		world.setTime(1000);
+		world.setStorm(false);
+		world.setThundering(false);
+	}
+
+	public static void joinAnyPlayer(Player player, @Nullable Location location, @Nullable PotionEffect... effects) {
+
+		player.getInventory().clear();
+
+		player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
+		player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+
+		player.setFoodLevel(20);
+		player.setSaturation(20f);
+		player.setFireTicks(0);
+
+		player.setGameMode(GameMode.SURVIVAL);
+		player.setVelocity(new Vector(0, 0, 0));
+
+		if (location != null) {
+			player.teleport(location);
+			player.setBedSpawnLocation(location, true);
+		}
+
+		if (effects != null) {
+			for (PotionEffect effect : effects) {
+				player.addPotionEffect(effect);
+			}
 		}
 	}
 

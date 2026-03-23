@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -14,14 +13,14 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.WitherSkeleton;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
 import fr.ludos.game.arena.ArenaGame;
@@ -31,11 +30,17 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 	private static final double MAX_HEALTH = 360.0;
 	private static final int ATTACK_COOLDOWN_TICKS = 45;
+	private static final int DARK_KNIGHT_HELMET_MODEL_DATA = 919001;
+	private static final int DARK_KNIGHT_SWORD_MODEL_DATA = 919002;
+	private static final int DARK_KNIGHT_CAPE_MODEL_DATA = 919003;
 
 	private int attackTick = 0;
 	private int phase = 1;
 
 	private final List<ArmorStand> activeOrbs = new ArrayList<>();
+
+	@org.jetbrains.annotations.Nullable
+	private ArmorStand capeStand;
 
 	@org.jetbrains.annotations.Nullable
 	private BukkitTask orbitTask;
@@ -45,7 +50,7 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 	}
 
 	@Override
-	protected WitherSkeleton createEntity(Location location) {
+	protected WitherSkeleton spawnMonsterEntity(Location location) {
 		World world = location.getWorld();
 		if (world == null) {
 			throw new IllegalStateException("Boss location world is null");
@@ -56,37 +61,66 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 		boss.setCustomNameVisible(true);
 		boss.setRemoveWhenFarAway(false);
 		boss.setPersistent(true);
+		boss.setInvisible(false);
 
-		AttributeInstance followRange = boss.getAttribute(Attribute.GENERIC_FOLLOW_RANGE);
-		if (followRange != null) {
-			followRange.setBaseValue(64.0);
-		}
-		AttributeInstance movement = boss.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
-		if (movement != null) {
-			movement.setBaseValue(0.33);
-		}
-		AttributeInstance damage = boss.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
-		if (damage != null) {
-			damage.setBaseValue(12.0);
-		}
+		setAttributeBase(boss, Attribute.GENERIC_FOLLOW_RANGE, 64.0);
+		setAttributeBase(boss, Attribute.GENERIC_MOVEMENT_SPEED, 0.33);
+		setAttributeBase(boss, Attribute.GENERIC_ATTACK_DAMAGE, 12.0);
 
 		setMaxHealth(boss, MAX_HEALTH);
 		boss.setHealth(MAX_HEALTH);
 
-		boss.getEquipment().setHelmet(tintedLeather(Material.LEATHER_HELMET, Color.fromRGB(22, 22, 26)));
-		boss.getEquipment().setChestplate(tintedLeather(Material.LEATHER_CHESTPLATE, Color.fromRGB(12, 12, 12)));
-		boss.getEquipment().setLeggings(tintedLeather(Material.LEATHER_LEGGINGS, Color.fromRGB(18, 18, 18)));
-		boss.getEquipment().setBoots(tintedLeather(Material.LEATHER_BOOTS, Color.fromRGB(10, 10, 10)));
-		boss.getEquipment().setItemInMainHand(new ItemStack(Material.NETHERITE_SWORD));
+		boss.getEquipment().setItemInMainHand(createDarkKnightSword());
 		boss.getEquipment().setItemInMainHandDropChance(0.0f);
+		boss.getEquipment().setHelmet(createDarkKnightHelmet());
+		boss.getEquipment().setHelmetDropChance(0.0f);
+		boss.getEquipment().setChestplate(null);
+		boss.getEquipment().setLeggings(null);
+		boss.getEquipment().setBoots(null);
+		boss.setCanPickupItems(false);
 
 		boss.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, false, false));
 
 		return boss;
 	}
 
+	private void setAttributeBase(WitherSkeleton boss, Attribute attribute, double value) {
+		AttributeInstance instance = boss.getAttribute(attribute);
+		if (instance != null) {
+			instance.setBaseValue(value);
+		}
+	}
+
+	private ItemStack createDarkKnightHelmet() {
+		return createCustomModelItem(Material.CARVED_PUMPKIN, DARK_KNIGHT_HELMET_MODEL_DATA);
+	}
+
+	private ItemStack createDarkKnightSword() {
+		return createCustomModelItem(Material.NETHERITE_SWORD, DARK_KNIGHT_SWORD_MODEL_DATA);
+	}
+
+	private ItemStack createDarkKnightCape() {
+		return createCustomModelItem(Material.CARVED_PUMPKIN, DARK_KNIGHT_CAPE_MODEL_DATA);
+	}
+
+	private ItemStack createCustomModelItem(Material material, int modelData) {
+		ItemStack item = new ItemStack(material);
+		ItemMeta meta = item.getItemMeta();
+
+		meta.setCustomModelData(modelData);
+		item.setItemMeta(meta);
+
+		return item;
+	}
+
 	@Override
-	protected void onTick(WitherSkeleton entity) {
+	protected void onMonsterSpawn(WitherSkeleton entity) {
+		spawnCapeStand(entity);
+	}
+
+	@Override
+	protected void onMonsterTick(WitherSkeleton entity) {
+		updateCapeStand(entity);
 		updatePhase(entity);
 
 		if (attackTick > 0) {
@@ -99,16 +133,61 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 	}
 
 	@Override
-	protected void onDespawn(WitherSkeleton entity) {
-		cleanupOrbs();
+	protected void onMonsterDespawn(WitherSkeleton entity) {
+		cleanupVisuals();
 	}
 
 	@Override
 	protected void onMonsterDeath(WitherSkeleton entity) {
-		cleanupOrbs();
+		cleanupVisuals();
 		entity.getWorld().strikeLightningEffect(entity.getLocation());
 		entity.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, entity.getLocation(), 3, 1.0, 0.6, 1.0, 0.0);
 		entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ENDER_DRAGON_DEATH, 0.85f, 0.9f);
+	}
+
+	private void cleanupVisuals() {
+		cleanupOrbs();
+		cleanupCape();
+	}
+
+	private void spawnCapeStand(WitherSkeleton boss) {
+		cleanupCape();
+		ArmorStand stand = (ArmorStand) boss.getWorld().spawnEntity(boss.getLocation(), EntityType.ARMOR_STAND);
+		stand.setInvisible(true);
+		stand.setMarker(true);
+		stand.setGravity(false);
+		stand.setInvulnerable(true);
+		stand.setSilent(true);
+		stand.setBasePlate(false);
+		stand.getEquipment().setHelmet(createDarkKnightCape());
+		stand.setHeadPose(new EulerAngle(Math.toRadians(12.0), 0.0, 0.0));
+		capeStand = stand;
+		updateCapeStand(boss);
+	}
+
+	private void updateCapeStand(WitherSkeleton boss) {
+		if (capeStand == null || !capeStand.isValid()) {
+			return;
+		}
+
+		Location bossLoc = boss.getLocation();
+		Vector back = bossLoc.getDirection().setY(0.0);
+		if (back.lengthSquared() < 0.0001) {
+			back = new Vector(0.0, 0.0, 1.0);
+		}
+		back.normalize().multiply(0.45);
+
+		Location capeLoc = bossLoc.clone().add(0.0, 1.35, 0.0).subtract(back);
+		capeLoc.setYaw(bossLoc.getYaw());
+		capeLoc.setPitch(0.0f);
+		capeStand.teleport(capeLoc);
+	}
+
+	private void cleanupCape() {
+		if (capeStand != null && capeStand.isValid()) {
+			capeStand.remove();
+		}
+		capeStand = null;
 	}
 
 	private void updatePhase(WitherSkeleton boss) {
@@ -148,10 +227,8 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 		World world = boss.getWorld();
 		Location center = boss.getLocation();
 
-		for (Player player : boss.getWorld().getPlayers()) {
-			if (!getGame().isArenaPlayer(player)) continue;
-			if (!player.getWorld().equals(world)) continue;
-			if (player.getLocation().distanceSquared(center) > 32 * 32) continue;
+		for (Player player : world.getPlayers()) {
+			if (!isArenaTarget(player, world, center, 32 * 32)) continue;
 
 			Location strike = player.getLocation().clone().add(
 				ThreadLocalRandom.current().nextDouble(-1.5, 1.5),
@@ -174,8 +251,7 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 		world.spawnParticle(Particle.BLOCK_CRACK, center, 80, 3.5, 0.2, 3.5, Material.DEEPSLATE.createBlockData());
 
 		for (Player player : world.getPlayers()) {
-			if (!getGame().isArenaPlayer(player)) continue;
-			if (player.getLocation().distanceSquared(center) > 14 * 14) continue;
+			if (!isArenaTarget(player, world, center, 14 * 14)) continue;
 
 			Vector knock = player.getLocation().toVector().subtract(center.toVector());
 			if (knock.lengthSquared() < 0.0001) {
@@ -185,6 +261,12 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 			player.setVelocity(knock);
 			player.damage(3.0, boss);
 		}
+	}
+
+	private boolean isArenaTarget(Player player, World world, Location center, double maxDistanceSquared) {
+		if (!getGame().isArenaPlayer(player)) return false;
+		if (!player.getWorld().equals(world)) return false;
+		return player.getLocation().distanceSquared(center) <= maxDistanceSquared;
 	}
 
 	private void orbitingOrbsPattern(WitherSkeleton boss) {
@@ -271,16 +353,5 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 			}
 		}
 		activeOrbs.clear();
-	}
-
-	private ItemStack tintedLeather(Material type, Color color) {
-		ItemStack item = new ItemStack(type);
-		if (!(item.getItemMeta() instanceof LeatherArmorMeta meta)) {
-			return item;
-		}
-
-		meta.setColor(color);
-		item.setItemMeta(meta);
-		return item;
 	}
 }

@@ -33,10 +33,10 @@ public final class SheepwarsTeamController extends GameTeamController {
 
 	public SheepwarsTeamController(SheepwarsGame game, @Nullable Set<Player> players, int teamCount) {
 		super(game);
-		
+
 		this.teamCount = teamCount;
 		this.teams = new ArrayList<>();
-		
+
 		Set<Player> finalPlayers = new HashSet<>();
 		if (players == null) {
 			finalPlayers.addAll(Bukkit.getOnlinePlayers());
@@ -57,7 +57,7 @@ public final class SheepwarsTeamController extends GameTeamController {
 
 		NamedTextColor[] teamColors = {
 			NamedTextColor.RED,
-			NamedTextColor.BLUE, 
+			NamedTextColor.BLUE,
 			NamedTextColor.GREEN,
 			NamedTextColor.YELLOW
 		};
@@ -74,12 +74,12 @@ public final class SheepwarsTeamController extends GameTeamController {
 
 		List<Player> playerList = new ArrayList<>(selectedPlayers);
 		Random random = new Random();
-		
+
 		for (int i = 0; i < playerList.size(); i++) {
 			Player player = playerList.get(i);
 			Team team = teams.get(i % teamCount);
 			team.addEntry(player.getName());
-			
+
 			player.sendMessage(
 				Component.text("You have been assigned to team: ")
 					.append(team.displayName())
@@ -120,7 +120,7 @@ public final class SheepwarsTeamController extends GameTeamController {
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player player = event.getEntity();
 		Team team = getPlayerTeam(player);
-		
+
 		if (team != null) {
 			Bukkit.broadcast(
 				Component.text(player.getName() + " from team ")

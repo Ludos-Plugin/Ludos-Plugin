@@ -7,8 +7,8 @@ import fr.ludos.game.worldborder.WorldBorderAreaOption;
 import fr.ludos.game.worldborder.WorldBorderLocationOption;
 
 public enum ArenaGameConfigs {
-	teamA(() -> "[player1] [player2] ..."),
-	teamB(() -> "[player1] [player2] ..."),
+	team1(() -> "[player1] [player2] ..."),
+	team2(() -> "[player1] [player2] ..."),
 	mode(ArenaModeOption::getUsage),
 	rounds(() -> "<number>"),
 	area(WorldBorderAreaOption::getUsage),

@@ -52,35 +52,40 @@ public abstract class SpecialMonster<TEntity extends LivingEntity> {
 
 	public final void spawn(Location location) {
 		if (isAlive()) return;
+		TEntity spawned = spawnMonsterEntity(location);
+		this.entity = spawned;
 
-		TEntity created = createEntity(location);
-		this.entity = created;
-
-		onSpawn(created);
+		onMonsterSpawn(spawned);
 
 		tickTask = game.getPlugin().getServer().getScheduler().runTaskTimer(game.getPlugin(), () -> {
 			if (!isAlive()) {
 				disposeTask();
 				return;
 			}
-			onTick(created);
+			onMonsterTick(spawned);
 		}, 1L, 1L);
 	}
 
 	public final void despawn() {
 		disposeTask();
+		TEntity current = entity;
+		entity = null;
 
-		if (entity != null) {
-			onDespawn(entity);
-			entity.remove();
-			entity = null;
+		if (current != null) {
+			onMonsterDespawn(current);
+			if (current.isValid() && !current.isDead()) {
+				current.remove();
+			}
 		}
 	}
 
 	public final void onDeath() {
 		disposeTask();
-		if (entity != null) {
-			onMonsterDeath(entity);
+		TEntity current = entity;
+		entity = null;
+
+		if (current != null) {
+			onMonsterDeath(current);
 		}
 	}
 
@@ -99,13 +104,13 @@ public abstract class SpecialMonster<TEntity extends LivingEntity> {
 		}
 	}
 
-	protected abstract TEntity createEntity(Location location);
+	protected abstract TEntity spawnMonsterEntity(Location location);
 
-	protected void onSpawn(TEntity entity) { }
+	protected void onMonsterSpawn(TEntity entity) { }
 
-	protected void onTick(TEntity entity) { }
+	protected abstract void onMonsterTick(TEntity entity);
 
-	protected void onDespawn(TEntity entity) { }
+	protected void onMonsterDespawn(TEntity entity) { }
 
 	protected void onMonsterDeath(TEntity entity) { }
 }

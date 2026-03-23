@@ -196,19 +196,10 @@ public final class ManhuntTeamController extends GameTeamController {
 		joinHunter(player);
 	}
 
-	private void joinAnyPlayer(Player player, Location location) {
-		player.teleport(location);
-		player.setBedSpawnLocation(location, true);
-		player.setGameMode(GameMode.SURVIVAL);
-		player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-
-		player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
-	}
-
 	public void joinPrey(Player player) {
 		Location gameLocation = getGame().getGameAreaController().pickRandom(0.0, 0.2);
 
-		joinAnyPlayer(player, gameLocation);
+		Game.joinAnyPlayer(player, gameLocation, new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
 
 		player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 30, 1, false, false));
 		player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 20 * 40, 0, false, true));
@@ -246,7 +237,7 @@ public final class ManhuntTeamController extends GameTeamController {
 			hunterLocation = areaController.pickRandom(0.3, 0.7);
 		}
 
-		joinAnyPlayer(player, hunterLocation);
+		Game.joinAnyPlayer(player, hunterLocation, new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
 
 		hunterTeam.addEntry(player.getName());
 		player.setScoreboard(getGame().getScoreboard());

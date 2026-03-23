@@ -8,11 +8,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -46,10 +46,10 @@ import net.kyori.adventure.title.Title;
 public class ArenaGame extends Game {
 	public static final String ID = "arena";
 
-	public static final String teamAKey = "teamA";
-	public static final String teamAPath = ID + '.' + teamAKey;
-	public static final String teamBKey = "teamB";
-	public static final String teamBPath = ID + '.' + teamBKey;
+	public static final String primaryTeamKey = "team1";
+	public static final String primaryTeamPath = ID + '.' + primaryTeamKey;
+	public static final String secondaryTeamKey = "team2";
+	public static final String secondaryTeamPath = ID + '.' + secondaryTeamKey;
 	public static final String modeKey = "mode";
 	public static final String modePath = ID + '.' + modeKey;
 	public static final String roundsKey = "rounds";
@@ -64,6 +64,7 @@ public class ArenaGame extends Game {
 
 	private static final int PREP_TICKS = 20 * 10;
 	private static final int ROUND_CHECK_PERIOD_TICKS = 10;
+	private static final Title.Times PREP_TITLE_TIMES = Title.Times.times(Duration.ofMillis(100), Duration.ofMillis(750), Duration.ofMillis(100));
 
 	private final Scoreboard scoreboard;
 	private final ArenaTeamController teamController;
@@ -73,8 +74,8 @@ public class ArenaGame extends Game {
 	private final ArenaLoadoutService loadoutService;
 
 	private int currentRound = 0;
-	private int teamARoundWins = 0;
-	private int teamBRoundWins = 0;
+	private int primaryTeamRoundWins = 0;
+	private int secondaryTeamRoundWins = 0;
 	private boolean preparationPhase = false;
 
 	private BukkitTask preparationTask;
@@ -102,7 +103,8 @@ public class ArenaGame extends Game {
 		TeamSelection selectedTeams = builder.resolveTeamSelection();
 
 		this.scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
-		this.teamController = new ArenaTeamController(this, selectedTeams.teamA(), selectedTeams.teamB(), builder.getJoinOption());
+
+		this.teamController = new ArenaTeamController(this, selectedTeams.primaryTeam(), selectedTeams.secondaryTeam(), builder.getJoinOption());
 		this.areaController = new WorldBorderAreaController(this, builder.getLocation(), builder.getArea());
 		this.waveController = new ArenaWaveController(this);
 		this.loadoutService = new ArenaLoadoutService(this);
@@ -117,9 +119,7 @@ public class ArenaGame extends Game {
 	@Override
 	protected void onGameStart() {
 		World world = areaController.getWorld();
-		world.setTime(1000);
-		world.setStorm(false);
-		world.setThundering(false);
+		Game.worldInitialization(world);
 
 		if (isWaveMode()) {
 			waveController.start();
@@ -146,7 +146,7 @@ public class ArenaGame extends Game {
 	}
 
 	public boolean isWaveMode() {
-		return builder.getMode() == ArenaModeOption.waves;
+		return builder.getMode().isWaves();
 	}
 
 	public int getConfiguredRounds() {
@@ -160,14 +160,13 @@ public class ArenaGame extends Game {
 		Player player = event.getPlayer();
 		if (!isArenaPlayer(player)) return;
 		if (event.getTo() == null) return;
-
-		if (
-			event.getFrom().getX() == event.getTo().getX() &&
-			event.getFrom().getY() == event.getTo().getY() &&
-			event.getFrom().getZ() == event.getTo().getZ()
-		) return;
+		if (isSamePosition(event.getFrom(), event.getTo())) return;
 
 		event.setTo(event.getFrom());
+	}
+
+	public static boolean isSamePosition(Location from, Location to) {
+		return from.getX() == to.getX() && from.getY() == to.getY() && from.getZ() == to.getZ();
 	}
 
 	@EventHandler
@@ -206,40 +205,52 @@ public class ArenaGame extends Game {
 
 		teamController.resetRoundPlayers();
 		teleportArenaPlayersForRound();
-
-		for (Player player : getArenaPlayers()) {
-			resetArenaPlayerState(player);
-			player.getInventory().clear();
-			player.getInventory().addItem(Ludos.createGuidebook());
-		}
+		prepareArenaPlayers();
 
 		startPreparationCountdown();
 	}
 
 	private void startPreparationCountdown() {
-		if (preparationTask != null) {
-			preparationTask.cancel();
-			preparationTask = null;
-		}
+		preparationTask = startPreparationCountdownTask(
+			preparationTask,
+			"Round",
+			() -> currentRound,
+			"Fight starts in",
+			this::startCombatPhase
+		);
+	}
 
-		preparationTask = new BukkitRunnable() {
+	public void prepareArenaPlayers() {
+		for (Player player : getArenaPlayers()) {
+			Game.joinAnyPlayer(player, null);
+			player.getInventory().addItem(Ludos.createGuidebook());
+		}
+	}
+
+	public void showPreparationTitle(String phaseName, int phaseNumber, String countdownPrefix, int secondsLeft) {
+		for (Player player : getArenaPlayers()) {
+			player.showTitle(Title.title(
+				Component.text(phaseName + " " + phaseNumber).color(NamedTextColor.WHITE),
+				Component.text(countdownPrefix + " " + secondsLeft + "s").color(NamedTextColor.WHITE),
+				PREP_TITLE_TIMES
+			));
+		}
+	}
+
+	public BukkitTask startPreparationCountdownTask(@Nullable BukkitTask task, String phaseName, IntSupplier phaseNumberSupplier, String countdownPrefix, Runnable onComplete) {
+		task = cancelTask(task);
+
+		return new BukkitRunnable() {
 			private int ticksLeft = PREP_TICKS;
 
 			@Override
 			public void run() {
 				int secondsLeft = Math.max(0, ticksLeft / 20);
-				for (Player player : getArenaPlayers()) {
-					player.showTitle(Title.title(
-						Component.text("Round " + currentRound).color(NamedTextColor.WHITE),
-						Component.text("Fight starts in " + secondsLeft + "s").color(NamedTextColor.WHITE),
-						Title.Times.times(Duration.ofMillis(100), Duration.ofMillis(750), Duration.ofMillis(100))
-					));
-				}
+				showPreparationTitle(phaseName, phaseNumberSupplier.getAsInt(), countdownPrefix, secondsLeft);
 
 				if (ticksLeft <= 0) {
 					cancel();
-					preparationTask = null;
-					startCombatPhase();
+					onComplete.run();
 					return;
 				}
 
@@ -248,12 +259,15 @@ public class ArenaGame extends Game {
 		}.runTaskTimer(getPlugin(), 0L, 20L);
 	}
 
-	private void startCombatPhase() {
-		preparationPhase = false;
-
+	public void applyCombatLoadoutToArenaPlayers() {
 		for (Player player : getArenaPlayers()) {
 			applyArenaCombatLoadout(player);
 		}
+	}
+
+	private void startCombatPhase() {
+		preparationPhase = false;
+		applyCombatLoadoutToArenaPlayers();
 
 		if (roundCheckTask != null) {
 			roundCheckTask.cancel();
@@ -263,23 +277,23 @@ public class ArenaGame extends Game {
 	}
 
 	private void evaluateRoundState() {
-		int aliveA = teamController.getAliveTeamAPlayers().size();
-		int aliveB = teamController.getAliveTeamBPlayers().size();
+		int alivePrimary = teamController.getAliveCombatPlayers(0).size();
+		int aliveSecondary = teamController.getAliveCombatPlayers(1).size();
 
-		if (aliveA > 0 && aliveB > 0) return;
+		if (alivePrimary > 0 && aliveSecondary > 0) return;
 
 		if (roundCheckTask != null) {
 			roundCheckTask.cancel();
 			roundCheckTask = null;
 		}
 
-		if (aliveA > aliveB) {
-			teamARoundWins++;
-			Bukkit.broadcast(Component.text("Round " + currentRound + " won by Team A").color(NamedTextColor.BLUE));
+		if (alivePrimary > aliveSecondary) {
+			primaryTeamRoundWins++;
+			Bukkit.broadcast(Component.text("Round " + currentRound + " won by Combat Team 1").color(NamedTextColor.BLUE));
 		}
-		else if (aliveB > aliveA) {
-			teamBRoundWins++;
-			Bukkit.broadcast(Component.text("Round " + currentRound + " won by Team B").color(NamedTextColor.RED));
+		else if (aliveSecondary > alivePrimary) {
+			secondaryTeamRoundWins++;
+			Bukkit.broadcast(Component.text("Round " + currentRound + " won by Combat Team 2").color(NamedTextColor.RED));
 		}
 		else {
 			Bukkit.broadcast(Component.text("Round " + currentRound + " is a draw").color(NamedTextColor.WHITE));
@@ -292,16 +306,16 @@ public class ArenaGame extends Game {
 		cancelRoundTasks();
 
 		Component result;
-		if (teamARoundWins > teamBRoundWins) {
-			result = Component.text("Arena finished: Team A wins " + teamARoundWins + " - " + teamBRoundWins)
+		if (primaryTeamRoundWins > secondaryTeamRoundWins) {
+			result = Component.text("Arena finished: Combat Team 1 wins " + primaryTeamRoundWins + " - " + secondaryTeamRoundWins)
 				.color(NamedTextColor.BLUE);
 		}
-		else if (teamBRoundWins > teamARoundWins) {
-			result = Component.text("Arena finished: Team B wins " + teamBRoundWins + " - " + teamARoundWins)
+		else if (secondaryTeamRoundWins > primaryTeamRoundWins) {
+			result = Component.text("Arena finished: Combat Team 2 wins " + secondaryTeamRoundWins + " - " + primaryTeamRoundWins)
 				.color(NamedTextColor.RED);
 		}
 		else {
-			result = Component.text("Arena finished: Draw " + teamARoundWins + " - " + teamBRoundWins)
+			result = Component.text("Arena finished: Draw " + primaryTeamRoundWins + " - " + secondaryTeamRoundWins)
 				.color(NamedTextColor.WHITE);
 		}
 
@@ -310,24 +324,16 @@ public class ArenaGame extends Game {
 	}
 
 	private void cancelRoundTasks() {
-		if (preparationTask != null) {
-			preparationTask.cancel();
-			preparationTask = null;
-		}
-		if (roundCheckTask != null) {
-			roundCheckTask.cancel();
-			roundCheckTask = null;
-		}
+		preparationTask = cancelTask(preparationTask);
+		roundCheckTask = cancelTask(roundCheckTask);
 	}
 
-	public void resetArenaPlayerState(Player player) {
-		player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
-		player.setHealth(player.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue());
-		player.setFoodLevel(20);
-		player.setSaturation(20f);
-		player.setFireTicks(0);
-		player.setGameMode(GameMode.SURVIVAL);
-		player.setVelocity(new Vector(0, 0, 0));
+	@Nullable
+	public static BukkitTask cancelTask(@Nullable BukkitTask task) {
+		if (task != null) {
+			task.cancel();
+		}
+		return null;
 	}
 
 	public void teleportArenaPlayersForRound() {
@@ -360,20 +366,20 @@ public class ArenaGame extends Game {
 		Location center = areaController.getCenter();
 		int radius = Math.max(8, areaController.getAreaDiameter() / 4);
 
-		Location spawnA = areaController.constrain(center.clone().add(-radius, 0, 0));
-		Location spawnB = areaController.constrain(center.clone().add(radius, 0, 0));
+		Location primarySpawn = areaController.constrain(center.clone().add(-radius, 0, 0));
+		Location secondarySpawn = areaController.constrain(center.clone().add(radius, 0, 0));
 
-		moveToHighestGround(spawnA);
-		moveToHighestGround(spawnB);
+		moveToHighestGround(primarySpawn);
+		moveToHighestGround(secondarySpawn);
 
-		for (Player player : teamController.getTeamAPlayers()) {
-			Location target = spawnA.clone();
-			target.setDirection(spawnB.toVector().subtract(spawnA.toVector()));
+		for (Player player : teamController.getCombatPlayers(0)) {
+			Location target = primarySpawn.clone();
+			target.setDirection(secondarySpawn.toVector().subtract(primarySpawn.toVector()));
 			player.teleport(target);
 		}
-		for (Player player : teamController.getTeamBPlayers()) {
-			Location target = spawnB.clone();
-			target.setDirection(spawnA.toVector().subtract(spawnB.toVector()));
+		for (Player player : teamController.getCombatPlayers(1)) {
+			Location target = secondarySpawn.clone();
+			target.setDirection(primarySpawn.toVector().subtract(secondarySpawn.toVector()));
 			player.teleport(target);
 		}
 	}
@@ -389,23 +395,24 @@ public class ArenaGame extends Game {
 	}
 
 	public boolean isArenaPlayer(Player player) {
-		return teamController.getTeamAPlayers().contains(player) || teamController.getTeamBPlayers().contains(player);
+		return teamController.getPlayers().contains(player);
 	}
 
 	public Set<Player> getArenaPlayers() {
-		Set<Player> players = new HashSet<>();
-		players.addAll(teamController.getTeamAPlayers());
-		players.addAll(teamController.getTeamBPlayers());
-		return players;
+		return new HashSet<>(teamController.getPlayers());
 	}
 
-	@Nullable
-	public Player pickRandomArenaPlayer() {
-		List<Player> alive = getArenaPlayers().stream()
+	public List<Player> getAliveArenaPlayers() {
+		return getArenaPlayers().stream()
 			.filter(Player::isOnline)
 			.filter(p -> !p.isDead())
 			.filter(p -> p.getGameMode() == GameMode.SURVIVAL)
 			.toList();
+	}
+
+	@Nullable
+	public Player pickRandomArenaPlayer() {
+		List<Player> alive = getAliveArenaPlayers();
 
 		if (alive.isEmpty()) return null;
 		return alive.get(ThreadLocalRandom.current().nextInt(alive.size()));
@@ -423,7 +430,7 @@ public class ArenaGame extends Game {
 		return candidate.getLocation();
 	}
 
-	private record TeamSelection(Set<Player> teamA, Set<Player> teamB) { }
+	private record TeamSelection(Set<Player> primaryTeam, Set<Player> secondaryTeam) { }
 
 	public static class Builder extends Game.Builder {
 		private static final String allOption = "all";
@@ -434,9 +441,7 @@ public class ArenaGame extends Game {
 		public static final List<String> locationOptions = Arrays.stream(WorldBorderLocationOption.values())
 			.map(WorldBorderLocationOption::name)
 			.collect(Collectors.toList());
-		public static final List<String> modeOptions = Arrays.stream(ArenaModeOption.values())
-			.map(ArenaModeOption::name)
-			.collect(Collectors.toList());
+		public static final List<String> modeOptions = ArenaModeOption.getOptions();
 		public static final List<String> joinOptions = GameJoinOption.getOptions();
 
 		public Builder(Ludos plugin) {
@@ -460,38 +465,32 @@ public class ArenaGame extends Game {
 			return Component.text("Rounds based PvP arena with role repick between rounds.");
 		}
 
-		public Set<String> getTeamANames() {
-			return getPlugin().getConfig().getStringList(teamAPath).stream().collect(Collectors.toSet());
+		public Set<String> getPrimaryTeamNames() {
+			return new HashSet<>(getPlugin().getConfig().getStringList(primaryTeamPath));
 		}
 
-		public void setTeamANames(Set<String> players) {
-			List<String> value = players == null ? null : players.stream().collect(Collectors.toList());
-			getPlugin().getConfig().set(teamAPath, value);
-			getPlugin().saveConfig();
+		public void setPrimaryTeamNames(Set<String> players) {
+			List<String> value = players == null ? null : new ArrayList<>(players);
+			saveConfigValue(primaryTeamPath, value);
 		}
 
-		public Set<String> getTeamBNames() {
-			return getPlugin().getConfig().getStringList(teamBPath).stream().collect(Collectors.toSet());
+		public Set<String> getSecondaryTeamNames() {
+			return new HashSet<>(getPlugin().getConfig().getStringList(secondaryTeamPath));
 		}
 
-		public void setTeamBNames(Set<String> players) {
-			List<String> value = players == null ? null : players.stream().collect(Collectors.toList());
-			getPlugin().getConfig().set(teamBPath, value);
-			getPlugin().saveConfig();
+		public void setSecondaryTeamNames(Set<String> players) {
+			List<String> value = players == null ? null : new ArrayList<>(players);
+			saveConfigValue(secondaryTeamPath, value);
 		}
 
 		public ArenaModeOption getMode() {
-			String modeString = getPlugin().getConfig().getString(modePath);
-			return Arrays.stream(ArenaModeOption.values())
-				.filter(o -> o.name().equalsIgnoreCase(modeString))
-				.findFirst()
-				.orElse(ArenaModeOption.duel);
+			String value = getPlugin().getConfig().getString(modePath);
+			return ArenaModeOption.fromConfig(value, ArenaModeOption.duel);
 		}
 
 		public void setMode(ArenaModeOption mode) {
-			String value = mode == null ? null : mode.name();
-			getPlugin().getConfig().set(modePath, value);
-			getPlugin().saveConfig();
+			String value = mode == null ? null : mode.getId();
+			saveConfigValue(modePath, value);
 		}
 
 		public int getRounds() {
@@ -499,55 +498,71 @@ public class ArenaGame extends Game {
 		}
 
 		public void setRounds(int rounds) {
-			getPlugin().getConfig().set(roundsPath, Math.max(1, rounds));
-			getPlugin().saveConfig();
+			saveConfigValue(roundsPath, Math.max(1, rounds));
 		}
 
 		public WorldBorderAreaOption getArea() {
-			String areaString = getPlugin().getConfig().getString(areaPath);
-			return Arrays.stream(WorldBorderAreaOption.values())
-				.filter(o -> o.name().equalsIgnoreCase(areaString))
-				.findFirst()
-				.orElse(WorldBorderAreaOption.small);
+			return readEnum(areaPath, WorldBorderAreaOption.class, WorldBorderAreaOption.small);
 		}
 
 		public void setArea(WorldBorderAreaOption area) {
 			String value = area == null ? null : area.name();
-			getPlugin().getConfig().set(areaPath, value);
-			getPlugin().saveConfig();
+			saveConfigValue(areaPath, value);
 		}
 
 		public WorldBorderLocationOption getLocation() {
-			String locationString = getPlugin().getConfig().getString(locationPath);
-			return Arrays.stream(WorldBorderLocationOption.values())
-				.filter(o -> o.name().equalsIgnoreCase(locationString))
-				.findFirst()
-				.orElse(WorldBorderLocationOption.here);
+			return readEnum(locationPath, WorldBorderLocationOption.class, WorldBorderLocationOption.here);
 		}
 
 		public void setLocation(WorldBorderLocationOption location) {
 			String value = location == null ? null : location.name();
-			getPlugin().getConfig().set(locationPath, value);
-			getPlugin().saveConfig();
+			saveConfigValue(locationPath, value);
 		}
 
 		public GameJoinOption getJoinOption() {
-			String joinString = getPlugin().getConfig().getString(joinPath);
-			return Arrays.stream(GameJoinOption.values())
-				.filter(o -> o.name().equalsIgnoreCase(joinString))
-				.findFirst()
-				.orElse(GameJoinOption.none);
+			return readEnum(joinPath, GameJoinOption.class, GameJoinOption.none);
 		}
 
 		public void setJoinOption(GameJoinOption join) {
 			String value = join == null ? null : join.name();
-			getPlugin().getConfig().set(joinPath, value);
+			saveConfigValue(joinPath, value);
+		}
+
+		private void saveConfigValue(String path, Object value) {
+			getPlugin().getConfig().set(path, value);
 			getPlugin().saveConfig();
 		}
 
+		private <T extends Enum<T>> T readEnum(String path, Class<T> enumType, T fallback) {
+			String value = getPlugin().getConfig().getString(path);
+			if (value == null) {
+				return fallback;
+			}
+
+			for (T constant : enumType.getEnumConstants()) {
+				if (constant.name().equalsIgnoreCase(value)) {
+					return constant;
+				}
+			}
+
+			return fallback;
+		}
+
+		private <T extends Enum<T>> java.util.Optional<T> parseEnumIgnoreCase(Class<T> enumType, String value) {
+			if (value == null) return java.util.Optional.empty();
+
+			for (T constant : enumType.getEnumConstants()) {
+				if (constant.name().equalsIgnoreCase(value)) {
+					return java.util.Optional.of(constant);
+				}
+			}
+
+			return java.util.Optional.empty();
+		}
+
 		@Nullable
-		public Set<Player> getChosenTeamA() {
-			Set<String> names = getTeamANames();
+		public Set<Player> getChosenPrimaryTeam() {
+			Set<String> names = getPrimaryTeamNames();
 			if (names.isEmpty()) return null;
 
 			return names.stream()
@@ -557,8 +572,8 @@ public class ArenaGame extends Game {
 		}
 
 		@Nullable
-		public Set<Player> getChosenTeamB() {
-			Set<String> names = getTeamBNames();
+		public Set<Player> getChosenSecondaryTeam() {
+			Set<String> names = getSecondaryTeamNames();
 			if (names.isEmpty()) return null;
 
 			return names.stream()
@@ -570,7 +585,7 @@ public class ArenaGame extends Game {
 		public TeamSelection resolveTeamSelection() {
 			Set<Player> onlinePlayers = new HashSet<>(Bukkit.getOnlinePlayers());
 			ArenaModeOption mode = getMode();
-			if (mode == ArenaModeOption.waves) {
+			if (mode.isWaves()) {
 				if (onlinePlayers.isEmpty()) {
 					throw new IllegalArgumentException("At least 1 online player is required for Arena waves");
 				}
@@ -579,66 +594,67 @@ public class ArenaGame extends Game {
 				throw new IllegalArgumentException("At least 2 online players are required for Arena");
 			}
 
-			Set<Player> configuredA = getChosenTeamA();
-			Set<Player> configuredB = getChosenTeamB();
+			Set<Player> configuredPrimary = getChosenPrimaryTeam();
+			Set<Player> configuredSecondary = getChosenSecondaryTeam();
 
-			if (configuredA == null) configuredA = new HashSet<>();
-			if (configuredB == null) configuredB = new HashSet<>();
+			if (configuredPrimary == null) configuredPrimary = new HashSet<>();
+			if (configuredSecondary == null) configuredSecondary = new HashSet<>();
 
-			configuredA.retainAll(onlinePlayers);
-			configuredB.retainAll(onlinePlayers);
-			configuredB.removeAll(configuredA);
+			configuredPrimary.retainAll(onlinePlayers);
+			configuredSecondary.retainAll(onlinePlayers);
+			configuredSecondary.removeAll(configuredPrimary);
 
-			if (mode == ArenaModeOption.waves) {
-				Set<Player> teamA = configuredA.isEmpty() ? new HashSet<>(onlinePlayers) : new HashSet<>(configuredA);
-				if (teamA.isEmpty()) {
+			if (mode.isWaves()) {
+				Set<Player> primaryTeam = configuredPrimary.isEmpty() ? new HashSet<>(onlinePlayers) : new HashSet<>(configuredPrimary);
+				if (primaryTeam.isEmpty()) {
 					throw new IllegalArgumentException("No players selected for Arena waves");
 				}
 
-				return new TeamSelection(teamA, Set.of());
+				return new TeamSelection(primaryTeam, Set.of());
 			}
 
-			if (mode == ArenaModeOption.duel) {
-				Player teamAPlayer = chooseOne(configuredA.isEmpty() ? onlinePlayers : configuredA, null);
-				Player teamBPlayer = chooseOne(configuredB.isEmpty() ? onlinePlayers : configuredB, teamAPlayer);
+			if (mode.isDuel()) {
+				Player primaryTeamPlayer = chooseOne(configuredPrimary.isEmpty() ? onlinePlayers : configuredPrimary, null);
+				Player secondaryTeamPlayer = chooseOne(configuredSecondary.isEmpty() ? onlinePlayers : configuredSecondary, primaryTeamPlayer);
 
-				if (teamAPlayer == null || teamBPlayer == null) {
+				if (primaryTeamPlayer == null || secondaryTeamPlayer == null) {
 					throw new IllegalArgumentException("Could not resolve duel players for Arena");
 				}
 
-				Set<Player> teamA = new HashSet<>();
-				teamA.add(teamAPlayer);
-				Set<Player> teamB = new HashSet<>();
-				teamB.add(teamBPlayer);
-				return new TeamSelection(teamA, teamB);
+				Set<Player> primaryTeam = new HashSet<>();
+				primaryTeam.add(primaryTeamPlayer);
+				Set<Player> secondaryTeam = new HashSet<>();
+				secondaryTeam.add(secondaryTeamPlayer);
+				return new TeamSelection(primaryTeam, secondaryTeam);
 			}
 
-			Set<Player> teamA = new HashSet<>(configuredA);
-			Set<Player> teamB = new HashSet<>(configuredB);
+			Set<Player> primaryTeam = new HashSet<>(configuredPrimary);
+			Set<Player> secondaryTeam = new HashSet<>(configuredSecondary);
 			Set<Player> remaining = new HashSet<>(onlinePlayers);
-			remaining.removeAll(teamA);
-			remaining.removeAll(teamB);
 
-			if (teamA.isEmpty() && teamB.isEmpty()) {
+			remaining.removeAll(primaryTeam);
+			remaining.removeAll(secondaryTeam);
+
+			if (primaryTeam.isEmpty() && secondaryTeam.isEmpty()) {
 				List<Player> all = new ArrayList<>(remaining);
 				Collections.shuffle(all);
 				for (int i = 0; i < all.size(); i++) {
-					if (i % 2 == 0) teamA.add(all.get(i));
-					else teamB.add(all.get(i));
+					if (i % 2 == 0) primaryTeam.add(all.get(i));
+					else secondaryTeam.add(all.get(i));
 				}
 			}
 			else {
 				for (Player player : remaining) {
-					if (teamA.size() <= teamB.size()) teamA.add(player);
-					else teamB.add(player);
+					if (primaryTeam.size() <= secondaryTeam.size()) primaryTeam.add(player);
+					else secondaryTeam.add(player);
 				}
 			}
 
-			if (teamA.isEmpty() || teamB.isEmpty()) {
+			if (primaryTeam.isEmpty() || secondaryTeam.isEmpty()) {
 				throw new IllegalArgumentException("Both Arena teams must contain at least one online player");
 			}
 
-			return new TeamSelection(teamA, teamB);
+			return new TeamSelection(primaryTeam, secondaryTeam);
 		}
 
 		@Nullable
@@ -648,9 +664,7 @@ public class ArenaGame extends Game {
 				.filter(p -> excluded == null || !p.equals(excluded))
 				.collect(Collectors.toList());
 			if (filtered.isEmpty()) return null;
-
-			Collections.shuffle(filtered);
-			return filtered.get(0);
+			return filtered.get(ThreadLocalRandom.current().nextInt(filtered.size()));
 		}
 
 		private String namesToDisplay(Set<String> names) {
@@ -673,11 +687,7 @@ public class ArenaGame extends Game {
 		public boolean executeGameConfig(CommandSender sender, Command command, String label, String[] args) {
 			if (args.length == 0) return false;
 
-			String arg = args[0];
-			ArenaGameConfigs option = Arrays.stream(ArenaGameConfigs.values())
-				.filter(o -> o.name().equalsIgnoreCase(arg))
-				.findFirst()
-				.orElse(null);
+			ArenaGameConfigs option = parseEnumIgnoreCase(ArenaGameConfigs.class, args[0]).orElse(null);
 			if (option == null) return false;
 
 			return handleConfigsCommand(sender, Arrays.copyOfRange(args, 1, args.length), option);
@@ -685,45 +695,43 @@ public class ArenaGame extends Game {
 
 		private boolean handleConfigsCommand(CommandSender sender, String[] args, ArenaGameConfigs config) {
 			switch (config) {
-				case teamA:
+				case team1:
 					if (args.length == 0) {
-						sender.sendMessage(namesToDisplay(getTeamANames()));
+						sender.sendMessage(namesToDisplay(getPrimaryTeamNames()));
 						return true;
 					}
 					if (allOption.equalsIgnoreCase(args[0])) {
-						setTeamANames(null);
-						sender.sendMessage("Arena Team A reset to auto");
+						setPrimaryTeamNames(null);
+						sender.sendMessage("Arena team1 reset to auto");
 						return true;
 					}
-					setTeamANames(new HashSet<>(Arrays.asList(args)));
-					sender.sendMessage("Arena Team A set to " + namesToDisplay(getTeamANames()));
+					setPrimaryTeamNames(new HashSet<>(Arrays.asList(args)));
+					sender.sendMessage("Arena team1 set to " + namesToDisplay(getPrimaryTeamNames()));
 					return true;
 
-				case teamB:
+				case team2:
 					if (args.length == 0) {
-						sender.sendMessage(namesToDisplay(getTeamBNames()));
+						sender.sendMessage(namesToDisplay(getSecondaryTeamNames()));
 						return true;
 					}
 					if (allOption.equalsIgnoreCase(args[0])) {
-						setTeamBNames(null);
-						sender.sendMessage("Arena Team B reset to auto");
+						setSecondaryTeamNames(null);
+						sender.sendMessage("Arena team2 reset to auto");
 						return true;
 					}
-					setTeamBNames(new HashSet<>(Arrays.asList(args)));
-					sender.sendMessage("Arena Team B set to " + namesToDisplay(getTeamBNames()));
+					setSecondaryTeamNames(new HashSet<>(Arrays.asList(args)));
+					sender.sendMessage("Arena team2 set to " + namesToDisplay(getSecondaryTeamNames()));
 					return true;
 
 				case mode:
 					if (args.length == 0) {
-						sender.sendMessage(getMode().name());
+						sender.sendMessage(getMode().getId());
 						return true;
 					}
-					ArenaModeOption mode = Arrays.stream(ArenaModeOption.values())
-						.filter(m -> m.name().equalsIgnoreCase(args[0]))
-						.findFirst().orElse(null);
+					ArenaModeOption mode = ArenaModeOption.resolve(args[0]).orElse(null);
 					if (mode == null) return false;
 					setMode(mode);
-					sender.sendMessage("Arena mode set to " + mode.name());
+					sender.sendMessage("Arena mode set to " + mode.getId());
 					return true;
 
 				case rounds:
@@ -747,9 +755,7 @@ public class ArenaGame extends Game {
 						sender.sendMessage(getArea().name());
 						return true;
 					}
-					WorldBorderAreaOption area = Arrays.stream(WorldBorderAreaOption.values())
-						.filter(a -> a.name().equalsIgnoreCase(args[0]))
-						.findFirst().orElse(null);
+					WorldBorderAreaOption area = parseEnumIgnoreCase(WorldBorderAreaOption.class, args[0]).orElse(null);
 					if (area == null) return false;
 					setArea(area);
 					sender.sendMessage("Arena area set to " + area.name());
@@ -760,9 +766,7 @@ public class ArenaGame extends Game {
 						sender.sendMessage(getLocation().name());
 						return true;
 					}
-					WorldBorderLocationOption location = Arrays.stream(WorldBorderLocationOption.values())
-						.filter(l -> l.name().equalsIgnoreCase(args[0]))
-						.findFirst().orElse(null);
+					WorldBorderLocationOption location = parseEnumIgnoreCase(WorldBorderLocationOption.class, args[0]).orElse(null);
 					if (location == null) return false;
 					setLocation(location);
 					sender.sendMessage("Arena location set to " + location.name());
@@ -773,9 +777,7 @@ public class ArenaGame extends Game {
 						sender.sendMessage(getJoinOption().name());
 						return true;
 					}
-					GameJoinOption join = Arrays.stream(GameJoinOption.values())
-						.filter(j -> j.name().equalsIgnoreCase(args[0]))
-						.findFirst().orElse(null);
+					GameJoinOption join = parseEnumIgnoreCase(GameJoinOption.class, args[0]).orElse(null);
 					if (join == null) return false;
 					setJoinOption(join);
 					sender.sendMessage("Arena join option set to " + join.name());
@@ -793,9 +795,8 @@ public class ArenaGame extends Game {
 					.collect(Collectors.toList());
 			}
 
-			String arg = args[0];
-			if (!EnumUtils.isValidEnum(ArenaGameConfigs.class, arg)) return null;
-			ArenaGameConfigs config = ArenaGameConfigs.valueOf(arg);
+			ArenaGameConfigs config = parseEnumIgnoreCase(ArenaGameConfigs.class, args[0]).orElse(null);
+			if (config == null) return null;
 
 			return handleConfigsTabComplete(Arrays.copyOfRange(args, 1, args.length), config);
 		}
@@ -804,8 +805,8 @@ public class ArenaGame extends Game {
 			List<String> allPlayers = CommandUtility.getOnlinePlayerNames();
 
 			switch (config) {
-				case teamA:
-				case teamB:
+				case team1:
+				case team2:
 					if (args.length == 1) {
 						allPlayers.add(allOption);
 					}

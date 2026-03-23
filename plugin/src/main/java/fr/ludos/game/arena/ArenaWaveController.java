@@ -1,6 +1,5 @@
 package fr.ludos.game.arena;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -11,12 +10,12 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -34,20 +33,17 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
 import fr.ludos.game.arena.monster.DarkKnightBoss;
+import fr.ludos.item.Categories;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.title.Title;
 
 public final class ArenaWaveController extends GameEvents {
-	private static final int PREP_TICKS = 20 * 10;
 	private static final int BOSS_START_WAVE = 1;
 	private static final int BOSS_INTERVAL = 10;
 	private static final int BASE_MOB_COUNT = 10;
@@ -86,12 +82,7 @@ public final class ArenaWaveController extends GameEvents {
 		if (!preparationPhase) return;
 		if (!arena.isArenaPlayer(event.getPlayer())) return;
 		if (event.getTo() == null) return;
-
-		if (
-			event.getFrom().getX() == event.getTo().getX() &&
-			event.getFrom().getY() == event.getTo().getY() &&
-			event.getFrom().getZ() == event.getTo().getZ()
-		) return;
+		if (ArenaGame.isSamePosition(event.getFrom(), event.getTo())) return;
 
 		event.setTo(event.getFrom());
 	}
@@ -101,6 +92,7 @@ public final class ArenaWaveController extends GameEvents {
 		if (!preparationPhase) return;
 		if (!(event.getEntity() instanceof Player player)) return;
 		if (!arena.isArenaPlayer(player)) return;
+
 		event.setCancelled(true);
 	}
 
@@ -140,62 +132,29 @@ public final class ArenaWaveController extends GameEvents {
 
 		wave++;
 		preparationPhase = true;
-
-		for (Player player : arena.getArenaPlayers()) {
-			arena.resetArenaPlayerState(player);
-			player.getInventory().clear();
-			player.getInventory().addItem(Ludos.createGuidebook());
-		}
+		arena.prepareArenaPlayers();
 
 		arena.teleportArenaPlayersForRound();
 		startPreparationCountdown();
 	}
 
 	private void startPreparationCountdown() {
-		if (preparationTask != null) {
-			preparationTask.cancel();
-			preparationTask = null;
-		}
-
-		preparationTask = new BukkitRunnable() {
-			private int ticksLeft = PREP_TICKS;
-
-			@Override
-			public void run() {
-				int secondsLeft = Math.max(0, ticksLeft / 20);
-				for (Player player : arena.getArenaPlayers()) {
-					player.showTitle(Title.title(
-						Component.text("Wave " + wave).color(NamedTextColor.WHITE),
-						Component.text("Begins in " + secondsLeft + "s").color(NamedTextColor.WHITE),
-						Title.Times.times(Duration.ofMillis(100), Duration.ofMillis(750), Duration.ofMillis(100))
-					));
-				}
-
-				if (ticksLeft <= 0) {
-					cancel();
-					preparationTask = null;
-					startWaveCombat();
-					return;
-				}
-
-				ticksLeft -= 20;
-			}
-		}.runTaskTimer(arena.getPlugin(), 0L, 20L);
+		preparationTask = arena.startPreparationCountdownTask(
+			preparationTask,
+			"Wave",
+			() -> wave,
+			"Begins in",
+			this::startWaveCombat
+		);
 	}
 
 	private void startWaveCombat() {
 		preparationPhase = false;
-
-		for (Player player : arena.getArenaPlayers()) {
-			arena.applyArenaCombatLoadout(player);
-		}
+		arena.applyCombatLoadoutToArenaPlayers();
 
 		spawnWaveContent();
 
-		if (waveCheckTask != null) {
-			waveCheckTask.cancel();
-			waveCheckTask = null;
-		}
+		waveCheckTask = ArenaGame.cancelTask(waveCheckTask);
 		waveCheckTask = Bukkit.getScheduler().runTaskTimer(arena.getPlugin(), this::evaluateWaveState, 0L, 10L);
 	}
 
@@ -245,18 +204,7 @@ public final class ArenaWaveController extends GameEvents {
 	}
 
 	private LivingEntity spawnRegularMob(Location location) {
-		EntityType type;
-		int roll = ThreadLocalRandom.current().nextInt(100);
-		if (roll < 20) type = EntityType.ZOMBIE;
-		else if (roll < 35) type = EntityType.HUSK;
-		else if (roll < 50) type = EntityType.DROWNED;
-		else if (roll < 65) type = EntityType.SKELETON;
-		else if (roll < 78) type = EntityType.STRAY;
-		else if (roll < 88) type = EntityType.SPIDER;
-		else if (roll < 95) type = EntityType.WITCH;
-		else type = EntityType.VINDICATOR;
-
-		Entity entity = location.getWorld().spawnEntity(location, type);
+		Entity entity = location.getWorld().spawnEntity(location, pickMobType());
 		if (!(entity instanceof LivingEntity living)) {
 			entity.remove();
 			return null;
@@ -265,8 +213,20 @@ public final class ArenaWaveController extends GameEvents {
 		return living;
 	}
 
+	private EntityType pickMobType() {
+		int roll = ThreadLocalRandom.current().nextInt(100);
+		if (roll < 20) return EntityType.ZOMBIE;
+		if (roll < 35) return EntityType.HUSK;
+		if (roll < 50) return EntityType.DROWNED;
+		if (roll < 65) return EntityType.SKELETON;
+		if (roll < 78) return EntityType.STRAY;
+		if (roll < 88) return EntityType.SPIDER;
+		if (roll < 95) return EntityType.WITCH;
+		return EntityType.VINDICATOR;
+	}
+
 	private void configureWaveMob(LivingEntity mob) {
-		List<Player> alivePlayers = getAlivePlayers();
+		List<Player> alivePlayers = arena.getAliveArenaPlayers();
 		if (mob instanceof Monster monster && !alivePlayers.isEmpty()) {
 			monster.setTarget(alivePlayers.get(ThreadLocalRandom.current().nextInt(alivePlayers.size())));
 		}
@@ -281,26 +241,20 @@ public final class ArenaWaveController extends GameEvents {
 			skeleton.setShouldBurnInDay(false);
 		}
 
+		double hp = 18.0 + (wave * 2.25);
+		setBaseValue(mob, Attribute.GENERIC_MAX_HEALTH, hp);
 		if (mob.getAttribute(Attribute.GENERIC_MAX_HEALTH) != null) {
-			double hp = 18.0 + (wave * 2.25);
-			mob.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(hp);
 			mob.setHealth(hp);
 		}
 
-		if (mob.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE) != null) {
-			double damage = 3.5 + Math.min(12.0, wave * 0.42);
-			mob.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(damage);
-		}
+		double damage = 3.5 + Math.min(12.0, wave * 0.42);
+		setBaseValue(mob, Attribute.GENERIC_ATTACK_DAMAGE, damage);
 
-		if (mob.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED) != null) {
-			double speed = 0.25 + Math.min(0.13, wave * 0.004);
-			mob.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(speed);
-		}
+		double speed = 0.25 + Math.min(0.13, wave * 0.004);
+		setBaseValue(mob, Attribute.GENERIC_MOVEMENT_SPEED, speed);
 
-		if (mob.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE) != null) {
-			double kbRes = Math.min(0.65, wave * 0.015);
-			mob.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(kbRes);
-		}
+		double kbRes = Math.min(0.65, wave * 0.015);
+		setBaseValue(mob, Attribute.GENERIC_KNOCKBACK_RESISTANCE, kbRes);
 
 		applyScaledEquipment(mob);
 
@@ -320,10 +274,10 @@ public final class ArenaWaveController extends GameEvents {
 		double weaponChance = Math.min(0.95, 0.25 + wave * 0.035);
 		int tier = Math.min(4, Math.max(0, (wave - 1) / 5));
 
-		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setHelmet(createArmor(tier, ArmorSlot.HELMET));
-		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setChestplate(createArmor(tier, ArmorSlot.CHESTPLATE));
-		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setLeggings(createArmor(tier, ArmorSlot.LEGGINGS));
-		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setBoots(createArmor(tier, ArmorSlot.BOOTS));
+		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setHelmet(createArmor(tier, Categories.Group.HELMETS));
+		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setChestplate(createArmor(tier, Categories.Group.CHESTPLATES));
+		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setLeggings(createArmor(tier, Categories.Group.LEGGINGS));
+		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setBoots(createArmor(tier, Categories.Group.BOOTS));
 
 		if (ThreadLocalRandom.current().nextDouble() < weaponChance) {
 			ItemStack weapon = createWeapon(tier);
@@ -337,46 +291,26 @@ public final class ArenaWaveController extends GameEvents {
 		equipment.setItemInMainHandDropChance(0f);
 	}
 
-	private enum ArmorSlot {
-		HELMET,
-		CHESTPLATE,
-		LEGGINGS,
-		BOOTS
-	}
+	private ItemStack createArmor(int tier, Categories.Group armorGroup) {
+		String suffix = switch (armorGroup) {
+			case HELMETS -> "HELMET";
+			case CHESTPLATES -> "CHESTPLATE";
+			case LEGGINGS -> "LEGGINGS";
+			case BOOTS -> "BOOTS";
+			default -> throw new IllegalArgumentException("Unsupported armor group: " + armorGroup);
+		};
 
-	private ItemStack createArmor(int tier, ArmorSlot slot) {
-		Material material;
-		switch (tier) {
-			case 0 -> material = switch (slot) {
-				case HELMET -> Material.LEATHER_HELMET;
-				case CHESTPLATE -> Material.LEATHER_CHESTPLATE;
-				case LEGGINGS -> Material.LEATHER_LEGGINGS;
-				case BOOTS -> Material.LEATHER_BOOTS;
-			};
-			case 1 -> material = switch (slot) {
-				case HELMET -> Material.CHAINMAIL_HELMET;
-				case CHESTPLATE -> Material.CHAINMAIL_CHESTPLATE;
-				case LEGGINGS -> Material.CHAINMAIL_LEGGINGS;
-				case BOOTS -> Material.CHAINMAIL_BOOTS;
-			};
-			case 2 -> material = switch (slot) {
-				case HELMET -> Material.IRON_HELMET;
-				case CHESTPLATE -> Material.IRON_CHESTPLATE;
-				case LEGGINGS -> Material.IRON_LEGGINGS;
-				case BOOTS -> Material.IRON_BOOTS;
-			};
-			case 3 -> material = switch (slot) {
-				case HELMET -> Material.DIAMOND_HELMET;
-				case CHESTPLATE -> Material.DIAMOND_CHESTPLATE;
-				case LEGGINGS -> Material.DIAMOND_LEGGINGS;
-				case BOOTS -> Material.DIAMOND_BOOTS;
-			};
-			default -> material = switch (slot) {
-				case HELMET -> Material.NETHERITE_HELMET;
-				case CHESTPLATE -> Material.NETHERITE_CHESTPLATE;
-				case LEGGINGS -> Material.NETHERITE_LEGGINGS;
-				case BOOTS -> Material.NETHERITE_BOOTS;
-			};
+		String prefix = switch (Math.min(4, Math.max(0, tier))) {
+			case 0 -> "LEATHER";
+			case 1 -> "CHAINMAIL";
+			case 2 -> "IRON";
+			case 3 -> "DIAMOND";
+			default -> "NETHERITE";
+		};
+
+		Material material = Material.matchMaterial(prefix + '_' + suffix);
+		if (material == null || !Categories.is(armorGroup, material)) {
+			material = Categories.get(armorGroup).stream().findFirst().orElse(Material.LEATHER_HELMET);
 		}
 
 		ItemStack item = new ItemStack(material);
@@ -389,18 +323,14 @@ public final class ArenaWaveController extends GameEvents {
 
 	@Nullable
 	private ItemStack createWeapon(int tier) {
-		Material[] options;
-		switch (tier) {
-			case 0 -> options = new Material[] { Material.WOODEN_SWORD, Material.STONE_SWORD, Material.WOODEN_AXE };
-			case 1 -> options = new Material[] { Material.STONE_SWORD, Material.IRON_SWORD, Material.STONE_AXE };
-			case 2 -> options = new Material[] { Material.IRON_SWORD, Material.IRON_AXE, Material.DIAMOND_SWORD };
-			case 3 -> options = new Material[] { Material.DIAMOND_SWORD, Material.DIAMOND_AXE };
-			default -> options = new Material[] { Material.NETHERITE_SWORD, Material.NETHERITE_AXE };
-		}
+		Categories.Group weaponGroup = ThreadLocalRandom.current().nextBoolean()
+			? Categories.Group.SWORDS
+			: Categories.Group.AXES;
 
-		if (options.length == 0) return null;
+		Material picked = resolveTierWeaponMaterial(tier, weaponGroup);
 
-		Material picked = options[ThreadLocalRandom.current().nextInt(options.length)];
+		if (picked == null) return null;
+
 		ItemStack weapon = new ItemStack(picked);
 
 		int sharpness = Math.min(5, 1 + wave / 10);
@@ -411,8 +341,32 @@ public final class ArenaWaveController extends GameEvents {
 		return weapon;
 	}
 
+	@Nullable
+	private Material resolveTierWeaponMaterial(int tier, Categories.Group weaponGroup) {
+		String suffix = switch (weaponGroup) {
+			case SWORDS -> "SWORD";
+			case AXES -> "AXE";
+			default -> throw new IllegalArgumentException("Unsupported weapon group: " + weaponGroup);
+		};
+
+		String prefix = switch (Math.min(4, Math.max(0, tier))) {
+			case 0 -> ThreadLocalRandom.current().nextBoolean() ? "WOODEN" : "STONE";
+			case 1 -> ThreadLocalRandom.current().nextBoolean() ? "STONE" : "IRON";
+			case 2 -> ThreadLocalRandom.current().nextBoolean() ? "IRON" : "DIAMOND";
+			case 3 -> "DIAMOND";
+			default -> "NETHERITE";
+		};
+
+		Material material = Material.matchMaterial(prefix + '_' + suffix);
+		if (material == null || !Categories.is(weaponGroup, material)) {
+			return Categories.get(weaponGroup).stream().findFirst().orElse(null);
+		}
+
+		return material;
+	}
+
 	private void evaluateWaveState() {
-		List<Player> alivePlayers = getAlivePlayers();
+		List<Player> alivePlayers = arena.getAliveArenaPlayers();
 		if (alivePlayers.isEmpty()) {
 			Bukkit.broadcast(Component.text("Arena failed: all players are down").color(NamedTextColor.RED));
 			Game.stopCurrentGame();
@@ -427,23 +381,10 @@ public final class ArenaWaveController extends GameEvents {
 		});
 
 		if (aliveWaveMonsters.isEmpty()) {
-			if (waveCheckTask != null) {
-				waveCheckTask.cancel();
-				waveCheckTask = null;
-			}
+			waveCheckTask = ArenaGame.cancelTask(waveCheckTask);
 			Bukkit.broadcast(Component.text("Wave " + wave + " cleared").color(NamedTextColor.GREEN));
 			Bukkit.getScheduler().runTaskLater(arena.getPlugin(), this::startNextWave, 40L);
 		}
-	}
-
-	private boolean isAliveCombatPlayer(Player player) {
-		return player.isOnline() && !player.isDead() && player.getGameMode() == GameMode.SURVIVAL;
-	}
-
-	private List<Player> getAlivePlayers() {
-		return arena.getArenaPlayers().stream()
-			.filter(this::isAliveCombatPlayer)
-			.toList();
 	}
 
 	private void retargetAliveMonsters(List<Player> alivePlayers) {
@@ -451,7 +392,9 @@ public final class ArenaWaveController extends GameEvents {
 
 		for (UUID id : aliveWaveMonsters) {
 			Entity entity = Bukkit.getEntity(id);
+
 			if (!(entity instanceof Monster monster)) continue;
+
 			if (monster.isDead() || !monster.isValid()) continue;
 
 			Player target = alivePlayers.get(ThreadLocalRandom.current().nextInt(alivePlayers.size()));
@@ -467,10 +410,10 @@ public final class ArenaWaveController extends GameEvents {
 	private void despawnAllMonsters() {
 		for (UUID id : aliveWaveMonsters) {
 			Entity entity = Bukkit.getEntity(id);
-			if (entity != null) {
-				entity.remove();
-			}
+
+			if (entity != null) entity.remove();
 		}
+
 		aliveWaveMonsters.clear();
 
 		if (currentBoss != null) {
@@ -480,13 +423,14 @@ public final class ArenaWaveController extends GameEvents {
 	}
 
 	private void cancelTasks() {
-		if (preparationTask != null) {
-			preparationTask.cancel();
-			preparationTask = null;
-		}
-		if (waveCheckTask != null) {
-			waveCheckTask.cancel();
-			waveCheckTask = null;
+		preparationTask = ArenaGame.cancelTask(preparationTask);
+		waveCheckTask = ArenaGame.cancelTask(waveCheckTask);
+	}
+
+	private void setBaseValue(LivingEntity entity, Attribute attribute, double value) {
+		AttributeInstance instance = entity.getAttribute(attribute);
+		if (instance != null) {
+			instance.setBaseValue(value);
 		}
 	}
 }

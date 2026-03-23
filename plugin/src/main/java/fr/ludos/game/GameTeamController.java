@@ -42,7 +42,6 @@ public abstract class GameTeamController extends GameProcessBase {
 		this(game, GameJoinOption.auto);
 	}
 
-
 	public abstract Collection<LivingEntity> getEntities();
 	public abstract Collection<Team> getTeams();
 
@@ -70,6 +69,7 @@ public abstract class GameTeamController extends GameProcessBase {
 			.filter(other -> ! areAllies(player, other))
 			.collect(Collectors.toSet());
 	}
+
 	public Set<Player> getEnemyPlayers(Player player) {
 		return getPlayers().stream()
 			.filter(other -> ! areAllies(player, other))
@@ -83,9 +83,9 @@ public abstract class GameTeamController extends GameProcessBase {
 		}
 		joinPlayer(player);
 	}
+
 	protected abstract void joinPlayer(Player player);
 	protected abstract void discardPlayer(Player player);
-
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {

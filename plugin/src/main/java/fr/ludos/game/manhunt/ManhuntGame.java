@@ -127,7 +127,7 @@ public class ManhuntGame extends Game {
 	@Override
 	protected void onGameStart() {
 		World world = areaController.getWorld();
-		world.setTime(1000);
+		Game.worldInitialization(world);
 
 		Set<Player> hunters = teamController.getSelectedHunters();
 		Player prey = teamController.getSelectedPrey();
