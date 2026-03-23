@@ -23,6 +23,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -107,6 +108,17 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 	public Component getName() {
 		return Component.text("Burrower's Scythe")
 			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
+	}
+
+	@Override
+	public List<Component> getLore() {
+		List<Component> lore = super.getLore();
+
+		lore.add(Component.text("Ability: Build a wall of earth")
+			.decoration(TextDecoration.ITALIC, false)
+			.color(NamedTextColor.GRAY));
+		lore.add(getActionAnnotation("key.use", Component.text("Build Wall")));
+		return lore;
 	}
 
 
@@ -202,7 +214,8 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 			if (game.getGameTeamController().areAllies(attacker, primaryTarget)) return;
 
 			if (event.getCause() == DamageCause.ENTITY_ATTACK) {
-				ItemUtilities.doSweepAttack(attacker, primaryTarget, event.getDamage());
+				int enchantmentLevel = scythe.getStack().getEnchantmentLevel(Enchantment.SWEEPING_EDGE);
+				ItemUtilities.doSweepAttack(attacker, primaryTarget, event.getDamage(), enchantmentLevel, 2.25);
 			}
 		}
 
