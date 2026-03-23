@@ -23,8 +23,6 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 
 import fr.ludos.item.ItemUtilities;
-import fr.ludos.item.burrower.BurrowerPickLevels;
-import fr.ludos.role.BurrowerRole;
 
 import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.lang3.tuple.Pair;

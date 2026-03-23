@@ -1,4 +1,4 @@
-package fr.ludos.item.burrower;
+package fr.ludos.item.harvester;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,24 +34,24 @@ import fr.ludos.item.LevelBranchItem;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.item.huntsman.HuntsmanArrow;
-import fr.ludos.role.BurrowerRole;
+import fr.ludos.role.HarvesterRole;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, BurrowerPickLevels> {
-	private static final String ID = "manhuntBurrowerPick";
+public class HarvesterPick extends LevelBranchItem<HarvesterPickBranches, HarvesterPickLevels> {
+	private static final String ID = "manhuntHarvesterPick";
 
-	// private final static Map<UUID, BurrowerPick> cachedItems = new HashMap<>();
+	// private final static Map<UUID, HarvesterPick> cachedItems = new HashMap<>();
 
 
-	public static BurrowerPick fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+	public static HarvesterPick fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
-		// BurrowerPick cached = cachedItems.get(itemId);
+		// HarvesterPick cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
 		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
@@ -61,24 +61,24 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
 		if (levelState == null) return null;
 
-		BurrowerPick burrowerPick = new BurrowerPick(stack, owner, BurrowerPickBranches.values()[branchIndex], levelState, game);
-		// cachedItems.put(itemId, burrowerPick);
+		HarvesterPick harvesterPick = new HarvesterPick(stack, owner, HarvesterPickBranches.values()[branchIndex], levelState, game);
+		// cachedItems.put(itemId, harvesterPick);
 
-		return burrowerPick;
+		return harvesterPick;
 	}
 
-	public static BurrowerPick createItem(Player owner, LevelState level, Game game) {
-		BurrowerPickLevels lvl = BurrowerPickLevels.values()[level.getLevel()];
-		BurrowerPick burrowerPick = new BurrowerPick(new ItemStack(lvl.getMaterial()), owner, BurrowerPickBranches.Pickaxe, level, game);
-		UUID itemId = burrowerPick.initializeItem();
+	public static HarvesterPick createItem(Player owner, LevelState level, Game game) {
+		HarvesterPickLevels lvl = HarvesterPickLevels.values()[level.getLevel()];
+		HarvesterPick harvesterPick = new HarvesterPick(new ItemStack(lvl.getMaterial()), owner, HarvesterPickBranches.Pickaxe, level, game);
+		UUID itemId = harvesterPick.initializeItem();
 
-		// cachedItems.put(itemId, burrowerPick);
+		// cachedItems.put(itemId, harvesterPick);
 
-		return burrowerPick;
+		return harvesterPick;
 	}
 
-	protected BurrowerPick(ItemStack stack, Player owner, BurrowerPickBranches branch, LevelState level, Game game) {
-		super(BurrowerPickBranches.class, BurrowerPickLevels.class, stack, owner, branch, level, game);
+	protected HarvesterPick(ItemStack stack, Player owner, HarvesterPickBranches branch, LevelState level, Game game) {
+		super(HarvesterPickBranches.class, HarvesterPickLevels.class, stack, owner, branch, level, game);
 	}
 
 
@@ -89,7 +89,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 
 	@Override
 	public Component getName() {
-		return Component.text("Burrower's Pick (")
+		return Component.text("Harvester's Pick (")
 			.append(getBranch().getName())
 			.append(Component.text(")"))
 			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
@@ -99,7 +99,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		BurrowerPickLevels level = getLvlObject();
+		HarvesterPickLevels level = getLvlObject();
 		int size = 1 + level.getRadius() * 2;
 		int depth = level.getDepth() + 1;
 
@@ -126,7 +126,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 	}
 
 	public void breakRadius(Block block, BlockFace face, Player breaker) {
-		BurrowerPickLevels level = getLvlObject();
+		HarvesterPickLevels level = getLvlObject();
 		int radius = level.getRadius();
 		int depth = level.getDepth();
 
@@ -144,14 +144,14 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 				relativeBlock.isPreferredTool(getStack()) &&
 				relativeBlock.getType().getHardness() == blockHardness
 			) {
-				BurrowerRole.awardBreak(breaker, relativeBlock, getGame());
+				HarvesterRole.awardBreak(breaker, relativeBlock, getGame());
 				relativeBlock.breakNaturally(getStack(), true);
 			}
 		}
 	}
 
 
-	public static class Events extends LevelBranchItem.Events<BurrowerPick, BurrowerPickBranches, BurrowerPickLevels> {
+	public static class Events extends LevelBranchItem.Events<HarvesterPick, HarvesterPickBranches, HarvesterPickLevels> {
 		public Events(Game game) {
 			super(game, 1);
 		}
@@ -162,7 +162,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 			if (! action.isRightClick()) return;
 
 			Player player = event.getPlayer();
-			BurrowerPick pickaxe = getItem(player.getInventory().getItemInMainHand(), game);
+			HarvesterPick pickaxe = getItem(player.getInventory().getItemInMainHand(), game);
 			if (pickaxe == null) return;
 
 			if (! pickaxe.refreshUseCooldown()) return;
@@ -176,7 +176,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 			Player player = event.getPlayer();
 			ItemStack mainHandItem = player.getInventory().getItemInMainHand();
 
-			BurrowerPick pick = getItem(mainHandItem, game);
+			HarvesterPick pick = getItem(mainHandItem, game);
 			if (pick == null) return;
 
 			pick.getBranch().onBreakBlock(pick, event);
@@ -184,21 +184,21 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 
 		@Override
 		@Nullable
-		protected BurrowerPick getItem(ItemStack stack, Game game) {
-			return BurrowerPick.fromItemStack(stack, game);
+		protected HarvesterPick getItem(ItemStack stack, Game game) {
+			return HarvesterPick.fromItemStack(stack, game);
 		}
 		@Override
-		protected BurrowerPick createItem(Player owner, LevelState level, Game game) {
-			return BurrowerPick.createItem(owner, level, game);
+		protected HarvesterPick createItem(Player owner, LevelState level, Game game) {
+			return HarvesterPick.createItem(owner, level, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {
-			return Role.isPlayerRole(owner, BurrowerRole.id);
+			return Role.isPlayerRole(owner, HarvesterRole.id);
 		}
 
 		@Override
-		protected BurrowerPickBranches[] getBranches() {
-			return BurrowerPickBranches.values();
+		protected HarvesterPickBranches[] getBranches() {
+			return HarvesterPickBranches.values();
 		}
 	}
 }

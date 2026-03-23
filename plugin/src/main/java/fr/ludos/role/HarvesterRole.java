@@ -39,16 +39,16 @@ import fr.ludos.game.GameEvents;
 import fr.ludos.item.Categories;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.item.burrower.BurrowerPick;
-import fr.ludos.item.burrower.BurrowerScythe;
-import fr.ludos.item.burrower.BurrowerShovel;
+import fr.ludos.item.harvester.HarvesterPick;
+import fr.ludos.item.harvester.HarvesterScythe;
+import fr.ludos.item.harvester.HarvesterSpade;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 
 
-public class BurrowerRole extends Role {
-	public static final String id = "burrower";
-	private static final NamespacedKey explosiveChestplateKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), "burrower_explosive_chestplate");
+public class HarvesterRole extends Role {
+	public static final String id = "harvester";
+	private static final NamespacedKey explosiveChestplateKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), "harvester_explosive_chestplate");
 	private static final String explosiveModeLorePrefix = ChatColor.DARK_GRAY + "Mode: ";
 	private static final String explosiveModeLoreEnabled = explosiveModeLorePrefix + ChatColor.RED + "Explosif";
 	private static final String explosiveModeLoreDisabled = explosiveModeLorePrefix + ChatColor.GREEN + "Normal";
@@ -69,18 +69,18 @@ public class BurrowerRole extends Role {
 	}
 
 
-	// public static List<Player> burrowers;
+	// public static List<Player> harvesters;
 
 	// private BukkitTask passiveResourcesTask;
 
 
-	public BurrowerRole(Builder builder, Game game) {
+	public HarvesterRole(Builder builder, Game game) {
 		super(builder, game);
 	}
 
 	@Override
 	protected void onRoleStart() {
-		// burrowers = Role.getPlayersOfRole(id);
+		// harvesters = Role.getPlayersOfRole(id);
 
 		// passiveResourcesTask = new BukkitRunnable() {    // FIXME: Quentin, quand cette tâche s'éxecute pour la première fois, elle remplace la pelle dans l'inventaire
 		// 	@Override									    // Le seul moyen de faire réapparaître la pelle est de déco reco
@@ -101,15 +101,15 @@ public class BurrowerRole extends Role {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{
-					put("scythe", new BurrowerScythe.Events(game));
-					put("pick", new BurrowerPick.Events(game));
-					put("shovel", new BurrowerShovel.Events(game));
+					put("scythe", new HarvesterScythe.Events(game));
+					put("pick", new HarvesterPick.Events(game));
+					put("spade", new HarvesterSpade.Events(game));
 				}};
 		}
 	}
 
 	@EventHandler
-	public void onBurrowerToggleExplosiveChestplate(PlayerInteractEvent event) {
+	public void onHarvesterToggleExplosiveChestplate(PlayerInteractEvent event) {
 		Action action = event.getAction();
 
 		if (action.isRightClick()) return;
@@ -128,9 +128,9 @@ public class BurrowerRole extends Role {
 	}
 
 	@EventHandler
-	public void onBurrowerExplosiveChestplateProximity(PlayerMoveEvent event) {
-		Player burrower = event.getPlayer();
-		if (!Role.isPlayerRole(burrower, id)) return;
+	public void onHarvesterExplosiveChestplateProximity(PlayerMoveEvent event) {
+		Player harvester = event.getPlayer();
+		if (!Role.isPlayerRole(harvester, id)) return;
 		if (event.getTo() == null) return;
 
 		if (
@@ -139,37 +139,37 @@ public class BurrowerRole extends Role {
 			event.getFrom().getBlockZ() == event.getTo().getBlockZ()
 		) return;
 
-		ItemStack chestplate = burrower.getInventory().getChestplate();
+		ItemStack chestplate = harvester.getInventory().getChestplate();
 
 		if (!Categories.isChestplate(chestplate)) return;
 		if (!isExplosiveChestplate(chestplate)) return;
 
-		List<Player> enemies = getGame().getGameTeamController().getEnemyPlayers(burrower).stream()
-			.filter(enemy -> enemy.getWorld().equals(burrower.getWorld()))
-			.filter(enemy -> enemy.getLocation().distanceSquared(burrower.getLocation()) <= EXPLOSIVE_RADIUS_SQUARED)
+		List<Player> enemies = getGame().getGameTeamController().getEnemyPlayers(harvester).stream()
+			.filter(enemy -> enemy.getWorld().equals(harvester.getWorld()))
+			.filter(enemy -> enemy.getLocation().distanceSquared(harvester.getLocation()) <= EXPLOSIVE_RADIUS_SQUARED)
 			.collect(Collectors.toList());
 
 		if (enemies.isEmpty()) return;
 
 		double damage = CHESTPLATE_EXPLOSIVE_DAMAGE.get(chestplate.getType());
 
-		burrower.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, burrower.getLocation(), 1, 0.0, 0.0, 0.0, 0.0);
-		burrower.getWorld().playSound(burrower.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 1.0f);
+		harvester.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, harvester.getLocation(), 1, 0.0, 0.0, 0.0, 0.0);
+		harvester.getWorld().playSound(harvester.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 1.0f);
 
 		for (Player enemy : enemies) {
-			enemy.damage(damage, burrower);
+			enemy.damage(damage, harvester);
 			damageEquipmentByThird(enemy);
 		}
 
-		burrower.setVelocity(burrower.getLocation().getDirection().multiply(-0.5).setY(0.5));
+		harvester.setVelocity(harvester.getLocation().getDirection().multiply(-0.5).setY(0.5));
 
-		// burrower.getInventory().setChestplate(null);
+		// harvester.getInventory().setChestplate(null);
 	}
 
 	private static final Set<BiFunction<ItemStack, Game, LevelItem<?>>> levelItemGetters = Set.of(
-		BurrowerScythe::fromItemStack,
-		BurrowerPick::fromItemStack,
-		BurrowerShovel::fromItemStack
+		HarvesterScythe::fromItemStack,
+		HarvesterPick::fromItemStack,
+		HarvesterSpade::fromItemStack
 	);
 	public static void awardBreak(Player player, Block block, Game game) {
 		if (player == null || block == null) return;
@@ -330,7 +330,7 @@ public class BurrowerRole extends Role {
 	// }
 
 	// private void giveRandomOreToPlayers() {
-	// 	for (Player player : burrowers) {
+	// 	for (Player player : harvesters) {
 	// 		if (player == null) {
 	// 			return;
 	// 		}
@@ -360,12 +360,12 @@ public class BurrowerRole extends Role {
 
 		@Override
 		public Role build(Game game){
-			return new BurrowerRole(this, game);
+			return new HarvesterRole(this, game);
 		}
 
 		@Override
 		public TextComponent getDisplayName() {
-			return Component.text("Burrower");
+			return Component.text("Harvester");
 		}
 
 		@Override

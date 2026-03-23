@@ -1,4 +1,4 @@
-package fr.ludos.item.burrower;
+package fr.ludos.item.harvester;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,14 +43,14 @@ import fr.ludos.item.BranchItem;
 import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.role.BurrowerRole;
+import fr.ludos.role.HarvesterRole;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
-	public static final String ID = "burrower_scythe";
+public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
+	public static final String ID = "manhuntHarvesterScythe";
 
 	private static final double SCYTHE_RANGE = 5.0;
 	private static final double SCYTHE_RANGE_SQUARED = SCYTHE_RANGE * SCYTHE_RANGE;
@@ -64,14 +64,14 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 	private static final double LIGHTNING_PROC_CHANCE = 0.05;
 	private static final double LIGHTNING_TRUE_DAMAGE = 3.0;
 
-	// private final static Map<UUID, BurrowerPick> cachedItems = new HashMap<>();
+	// private final static Map<UUID, HarvesterScythe> cachedItems = new HashMap();
 
 
-	public static BurrowerScythe fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+	public static HarvesterScythe fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
-		// BurrowerScythe cached = cachedItems.get(itemId);
+		// HarvesterScythe cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
 		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
@@ -79,24 +79,24 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
 		if (levelState == null) return null;
 
-		BurrowerScythe burrowerScythe = new BurrowerScythe(stack, owner, levelState, game);
-		// cachedItems.put(itemId, burrowerScythe);
+		HarvesterScythe harvesterScythe = new HarvesterScythe(stack, owner, levelState, game);
+		// cachedItems.put(itemId, harvesterScythe);
 
-		return burrowerScythe;
+		return harvesterScythe;
 	}
 
-	public static BurrowerScythe createItem(Player owner, LevelState level, Game game) {
-		BurrowerScytheLevels lvl = BurrowerScytheLevels.values()[level.getLevel()];
-		BurrowerScythe burrowerScythe = new BurrowerScythe(new ItemStack(lvl.getMaterial()), owner, level, game);
-		UUID itemId = burrowerScythe.initializeItem();
+	public static HarvesterScythe createItem(Player owner, LevelState level, Game game) {
+		HarvesterScytheLevels lvl = HarvesterScytheLevels.values()[level.getLevel()];
+		HarvesterScythe harvesterScythe = new HarvesterScythe(new ItemStack(lvl.getMaterial()), owner, level, game);
+		UUID itemId = harvesterScythe.initializeItem();
 
-		// cachedItems.put(itemId, burrowerScythe);
+		// cachedItems.put(itemId, harvesterScythe);
 
-		return burrowerScythe;
+		return harvesterScythe;
 	}
 
-	protected BurrowerScythe(ItemStack stack, Player owner, LevelState level, Game game) {
-		super(BurrowerScytheLevels.class, stack, owner, level, game);
+	protected HarvesterScythe(ItemStack stack, Player owner, LevelState level, Game game) {
+		super(HarvesterScytheLevels.class, stack, owner, level, game);
 	}
 
 	@Override
@@ -106,7 +106,7 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 
 	@Override
 	public Component getName() {
-		return Component.text("Burrower's Scythe")
+		return Component.text("Harvester's Scythe")
 			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
 	}
 
@@ -185,7 +185,7 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 		}
 	}
 
-	public static class Events extends LevelItem.Events<BurrowerScythe, BurrowerScytheLevels> {
+	public static class Events extends LevelItem.Events<HarvesterScythe, HarvesterScytheLevels> {
 		private final Set<UUID> slashingPlayers = new HashSet<>();
 
 		public Events(Game game) {
@@ -193,14 +193,14 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 		}
 
 		@Override
-		protected BurrowerScythe createItem(Player owner, LevelState level, Game game) {
-			return BurrowerScythe.createItem(owner, level, game);
+		protected HarvesterScythe createItem(Player owner, LevelState level, Game game) {
+			return HarvesterScythe.createItem(owner, level, game);
 		}
 
 		@Override
 		@Nullable
-		protected BurrowerScythe getItem(ItemStack stack, Game game) {
-			return BurrowerScythe.fromItemStack(stack, game);
+		protected HarvesterScythe getItem(ItemStack stack, Game game) {
+			return HarvesterScythe.fromItemStack(stack, game);
 		}
 
 		@EventHandler
@@ -208,7 +208,7 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 			if (!(event.getDamager() instanceof Player attacker)) return;
 			if (!(event.getEntity() instanceof LivingEntity primaryTarget)) return;
 
-			BurrowerScythe scythe = getItem(attacker.getInventory().getItemInMainHand(), game);
+			HarvesterScythe scythe = getItem(attacker.getInventory().getItemInMainHand(), game);
 			if (scythe == null) return;
 
 			if (game.getGameTeamController().areAllies(attacker, primaryTarget)) return;
@@ -225,7 +225,7 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 			if (!action.isRightClick()) return;
 
 			Player player = event.getPlayer();
-			BurrowerScythe scythe = getItem(player.getInventory().getItemInMainHand(), game);
+			HarvesterScythe scythe = getItem(player.getInventory().getItemInMainHand(), game);
 			if (scythe == null) return;
 
 			if (player.hasCooldown(scythe.getStack().getType())) return;
@@ -239,7 +239,7 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {
-			return Role.isPlayerRole(owner, BurrowerRole.id);
+			return Role.isPlayerRole(owner, HarvesterRole.id);
 		}
 	}
 }

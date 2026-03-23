@@ -1,4 +1,4 @@
-package fr.ludos.item.burrower;
+package fr.ludos.item.harvester;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,22 +13,22 @@ import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
 
 
-public enum BurrowerPickLevels implements LevelItem.Level<BurrowerPickLevels> {
-	WOODEN      (Material.WOODEN_PICKAXE,    25,    1, 0, Collections.emptyMap()),
-	STONE       (Material.STONE_PICKAXE,     50,    1, 0, Collections.emptyMap()),
-	STONE1      (Material.STONE_PICKAXE,     100,   1, 0, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 1); }}),
-	IRON        (Material.IRON_PICKAXE,      200,   1, 1, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 2); }}),
-	IRON1       (Material.IRON_PICKAXE,      500,   1, 1, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 3); }}),
-	IRON2       (Material.IRON_PICKAXE,      1000,   1, 1, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 3); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
-	DIAMOND     (Material.DIAMOND_PICKAXE,   1500,   1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 3); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
-	DIAMOND1    (Material.DIAMOND_PICKAXE,   2000,  1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
-	DIAMOND2    (Material.DIAMOND_PICKAXE,   2500,  1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
-	NETHERITE   (Material.NETHERITE_PICKAXE, 3000,  1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
+public enum HarvesterPickLevels implements LevelItem.Level<HarvesterPickLevels> {
+	WOODEN      (Material.WOODEN_PICKAXE,    25,   1, 0, Collections.emptyMap()),
+	STONE       (Material.STONE_PICKAXE,     50,   1, 0, Collections.emptyMap()),
+	STONE1      (Material.STONE_PICKAXE,     100,  1, 0, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 1); }}),
+	IRON        (Material.IRON_PICKAXE,      200,  1, 1, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 2); }}),
+	IRON1       (Material.IRON_PICKAXE,      500,  1, 1, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 3); }}),
+	IRON2       (Material.IRON_PICKAXE,      1000, 1, 1, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 3); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
+	DIAMOND     (Material.DIAMOND_PICKAXE,   1500, 1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 3); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
+	DIAMOND1    (Material.DIAMOND_PICKAXE,   2000, 1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 1);}}),
+	DIAMOND2    (Material.DIAMOND_PICKAXE,   2500, 1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
+	NETHERITE   (Material.NETHERITE_PICKAXE, 3000, 1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 4); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
 	NETHERITE1  (Material.NETHERITE_PICKAXE, 4500, 1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 5); put(Enchantment.LOOT_BONUS_BLOCKS, 2);}}),
 	NETHERITE2  (Material.NETHERITE_PICKAXE, 6000, 1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 5); put(Enchantment.LOOT_BONUS_BLOCKS, 3);}});
 
 
-	private final static BurrowerPickLevels[] values = BurrowerPickLevels.values();
+	private final static HarvesterPickLevels[] values = HarvesterPickLevels.values();
 
 	private final Material material;
 	public Material getMaterial() {
@@ -56,7 +56,7 @@ public enum BurrowerPickLevels implements LevelItem.Level<BurrowerPickLevels> {
 	}
 
 
-	private BurrowerPickLevels(Material material, double xpThreshold, int radius, int depth, Map<Enchantment, Integer> enchantments) {
+	private HarvesterPickLevels(Material material, double xpThreshold, int radius, int depth, Map<Enchantment, Integer> enchantments) {
 		this.material = material;
 		this.xpThreshold = xpThreshold;
 		this.enchantments = enchantments;
@@ -71,8 +71,8 @@ public enum BurrowerPickLevels implements LevelItem.Level<BurrowerPickLevels> {
 
 
 	@Override
-	public Class<BurrowerPickLevels> getLevelClass() {
-		return BurrowerPickLevels.class;
+	public Class<HarvesterPickLevels> getLevelClass() {
+		return HarvesterPickLevels.class;
 	}
 
 	@Override

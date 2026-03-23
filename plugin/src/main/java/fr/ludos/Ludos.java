@@ -20,7 +20,7 @@ import fr.ludos.command.ludos.LudosCommand;
 import fr.ludos.game.Game;
 import fr.ludos.game.manhunt.ManhuntGame;
 import fr.ludos.role.AssassinRole;
-import fr.ludos.role.BurrowerRole;
+import fr.ludos.role.HarvesterRole;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
 import fr.ludos.role.TrapperRole;
@@ -44,7 +44,7 @@ public class Ludos extends JavaPlugin implements Listener {
 		Game.registerGame(new ManhuntGame.Builder(this));
 
 		Role.registerRole(new HuntsmanRole.Builder(this));
-		Role.registerRole(new BurrowerRole.Builder(this));
+		Role.registerRole(new HarvesterRole.Builder(this));
 		Role.registerRole(new TrapperRole.Builder(this));
 		Role.registerRole(new AssassinRole.Builder(this));
 

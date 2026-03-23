@@ -1,4 +1,4 @@
-package fr.ludos.item.burrower;
+package fr.ludos.item.harvester;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,17 +32,17 @@ import fr.ludos.game.Game;
 import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.role.BurrowerRole;
+import fr.ludos.role.HarvesterRole;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public class BurrowerShovel extends LevelItem<BurrowerShovelLevels> {
-	private static final String ID = "manhuntBurrowerShovel";
+public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
+	private static final String ID = "manhuntHarvesterSpade";
 
-	// private final static Map<UUID, BurrowerShovel> cachedItems = new HashMap<>();
+	// private final static Map<UUID, HarvesterSpade> cachedItems = new HashMap<>();
 
 	private static final int COOLDOWN_SECONDS = 20;
 	private static final int TUNNEL_LENGTH = 10;
@@ -50,11 +50,11 @@ public class BurrowerShovel extends LevelItem<BurrowerShovelLevels> {
 	private final static Map<Player, List<List<BlockState>>> tunnelBlocks = new HashMap<>();
 
 
-	public static BurrowerShovel fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+	public static HarvesterSpade fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
-		// BurrowerShovel cached = cachedItems.get(itemId);
+		// HarvesterSpade cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
 		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
@@ -62,24 +62,24 @@ public class BurrowerShovel extends LevelItem<BurrowerShovelLevels> {
 		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
 		if (levelState == null) return null;
 
-		BurrowerShovel burrowerShovel = new BurrowerShovel(stack, owner, levelState, game);
-		// cachedItems.put(itemId, burrowerShovel);
+		HarvesterSpade harvesterSpade = new HarvesterSpade(stack, owner, levelState, game);
+		// cachedItems.put(itemId, harvesterSpade);
 
-		return burrowerShovel;
+		return harvesterSpade;
 	}
 
-	public static BurrowerShovel createItem(Player owner, LevelState level, Game game) {
-		BurrowerShovelLevels lvl = BurrowerShovelLevels.values()[level.getLevel()];
-		BurrowerShovel burrowerShovel = new BurrowerShovel(new ItemStack(lvl.getMaterial()), owner, level, game);
-		UUID itemId = burrowerShovel.initializeItem();
+	public static HarvesterSpade createItem(Player owner, LevelState level, Game game) {
+		HarvesterSpadeLevels lvl = HarvesterSpadeLevels.values()[level.getLevel()];
+		HarvesterSpade harvesterSpade = new HarvesterSpade(new ItemStack(lvl.getMaterial()), owner, level, game);
+		UUID itemId = harvesterSpade.initializeItem();
 
-		// cachedItems.put(itemId, burrowerShovel);
+		// cachedItems.put(itemId, harvesterSpade);
 
-		return burrowerShovel;
+		return harvesterSpade;
 	}
 
-	protected BurrowerShovel(ItemStack stack, Player owner, LevelState level, Game game) {
-		super(BurrowerShovelLevels.class, stack, owner, level, game);
+	protected HarvesterSpade(ItemStack stack, Player owner, LevelState level, Game game) {
+		super(HarvesterSpadeLevels.class, stack, owner, level, game);
 	}
 
 
@@ -91,7 +91,7 @@ public class BurrowerShovel extends LevelItem<BurrowerShovelLevels> {
 	@Override
 	public Component getName() {
 		return
-			Component.text("Burrower's Shovel")
+			Component.text("Harvester's Spade")
 			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
 	}
 
@@ -134,7 +134,7 @@ public class BurrowerShovel extends LevelItem<BurrowerShovelLevels> {
 	private boolean digTunnel() {
 		if (tunnelBlocks.containsKey(getOwner())) return false;
 
-		List<Block> lastTwoTargetBlocks = getOwner().getLastTwoTargetBlocks(null, 20);
+		List<Block> lastTwoTargetBlocks = getOwner().getLastTwoTargetBlocks(null, 12);
 		if (lastTwoTargetBlocks.size() != 2) return false;
 		tunnelBlocks.put(getOwner(), null);
 
@@ -229,7 +229,7 @@ public class BurrowerShovel extends LevelItem<BurrowerShovelLevels> {
 	}
 
 
-	public static class Events extends LevelItem.Events<BurrowerShovel, BurrowerShovelLevels> {
+	public static class Events extends LevelItem.Events<HarvesterSpade, HarvesterSpadeLevels> {
 
 		public Events(Game game) {
 			super(game, 2);
@@ -254,12 +254,12 @@ public class BurrowerShovel extends LevelItem<BurrowerShovelLevels> {
 
 			ItemStack mainItem = event.getItem();
 
-			BurrowerShovel shovel = getItem(mainItem, game);
-			if (shovel == null) {
+			HarvesterSpade spade = getItem(mainItem, game);
+			if (spade == null) {
 				return;
 			}
 
-			shovel.useAbility();
+			spade.useAbility();
 		}
 
 		@EventHandler
@@ -267,24 +267,24 @@ public class BurrowerShovel extends LevelItem<BurrowerShovelLevels> {
 			Player player = event.getPlayer();
 			ItemStack mainHandItem = player.getInventory().getItemInMainHand();
 
-			BurrowerShovel shovel = getItem(mainHandItem, game);
-			if (shovel == null) return;
+			HarvesterSpade spade = getItem(mainHandItem, game);
+			if (spade == null) return;
 
-			BurrowerRole.awardBreak(event.getPlayer(), event.getBlock(), shovel.getGame());
+			HarvesterRole.awardBreak(event.getPlayer(), event.getBlock(), spade.getGame());
 		}
 
 		@Override
 		@Nullable
-		protected BurrowerShovel getItem(ItemStack stack, Game game) {
-			return BurrowerShovel.fromItemStack(stack, game);
+		protected HarvesterSpade getItem(ItemStack stack, Game game) {
+			return HarvesterSpade.fromItemStack(stack, game);
 		}
 		@Override
-		protected BurrowerShovel createItem(Player owner, LevelState level, Game game) {
-			return BurrowerShovel.createItem(owner, level, game);
+		protected HarvesterSpade createItem(Player owner, LevelState level, Game game) {
+			return HarvesterSpade.createItem(owner, level, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {
-			return Role.isPlayerRole(owner, BurrowerRole.id);
+			return Role.isPlayerRole(owner, HarvesterRole.id);
 		}
 	}
 }

@@ -28,7 +28,6 @@ import org.bukkit.scheduler.BukkitTask;
 import fr.ludos.game.Game;
 import fr.ludos.item.BranchItem;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.item.burrower.BurrowerPick;
 import fr.ludos.role.Role;
 import fr.ludos.role.TrapperRole;
 import net.kyori.adventure.text.Component;
