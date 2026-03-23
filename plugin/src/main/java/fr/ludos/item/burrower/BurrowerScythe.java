@@ -18,15 +18,18 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -36,6 +39,7 @@ import org.bukkit.util.Vector;
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
 import fr.ludos.item.BranchItem;
+import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.role.BurrowerRole;
@@ -190,52 +194,15 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 		@EventHandler
 		public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
 			if (!(event.getDamager() instanceof Player attacker)) return;
-			if (!(event.getEntity() instanceof Player primaryTarget)) return;
+			if (!(event.getEntity() instanceof LivingEntity primaryTarget)) return;
 
 			BurrowerScythe scythe = getItem(attacker.getInventory().getItemInMainHand(), game);
 			if (scythe == null) return;
 
-			if (game.getGameTeamController().areAllies(attacker, primaryTarget)) {
-				event.setCancelled(true);
-				return;
-			}
+			if (game.getGameTeamController().areAllies(attacker, primaryTarget)) return;
 
-			tryLightningProc(primaryTarget);
-
-			if (!slashingPlayers.add(attacker.getUniqueId())) return;
-
-			try {
-				List<Player> candidates = new ArrayList<>();
-				for (org.bukkit.entity.Entity nearby : attacker.getNearbyEntities(SCYTHE_RANGE, SCYTHE_RANGE, SCYTHE_RANGE)) {
-					if (!(nearby instanceof Player target)) continue;
-					if (target.equals(attacker) || target.equals(primaryTarget)) continue;
-					if (target.isDead()) continue;
-					if (game.getGameTeamController().areAllies(attacker, target)) continue;
-
-					Vector toTarget = target.getLocation().toVector().subtract(attacker.getLocation().toVector());
-					double distanceSquared = toTarget.lengthSquared();
-					if (distanceSquared > SCYTHE_RANGE_SQUARED || distanceSquared <= 0.0001) continue;
-
-					Vector direction = attacker.getLocation().getDirection().normalize();
-					double dot = direction.dot(toTarget.normalize());
-					if (dot < SCYTHE_CONE_DOT) continue;
-
-					candidates.add(target);
-				}
-
-				candidates.sort((a, b) -> {
-					double da = a.getLocation().distanceSquared(attacker.getLocation());
-					double db = b.getLocation().distanceSquared(attacker.getLocation());
-					return Double.compare(da, db);
-				});
-
-				int extraHits = Math.max(0, SCYTHE_MAX_TARGETS - 1);
-				for (int i = 0; i < Math.min(extraHits, candidates.size()); i++) {
-					Player extraTarget = candidates.get(i);
-					extraTarget.damage(event.getDamage(), attacker);
-				}
-			} finally {
-				slashingPlayers.remove(attacker.getUniqueId());
+			if (event.getCause() == DamageCause.ENTITY_ATTACK) {
+				ItemUtilities.doSweepAttack(attacker, primaryTarget, event.getDamage());
 			}
 		}
 
@@ -254,14 +221,6 @@ public class BurrowerScythe extends LevelItem<BurrowerScytheLevels> {
 			event.setCancelled(true);
 
 			scythe.castEarthWall(event.getClickedBlock());
-		}
-
-		private void tryLightningProc(Player target) {
-			if (ThreadLocalRandom.current().nextDouble() > LIGHTNING_PROC_CHANCE) return;
-
-			target.getWorld().strikeLightningEffect(target.getLocation());
-			double nextHealth = Math.max(0.0, target.getHealth() - LIGHTNING_TRUE_DAMAGE);
-			target.setHealth(nextHealth);
 		}
 
 
