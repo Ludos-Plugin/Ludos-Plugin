@@ -157,9 +157,12 @@ public class ArenaGame extends Game {
 	public void onPlayerMove(PlayerMoveEvent event) {
 		if (isWaveMode()) return;
 		if (!preparationPhase) return;
+
 		Player player = event.getPlayer();
+
 		if (!isArenaPlayer(player)) return;
 		if (event.getTo() == null) return;
+
 		if (isSamePosition(event.getFrom(), event.getTo())) return;
 
 		event.setTo(event.getFrom());
@@ -169,28 +172,31 @@ public class ArenaGame extends Game {
 		return from.getX() == to.getX() && from.getY() == to.getY() && from.getZ() == to.getZ();
 	}
 
-	@EventHandler
-	public void onEntityDamage(EntityDamageEvent event) {
-		if (isWaveMode()) return;
-		if (!preparationPhase) return;
-		if (!(event.getEntity() instanceof Player player)) return;
-		if (!isArenaPlayer(player)) return;
+	// @EventHandler
+	// public void onEntityDamage(EntityDamageEvent event) {
+	// 	if (isWaveMode()) return;
+	// 	if (!preparationPhase) return;
 
-		event.setCancelled(true);
-	}
+	// 	if (!(event.getEntity() instanceof Player player)) return;
 
-	@EventHandler
-	public void onFoodLevelChange(FoodLevelChangeEvent event) {
-		if (isWaveMode()) return;
-		if (!(event.getEntity() instanceof Player player)) return;
-		if (!isArenaPlayer(player)) return;
-		event.setCancelled(true);
-	}
+	// 	if (!isArenaPlayer(player)) return;
+
+	// 	event.setCancelled(true);
+	// }
+
+	// @EventHandler
+	// public void onFoodLevelChange(FoodLevelChangeEvent event) {
+	// 	if (isWaveMode()) return;
+	// 	if (!(event.getEntity() instanceof Player player)) return;
+	// 	if (!isArenaPlayer(player)) return;
+	// 	event.setCancelled(true);
+	// }
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		if (isWaveMode()) return;
 		if (!isArenaPlayer(event.getPlayer())) return;
+
 		Bukkit.getScheduler().runTask(getPlugin(), this::evaluateRoundState);
 	}
 
@@ -212,7 +218,6 @@ public class ArenaGame extends Game {
 
 	private void startPreparationCountdown() {
 		preparationTask = startPreparationCountdownTask(
-			preparationTask,
 			"Round",
 			() -> currentRound,
 			"Fight starts in",
@@ -237,8 +242,7 @@ public class ArenaGame extends Game {
 		}
 	}
 
-	public BukkitTask startPreparationCountdownTask(@Nullable BukkitTask task, String phaseName, IntSupplier phaseNumberSupplier, String countdownPrefix, Runnable onComplete) {
-		task = cancelTask(task);
+	public BukkitTask startPreparationCountdownTask(String phaseName, IntSupplier phaseNumberSupplier, String countdownPrefix, Runnable onComplete) {
 
 		return new BukkitRunnable() {
 			private int ticksLeft = PREP_TICKS;

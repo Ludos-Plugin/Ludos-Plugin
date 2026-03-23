@@ -140,7 +140,6 @@ public final class ArenaWaveController extends GameEvents {
 
 	private void startPreparationCountdown() {
 		preparationTask = arena.startPreparationCountdownTask(
-			preparationTask,
 			"Wave",
 			() -> wave,
 			"Begins in",
@@ -214,15 +213,21 @@ public final class ArenaWaveController extends GameEvents {
 	}
 
 	private EntityType pickMobType() {
-		int roll = ThreadLocalRandom.current().nextInt(100);
-		if (roll < 20) return EntityType.ZOMBIE;
-		if (roll < 35) return EntityType.HUSK;
-		if (roll < 50) return EntityType.DROWNED;
-		if (roll < 65) return EntityType.SKELETON;
-		if (roll < 78) return EntityType.STRAY;
-		if (roll < 88) return EntityType.SPIDER;
-		if (roll < 95) return EntityType.WITCH;
-		return EntityType.VINDICATOR;
+		List<EntityType> differentsEnemies = List.of(
+			EntityType.ZOMBIE,
+			EntityType.HUSK,
+			EntityType.HOGLIN,
+			EntityType.SKELETON,
+			EntityType.STRAY,
+			EntityType.SPIDER,
+			EntityType.WITCH,
+			EntityType.VINDICATOR
+		);
+
+		int roll = ThreadLocalRandom.current().nextInt(differentsEnemies.size());
+
+		EntityType type = differentsEnemies.get(roll);
+		return type.isAlive() ? type : EntityType.ZOMBIE;
 	}
 
 	private void configureWaveMob(LivingEntity mob) {
