@@ -48,7 +48,7 @@ import net.kyori.adventure.title.Title;
 
 public final class ArenaWaveController extends GameEvents {
 	private static final int PREP_TICKS = 20 * 10;
-	private static final int BOSS_START_WAVE = 3;
+	private static final int BOSS_START_WAVE = 1;
 	private static final int BOSS_INTERVAL = 10;
 	private static final int BASE_MOB_COUNT = 10;
 	private static final int MOBS_PER_WAVE = 3;
