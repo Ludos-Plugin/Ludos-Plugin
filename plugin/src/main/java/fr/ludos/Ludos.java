@@ -18,7 +18,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import fr.ludos.book.BookUtility;
 import fr.ludos.command.ludos.LudosCommand;
 import fr.ludos.game.Game;
+import fr.ludos.game.arena.ArenaGame;
 import fr.ludos.game.manhunt.ManhuntGame;
+import fr.ludos.game.sheepwars.SheepwarsGame;
+import fr.ludos.item.texture.TextureListener;
+import fr.ludos.item.texture.TextureManager;
 import fr.ludos.role.AssassinRole;
 import fr.ludos.role.HarvesterRole;
 import fr.ludos.role.HuntsmanRole;
@@ -30,25 +34,32 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
 public class Ludos extends JavaPlugin implements Listener {
 
 	public static final String namespace = "ludos";
+	private TextureManager textureManager;
 
 	public Ludos() { }
+
+	public TextureManager getTextureManager() {
+		return textureManager;
+	}
 
 	@Override
 	public void onEnable() {
 		Role.loadConfigRoles(this);
 
 		Game.registerGame(new ManhuntGame.Builder(this));
+		Game.registerGame(new ArenaGame.Builder(this));
+		Game.registerGame(new SheepwarsGame.Builder(this));
 
 		Role.registerRole(new HuntsmanRole.Builder(this));
 		Role.registerRole(new HarvesterRole.Builder(this));
 		Role.registerRole(new TrapperRole.Builder(this));
 		Role.registerRole(new AssassinRole.Builder(this));
 
-
+		textureManager = new TextureManager(this);
+		getServer().getPluginManager().registerEvents(new TextureListener(this), this);
 
 		PluginCommand cmd = getCommand("ludos");
 		LudosCommand ludosCommand = new LudosCommand();
@@ -56,15 +67,19 @@ public class Ludos extends JavaPlugin implements Listener {
 		cmd.setTabCompleter(ludosCommand);
 		cmd.setUsage(ludosCommand.getUsage());
 
+		PluginCommand textureCmd = getCommand("texture");
+		if (textureCmd != null) {
+			textureCmd.setExecutor(textureManager);
+		}
+
 		Bukkit.getPluginManager().registerEvents(this, this);
 	}
 
 	@Override
 	public void onDisable() {
 		Game.stopCurrentGame();
-		HandlerList.unregisterAll((Listener)this);
+		HandlerList.unregisterAll((Listener) this);
 	}
-
 
 	public static ItemStack createGuidebook() {
 		ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
