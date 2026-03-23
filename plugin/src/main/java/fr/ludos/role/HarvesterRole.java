@@ -281,6 +281,10 @@ public class HarvesterRole extends Role {
 		item.setItemMeta(meta);
 	}
 
+	public static void setExplosiveChestplateMode(ItemStack item, boolean explosive) {
+		setExplosiveChestplate(item, explosive);
+	}
+
 	private static void damageEquipmentByThird(Player player) {
 		for (ItemStack item : player.getInventory().getArmorContents()) {
 			damageItemByThird(item);
