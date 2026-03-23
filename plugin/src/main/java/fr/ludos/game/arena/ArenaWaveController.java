@@ -1,6 +1,5 @@
 package fr.ludos.game.arena;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,64 +33,58 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
 
 import fr.ludos.game.Game;
-import fr.ludos.game.GameEvents;
+import fr.ludos.Utility;
 import fr.ludos.game.arena.monster.DarkKnightBoss;
 import fr.ludos.item.Categories;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-public final class ArenaWaveController extends GameEvents {
+public final class ArenaWaveController extends ArenaGame {
 	private static final int BOSS_START_WAVE = 1;
 	private static final int BOSS_INTERVAL = 10;
 	private static final int BASE_MOB_COUNT = 10;
 	private static final int MOBS_PER_WAVE = 3;
 	private static final int MAX_MOB_COUNT = 100;
 
-	private final ArenaGame arena;
 	private final Set<UUID> aliveWaveMonsters = new HashSet<>();
-
 	private DarkKnightBoss currentBoss;
-
 	private int wave = 0;
-	private boolean preparationPhase = false;
-
-	private BukkitTask preparationTask;
 	private BukkitTask waveCheckTask;
 
-	public ArenaWaveController(ArenaGame game) {
-		super(game);
-		this.arena = game;
+	protected ArenaWaveController(Builder builder) {
+		super(builder);
 	}
 
 	@Override
-	protected void onStart() {
+	protected void onGameStart() {
+		teleportArenaPlayersForRound();
 		startNextWave();
 	}
 
 	@Override
-	protected void onStop() {
-		cancelTasks();
+	protected void onGameStop() {
+		waveCheckTask = Utility.cancelTask(waveCheckTask);
 		despawnAllMonsters();
+		getGameAreaController().resetBorder();
+	}
+
+	@Override
+	public Boolean canPlayerHaveRole(Player player, String roleId) {
+		return isArenaPlayer(player);
 	}
 
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event) {
-		if (!preparationPhase) return;
-		if (!arena.isArenaPlayer(event.getPlayer())) return;
-		if (event.getTo() == null) return;
-		if (ArenaGame.isSamePosition(event.getFrom(), event.getTo())) return;
-
+		if (!isArenaPlayer(event.getPlayer())) return;
 		event.setTo(event.getFrom());
 	}
 
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
-		if (!preparationPhase) return;
 		if (!(event.getEntity() instanceof Player player)) return;
-		if (!arena.isArenaPlayer(player)) return;
+		if (!isArenaPlayer(player)) return;
 
 		event.setCancelled(true);
 	}
@@ -99,7 +92,7 @@ public final class ArenaWaveController extends GameEvents {
 	@EventHandler
 	public void onFoodLevelChange(FoodLevelChangeEvent event) {
 		if (!(event.getEntity() instanceof Player player)) return;
-		if (!arena.isArenaPlayer(player)) return;
+		if (!isArenaPlayer(player)) return;
 		event.setCancelled(true);
 	}
 
@@ -110,7 +103,6 @@ public final class ArenaWaveController extends GameEvents {
 			event.getDrops().clear();
 			event.setDroppedExp(0);
 		}
-
 		if (currentBoss != null && currentBoss.getEntity() != null && currentBoss.getEntity().getUniqueId().equals(entity.getUniqueId())) {
 			currentBoss.onDeath();
 			currentBoss = null;
@@ -119,84 +111,61 @@ public final class ArenaWaveController extends GameEvents {
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
-		if (!arena.isArenaPlayer(event.getPlayer())) return;
-		Bukkit.getScheduler().runTask(arena.getPlugin(), this::evaluateWaveState);
+		if (!isArenaPlayer(event.getPlayer())) return;
+		Bukkit.getScheduler().runTask(getPlugin(), this::evaluateWaveState);
 	}
 
 	private void startNextWave() {
-		if (wave >= arena.getConfiguredRounds()) {
+		if (wave >= getConfiguredRounds()) {
 			Bukkit.broadcast(Component.text("Arena Waves complete!").color(NamedTextColor.GOLD));
 			Game.stopCurrentGame();
 			return;
 		}
-
 		wave++;
-		preparationPhase = true;
-		arena.prepareArenaPlayers();
-
-		arena.teleportArenaPlayersForRound();
-		startPreparationCountdown();
-	}
-
-	private void startPreparationCountdown() {
-		preparationTask = arena.startPreparationCountdownTask(
-			"Wave",
-			() -> wave,
-			"Begins in",
-			this::startWaveCombat
-		);
+		teleportArenaPlayersForRound();
+		startWaveCombat();
 	}
 
 	private void startWaveCombat() {
-		preparationPhase = false;
-		arena.applyCombatLoadoutToArenaPlayers();
-
+		for (Player player : getArenaPlayers()) {
+			applyArenaCombatLoadout(player);
+		}
 		spawnWaveContent();
-
-		waveCheckTask = ArenaGame.cancelTask(waveCheckTask);
-		waveCheckTask = Bukkit.getScheduler().runTaskTimer(arena.getPlugin(), this::evaluateWaveState, 0L, 10L);
+		waveCheckTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), this::evaluateWaveState, 0L, 10L);
 	}
 
 	private void spawnWaveContent() {
 		aliveWaveMonsters.clear();
-
 		if (shouldSpawnBossWave()) {
 			spawnBossWave();
 			return;
 		}
-
 		int amount = Math.min(MAX_MOB_COUNT, BASE_MOB_COUNT + (wave * MOBS_PER_WAVE));
-		Location center = arena.getGameAreaController().getCenter();
-
+		Location center = getGameAreaController().getCenter();
 		for (int i = 0; i < amount; i++) {
 			Location spawn = center.clone().add(
 				ThreadLocalRandom.current().nextDouble(-18, 18),
 				0,
 				ThreadLocalRandom.current().nextDouble(-18, 18)
 			);
-			arena.moveToHighestGround(spawn);
+			moveToHighestGround(spawn);
 			LivingEntity mob = spawnRegularMob(spawn);
 			if (mob == null) continue;
-
 			configureWaveMob(mob);
 			aliveWaveMonsters.add(mob.getUniqueId());
 		}
-
 		Bukkit.broadcast(Component.text("Wave " + wave + " spawned: " + aliveWaveMonsters.size() + " monsters").color(NamedTextColor.DARK_RED));
 	}
 
 	private void spawnBossWave() {
-		Location center = arena.getGameAreaController().getCenter().clone();
-		arena.moveToHighestGround(center);
+		Location center = getGameAreaController().getCenter().clone();
+		moveToHighestGround(center);
 		center.add(0, 1.0, 0);
-
-		currentBoss = new DarkKnightBoss(arena);
+		currentBoss = new DarkKnightBoss(this);
 		currentBoss.spawn(center);
-
 		if (currentBoss.getEntity() != null) {
 			aliveWaveMonsters.add(currentBoss.getEntity().getUniqueId());
 		}
-
 		Bukkit.broadcast(Component.text("Boss Wave: The Dark Knight emerges").color(NamedTextColor.DARK_PURPLE));
 		center.getWorld().strikeLightningEffect(center);
 		center.getWorld().playSound(center, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.7f);
@@ -231,42 +200,33 @@ public final class ArenaWaveController extends GameEvents {
 	}
 
 	private void configureWaveMob(LivingEntity mob) {
-		List<Player> alivePlayers = arena.getAliveArenaPlayers();
+		List<Player> alivePlayers = getAliveArenaPlayers();
 		if (mob instanceof Monster monster && !alivePlayers.isEmpty()) {
 			monster.setTarget(alivePlayers.get(ThreadLocalRandom.current().nextInt(alivePlayers.size())));
 		}
-
 		mob.setRemoveWhenFarAway(false);
 		mob.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, true, false));
-
 		if (mob instanceof Zombie zombie) {
 			zombie.setShouldBurnInDay(false);
 		}
 		if (mob instanceof AbstractSkeleton skeleton) {
 			skeleton.setShouldBurnInDay(false);
 		}
-
 		double hp = 18.0 + (wave * 2.25);
 		setBaseValue(mob, Attribute.GENERIC_MAX_HEALTH, hp);
 		if (mob.getAttribute(Attribute.GENERIC_MAX_HEALTH) != null) {
 			mob.setHealth(hp);
 		}
-
 		double damage = 3.5 + Math.min(12.0, wave * 0.42);
 		setBaseValue(mob, Attribute.GENERIC_ATTACK_DAMAGE, damage);
-
 		double speed = 0.25 + Math.min(0.13, wave * 0.004);
 		setBaseValue(mob, Attribute.GENERIC_MOVEMENT_SPEED, speed);
-
 		double kbRes = Math.min(0.65, wave * 0.015);
 		setBaseValue(mob, Attribute.GENERIC_KNOCKBACK_RESISTANCE, kbRes);
-
 		applyScaledEquipment(mob);
-
 		if (wave >= 10) {
 			mob.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Integer.MAX_VALUE, Math.min(2, wave / 15), true, false));
 		}
-
 		mob.getWorld().spawnParticle(Particle.SMOKE_LARGE, mob.getLocation(), 12, 0.3, 0.4, 0.3, 0.01);
 		mob.getWorld().playSound(mob.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 0.5f, 0.7f);
 	}
@@ -371,24 +331,21 @@ public final class ArenaWaveController extends GameEvents {
 	}
 
 	private void evaluateWaveState() {
-		List<Player> alivePlayers = arena.getAliveArenaPlayers();
+		List<Player> alivePlayers = getAliveArenaPlayers();
 		if (alivePlayers.isEmpty()) {
 			Bukkit.broadcast(Component.text("Arena failed: all players are down").color(NamedTextColor.RED));
 			Game.stopCurrentGame();
 			return;
 		}
-
 		retargetAliveMonsters(alivePlayers);
-
 		aliveWaveMonsters.removeIf(id -> {
 			Entity entity = Bukkit.getEntity(id);
 			return !(entity instanceof LivingEntity living) || living.isDead() || !living.isValid();
 		});
-
 		if (aliveWaveMonsters.isEmpty()) {
-			waveCheckTask = ArenaGame.cancelTask(waveCheckTask);
+			waveCheckTask = Utility.cancelTask(waveCheckTask);
 			Bukkit.broadcast(Component.text("Wave " + wave + " cleared").color(NamedTextColor.GREEN));
-			Bukkit.getScheduler().runTaskLater(arena.getPlugin(), this::startNextWave, 40L);
+			Bukkit.getScheduler().runTaskLater(getPlugin(), this::startNextWave, 40L);
 		}
 	}
 
@@ -415,21 +372,13 @@ public final class ArenaWaveController extends GameEvents {
 	private void despawnAllMonsters() {
 		for (UUID id : aliveWaveMonsters) {
 			Entity entity = Bukkit.getEntity(id);
-
 			if (entity != null) entity.remove();
 		}
-
 		aliveWaveMonsters.clear();
-
 		if (currentBoss != null) {
 			currentBoss.despawn();
 			currentBoss = null;
 		}
-	}
-
-	private void cancelTasks() {
-		preparationTask = ArenaGame.cancelTask(preparationTask);
-		waveCheckTask = ArenaGame.cancelTask(waveCheckTask);
 	}
 
 	private void setBaseValue(LivingEntity entity, Attribute attribute, double value) {

@@ -1,6 +1,10 @@
 package fr.ludos.game;
 
 import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,6 +54,65 @@ public abstract class GameTeamController extends GameProcessBase {
 			.filter(e -> e instanceof Player)
 			.map(e -> (Player)e)
 			.collect(Collectors.toSet());
+	}
+
+
+	public Set<Player> getArenaPlayers(GameTeamController teamController) {
+		return new HashSet<>(teamController.getPlayers());
+	}
+
+	public List<Player> getAliveArenaPlayers(GameTeamController teamController) {
+		return getArenaPlayers(teamController).stream()
+			.filter(Player::isOnline)
+			.filter(p -> !p.isDead())
+			.filter(p -> p.getGameMode() == GameMode.SURVIVAL)
+			.toList();
+	}
+
+	public static List<Set<Player>> createTeamBuckets(int teamCount) {
+		if (teamCount < 1) {
+			throw new IllegalArgumentException("teamCount must be >= 1");
+		}
+
+		List<Set<Player>> teams = new ArrayList<>(teamCount);
+		for (int i = 0; i < teamCount; i++) {
+			teams.add(new HashSet<>());
+		}
+
+		return teams;
+	}
+
+	public static void distributePlayersInTeams(Collection<Player> players, List<Set<Player>> teams, boolean enabled, boolean shuffle) {
+		if (!enabled || players == null || players.isEmpty() || teams == null || teams.isEmpty()) return;
+
+		List<Player> pool = new ArrayList<>(players);
+		if (shuffle) {
+			Collections.shuffle(pool);
+		}
+
+		for (Player player : pool) {
+			int smallestTeamIndex = 0;
+			for (int i = 1; i < teams.size(); i++) {
+				if (teams.get(i).size() < teams.get(smallestTeamIndex).size()) {
+					smallestTeamIndex = i;
+				}
+			}
+			teams.get(smallestTeamIndex).add(player);
+		}
+	}
+
+	public Set<Player> extractPlayersFromTeam(Team team) {
+		Set<Player> players = new HashSet<>();
+		if (team == null) return players;
+
+		for (String name : team.getEntries()) {
+			Player player = Bukkit.getPlayer(name);
+			if (player != null) {
+				players.add(player);
+			}
+		}
+
+		return players;
 	}
 
 	public boolean areAllies(LivingEntity entity1, LivingEntity entity2) {

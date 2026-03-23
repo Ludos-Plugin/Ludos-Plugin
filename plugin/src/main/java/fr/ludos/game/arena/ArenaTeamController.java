@@ -85,17 +85,6 @@ public final class ArenaTeamController extends GameTeamController {
 		return team;
 	}
 
-	private Set<Player> extractPlayersFromTeam(Team team) {
-		Set<Player> players = new HashSet<>();
-		if (team == null) return players;
-		for (String name : team.getEntries()) {
-			Player player = Bukkit.getPlayer(name);
-			if (player != null) {
-				players.add(player);
-			}
-		}
-		return players;
-	}
 
 	public int getCombatTeamCount() {
 		return combatTeams.size();
@@ -108,7 +97,9 @@ public final class ArenaTeamController extends GameTeamController {
 	}
 
 	public Set<Player> getCombatPlayers(int index) {
-		return extractPlayersFromTeam(getCombatTeam(index));
+		Team team = getCombatTeam(index);
+		if (team == null) return new HashSet<>();
+		return extractPlayersFromTeam(team);
 	}
 
 	public Set<Player> getAliveCombatPlayers(int index) {
@@ -144,12 +135,6 @@ public final class ArenaTeamController extends GameTeamController {
 		player.setScoreboard(getGame().getScoreboard());
 	}
 
-	public void resetRoundPlayers() {
-		for (Player player : getPlayers()) {
-			Game.joinAnyPlayer(player, null);
-		}
-	}
-
 	@Override
 	public Collection<Team> getTeams() {
 		return List.copyOf(combatTeams);
@@ -158,8 +143,9 @@ public final class ArenaTeamController extends GameTeamController {
 	@Override
 	public Collection<LivingEntity> getEntities() {
 		Set<LivingEntity> entities = new HashSet<>();
-		for (Team team : getTeams()) {
-			entities.addAll(extractPlayersFromTeam(team));
+		for (Team team : combatTeams) {
+			Team t = team;
+			if (t != null) entities.addAll(extractPlayersFromTeam(t));
 		}
 		return entities;
 	}
@@ -177,8 +163,7 @@ public final class ArenaTeamController extends GameTeamController {
 
 		if (getCombatPlayers(PRIMARY_TEAM_INDEX).size() <= getCombatPlayers(SECONDARY_TEAM_INDEX).size()) {
 			moveToCombatTeam(player, PRIMARY_TEAM_INDEX);
-		}
-		else {
+		} else {
 			moveToCombatTeam(player, SECONDARY_TEAM_INDEX);
 		}
 	}

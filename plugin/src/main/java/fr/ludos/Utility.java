@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -37,6 +39,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.GameMode;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.BiomeProvider;
@@ -274,5 +277,13 @@ public class Utility {
 			for (String criteria : progress.getAwardedCriteria())
 				progress.revokeCriteria(criteria);
 		}
+	}
+
+	@Nullable
+	public static BukkitTask cancelTask(@Nullable BukkitTask task) {
+		if (task == null) return null;
+
+		task.cancel();
+		return task = null;
 	}
 }
