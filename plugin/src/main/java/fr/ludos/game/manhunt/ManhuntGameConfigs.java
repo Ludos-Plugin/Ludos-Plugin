@@ -7,7 +7,6 @@ import fr.ludos.game.worldborder.WorldBorderAreaOption;
 import fr.ludos.game.worldborder.WorldBorderLocationOption;
 
 public enum ManhuntGameConfigs {
-	players (() -> "[player1] [player2] ..."),
 	prey (() -> "[player]"),
 	area (WorldBorderAreaOption::getUsage),
 	location (WorldBorderLocationOption::getUsage),

@@ -15,16 +15,22 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.Subcommand;
 import fr.ludos.game.Game;
+import fr.ludos.group.Group;
 
-public enum GameSubcommand implements Subcommand{
+public enum GameSubcommand implements Subcommand {
 	start() {
 		@Override
 		public String getDescription() {
-			return "Start the current game.";
+			return "As a group leader, start a game.";
 		}
 		@Override
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 			if (args.length < 1) return false;
+
+			if (!(sender instanceof Player leader)) {
+				sender.sendMessage("Only players can start games.");
+				return true;
+			}
 
 			String startGameId = args[0].toLowerCase();
 			if ( !Game.getRegistered().containsKey(startGameId) ) {
@@ -32,7 +38,18 @@ public enum GameSubcommand implements Subcommand{
 				return false;
 			}
 
-			Game.startGame(startGameId);
+			Group group = Group.getGroupOfPlayer(leader);
+			if (group == null) {
+				sender.sendMessage("You are not in a group.");
+				return true;
+			}
+
+			if (!group.isLeader(leader)) {
+				sender.sendMessage("Only the group leader can start a game.");
+				return true;
+			}
+
+			Game.startGame(startGameId, group);
 			return true;
 		}
 		@Override
@@ -46,7 +63,7 @@ public enum GameSubcommand implements Subcommand{
 			return "/" + label + " game start <" +
 				Game.getRegistered().keySet().stream().sorted()
 					.collect(Collectors.joining(" | "))
-				+ ">";
+				+ "> [solo]";
 		}
 	},
 	stop() {
@@ -56,7 +73,29 @@ public enum GameSubcommand implements Subcommand{
 		}
 		@Override
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			Game.stopCurrentGame();
+			if (!(sender instanceof Player leader)) {
+				sender.sendMessage("Only players can stop games.");
+				return true;
+			}
+
+			Group group = Group.getGroupOfPlayer(leader);
+			if (group == null) {
+				sender.sendMessage("You are not in a group.");
+				return true;
+			}
+
+			if (!group.isLeader(leader)) {
+				sender.sendMessage("Only the group leader can stop the game.");
+				return true;
+			}
+
+			Game game = group.getGame();
+			if (game == null) {
+				sender.sendMessage("There is no game running.");
+				return true;
+			}
+
+			game.stop();
 			return true;
 		}
 		@Override
@@ -68,74 +107,43 @@ public enum GameSubcommand implements Subcommand{
 			return "/" + label + " game stop";
 		}
 	},
-	config() {
-		@Override
-		public String getDescription() {
-			return "Configure a game.";
-		}
-		@Override
-		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			if (args.length < 1) return false;
+	// config() {
+	// 	@Override
+	// 	public String getDescription() {
+	// 		return "Configure a game.";
+	// 	}
+	// 	@Override
+	// 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+	// 		if (args.length < 1) return false;
 
-			String configGameId = args[0].toLowerCase();
-			Game.Builder configGame = Game.getRegistered().get(configGameId);
-			if (configGame == null) {
-				sender.sendMessage("Game not found: " + configGameId);
-				return false;
-			}
+	// 		String configGameId = args[0].toLowerCase();
+	// 		Game.Builder configGame = Game.getRegistered().get(configGameId);
+	// 		if (configGame == null) {
+	// 			sender.sendMessage("Game not found: " + configGameId);
+	// 			return false;
+	// 		}
 
-			return configGame.executeGameConfig(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-		}
-		@Override
-		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			if (args.length == 1)
-				return Game.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+	// 		return configGame.executeGameConfig(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+	// 	}
+	// 	@Override
+	// 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+	// 		if (args.length == 1)
+	// 			return Game.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
 
-			String configGameId = args[0].toLowerCase();
-			Game.Builder configGame = Game.getRegistered().get(configGameId);
-			if (configGame == null) return null;
+	// 		String configGameId = args[0].toLowerCase();
+	// 		Game.Builder configGame = Game.getRegistered().get(configGameId);
+	// 		if (configGame == null) return null;
 
-			return configGame.gameConfigTabComplete(sender, command, label, java.util.Arrays.copyOfRange(args, 1, args.length));
-		}
-		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " game config <" +
-				Game.getRegistered().keySet().stream().sorted()
-					.collect(Collectors.joining(" | "))
-				+ "> [option]";
-		}
-	},
-	join() {
-		@Override
-		public String getDescription() {
-			return "Join the current running game.";
-		}
-		@Override
-		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			if (args.length >= 1) return false;
-			if (!(sender instanceof Player player)) {
-				sender.sendMessage("Only players can join games.");
-				return true;
-			}
-
-			Game currentGame = Game.getCurrent();
-			if (currentGame == null) {
-				sender.sendMessage("No game is currently running.");
-				return true;
-			}
-
-			currentGame.getTeamController().addPlayer(player);
-			return true;
-		}
-		@Override
-		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			return null;
-		}
-		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " game join";
-		}
-	},
+	// 		return configGame.gameConfigTabComplete(sender, command, label, java.util.Arrays.copyOfRange(args, 1, args.length));
+	// 	}
+	// 	@Override
+	// 	public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
+	// 		return "/" + label + " game config <" +
+	// 			Game.getRegistered().keySet().stream().sorted()
+	// 				.collect(Collectors.joining(" | "))
+	// 			+ "> [option]";
+	// 	}
+	// },
 	guidebook() {
 		@Override
 		public String getDescription() {

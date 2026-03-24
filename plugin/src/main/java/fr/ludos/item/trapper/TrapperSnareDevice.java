@@ -103,7 +103,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 			trapTask = new BukkitRunnable() {
 				@Override
 				public void run() {
-					var game = Game.getCurrent();
+					var game = getGame();
 					if (game == null) return;
 
 					for (var playerTrapEntries : traps.entrySet()) {

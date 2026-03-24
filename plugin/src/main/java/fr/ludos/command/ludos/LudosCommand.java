@@ -18,10 +18,12 @@ import fr.ludos.command.CommandUtility;
 public class LudosCommand implements TabExecutor {
 	private final GameSubcommandManager gameCommand;
 	private final RoleSubcommandManager roleCommand;
+	private final GroupSubcommandManager groupCommand;
 
 	public LudosCommand() {
 		this.gameCommand = new GameSubcommandManager();
 		this.roleCommand = new RoleSubcommandManager();
+		this.groupCommand = new GroupSubcommandManager();
 	}
 
 
@@ -41,6 +43,8 @@ public class LudosCommand implements TabExecutor {
 				return gameCommand.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 			case role:
 				return roleCommand.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+			case group:
+				return groupCommand.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 			case guidebook:
 				Player player = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
 				if (player != null) {
@@ -72,6 +76,8 @@ public class LudosCommand implements TabExecutor {
 				return gameCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 			case role:
 				return roleCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+			case group:
+				return groupCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 			case guidebook:
 				return CommandUtility.getOnlinePlayerNames();
 			default:

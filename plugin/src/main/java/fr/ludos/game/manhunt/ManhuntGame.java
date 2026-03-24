@@ -29,6 +29,8 @@ import org.bukkit.WorldBorder;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.World.Environment;
+import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -57,6 +59,7 @@ import fr.ludos.game.GameJoinOption;
 import fr.ludos.game.worldborder.WorldBorderAreaController;
 import fr.ludos.game.worldborder.WorldBorderAreaOption;
 import fr.ludos.game.worldborder.WorldBorderLocationOption;
+import fr.ludos.group.Group;
 
 
 public class ManhuntGame extends Game {
@@ -97,9 +100,8 @@ public class ManhuntGame extends Game {
 	private final ManhuntCompass.Events compassEvents;
 	private final ManhuntTimer timer;
 
-	private final Builder builder;
 	public Builder getManhuntBuilder() {
-		return this.builder;
+		return (Builder) this.getBuilder();
 	}
 
 	private Location lastPreyLocation = null;
@@ -108,26 +110,26 @@ public class ManhuntGame extends Game {
 	private BukkitTask saturationTask;
 
 
-	protected ManhuntGame(Builder builder) {
-		super(builder);
+	protected ManhuntGame(Builder builder, Group group) {
+		super(builder, group);
 
-		this.builder = builder;
+		ConfigurationSection config = group.getConfig();
 
 		this.scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
 		this.teamController = new ManhuntTeamController(
 			this,
-			builder.getChosenPlayers(),
-			builder.getChosenPrey()
+			builder.getChosenPlayers(config),
+			builder.getChosenPrey(config)
 		);
 		this.areaController = (WorldBorderAreaController) new WorldBorderAreaController(
 			this,
 			this.teamController.getSelectedPrey().getLocation(),
-			this.builder.getLocation(),
-			this.builder.getArea()
+			this.getManhuntBuilder().getLocation(config),
+			this.getManhuntBuilder().getArea(config)
 		)
 			.withinWorld(builder.createWorldCreator());
 
-		timer = new ManhuntTimer(this, builder.getReveal());
+		timer = new ManhuntTimer(this, builder.getReveal(config));
 		compassEvents = new ManhuntCompass.Events(this);
 	}
 
@@ -288,67 +290,61 @@ public class ManhuntGame extends Game {
 
 
 
-		public String getPreyName() {
-			return getPlugin().getConfig().getString(preyPath);
+		public String getPreyName(ConfigurationSection config) {
+			return config.getString(preyPath);
 		}
-		public void setPreyName(String prey) {
+		public void setPreyName(ConfigurationSection config, String prey) {
 			String value = prey == null ? null : prey;
-			getPlugin().getConfig().set(preyPath, value);
-			getPlugin().saveConfig();
+			config.set(preyPath, value);
 		}
 
-		public Set<String> getPlayerNames() {
-			return getPlugin().getConfig().getStringList(playersPath).stream()
+		public Set<String> getPlayerNames(ConfigurationSection config) {
+			return config.getStringList(playersPath).stream()
 				.collect(Collectors.toSet());
 		}
-		public void setPlayerNames(Set<String> players) {
+		public void setPlayerNames(ConfigurationSection config, Set<String> players) {
 			List<String> value = players == null ? null : players.stream().collect(Collectors.toList());
-			getPlugin().getConfig().set(playersPath, value);
-			getPlugin().saveConfig();
+			config.set(playersPath, value);
 		}
 
-		public WorldBorderAreaOption getArea() {
-			String areaString = getPlugin().getConfig().getString(areaPath);
+		public WorldBorderAreaOption getArea(ConfigurationSection config) {
+			String areaString = config.getString(areaPath);
 			return Arrays.stream(WorldBorderAreaOption.values()).filter(o -> o.name().equals(areaString)).findFirst()
 				.orElse(WorldBorderAreaOption.medium);
 		}
-		public void setArea(WorldBorderAreaOption area) {
+		public void setArea(ConfigurationSection config, WorldBorderAreaOption area) {
 			String value = area == null ? null : area.name();
-			getPlugin().getConfig().set(areaPath, value);
-			getPlugin().saveConfig();
+			config.set(areaPath, value);
 		}
 
-		public WorldBorderLocationOption getLocation() {
-			String locationString = getPlugin().getConfig().getString(locationPath);
+		public WorldBorderLocationOption getLocation(ConfigurationSection config) {
+			String locationString = config.getString(locationPath);
 			return Arrays.stream(WorldBorderLocationOption.values()).filter(o -> o.name().equals(locationString)).findFirst()
 				.orElse(WorldBorderLocationOption.random);
 		}
-		public void setLocation(WorldBorderLocationOption location) {
+		public void setLocation(ConfigurationSection config, WorldBorderLocationOption location) {
 			String value = location == null ? null : location.name();
-			getPlugin().getConfig().set(locationPath, value);
-			getPlugin().saveConfig();
+			config.set(locationPath, value);
 		}
 
-		public ManhuntRevealOptions getReveal() {
-			String revealString = getPlugin().getConfig().getString(revealPath);
+		public ManhuntRevealOptions getReveal(ConfigurationSection config) {
+			String revealString = config.getString(revealPath);
 			return Arrays.stream(ManhuntRevealOptions.values()).filter(o -> o.name().equals(revealString)).findFirst()
 				.orElse(ManhuntRevealOptions.three_minutes);
 		}
-		public void setReveal(ManhuntRevealOptions reveal) {
+		public void setReveal(ConfigurationSection config, ManhuntRevealOptions reveal) {
 			String value = reveal == null ? null : reveal.name();
-			getPlugin().getConfig().set(revealPath, value);
-			getPlugin().saveConfig();
+			config.set(revealPath, value);
 		}
 
-		public GameJoinOption getJoinOption() {
-			String joinString = getPlugin().getConfig().getString(joinPath);
+		public GameJoinOption getJoinOption(ConfigurationSection config) {
+			String joinString = config.getString(joinPath);
 			return Arrays.stream(GameJoinOption.values()).filter(o -> o.name().equals(joinString)).findFirst()
 				.orElse(GameJoinOption.auto);
 		}
-		public void setJoinOption(GameJoinOption join) {
+		public void setJoinOption(ConfigurationSection config, GameJoinOption join) {
 			String value = join == null ? null : join.name();
-			getPlugin().getConfig().set(joinPath, value);
-			getPlugin().saveConfig();
+			config.set(joinPath, value);
 		}
 
 
@@ -358,8 +354,8 @@ public class ManhuntGame extends Game {
 
 
 		@Nullable
-		public Set<Player> getChosenPlayers() {
-			Set<String> playerNames = this.getPlayerNames();
+		public Set<Player> getChosenPlayers(ConfigurationSection config) {
+			Set<String> playerNames = this.getPlayerNames(config);
 			if (playerNames.isEmpty()) return null;
 
 			return new HashSet<>(
@@ -371,22 +367,22 @@ public class ManhuntGame extends Game {
 		}
 
 		@Nullable
-		public Player getChosenPrey() {
-			String preyName = this.getPreyName();
+		public Player getChosenPrey(ConfigurationSection config) {
+			String preyName = this.getPreyName(config);
 			if (preyName == null) {
 				return null;
 			}
 			return Bukkit.getPlayerExact(preyName);
 		}
 
-		public String getPlayersString() {
-			Set<String> playerNames = this.getPlayerNames();
+		public String getPlayersString(ConfigurationSection config) {
+			Set<String> playerNames = this.getPlayerNames(config);
 			return playerNames.isEmpty() ? "All" : playerNames.stream() // TODO: Translate
 				.collect(Collectors.joining(" "));
 		}
 
-		public String getPreyString() {
-			String preyName = this.getPreyName();
+		public String getPreyString(ConfigurationSection config) {
+			String preyName = this.getPreyName(config);
 			return preyName == null ? "Random" : preyName; // TODO: Translate
 		}
 
@@ -421,7 +417,7 @@ public class ManhuntGame extends Game {
 		}
 
 		@Override
-		public boolean executeGameConfig(CommandSender sender, Command command, String label, String[] args) {
+		public boolean executeGameConfig(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			if (args.length == 0) {
 				return false;
 			}
@@ -430,35 +426,15 @@ public class ManhuntGame extends Game {
 			ManhuntGameConfigs option = Arrays.stream(ManhuntGameConfigs.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 			if (option == null) return false;
 
-			return handleConfigsCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length), option);
+			return handleConfigsCommand(sender, command, label, config, Arrays.copyOfRange(args, 1, args.length), option);
 		}
 
-		private boolean handleConfigsCommand(CommandSender sender, Command command, String label, String[] args, ManhuntGameConfigs config) {
-			switch ( config ) {
-			case players:
-				if ( args.length == 0 ) {
-					// Field is left empty, send the current config
-					sender.sendMessage( getPlayersString() );
-					return true;
-				}
-
-				if ( args[0].equalsIgnoreCase(allOption) ) {
-					// Reset to default option
-					setPlayerNames(null);
-
-					sender.sendMessage("All players included in the game"); // TODO: Translate
-					return true;
-				}
-
-				setPlayerNames( new HashSet<>(Arrays.asList(args)) );
-
-				sender.sendMessage( getPlayersString() );
-				return true;
-
+		private boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args, ManhuntGameConfigs configOption) {
+			switch ( configOption ) {
 			case prey:
 				if ( args.length == 0 ) {
 					// Field is left empty, send the current config
-					sender.sendMessage( getPreyString() );
+					sender.sendMessage( getPreyString(config) );
 					return true;
 				}
 
@@ -466,21 +442,21 @@ public class ManhuntGame extends Game {
 
 				if ( givenPreyName.equalsIgnoreCase(randomOption) ) {
 					// Reset to default option
-					setPreyName(null);
+					setPreyName(config, null);
 
 					sender.sendMessage("Prey player set to Random"); // TODO: Translate
 					return true;
 				}
 
-				setPreyName(givenPreyName);
+				setPreyName(config, givenPreyName);
 
-				sender.sendMessage( "Prey player set to " + getPreyString() );
+				sender.sendMessage( "Prey player set to " + getPreyString(config) );
 				return true;
 
 			case area:
 				if ( args.length == 0 ) {
 					// Field is left empty, send the current config
-					sender.sendMessage( getArea().name() );
+					sender.sendMessage( getArea(config).name() );
 					return true;
 				}
 
@@ -488,7 +464,7 @@ public class ManhuntGame extends Game {
 				WorldBorderAreaOption areaOption = Arrays.stream(WorldBorderAreaOption.values()).filter(o -> o.name().equals(givenArea)).findFirst().orElse(null);
 				if (areaOption == null) return false;
 
-				setArea(areaOption);
+				setArea(config, areaOption);
 
 				sender.sendMessage("Game area set to " + areaOption.name()); // TODO: Translate
 				return true;
@@ -496,7 +472,7 @@ public class ManhuntGame extends Game {
 			case location:
 				if ( args.length == 0 ) {
 					// Field is left empty, send the current config
-					sender.sendMessage( this.getLocation().name() );
+					sender.sendMessage( this.getLocation(config).name() );
 					return true;
 				}
 
@@ -504,7 +480,7 @@ public class ManhuntGame extends Game {
 				WorldBorderLocationOption locationOption = Arrays.stream(WorldBorderLocationOption.values()).filter(o -> o.name().equals(givenLocation)).findFirst().orElse(null);
 				if (locationOption == null) return false;
 
-				setLocation(locationOption);
+				setLocation(config, locationOption);
 
 				sender.sendMessage("Game location set to " + locationOption.name()); // TODO: Translate
 				return true;
@@ -512,7 +488,7 @@ public class ManhuntGame extends Game {
 			case reveal:
 				if ( args.length == 0 ) {
 					// Field is left empty, send the current config
-					sender.sendMessage( this.getReveal().name() );
+					sender.sendMessage( this.getReveal(config).name() );
 					return true;
 				}
 
@@ -520,7 +496,7 @@ public class ManhuntGame extends Game {
 				ManhuntRevealOptions revealOption = Arrays.stream(ManhuntRevealOptions.values()).filter(o -> o.name().equals(givenReveal)).findFirst().orElse(null);
 				if (revealOption == null) return false;
 
-				setReveal(revealOption);
+				setReveal(config, revealOption);
 
 				sender.sendMessage("Prey Reveal Frequency set to " + revealOption.displayName()); // TODO: Translate
 				return true;
@@ -528,7 +504,7 @@ public class ManhuntGame extends Game {
 			case join:
 				if ( args.length == 0 ) {
 					// Field is left empty, send the current config
-					sender.sendMessage( this.getJoinOption().name() );
+					sender.sendMessage( this.getJoinOption(config).name() );
 					return true;
 				}
 
@@ -536,7 +512,7 @@ public class ManhuntGame extends Game {
 				GameJoinOption joinOption = Arrays.stream(GameJoinOption.values()).filter(o -> o.name().equals(givenJoin)).findFirst().orElse(null);
 				if (joinOption == null) return false;
 
-				setJoinOption(joinOption);
+				setJoinOption(config, joinOption);
 
 				sender.sendMessage("Game Join Option set to " + joinOption.name()); // TODO: Translate
 				return true;
@@ -567,13 +543,6 @@ public class ManhuntGame extends Game {
 			List<String> allPlayers = CommandUtility.getOnlinePlayerNames();
 
 			switch ( config ) {
-			case players:
-				// Options are : any enumeration of players, or all players
-				if ( args.length == 1 ) {
-					allPlayers.add(allOption);
-				}
-				return allPlayers;
-
 			case prey:
 				// Options are : any single player, or a random player
 				allPlayers.add(randomOption);
@@ -613,8 +582,8 @@ public class ManhuntGame extends Game {
 		}
 
 		@Override
-		public ManhuntGame build() {
-			return new ManhuntGame(this);
+		public ManhuntGame build(Group group) {
+			return new ManhuntGame(this, group);
 		}
 	}
 }

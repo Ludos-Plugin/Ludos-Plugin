@@ -54,16 +54,17 @@ public final class ManhuntTeamController extends GameTeamController {
 
 
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<Player> players, @Nullable Player prey) {
-		super(game, game.getManhuntBuilder().getJoinOption());
+		super(game, game.getManhuntBuilder().getJoinOption(game.getGroup().getConfig()));
 
-		Set<Player> finalPlayers = new HashSet<>();
+		Set<Player> finalPlayers;
 		if (players == null) {
-			finalPlayers.addAll(Bukkit.getOnlinePlayers());
-		} else {
-			finalPlayers.addAll(players.stream()
+			finalPlayers = game.getGroup().getAllPlayers().stream()
 				.filter(p -> p.isOnline())
-				.collect(Collectors.toSet())
-			);
+				.collect(Collectors.toSet());
+		} else {
+			finalPlayers = players.stream()
+				.filter(p -> p.isOnline())
+				.collect(Collectors.toSet());
 		}
 
 		if (finalPlayers.isEmpty()) {
@@ -109,12 +110,21 @@ public final class ManhuntTeamController extends GameTeamController {
 			spectatorTeam.setAllowFriendlyFire(false);
 		}
 
-
 		joinPrey(selectedPrey);
 
 		for (Player hunter : selectedHunters) {
 			if (hunter == null) continue;
 			joinHunter(hunter);
+		}
+
+		Set<Player> spectators = getGame().getGroup().getAllPlayers().stream()
+			.filter(p -> p.isOnline())
+			.filter(p -> p != getSelectedPrey())
+			.filter(p -> !selectedHunters.contains(p))
+			.collect(Collectors.toSet());
+
+		for (Player spectator : spectators) {
+			joinSpectator(spectator);
 		}
 	}
 
@@ -183,7 +193,7 @@ public final class ManhuntTeamController extends GameTeamController {
 				@Override
 				public void run() {
 					Bukkit.getServer().sendMessage(Component.text("All Prey Dead! End of Game!")); // TODO: Translate
-					Game.stopCurrentGame();
+					getGame().stop();
 				}
 			}.runTaskLater(getPlugin(), 0);
 		}
@@ -282,18 +292,6 @@ public final class ManhuntTeamController extends GameTeamController {
 		if (prey != null) {
 			player.teleport(prey.getLocation());
 		}
-
-		player.showTitle(Title.title(
-			Component.text("You are a ")
-			.append(Component.text("Spectator")
-				.color(NamedTextColor.GRAY)),
-			Component.text("Run '" + GameSubcommand.join.getUsage(prey, null, "ludos") + "' to join"),
-			Title.Times.times(
-				Duration.ofMillis(500),
-				Duration.ofMillis(3500),
-				Duration.ofMillis(1000)
-			)
-		));
 	}
 
 
@@ -303,6 +301,14 @@ public final class ManhuntTeamController extends GameTeamController {
 		preyTeam.removeEntry(player.getName());
 
 		joinSpectator(player);
+	}
+
+	@Override
+	public void removePlayer(Player player) {
+		hunterTeam.removeEntry(player.getName());
+		preyTeam.removeEntry(player.getName());
+		spectatorTeam.removeEntry(player.getName());
+		player.teleport(getGame().getAreaController().getReturnLocation());
 	}
 
 	// @Override

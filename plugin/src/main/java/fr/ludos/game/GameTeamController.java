@@ -76,7 +76,7 @@ public abstract class GameTeamController extends GameProcessBase {
 			.collect(Collectors.toSet());
 	}
 
-	public void addPlayer(Player player) {
+	public final void addPlayer(Player player) {
 		if (joinOption == GameJoinOption.none) {
 			player.sendMessage("Joining is not enabled for this game session.");
 			return;
@@ -85,6 +85,7 @@ public abstract class GameTeamController extends GameProcessBase {
 	}
 	protected abstract void joinPlayer(Player player);
 	protected abstract void discardPlayer(Player player);
+	public abstract void removePlayer(Player player);
 
 
 	@EventHandler

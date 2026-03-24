@@ -1,9 +1,12 @@
 package fr.ludos.game;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -15,6 +18,8 @@ import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -28,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.Ludos;
 import fr.ludos.Utility;
 import fr.ludos.book.BookUtility;
+import fr.ludos.group.Group;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -37,16 +43,14 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public abstract class Game extends GameProcessBase {
-	@Nullable
-	private static Game current = null;
-	@Nullable
-	public static Game getCurrent() {
-		return current;
-	}
-
 	private static final Map<String, Builder> registered = new HashMap<>();
 	public static Map<String, Builder> getRegistered() {
 		return registered;
+	}
+
+	private static final Set<Game> activeGames = new HashSet<>();
+	public static Set<Game> getActiveGames() {
+		return Collections.unmodifiableSet(activeGames);
 	}
 
 	@Nullable
@@ -66,11 +70,6 @@ public abstract class Game extends GameProcessBase {
 	}
 
 
-	private final Map<String, Role> activeRoles = new HashMap<>();
-	public Map<String, Role> getActiveRoles() {
-		return activeRoles;
-	}
-
 	protected final Builder builder;
 	public Builder getBuilder() {
 		return builder;
@@ -80,16 +79,31 @@ public abstract class Game extends GameProcessBase {
 		return builder.getPlugin();
 	}
 
+	private final Group group;
+	public Group getGroup() {
+		return group;
+	}
+
+	private final Map<String, Role> activeRoles = new HashMap<>();
+	public Map<String, Role> getActiveRoles() {
+		return activeRoles;
+	}
+
 	public abstract Scoreboard getScoreboard();
 	public abstract GameTeamController getTeamController();
 	public abstract GameAreaController getAreaController();
 
-	public static boolean startGame(String id) {
+	protected Game(Builder builder, Group group) {
+		this.builder = builder;
+		this.group = group;
+	}
+
+	public static boolean startGame(String id, Group group) {
 		if (! registered.containsKey(id)) return false;
 
 		Game game;
 		try {
-			game = registered.get(id).build();
+			game = registered.get(id).build(group);
 		} catch (Exception e) {
 			Bukkit.getServer().broadcast(Component.text("Error while starting game " + id + ": " + e.getMessage()).color(NamedTextColor.RED));
 			e.printStackTrace();
@@ -100,20 +114,15 @@ public abstract class Game extends GameProcessBase {
 		return true;
 	}
 
-	public static void stopCurrentGame() {
-		if (current != null) {
-			current.stop();
-		}
-	}
-
-	protected Game(Builder builder) {
-		this.builder = builder;
-	}
-
 	@Override
 	protected final void onInit() {
-		stopCurrentGame();
-		current = this;
+		Game oldGame = group.getGame();
+		if (oldGame != null && oldGame != this) {
+			oldGame.stop();
+		}
+		group.setGame(this);
+
+		activeGames.add(this);
 
 		onGameInit();
 	}
@@ -137,7 +146,9 @@ public abstract class Game extends GameProcessBase {
 
 	@Override
 	protected final void onDeinit() {
-		current = null;
+		group.setGame(null);
+
+		activeGames.remove(this);
 
 		onGameDeinit();
 	}
@@ -217,12 +228,12 @@ public abstract class Game extends GameProcessBase {
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
 
-		public abstract boolean executeGameConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args);
+		public abstract boolean executeGameConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, ConfigurationSection config, @NotNull String[] args);
 		public abstract List<String> gameConfigTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args);
 		public abstract String getGameConfigUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label);
 
 
-		public abstract Game build();
+		public abstract Game build(Group group);
 
 		public Builder(Ludos plugin) {
 			this.plugin = plugin;
