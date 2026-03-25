@@ -33,6 +33,9 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.Ludos;
 import fr.ludos.Utility;
 import fr.ludos.book.BookUtility;
+import fr.ludos.game.areaController.GameAreaController;
+import fr.ludos.game.teamController.GameTeamController;
+import fr.ludos.game.worldController.GameWorldController;
 import fr.ludos.group.Group;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
@@ -90,8 +93,9 @@ public abstract class Game extends GameProcessBase {
 	}
 
 	public abstract Scoreboard getScoreboard();
-	public abstract GameTeamController getTeamController();
+	public abstract GameWorldController getWorldController();
 	public abstract GameAreaController getAreaController();
+	public abstract GameTeamController getTeamController();
 
 	protected Game(Builder builder, Group group) {
 		this.builder = builder;
@@ -128,6 +132,7 @@ public abstract class Game extends GameProcessBase {
 	}
 	@Override
 	protected final void onStart() {
+		getWorldController().start();
 		getAreaController().start();
 		getTeamController().start();
 
@@ -154,8 +159,9 @@ public abstract class Game extends GameProcessBase {
 	}
 	@Override
 	protected final void onStop() {
-		getAreaController().stop();
 		getTeamController().stop();
+		getAreaController().stop();
+		getWorldController().stop();
 
 		onGameStop();
 

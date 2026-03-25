@@ -35,8 +35,8 @@ import org.bukkit.entity.Player;
 import fr.ludos.Utility;
 import fr.ludos.command.ludos.GameSubcommand;
 import fr.ludos.game.Game;
-import fr.ludos.game.GameAreaController;
-import fr.ludos.game.GameTeamController;
+import fr.ludos.game.areaController.GameAreaController;
+import fr.ludos.game.teamController.GameTeamController;
 
 
 public final class ManhuntTeamController extends GameTeamController {
@@ -55,7 +55,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<Player> players, @Nullable Player prey) {
-		super(game, game.getManhuntBuilder().getJoinOption(game.getGroup().getConfig()));
+		super(game, ManhuntGameConfigs.getJoinOption(game.getGroup().getConfig()));
 
 		Set<Player> finalPlayers;
 		if (players == null) {
@@ -335,7 +335,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer != null) {
-			onlinePlayer.teleport(getGame().getAreaController().getReturnLocation());
+			onlinePlayer.teleport(getGame().getWorldController().getReturnLocation());
 		}
 	}
 

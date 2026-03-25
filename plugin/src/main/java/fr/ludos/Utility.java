@@ -170,26 +170,6 @@ public class Utility {
 		file.delete();
 	}
 
-	public static void deleteWorld(World world) {
-		if (world == null) {
-			throw new IllegalArgumentException("World cannot be null");
-		}
-
-		File folder = world.getWorldFolder();
-
-		if (!folder.isDirectory()) {
-			throw new IllegalArgumentException("World folder is not a directory");
-		}
-
-		Bukkit.unloadWorld(world, false);
-		deleteRecursive(folder);
-
-		File worldFolder = new File(Bukkit.getWorldContainer().getAbsolutePath() + "/" + world.getName());
-		worldFolder.delete();
-
-		Bukkit.getWorlds().remove(world);
-	}
-
 	public static void revokeAllAdvancements(Player player) {
 		Iterator<Advancement> iterator = Bukkit.getServer().advancementIterator();
 

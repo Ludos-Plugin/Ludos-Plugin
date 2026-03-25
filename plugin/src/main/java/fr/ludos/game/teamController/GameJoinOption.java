@@ -1,10 +1,10 @@
-package fr.ludos.game;
+package fr.ludos.game.teamController;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import fr.ludos.game.worldborder.WorldBorderLocationOption;
+import fr.ludos.game.areaController.worldborder.WorldBorderLocationOption;
 
 public enum GameJoinOption {
 	auto {},

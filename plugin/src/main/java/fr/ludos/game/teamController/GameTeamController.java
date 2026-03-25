@@ -1,4 +1,4 @@
-package fr.ludos.game;
+package fr.ludos.game.teamController;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -16,6 +16,10 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
+
+import fr.ludos.game.Game;
+import fr.ludos.game.GameProcessBase;
+
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;

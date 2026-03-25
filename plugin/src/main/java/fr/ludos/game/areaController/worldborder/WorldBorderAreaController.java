@@ -1,5 +1,6 @@
-package fr.ludos.game.worldborder;
+package fr.ludos.game.areaController.worldborder;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -14,12 +15,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
-import fr.ludos.game.GameAreaController;
+import fr.ludos.game.areaController.GameAreaController;
 
 public class WorldBorderAreaController extends GameAreaController {
 
 	private final WorldBorderLocationOption locationOption;
 
+	private Location initialBorderCenter;
 	private double initialBorderSize;
 
 	private Location gameLocation;
@@ -33,8 +35,8 @@ public class WorldBorderAreaController extends GameAreaController {
 	}
 
 
-	public WorldBorderAreaController(Game game, Location returnLocation, WorldBorderLocationOption location, WorldBorderAreaOption area) {
-		super(game, returnLocation);
+	public WorldBorderAreaController(Game game, WorldBorderLocationOption location, WorldBorderAreaOption area) {
+		super(game);
 
 		this.locationOption = location;
 		this.areaOption = area;
@@ -42,26 +44,21 @@ public class WorldBorderAreaController extends GameAreaController {
 
 	@Override
 	protected void onAreaInit() {
-		initialBorderSize = getInitialLocation().getWorld().getWorldBorder().getSize();
+		World world = getGame().getWorldController().getWorld();
+		WorldBorder border = world.getWorldBorder();
+		initialBorderCenter = border.getCenter();
+		initialBorderSize = border.getSize();
+
+
+		Location initialLocation = Objects.requireNonNull(world.getSpawnLocation());
+
+		gameLocation = locationOption.getLocation(initialLocation);
+		double highestY = gameLocation.getWorld().getHighestBlockYAt(gameLocation) + 1;
+		gameLocation.setY(highestY);
 	}
 
 	@Override
 	protected void onAreaStart() {
-		Location initialLocation = getInitialLocation();
-		World world = initialLocation.getWorld();
-
-		switch (locationOption) {
-			case random:
-				gameLocation = Utility.getRandomBiomeLocation(initialLocation, 2500, 0, 200, initialLocation, 5, null);
-				break;
-			default:
-				gameLocation = initialLocation.clone();
-				break;
-		}
-
-		double highestY = world.getHighestBlockYAt(gameLocation) + 1;
-		gameLocation.setY(highestY);
-
 		setBorder(gameLocation, getAreaDiameter(), 3);
 	}
 
@@ -71,11 +68,11 @@ public class WorldBorderAreaController extends GameAreaController {
 	}
 
 	public void setBorder(Location center, double size, long time) {
-		if (initialBorderSize != 0) return;
+		resetBorder();
 
-		Location initialLocation = getInitialLocation();
-		WorldBorder border = initialLocation.getWorld().getWorldBorder();
+		WorldBorder border = getGame().getWorldController().getWorld().getWorldBorder();
 
+		initialBorderCenter = border.getCenter();
 		initialBorderSize = border.getSize();
 
 		border.setCenter(center);
@@ -83,14 +80,14 @@ public class WorldBorderAreaController extends GameAreaController {
 	}
 
 	public void resetBorder(long time) {
-		if (initialBorderSize == 0) return;
+		if (initialBorderCenter == null || initialBorderSize == 0) return;
 
-		Location initialLocation = getInitialLocation();
-		WorldBorder border = initialLocation.getWorld().getWorldBorder();
+		WorldBorder border = initialBorderCenter.getWorld().getWorldBorder();
 
-		border.setCenter(initialLocation);
+		border.setCenter(initialBorderCenter);
 		border.setSize(initialBorderSize, time);
 
+		initialBorderCenter = null;
 		initialBorderSize = 0;
 	}
 	public void resetBorder() {
@@ -104,7 +101,11 @@ public class WorldBorderAreaController extends GameAreaController {
 	}
 	@Override
 	public Location constrain(Location location) {
-		WorldBorder border = getWorld().getWorldBorder();
+		if (initialBorderCenter == null) return null;
+		World borderWorld = initialBorderCenter.getWorld();
+		if (location.getWorld() != borderWorld) return null;
+
+		WorldBorder border = borderWorld.getWorldBorder();
 		double halfSize = border.getSize() / 2.0;
 
 		double minX = border.getCenter().getX() - halfSize;
@@ -123,6 +124,6 @@ public class WorldBorderAreaController extends GameAreaController {
 	}
 	@Override
 	public boolean isInside(Location location) {
-		return getWorld().getWorldBorder().isInside(location);
+		return getGame().getWorldController().getWorld().getWorldBorder().isInside(location);
 	}
 }
