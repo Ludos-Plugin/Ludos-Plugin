@@ -12,6 +12,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import fr.ludos.game.arena.ArenaGame;
 
 public abstract class SpecialMonster<TEntity extends LivingEntity> {
@@ -114,6 +116,25 @@ public abstract class SpecialMonster<TEntity extends LivingEntity> {
 		if (!game.isArenaPlayer(player)) return false;
 		if (!player.getWorld().equals(world)) return false;
 		return player.getLocation().distanceSquared(center) <= maxDistanceSquared;
+	}
+
+	protected final boolean teleportNearArenaTarget(LivingEntity entity, Player target, double radius, boolean snapToGround) {
+		if (entity == null || target == null) return false;
+		if (!entity.isValid() || entity.isDead()) return false;
+		if (!target.isOnline() || target.isDead()) return false;
+		if (!target.getWorld().equals(entity.getWorld())) return false;
+
+		Location destination = target.getLocation().clone().add(
+			ThreadLocalRandom.current().nextDouble(-radius, radius),
+			0.0,
+			ThreadLocalRandom.current().nextDouble(-radius, radius)
+		);
+
+		if (snapToGround) {
+			game.moveToHighestGround(destination);
+		}
+
+		return entity.teleport(destination);
 	}
 
 	private void disposeTask() {

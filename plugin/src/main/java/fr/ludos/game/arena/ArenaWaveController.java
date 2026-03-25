@@ -2,6 +2,8 @@ package fr.ludos.game.arena;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.EnumMap;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -14,8 +16,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -38,12 +42,29 @@ import org.bukkit.scheduler.BukkitTask;
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.Utility;
-import fr.ludos.game.arena.monster.GoldenKnightBoss;
+import fr.ludos.game.arena.monster.arena.ArenaMonsterBoss;
+import fr.ludos.game.arena.monster.arena.GoldenKnightBoss;
 import fr.ludos.item.Categories;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 public final class ArenaWaveController extends ArenaGame {
+	private enum WaveTheme {
+		EARTH("Earth"),
+		WATER("Water"),
+		FIRE("Fire");
+
+		private final String display;
+
+		WaveTheme(String display) {
+			this.display = display;
+		}
+
+		String getDisplay() {
+			return display;
+		}
+	}
+
 	private static final int BOSS_START_WAVE = 1;
 	private static final int BOSS_INTERVAL = 10;
 	private static final int BASE_WAVE_POINTS = 200;
@@ -51,29 +72,66 @@ public final class ArenaWaveController extends ArenaGame {
 	private static final int MIN_MOBS_NON_BOSS_WAVE = 11;
 	private static final int MAX_MOB_COUNT = 100;
 	private static final int STEAK_REWARD_PER_BOSS_WAVE = 64;
+	private static final int ENV_EFFECT_TICKS = 220;
 
-	private static final List<WaveUnit> WAVE_UNITS = List.of(
+	private static final List<WaveUnit> EARTH_WAVE_UNITS = List.of(
 		new WaveUnit(EntityType.ZOMBIE, 12, 30, false),
 		new WaveUnit(EntityType.HUSK, 13, 24, false),
+		new WaveUnit(EntityType.DROWNED, 16, 18, false),
 		new WaveUnit(EntityType.SKELETON, 14, 22, false),
 		new WaveUnit(EntityType.STRAY, 17, 14, false),
 		new WaveUnit(EntityType.SPIDER, 12, 18, false),
 		new WaveUnit(EntityType.CAVE_SPIDER, 18, 12, false),
 		new WaveUnit(EntityType.CREEPER, 22, 15, false),
 		new WaveUnit(EntityType.ENDERMAN, 38, 9, false),
-		new WaveUnit(EntityType.BLAZE, 44, 8, false),
-		new WaveUnit(EntityType.MAGMA_CUBE, 36, 9, false),
 		new WaveUnit(EntityType.SLIME, 20, 14, false),
 		new WaveUnit(EntityType.PILLAGER, 26, 20, false),
 		new WaveUnit(EntityType.VINDICATOR, 34, 14, false),
 		new WaveUnit(EntityType.WITCH, 42, 10, false),
-		new WaveUnit(EntityType.PIGLIN_BRUTE, 92, 4, false),
 		new WaveUnit(EntityType.EVOKER, 88, 6, false),
-		new WaveUnit(EntityType.VEX, 52, 6, false),
 		new WaveUnit(EntityType.RAVAGER, 140, 3, false),
+		new WaveUnit(EntityType.VEX, 52, 6, false),
 		new WaveUnit(EntityType.HOGLIN, 62, 5, false),
 		new WaveUnit(EntityType.ZOGLIN, 84, 4, false),
 		new WaveUnit(EntityType.WITHER_SKELETON, 900, 1, true)
+	);
+
+	private static final List<WaveUnit> WATER_WAVE_UNITS = List.of(
+		new WaveUnit(EntityType.DROWNED, 12, 30, false),
+		new WaveUnit(EntityType.GUARDIAN, 22, 18, false),
+		new WaveUnit(EntityType.ELDER_GUARDIAN, 170, 2, false),
+		new WaveUnit(EntityType.SLIME, 16, 16, false),
+		new WaveUnit(EntityType.MAGMA_CUBE, 28, 10, false),
+		new WaveUnit(EntityType.CAVE_SPIDER, 18, 12, false),
+		new WaveUnit(EntityType.SPIDER, 12, 14, false),
+		new WaveUnit(EntityType.WITCH, 46, 8, false),
+		new WaveUnit(EntityType.VEX, 56, 7, false),
+		new WaveUnit(EntityType.ENDERMAN, 42, 8, false),
+		new WaveUnit(EntityType.RAVAGER, 160, 2, false),
+		new WaveUnit(EntityType.HOGLIN, 62, 5, false),
+		new WaveUnit(EntityType.ZOGLIN, 84, 4, false),
+		new WaveUnit(EntityType.WITHER_SKELETON, 900, 1, true)
+	);
+
+	private static final List<WaveUnit> FIRE_WAVE_UNITS = List.of(
+		new WaveUnit(EntityType.BLAZE, 20, 24, false),
+		new WaveUnit(EntityType.MAGMA_CUBE, 18, 20, false),
+		new WaveUnit(EntityType.WITHER_SKELETON, 42, 12, false),
+		new WaveUnit(EntityType.PIGLIN_BRUTE, 72, 8, false),
+		new WaveUnit(EntityType.HOGLIN, 52, 10, false),
+		new WaveUnit(EntityType.ZOGLIN, 64, 8, false),
+		new WaveUnit(EntityType.GHAST, 96, 5, false),
+		new WaveUnit(EntityType.VEX, 48, 8, false),
+		new WaveUnit(EntityType.EVOKER, 88, 5, false),
+		new WaveUnit(EntityType.RAVAGER, 145, 3, false),
+		new WaveUnit(EntityType.ENDERMAN, 40, 9, false),
+		new WaveUnit(EntityType.WITHER_SKELETON, 900, 1, true)
+	);
+
+	private static final Map<WaveTheme, List<WaveUnit>> THEME_WAVE_UNITS = Map.of(
+		WaveTheme.EARTH, EARTH_WAVE_UNITS,
+		WaveTheme.WATER, WATER_WAVE_UNITS,
+		WaveTheme.FIRE, FIRE_WAVE_UNITS
 	);
 
 	private final Set<UUID> aliveWaveMonsters = new HashSet<>();
@@ -81,6 +139,8 @@ public final class ArenaWaveController extends ArenaGame {
 	private int wave = 0;
 	private int bossesDefeated = 0;
 	private boolean bossWaveActive = false;
+	private WaveTheme currentTheme = WaveTheme.EARTH;
+	private final Map<WaveTheme, Location> themeCenterCache = new EnumMap<>(WaveTheme.class);
 	private boolean preparationPhase = false;
 	private BukkitTask preparationTask;
 	private BukkitTask waveCheckTask;
@@ -166,13 +226,17 @@ public final class ArenaWaveController extends ArenaGame {
 		}
 
 		wave++;
+		currentTheme = resolveWaveTheme(wave);
 
 		startWavePreparation();
 	}
 
 	private void startWavePreparation() {
 		preparationPhase = true;
-		teleportArenaPlayersForRound();
+		teleportPlayersForTheme(currentTheme);
+		Bukkit.broadcast(Component.text(
+			"Wave " + wave + " Theme: " + currentTheme.getDisplay()
+		).color(NamedTextColor.AQUA));
 
 		for (Player player : getArenaPlayers()) {
 			Game.joinAnyPlayer(player, null);
@@ -195,6 +259,8 @@ public final class ArenaWaveController extends ArenaGame {
 			applyArenaCombatLoadout(player);
 		}
 
+		applyThemePlayerEffects();
+
 		spawnWaveContent();
 		waveCheckTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), this::evaluateWaveState, 0L, 10L);
 	}
@@ -209,8 +275,8 @@ public final class ArenaWaveController extends ArenaGame {
 		}
 
 		int pointsBudget = computeWavePointsBudget();
-		List<WaveUnit> roster = composeWaveRoster(pointsBudget);
-		Location center = getGameAreaController().getCenter();
+		List<WaveUnit> roster = composeWaveRoster(pointsBudget, currentTheme);
+		Location center = resolveThemeCenter(currentTheme);
 
 		for (WaveUnit unit : roster) {
 			Location spawn = center.clone().add(
@@ -218,7 +284,7 @@ public final class ArenaWaveController extends ArenaGame {
 				0,
 				ThreadLocalRandom.current().nextDouble(-18, 18)
 			);
-			moveToHighestGround(spawn);
+			prepareSpawnLocationForTheme(spawn, currentTheme);
 
 			LivingEntity mob = spawnRegularMob(spawn, unit.type());
 
@@ -235,13 +301,15 @@ public final class ArenaWaveController extends ArenaGame {
 	}
 
 	private void spawnBossWave() {
-		Location center = getGameAreaController().getCenter().clone();
-		moveToHighestGround(center);
-		center.add(0, 1.0, 0);
+		Location center = resolveThemeCenter(currentTheme).clone();
+		prepareSpawnLocationForTheme(center, currentTheme);
+		if (currentTheme != WaveTheme.WATER) {
+			center.add(0, 1.0, 0);
+		}
 
 		grantBossWaveCombatSupplies();
 
-		currentBoss = new GoldenKnightBoss(this);
+		currentBoss = new GoldenKnightBoss(this, mapThemeToBossElement(currentTheme));
 
 		currentBoss.spawn(center);
 
@@ -249,14 +317,16 @@ public final class ArenaWaveController extends ArenaGame {
 			aliveWaveMonsters.add(currentBoss.getEntity().getUniqueId());
 		}
 
-		Bukkit.broadcast(Component.text("Boss Wave: The Golden Knight emerges").color(NamedTextColor.DARK_PURPLE));
+		Bukkit.broadcast(Component.text(
+			"Boss Wave (" + currentTheme.getDisplay() + "): " + mapThemeToBossTitle(currentTheme)
+		).color(NamedTextColor.DARK_PURPLE));
 
 		center.getWorld().strikeLightningEffect(center);
 		center.getWorld().playSound(center, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.7f);
 	}
 
 	private void grantBossWaveCombatSupplies() {
-		int goldenApples = Math.min(8, Math.max(1, bossesDefeated + 1));
+		int goldenApples = Math.min(8, Math.max(1, bossesDefeated + 2));
 
 		for (Player player : getArenaPlayers()) {
 			if (!player.isOnline()) continue;
@@ -286,7 +356,13 @@ public final class ArenaWaveController extends ArenaGame {
 		}
 
 		mob.setRemoveWhenFarAway(false);
-		mob.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, true, false));
+		if (currentTheme == WaveTheme.FIRE) {
+			mob.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, true, false));
+		}
+		if (currentTheme == WaveTheme.WATER) {
+			mob.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, Integer.MAX_VALUE, 0, true, false));
+			mob.addPotionEffect(new PotionEffect(PotionEffectType.DOLPHINS_GRACE, Integer.MAX_VALUE, 0, true, false));
+		}
 
 		if (mob instanceof Zombie zombie) {
 			zombie.setShouldBurnInDay(false);
@@ -438,6 +514,7 @@ public final class ArenaWaveController extends ArenaGame {
 			Game.stopCurrentGame();
 			return;
 		}
+		applyThemePlayerEffects();
 		retargetAliveMonsters(alivePlayers);
 		aliveWaveMonsters.removeIf(id -> {
 			Entity entity = Bukkit.getEntity(id);
@@ -462,20 +539,20 @@ public final class ArenaWaveController extends ArenaGame {
 		return (int) Math.min(MAX_WAVE_POINTS, budget);
 	}
 
-	private List<WaveUnit> composeWaveRoster(int pointsBudget) {
+	private List<WaveUnit> composeWaveRoster(int pointsBudget, WaveTheme theme) {
 		List<WaveUnit> roster = new ArrayList<>();
 		int remaining = pointsBudget;
 		int guard = 0;
 
 		while (remaining >= 12 && guard++ < 2000 && roster.size() < MAX_MOB_COUNT) {
-			WaveUnit picked = pickWeightedUnit(remaining);
+			WaveUnit picked = pickWeightedUnit(remaining, theme);
 			if (picked == null) break;
 			roster.add(picked);
 			remaining -= picked.cost();
 		}
 
 		while (roster.size() < MIN_MOBS_NON_BOSS_WAVE && roster.size() < MAX_MOB_COUNT) {
-			WaveUnit filler = pickWeightedUnit(20);
+			WaveUnit filler = pickWeightedUnit(20, theme);
 			if (filler == null) {
 				filler = new WaveUnit(EntityType.ZOMBIE, 12, 1, false);
 			}
@@ -486,8 +563,9 @@ public final class ArenaWaveController extends ArenaGame {
 	}
 
 	@Nullable
-	private WaveUnit pickWeightedUnit(int remainingPoints) {
-		List<WaveUnit> eligible = WAVE_UNITS.stream()
+	private WaveUnit pickWeightedUnit(int remainingPoints, WaveTheme theme) {
+		List<WaveUnit> pool = THEME_WAVE_UNITS.getOrDefault(theme, EARTH_WAVE_UNITS);
+		List<WaveUnit> eligible = pool.stream()
 			.filter(unit -> unit.cost() <= remainingPoints)
 			.filter(unit -> !unit.bossEcho() || bossesDefeated > 0)
 			.collect(java.util.stream.Collectors.toList());
@@ -558,6 +636,143 @@ public final class ArenaWaveController extends ArenaGame {
 		if (instance != null) {
 			instance.setBaseValue(value);
 		}
+	}
+
+	private WaveTheme resolveWaveTheme(int waveNumber) {
+		int idx = Math.floorMod(waveNumber - 1, 3);
+		return idx == 0 ? WaveTheme.EARTH : idx == 1 ? WaveTheme.WATER : WaveTheme.FIRE;
+	}
+
+	private void teleportPlayersForTheme(WaveTheme theme) {
+		Location center = resolveThemeCenter(theme);
+		for (Player player : getArenaPlayers()) {
+			if (!player.isOnline()) continue;
+
+			Location spawn = center.clone().add(
+				ThreadLocalRandom.current().nextDouble(-7.0, 7.0),
+				0.0,
+				ThreadLocalRandom.current().nextDouble(-7.0, 7.0)
+			);
+
+			prepareSpawnLocationForTheme(spawn, theme);
+			player.teleport(spawn);
+		}
+	}
+
+	private void applyThemePlayerEffects() {
+		for (Player player : getArenaPlayers()) {
+			if (!player.isOnline()) continue;
+
+			if (currentTheme == WaveTheme.WATER) {
+				player.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, ENV_EFFECT_TICKS, 0, true, false, true));
+				player.addPotionEffect(new PotionEffect(PotionEffectType.DOLPHINS_GRACE, ENV_EFFECT_TICKS, 0, true, false, true));
+				player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, ENV_EFFECT_TICKS, 0, true, false, true));
+			} else if (currentTheme == WaveTheme.FIRE) {
+				player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, ENV_EFFECT_TICKS, 0, true, false, true));
+			} else {
+				player.removePotionEffect(PotionEffectType.DOLPHINS_GRACE);
+				player.removePotionEffect(PotionEffectType.NIGHT_VISION);
+			}
+		}
+	}
+
+	private Location resolveThemeCenter(WaveTheme theme) {
+		Location cached = themeCenterCache.get(theme);
+		if (cached != null && cached.getWorld() != null) {
+			return cached.clone();
+		}
+
+		Location baseCenter = getGameAreaController().getCenter().clone();
+		Location resolved;
+
+		if (theme == WaveTheme.WATER) {
+			resolved = findWaterBattleCenter(baseCenter);
+		} else if (theme == WaveTheme.FIRE) {
+			resolved = resolveNetherCenter(baseCenter);
+		} else {
+			resolved = baseCenter;
+		}
+
+		themeCenterCache.put(theme, resolved.clone());
+		return resolved;
+	}
+
+	private void prepareSpawnLocationForTheme(Location location, WaveTheme theme) {
+		if (theme != WaveTheme.WATER) {
+			moveToHighestGround(location);
+			return;
+		}
+
+		Block at = location.getBlock();
+		if (!at.isLiquid()) {
+			int y = location.getWorld() != null ? location.getWorld().getHighestBlockYAt(location) : location.getBlockY();
+			location.setY(y + 0.1);
+		}
+	}
+
+	private Location findWaterBattleCenter(Location base) {
+		World world = base.getWorld();
+		if (world == null) return base;
+
+		for (int radius = 8; radius <= 72; radius += 8) {
+			for (int step = 0; step < 24; step++) {
+				double angle = (Math.PI * 2 * step) / 24.0;
+				double x = base.getX() + (Math.cos(angle) * radius);
+				double z = base.getZ() + (Math.sin(angle) * radius);
+				int y = world.getHighestBlockYAt((int) Math.round(x), (int) Math.round(z));
+
+				for (int dy = 0; dy <= 6; dy++) {
+					Location probe = new Location(world, x, y - dy, z);
+					if (probe.getBlock().isLiquid()) {
+						return probe.add(0.0, 0.2, 0.0);
+					}
+				}
+			}
+		}
+
+		return base;
+	}
+
+	private Location resolveNetherCenter(Location base) {
+		World source = base.getWorld();
+		if (source == null) return base;
+
+		World nether = null;
+		if (source.getEnvironment() == World.Environment.NETHER) {
+			nether = source;
+		} else {
+			nether = Bukkit.getWorld(source.getName() + "_nether");
+			if (nether == null) {
+				nether = Bukkit.getWorld("world_nether");
+			}
+		}
+
+		if (nether == null) return base;
+
+		double sx = base.getX();
+		double sz = base.getZ();
+		if (source.getEnvironment() == World.Environment.NORMAL) {
+			sx /= 8.0;
+			sz /= 8.0;
+		}
+
+		return new Location(nether, sx, nether.getHighestBlockYAt((int) Math.round(sx), (int) Math.round(sz)) + 1.0, sz);
+	}
+
+	private ArenaMonsterBoss.Element mapThemeToBossElement(WaveTheme theme) {
+		return switch (theme) {
+			case WATER -> ArenaMonsterBoss.Element.WATER;
+			case FIRE -> ArenaMonsterBoss.Element.FIRE;
+			default -> ArenaMonsterBoss.Element.EARTH;
+		};
+	}
+
+	private String mapThemeToBossTitle(WaveTheme theme) {
+		return switch (theme) {
+			case WATER -> "Tide Knight";
+			case FIRE -> "Inferno Knight";
+			default -> "Golden Knight";
+		};
 	}
 
 	private record WaveUnit(EntityType type, int cost, int weight, boolean bossEcho) { }

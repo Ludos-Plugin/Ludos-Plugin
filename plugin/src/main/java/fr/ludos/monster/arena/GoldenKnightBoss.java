@@ -1,9 +1,7 @@
-package fr.ludos.game.arena.monster;
+package fr.ludos.game.arena.monster.arena;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -14,15 +12,11 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.WitherSkeleton;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.Damageable;
@@ -31,16 +25,15 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.game.arena.ArenaGame;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
+public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
+
 	private enum CombatProfile {
 		DODGEABLE(45, 95, 72, 125, 6.0, 4.5, 2.5, 3.5, 1.45, 90, 13, 4, 2, 0.62, 18.0, 0.70, 5, 36),
 		DENSE(34, 82, 62, 108, 8.5, 5.5, 3.5, 5.0, 1.7, 120, 8, 5, 3, 0.78, 22.0, 0.82, 7, 36),
@@ -127,6 +120,8 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 		abstract boolean perform(GoldenKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile);
 	}
 
+	private static final String BOS_NAME = "The Golden Knight";
+
 	private static final double MAX_HEALTH = 460.0;
 	private static final int NO_HIT_TICKS_FOR_ATTRACTION = 120;
 	private static final int FAR_DISTANCE_TICKS_FOR_FORCE_PULL = 80;
@@ -137,9 +132,7 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 	private static final double FORCE_PULL_DIST_SQ = 324.0;
 	private static final int STUCK_TICKS_THRESHOLD = 45;
 	private static final double STUCK_MOVE_EPSILON_SQ = 0.0025;
-	private static final double LOS_PENALTY = 5.5, VERTICAL_PENALTY = 3.0, VERTICAL_CHECK = 4.0;
 
-	private int attackTick = 0;
 	private int phase = 1;
 	private int lightningMeleeCooldown = 0;
 	private int dashCooldown = 0;
@@ -147,6 +140,7 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 	private int closeCombatCooldown = 0;
 	private int earthShatterCooldown = 0;
 	private int orbPatternCooldown = 0;
+	private int teleportAssaultCooldown = 0;
 	private int ticksSinceBossHitAPlayer = 0;
 	private int distantTicks = 0;
 	private int stuckTicks = 0;
@@ -156,16 +150,15 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 	@org.jetbrains.annotations.Nullable
 	private Location lastStuckCheckLocation;
 
-	private final Map<UUID, Double> aggroScores = new HashMap<>();
-
-	@org.jetbrains.annotations.Nullable
-	private EntityDamageEvent lastProcessedDamageEvent;
-
 	@org.jetbrains.annotations.Nullable
 	private BukkitTask orbitTask;
 
 	public GoldenKnightBoss(ArenaGame game) {
-		super("golden_knight", game);
+		this(game, Element.EARTH);
+	}
+
+	public GoldenKnightBoss(ArenaGame game, Element element) {
+		super("golden_knight", game, element, 3);
 	}
 
 	@Override
@@ -176,7 +169,7 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 
 		WitherSkeleton b = (WitherSkeleton) w.spawnEntity(location, EntityType.WITHER_SKELETON);
 
-		b.customName(Component.text("The Golden Knight").color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
+		b.customName(Component.text(BOS_NAME).color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
 
 		b.setCustomNameVisible(true);
 		b.setRemoveWhenFarAway(false);
@@ -199,11 +192,13 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 
 		b.getEquipment().setItemInMainHand(weapon);
 		b.getEquipment().setItemInMainHandDropChance(0.0f);
+
 		b.getEquipment().setHelmet(new ItemStack(Material.GOLDEN_HELMET));
-		b.getEquipment().setHelmetDropChance(0.0f);
 		b.getEquipment().setChestplate(new ItemStack(Material.GOLDEN_CHESTPLATE));
 		b.getEquipment().setLeggings(new ItemStack(Material.GOLDEN_LEGGINGS));
 		b.getEquipment().setBoots(new ItemStack(Material.GOLDEN_BOOTS));
+
+		b.getEquipment().setHelmetDropChance(0.0f);
 		b.getEquipment().setChestplateDropChance(0.0f);
 		b.getEquipment().setLeggingsDropChance(0.0f);
 		b.getEquipment().setBootsDropChance(0.0f);
@@ -218,6 +213,7 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 
 	@Override
 	protected void onMonsterTick(WitherSkeleton entity) {
+
 		processIncomingAggro(entity);
 		decayAggroScores();
 		enforceWaterStride(entity);
@@ -225,34 +221,62 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 		handleStuckMovement(entity);
 		spawnAmbientAura(entity);
 		updatePhase(entity);
-
-		CombatProfile p = resolveProfile(entity);
+		resolveProfile(entity);
 
 		ticksSinceBossHitAPlayer++;
-		lightningMeleeCooldown = tickCooldown(lightningMeleeCooldown);
-		dashCooldown = tickCooldown(dashCooldown);
-		attractionCooldown = tickCooldown(attractionCooldown);
-		closeCombatCooldown = tickCooldown(closeCombatCooldown);
-		earthShatterCooldown = tickCooldown(earthShatterCooldown);
-		orbPatternCooldown = tickCooldown(orbPatternCooldown);
 
-		if (phase >= 3) {
+		tickCombatCooldowns(phase >= 3 ? 2 : 1);
+
+		applyElementalPresence(entity);
+		maybePerformTeleportAssault(entity);
+
+		triggerPattern(entity);
+	}
+
+	private void tickCombatCooldowns(int steps) {
+		for (int i = 0; i < steps; i++) {
 			lightningMeleeCooldown = tickCooldown(lightningMeleeCooldown);
 			dashCooldown = tickCooldown(dashCooldown);
 			attractionCooldown = tickCooldown(attractionCooldown);
 			closeCombatCooldown = tickCooldown(closeCombatCooldown);
 			earthShatterCooldown = tickCooldown(earthShatterCooldown);
 			orbPatternCooldown = tickCooldown(orbPatternCooldown);
+			teleportAssaultCooldown = tickCooldown(teleportAssaultCooldown);
 		}
+	}
 
-		triggerPattern(entity);
-		attackTick = p.attackCooldown;
+	private void applyElementalPresence(WitherSkeleton boss) {
+		if (getElement() == Element.WATER) {
+			boss.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 60, 0, false, false, false));
+			boss.addPotionEffect(new PotionEffect(PotionEffectType.DOLPHINS_GRACE, 60, 0, false, false, false));
+		} else if (getElement() == Element.FIRE) {
+			boss.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 60, 0, false, false, false));
+		}
+	}
+
+	private void maybePerformTeleportAssault(WitherSkeleton boss) {
+		if (getElement() == Element.EARTH) return;
+		if (teleportAssaultCooldown > 0) return;
+
+		Player rangedTarget = selectRangedAggroTarget(boss, boss.getWorld(), boss.getLocation(), RANGED_DIST_SQ, RANGED_MIN_DIST_SQ);
+		if (rangedTarget == null) return;
+		if (rangedTarget.getLocation().distanceSquared(boss.getLocation()) < 64.0) return;
+
+		boolean snapToGround = getElement() == Element.FIRE;
+		if (!teleportNearArenaTarget(boss, rangedTarget, 2.2, snapToGround)) return;
+
+		boss.getWorld().playSound(boss.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, getElement() == Element.FIRE ? 0.8f : 1.2f);
+		boss.getWorld().spawnParticle(
+			getElement() == Element.FIRE ? Particle.FLAME : Particle.BUBBLE_COLUMN_UP,
+			boss.getLocation().clone().add(0, 1.0, 0),
+			18, 0.3, 0.35, 0.3, 0.02
+		);
+
+		teleportAssaultCooldown = getTeleportAssaultTriggerCooldown();
 	}
 
 	@Override
-	protected void onMonsterDespawn(WitherSkeleton entity) {
-		cleanupOrbs();
-	}
+	protected void onMonsterDespawn(WitherSkeleton entity) { }
 
 	@Override
 	protected void onMonsterDeath(WitherSkeleton entity) {
@@ -264,8 +288,7 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 	}
 
 	private void updatePhase(WitherSkeleton boss) {
-		double healthRatio = boss.getHealth() / MAX_HEALTH;
-		int nextPhase = healthRatio > 0.66 ? 1 : healthRatio > 0.33 ? 2 : 3;
+		int nextPhase = resolvePhaseFromHealth(boss.getHealth(), MAX_HEALTH);
 
 		if (nextPhase == phase) return;
 
@@ -277,7 +300,11 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 	private void triggerPattern(WitherSkeleton boss) {
 		CombatProfile profile = resolveProfile(boss);
 		Player focusTarget = selectFocusTarget(boss, boss.getWorld(), boss.getLocation(), FOCUS_DIST_SQ);
-		Player rangedAggro = selectRangedAggroTarget(boss, boss.getWorld(), boss.getLocation(), RANGED_DIST_SQ);
+		Player rangedAggro = selectRangedAggroTarget(boss, boss.getWorld(), boss.getLocation(), RANGED_DIST_SQ, RANGED_MIN_DIST_SQ);
+		int lightningTriggerCooldown = getLightningTriggerCooldown(profile);
+		int dashTriggerCooldown = getDashTriggerCooldown(profile);
+		int attractionTriggerCooldown = getAttractionTriggerCooldown(profile);
+		int fireballPatternCooldown = getFireballPatternCooldown();
 
 		if (focusTarget != null) {
 			boss.setTarget(focusTarget);
@@ -290,19 +317,19 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 
 		if (attractionCooldown <= 0 && ticksSinceBossHitAPlayer >= NO_HIT_TICKS_FOR_ATTRACTION
 			&& AttackPattern.GRAVITY.perform(this, boss, focusTarget, rangedAggro, profile)) {
-			attractionCooldown = profile.attractionCooldown;
+			attractionCooldown = attractionTriggerCooldown;
 		}
 
 		if (rangedAggro != null && attractionCooldown <= 0 && ThreadLocalRandom.current().nextInt(100) < 42) {
 			if (AttackPattern.GRAVITY.perform(this, boss, focusTarget, rangedAggro, profile)) {
-				attractionCooldown = profile.attractionCooldown;
+				attractionCooldown = attractionTriggerCooldown;
 			}
 		}
 
 		if (rangedAggro != null && orbPatternCooldown <= 0 && (orbitTask == null || orbitTask.isCancelled())) {
 			if (ThreadLocalRandom.current().nextInt(100) < (phase >= 3 ? 48 : 28)) {
 				AttackPattern.ORBITING_ORBS.perform(this, boss, focusTarget, rangedAggro, profile);
-				orbPatternCooldown = phase >= 3 ? 56 : 84;
+				orbPatternCooldown = fireballPatternCooldown;
 			}
 		}
 
@@ -315,19 +342,50 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 
 		if (focusTarget != null && lightningMeleeCooldown <= 0
 			&& focusTarget.getLocation().distanceSquared(boss.getLocation()) <= MELEE_DIST_SQ) {
-			AttackPattern.LIGHTNING_MELEE.perform(this, boss, focusTarget, rangedAggro, profile);
+			if (AttackPattern.LIGHTNING_MELEE.perform(this, boss, focusTarget, rangedAggro, profile)) {
+				lightningMeleeCooldown = lightningTriggerCooldown;
+			}
 		}
 
 		if (focusTarget != null && dashCooldown <= 0
 			&& focusTarget.getLocation().distanceSquared(boss.getLocation()) > DASH_DIST_SQ
 			&& ThreadLocalRandom.current().nextInt(100) < profile.dashTriggerChance) {
-			AttackPattern.DASH.perform(this, boss, focusTarget, rangedAggro, profile);
+			if (AttackPattern.DASH.perform(this, boss, focusTarget, rangedAggro, profile)) {
+				dashCooldown = dashTriggerCooldown;
+			}
 		}
 
 		if (earthShatterCooldown <= 0 && ThreadLocalRandom.current().nextInt(100) < (phase >= 3 ? 38 : 24)) {
 			AttackPattern.EARTH_SHATTER.perform(this, boss, focusTarget, rangedAggro, profile);
 			earthShatterCooldown = phase >= 3 ? 30 : 46;
 		}
+	}
+
+	private int getLightningTriggerCooldown(CombatProfile profile) {
+		if (phase == 1) return profile.lightningMeleeCooldown + 45;
+		return profile.lightningMeleeCooldown;
+	}
+
+	private int getAttractionTriggerCooldown(CombatProfile profile) {
+		if (phase == 1) return profile.attractionCooldown + 70;
+		return profile.attractionCooldown;
+	}
+
+	private int getDashTriggerCooldown(CombatProfile profile) {
+		if (phase == 1) return profile.dashCooldown + 35;
+		return profile.dashCooldown;
+	}
+
+	private int getTeleportAssaultTriggerCooldown() {
+		int baseCooldown = getElement() == Element.FIRE ? 40 : 30;
+		if (phase == 1) return baseCooldown + 25;
+		return baseCooldown;
+	}
+
+	private int getFireballPatternCooldown() {
+		if (phase >= 3) return 56;
+		if (phase == 1) return 130;
+		return 84;
 	}
 
 	private void lightningPattern(WitherSkeleton boss) {
@@ -695,38 +753,6 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 		stuckTicks = 0;
 	}
 
-	@Nullable
-	private Player selectFocusTarget(WitherSkeleton boss, World world, Location center, double maxDistanceSq) {
-		return getArenaTargets(world, center, maxDistanceSq).stream()
-			.filter(p -> !p.isDead())
-			.min((p1, p2) -> {
-				double dist1 = Math.sqrt(p1.getLocation().distanceSquared(center));
-				double dist2 = Math.sqrt(p2.getLocation().distanceSquared(center));
-
-				double healthRatio1 = Math.max(0.0, p1.getHealth() / Math.max(1.0, p1.getMaxHealth()));
-				double healthRatio2 = Math.max(0.0, p2.getHealth() / Math.max(1.0, p2.getMaxHealth()));
-
-				double armor1 = getArmorValue(p1);
-				double armor2 = getArmorValue(p2);
-
-				double losPenalty1 = boss.hasLineOfSight(p1) ? 0.0 : LOS_PENALTY;
-				double losPenalty2 = boss.hasLineOfSight(p2) ? 0.0 : LOS_PENALTY;
-
-				double verticalPenalty1 = Math.abs(p1.getLocation().getY() - center.getY()) > VERTICAL_CHECK ? VERTICAL_PENALTY : 0.0;
-				double verticalPenalty2 = Math.abs(p2.getLocation().getY() - center.getY()) > VERTICAL_CHECK ? VERTICAL_PENALTY : 0.0;
-
-				double score1 = (dist1 * 1.25) + (healthRatio1 * 9.5) + (armor1 * 0.35) + losPenalty1 + verticalPenalty1;
-				double score2 = (dist2 * 1.25) + (healthRatio2 * 9.5) + (armor2 * 0.35) + losPenalty2 + verticalPenalty2;
-
-				return Double.compare(score1, score2);
-			}).orElse(null);
-	}
-
-	private double getArmorValue(Player player) {
-		AttributeInstance armorAttribute = player.getAttribute(Attribute.GENERIC_ARMOR);
-		return armorAttribute != null ? armorAttribute.getValue() : 0.0;
-	}
-
 	private void enforceWaterStride(WitherSkeleton boss) {
 		Location current = boss.getLocation();
 		boolean inLiquid = current.getBlock().isLiquid() || current.clone().add(0, 0.6, 0).getBlock().isLiquid();
@@ -884,46 +910,6 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 		}
 	}
 
-	private void processIncomingAggro(WitherSkeleton boss) {
-		EntityDamageEvent damageEvent = boss.getLastDamageCause();
-		if (damageEvent == null || damageEvent == lastProcessedDamageEvent) return;
-
-		lastProcessedDamageEvent = damageEvent;
-		Player attacker = null;
-
-		if (damageEvent instanceof EntityDamageByEntityEvent damageByEntity) {
-			if (damageByEntity.getDamager() instanceof Player player) {
-				attacker = player;
-			} else if (damageByEntity.getDamager() instanceof Projectile projectile && projectile.getShooter() instanceof Player shooter) {
-				attacker = shooter;
-			}
-		}
-
-		if (attacker == null || !getGame().isArenaPlayer(attacker)) return;
-
-		double distance = Math.sqrt(attacker.getLocation().distanceSquared(boss.getLocation()));
-		double totalAggro = damageEvent.getFinalDamage() * (distance > 8.0 ? 1.45 : 1.0);
-		aggroScores.merge(attacker.getUniqueId(), totalAggro, Double::sum);
-	}
-
-	private void decayAggroScores() {
-		if (aggroScores.isEmpty()) return;
-
-		aggroScores.replaceAll((id, score) -> score * 0.992);
-		aggroScores.entrySet().removeIf(e -> e.getValue() < 0.12);
-	}
-
-	@org.jetbrains.annotations.Nullable
-	private Player selectRangedAggroTarget(WitherSkeleton boss, World world, Location center, double maxDistanceSquared) {
-		return getArenaTargets(world, center, maxDistanceSquared).stream()
-			.filter(p -> !p.isDead() && p.getLocation().distanceSquared(center) > RANGED_MIN_DIST_SQ)
-			.max((p1, p2) -> Double.compare(
-				aggroScores.getOrDefault(p1.getUniqueId(), 0.0),
-				aggroScores.getOrDefault(p2.getUniqueId(), 0.0)))
-			.filter(p -> aggroScores.getOrDefault(p.getUniqueId(), 0.0) >= 2.0)
-			.orElse(null);
-	}
-
 	private void dealBossDamage(WitherSkeleton boss, Player player, double amount) {
 		player.damage(amount, boss);
 		ticksSinceBossHitAPlayer = 0;
@@ -965,11 +951,5 @@ public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 		return healthRatio > 0.33 ? CombatProfile.DODGEABLE :
 		       healthRatio > 0.18 ? CombatProfile.DENSE :
 		       CombatProfile.INFERNAL;
-	}
-
-	private List<Player> getArenaTargets(World world, Location center, double maxDistanceSquared) {
-		return world.getPlayers().stream()
-			.filter(player -> isArenaTarget(player, world, center, maxDistanceSquared))
-			.collect(Collectors.toList());
 	}
 }
