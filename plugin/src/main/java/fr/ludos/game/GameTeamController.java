@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -76,16 +77,17 @@ public abstract class GameTeamController extends GameProcessBase {
 			.collect(Collectors.toSet());
 	}
 
-	public final void addPlayer(Player player) {
-		if (joinOption == GameJoinOption.none) {
-			player.sendMessage("Joining is not enabled for this game session.");
+	public final void addPlayer(OfflinePlayer player) {
+		Player onlinePlayer = player.getPlayer();
+		if (joinOption == GameJoinOption.none && onlinePlayer != null) {
+			onlinePlayer.sendMessage("Joining is not enabled for this game session.");
 			return;
 		}
 		joinPlayer(player);
 	}
-	protected abstract void joinPlayer(Player player);
-	protected abstract void discardPlayer(Player player);
-	public abstract void removePlayer(Player player);
+	protected abstract void joinPlayer(OfflinePlayer player);
+	protected abstract void discardPlayer(OfflinePlayer player);
+	public abstract void removePlayer(OfflinePlayer player);
 
 
 	@EventHandler

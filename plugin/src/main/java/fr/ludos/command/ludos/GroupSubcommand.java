@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -136,7 +137,7 @@ public enum GroupSubcommand implements Subcommand {
 		}
 		@Override
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " group join <leaderName>";
+			return "/" + label + " group join <memberName>";
 		}
 	},
 	quit() {
@@ -197,20 +198,18 @@ public enum GroupSubcommand implements Subcommand {
 				return true;
 			}
 
-			String targetName = args[0];
-			Player target = Bukkit.getPlayerExact(targetName);
-			if (target == null) {
-				sender.sendMessage("Player not found: " + targetName);
-				return true;
-			}
+			List<String> targetNames = Arrays.asList(args);
+			for (String targetName : targetNames) {
+				OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
 
-			if (!group.isMember(target)) {
-				sender.sendMessage(target.getName() + " is not a member of your group.");
-				return true;
-			}
+				if (group.isMember(target)) {
+					group.removePlayer(target);
+					leader.sendMessage("Kicked " + targetName + " from the group.");
+				} else {
+					sender.sendMessage(targetName + " is not a member of your group.");
+				}
 
-			group.removePlayer(target);
-			leader.sendMessage("Kicked " + target.getName() + " from the group.");
+			}
 
 			Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 			plugin.saveConfig();
@@ -219,8 +218,6 @@ public enum GroupSubcommand implements Subcommand {
 		}
 		@Override
 		public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			if (args.length != 1) return null;
-
 			if (!(sender instanceof Player leader)) return null;
 
 			Group group = Group.getGroupOfPlayer(leader);
@@ -228,11 +225,13 @@ public enum GroupSubcommand implements Subcommand {
 
 			if (!group.isLeader(leader)) return null;
 
-			return group.getMemberNames().stream().sorted().collect(Collectors.toList());
+			return group.getMembers().stream()
+				.map(OfflinePlayer::getName)
+				.collect(Collectors.toList());
 		}
 		@Override
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " group kick <playerName>";
+			return "/" + label + " group kick [player1] [player2] ...";
 		}
 	},
 	config() {
@@ -314,10 +313,15 @@ public enum GroupSubcommand implements Subcommand {
 			}
 
 			Set<Player> targets = CommandUtility.getPlayersFromArgs(args, 0, sender);
+
+			if (targets.isEmpty()) {
+				sender.sendMessage("No valid player names provided.");
+				return true;
+			}
+
 			for (Player target : targets) {
 				group.invitePlayer(target);
 			}
-
 			player.sendMessage("Invited " + targets.stream().map(Player::getName).collect(Collectors.joining(", ")) + " to the group.");
 
 			return true;
@@ -349,8 +353,8 @@ public enum GroupSubcommand implements Subcommand {
 				return true;
 			}
 
-			sender.sendMessage("Group leader: " + group.getLeaderName());
-			sender.sendMessage("Group members: " + group.getMemberNames().stream().collect(Collectors.joining(", ")));
+			sender.sendMessage("Group leader: " + group.getLeader().getName());
+			sender.sendMessage("Group members: " + group.getMembers().stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ")));
 			return true;
 		}
 		@Override
@@ -403,15 +407,6 @@ public enum GroupSubcommand implements Subcommand {
 				Arrays.stream(GroupSubcommand.values())
 					.filter(o -> o != help)
 					.map(GroupSubcommand::name)
-					.collect(Collectors.joining(" | "))
-			);
-			usage.append('>');
-
-			usage.append(' ');
-
-			usage.append('<');
-			usage.append(
-				Game.getRegistered().keySet().stream().sorted()
 					.collect(Collectors.joining(" | "))
 			);
 			usage.append('>');

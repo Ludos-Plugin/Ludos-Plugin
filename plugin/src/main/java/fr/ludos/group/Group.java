@@ -2,12 +2,14 @@ package fr.ludos.group;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -16,6 +18,7 @@ import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -44,27 +47,23 @@ public final class Group implements ConfigurationSerializable {
 		return Collections.unmodifiableSet(groups);
 	}
 
-	private static final Map<String, Group> playerGroupMap = new HashMap<>();
-	public static Group getGroupOfPlayer(@NotNull Player player) {
-		return playerGroupMap.get(player.getName());
+	private static final Map<OfflinePlayer, Group> playerGroupMap = new HashMap<>();
+	public static Group getGroupOfPlayer(@NotNull OfflinePlayer player) {
+		return playerGroupMap.get(Objects.requireNonNull(player, "Player cannot be null"));
 	}
 
-	private @Nullable String leaderName;
-	public @Nullable String getLeaderName() {
-		return leaderName;
-	}
-	public final @Nullable Player getLeader() {
-		if (leaderName == null) return null;
-		return Bukkit.getPlayer(leaderName);
+	private OfflinePlayer leader;
+	public final OfflinePlayer getLeader() {
+		return leader;
 	}
 
-	private final Set<String> memberNames;
-	public final Set<String> getMemberNames() {
-		return Collections.unmodifiableSet(memberNames);
+	private final Set<OfflinePlayer> members;
+	public final Set<OfflinePlayer> getMembers() {
+		return Collections.unmodifiableSet(members);
 	}
-	public final Set<Player> getMembers() {
-		return memberNames.stream()
-			.map((name) -> name != null ? Bukkit.getPlayer(name) : null)
+	public final Set<Player> getOnlineMembers() {
+		return members.stream()
+			.map(OfflinePlayer::getPlayer)
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
 	}
@@ -83,46 +82,47 @@ public final class Group implements ConfigurationSerializable {
 	}
 
 
-	private Group(@NotNull String leaderName, @NotNull Set<String> memberNames, @Nullable ConfigurationSection config) {
-		this.leaderName = leaderName;
-		this.memberNames = new HashSet<>(memberNames);
-
-		Bukkit.getLogger().info("Creating group with leader " + this.leaderName + " and members " + memberNames.stream()
-			.collect(Collectors.joining(", ")));
-
+	private Group(@NotNull OfflinePlayer leader, @NotNull Collection<OfflinePlayer> members, @Nullable ConfigurationSection config) {
+		this.leader = leader;
+		this.members = new HashSet<>(members);
 		this.config = config == null ? new MemoryConfiguration() : config;
 	}
-	private Group(@NotNull Player leader, @NotNull Set<Player> members, @Nullable ConfigurationSection config) {
-		this(leader.getName(), members.stream().map(Player::getName).collect(Collectors.toSet()), config);
+
+
+	public final Set<OfflinePlayer> getPlayers() {
+		Set<OfflinePlayer> allPlayers = new HashSet<>(members);
+		allPlayers.add(leader);
+		return Collections.unmodifiableSet(allPlayers);
 	}
+	public final Set<Player> getOnlinePlayers() {
+		Set<OfflinePlayer> allPlayers = new HashSet<>(members);
+		if (leader != null) {
+			allPlayers.add(leader);
+		}
 
-
-	public final Set<Player> getAllPlayers() {
-		Set<String> allPlayers = new HashSet<>(memberNames);
-		allPlayers.add(leaderName);
 		return allPlayers.stream()
-			.map(Bukkit::getPlayer)
+			.map(OfflinePlayer::getPlayer)
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
 	}
 
-	public final boolean isLeader(Player player) {
+	public final boolean isLeader(OfflinePlayer player) {
 		if (player == null) return false;
-		return player.getName().equals(leaderName);
+		return player.equals(leader);
 	}
-	public final boolean isMember(Player player) {
+	public final boolean isMember(OfflinePlayer player) {
 		if (player == null) return false;
-		return memberNames.contains(player.getName());
+		return members.contains(player);
 	}
 
 
 	private static void initializeGroup(Group group) {
-		for (String playerName : group.getMemberNames()) {
-			playerGroupMap.put(playerName, group);
+		for (OfflinePlayer member : group.getMembers()) {
+			playerGroupMap.put(member, group);
 		}
-		String leaderName = group.getLeaderName();
-		if (leaderName != null) {
-			playerGroupMap.put(leaderName, group);
+		OfflinePlayer leader = group.getLeader();
+		if (leader != null) {
+			playerGroupMap.put(leader, group);
 		}
 		groups.add(group);
 	}
@@ -131,17 +131,17 @@ public final class Group implements ConfigurationSerializable {
 		if (game != null) {
 			game.stop();
 		}
-		for (String playerName : group.getMemberNames()) {
-			playerGroupMap.remove(playerName);
+		for (OfflinePlayer member : group.getMembers()) {
+			playerGroupMap.remove(member);
 		}
-		String leaderName = group.getLeaderName();
-		if (leaderName != null) {
-			playerGroupMap.remove(leaderName);
+		OfflinePlayer leader = group.getLeader();
+		if (leader != null) {
+			playerGroupMap.remove(leader);
 		}
 		groups.remove(group);
 	}
 
-	public final static Group createGroup(@NotNull Player leader, @Nullable Set<Player> members) {
+	public final static Group createGroup(@NotNull OfflinePlayer leader, @Nullable Set<OfflinePlayer> members) {
 		if (leader == null) {
 			throw new IllegalArgumentException("Leader cannot be null");
 		}
@@ -160,11 +160,17 @@ public final class Group implements ConfigurationSerializable {
 
 
 		Component creationMessage = Component.text("You have created a new group.");
-		leader.sendMessage(creationMessage);
+		Player onlineLeader = leader.getPlayer();
+		if (onlineLeader != null) {
+			onlineLeader.sendMessage(creationMessage);
+		}
 
 		Component joinMessage = Component.text("You have joined " + leader.getName() + "'s group.");
-		for (Player member : group.getMembers()) {
-			member.sendMessage(joinMessage);
+		for (OfflinePlayer member : group.getMembers()) {
+			Player onlineMember = member.getPlayer();
+			if (onlineMember != null) {
+				onlineMember.sendMessage(joinMessage);
+			}
 		}
 
 		return group;
@@ -179,19 +185,23 @@ public final class Group implements ConfigurationSerializable {
 
 		Component disbandMessage = Component.text("Your group has been disbanded.");
 
-		Player leader = getLeader();
-		if (leader != null) {
-			leader.sendMessage(disbandMessage);
+		OfflinePlayer leader = getLeader();
+		Player onlineLeader = leader.getPlayer();
+		if (onlineLeader != null) {
+			onlineLeader.sendMessage(disbandMessage);
 		}
-		this.leaderName = null;
+		this.leader = null;
 
-		for (Player member : getMembers()) {
-			member.sendMessage(disbandMessage);
+		for (OfflinePlayer member : getMembers()) {
+			Player onlineMember = member.getPlayer();
+			if (onlineMember != null) {
+				onlineMember.sendMessage(disbandMessage);
+			}
 		}
-		this.memberNames.clear();
+		this.members.clear();
 	}
 
-	public final void addPlayer(Player player) {
+	public final void addPlayer(OfflinePlayer player) {
 		if (isLeader(player)) return;
 		if (isMember(player)) return;
 
@@ -200,10 +210,8 @@ public final class Group implements ConfigurationSerializable {
 			currentGroup.removePlayer(player);
 		}
 
-		String playerName = player.getName();
-
-		memberNames.add(playerName);
-		playerGroupMap.put(playerName, this);
+		members.add(player);
+		playerGroupMap.put(player, this);
 
 		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 		Group.saveConfigGroup(plugin, this);
@@ -215,61 +223,68 @@ public final class Group implements ConfigurationSerializable {
 		}
 
 
-		Component joinMessage = Component.text(playerName + " has joined the group.");
-		for (Player member : getAllPlayers()) {
-			member.sendMessage(joinMessage);
+		Player onlinePlayer = player.getPlayer();
+		Component targetMessage = Component.text("You have joined " + leader.getName() + "'s group.");
+		if (onlinePlayer != null) {
+			onlinePlayer.sendMessage(targetMessage);
 		}
 
-		Component targetMessage = Component.text("You have joined " + leaderName + "'s group.");
-		if (leaderName != null) {
-			player.sendMessage(targetMessage);
+		Component joinMessage = Component.text(player.getName() + " has joined the group.");
+		for (Player member : getOnlinePlayers()) {
+			member.sendMessage(joinMessage);
 		}
 	}
 
-	public final void removePlayer(Player player) {
+	public final void removePlayer(OfflinePlayer player) {
 		boolean wasLeader = isLeader(player);
 		if (!wasLeader && !isMember(player)) return;
 
-		String playerName = player.getName();
-
 		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 
+		Component playerLeftMessage;
 		if (wasLeader) {
-			Component leftOwnGroupMessage = Component.text("You have left your group.");
-			player.sendMessage(leftOwnGroupMessage);
+			playerLeftMessage = Component.text("You have left your group.");
 
-			if (memberNames.isEmpty()) {
+			if (members.isEmpty()) {
 				disband();
 			} else {
-				Player newLeader = getMembers().iterator().next();
+				OfflinePlayer newLeader = getMembers().iterator().next();
 
-				memberNames.remove(leaderName);
-				leaderName = newLeader.getName();
+				members.remove(leader);
+				leader = newLeader;
 
 				Group.saveConfigGroup(plugin, this);
 
 				Component newLeaderMessage = Component.text("The previous leader has left the group. You are now the new leader.");
-				newLeader.sendMessage(newLeaderMessage);
+				Player onlineNewLeader = newLeader.getPlayer();
+				if (onlineNewLeader != null) {
+					onlineNewLeader.sendMessage(newLeaderMessage);
+				}
 			}
 		}
 		else {
-			memberNames.remove(playerName);
-			playerGroupMap.remove(playerName);
+			members.remove(player);
+			playerGroupMap.remove(player);
 
 			Group.saveConfigGroup(plugin, this);
 
-			Component leftGroupMessage = Component.text("You have left " + leaderName + "'s group.");
-			player.sendMessage(leftGroupMessage);
+			playerLeftMessage = Component.text("You have left " + leader.getName() + "'s group.");
 		}
 
 
+		Player onlinePlayer = player.getPlayer();
 		Game game = getGame();
-		if (game != null) {
-			game.getTeamController().removePlayer(player);
+		if (game != null && onlinePlayer != null) {
+			game.getTeamController().removePlayer(onlinePlayer);
 		}
 
-		Component leaveMessage = Component.text(playerName + " has left the group.");
-		for (Player member : getMembers()) {
+
+		if (onlinePlayer != null) {
+			onlinePlayer.sendMessage(playerLeftMessage);
+		}
+
+		Component leaveMessage = Component.text(player.getName() + " has left the group.");
+		for (Player member : getOnlinePlayers()) {
 			member.sendMessage(leaveMessage);
 		}
 	}
@@ -279,12 +294,12 @@ public final class Group implements ConfigurationSerializable {
 		if (isLeader(player)) return;
 		if (isMember(player)) return;
 
-		Component invitationMessage = Component.text("You have been invited to join " + leaderName + "'s group. Click ")
+		Component invitationMessage = Component.text("You have been invited to join " + leader + "'s group. Click ")
 			.append(
 				Component.text("Here")
 					.color(NamedTextColor.GOLD)
 					.clickEvent(
-						ClickEvent.runCommand(String.format("/ludos:ludos group join %s", leaderName))
+						ClickEvent.runCommand(String.format("/ludos:ludos group join %s", leader))
 					)
 			)
 			.append(Component.text(" to join."));
@@ -295,9 +310,13 @@ public final class Group implements ConfigurationSerializable {
 	@Override
 	public @NotNull Map<String, Object> serialize() {
 		Map<String, Object> serialized = new HashMap<>();
-		serialized.put("leader", leaderName);
+		serialized.put("leader", leader.getUniqueId().toString());
 
-		serialized.put("members", new ArrayList<>(memberNames));
+		serialized.put("members", members.stream()
+			.map(OfflinePlayer::getUniqueId)
+			.map(UUID::toString)
+			.collect(Collectors.toList())
+		);
 
 		serialized.put("config", config);
 
@@ -307,24 +326,25 @@ public final class Group implements ConfigurationSerializable {
 	public static @NotNull Group deserialize(@NotNull Map<String, Object> data) {
 		Object leaderRaw = data.get("leader");
 		if (!(leaderRaw instanceof String leaderName)) {
-			throw new IllegalArgumentException("Missing or invalid 'leader' in serialized Group");
+			throw new IllegalArgumentException("Invalid leader UUID in group data");
 		}
+		OfflinePlayer leader = Bukkit.getOfflinePlayer(UUID.fromString(leaderName));
 
-		Set<String> memberNames = new HashSet<>();
 		Object membersRaw = data.get("members");
-		if (membersRaw instanceof Iterable<?> iterable) {
-			memberNames.addAll(
-				StreamSupport.stream(iterable.spliterator(), false)
-					.filter(String.class::isInstance)
-					.map(String.class::cast)
-					.collect(Collectors.toSet())
-			);
+		List<OfflinePlayer> members;
+		if (membersRaw instanceof List<?> membersList) {
+			members = membersList.stream()
+				.filter(String.class::isInstance)
+				.map(item -> Bukkit.getOfflinePlayer(UUID.fromString((String)item)))
+				.collect(Collectors.toList());
+		} else {
+			members = new ArrayList<>();
 		}
 
 		Object configRaw = data.get("config");
 		MemorySection configSection = configRaw instanceof MemorySection section ? section : null;
 
-		Group newGroup = new Group(leaderName, memberNames, configSection);
+		Group newGroup = new Group(leader, members, configSection);
 		initializeGroup(newGroup);
 
 		return newGroup;
@@ -335,7 +355,7 @@ public final class Group implements ConfigurationSerializable {
 		FileConfiguration pluginConfig = plugin.getConfig();
 
 		pluginConfig.set(
-			groupsKey + "." + group.leaderName,
+			groupsKey + "." + group.leader.getUniqueId().toString(),
 			null
 		);
 	}
@@ -344,7 +364,7 @@ public final class Group implements ConfigurationSerializable {
 		FileConfiguration pluginConfig = plugin.getConfig();
 
 		pluginConfig.set(
-			groupsKey + "." + group.leaderName,
+			groupsKey + "." + group.leader.getUniqueId().toString(),
 			group.serialize()
 		);
 	}
@@ -354,7 +374,7 @@ public final class Group implements ConfigurationSerializable {
 		ConfigurationSection groupsSection = pluginConfig.createSection(groupsKey);
 		for (Group group : groups) {
 			groupsSection.set(
-				group.leaderName,
+				group.leader.getUniqueId().toString(),
 				group.serialize()
 			);
 		}

@@ -17,6 +17,7 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.event.EventHandler;
@@ -58,7 +59,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 		Set<Player> finalPlayers;
 		if (players == null) {
-			finalPlayers = game.getGroup().getAllPlayers().stream()
+			finalPlayers = game.getGroup().getOnlinePlayers().stream()
 				.filter(p -> p.isOnline())
 				.collect(Collectors.toSet());
 		} else {
@@ -117,7 +118,7 @@ public final class ManhuntTeamController extends GameTeamController {
 			joinHunter(hunter);
 		}
 
-		Set<Player> spectators = getGame().getGroup().getAllPlayers().stream()
+		Set<Player> spectators = getGame().getGroup().getOnlinePlayers().stream()
 			.filter(p -> p.isOnline())
 			.filter(p -> p != getSelectedPrey())
 			.filter(p -> !selectedHunters.contains(p))
@@ -142,19 +143,31 @@ public final class ManhuntTeamController extends GameTeamController {
 	}
 
 
-	public Set<Player> getTeamHunters() {
+	public Set<OfflinePlayer> getHunters() {
 		if (hunterTeam == null) return Set.of();
 		return hunterTeam.getEntries().stream()
-			.map(Bukkit::getPlayerExact)
+			.map(Bukkit::getOfflinePlayer)
 			.filter(p -> p != null)
 			.collect(Collectors.toSet());
 	}
-	public Player getTeamPrey() {
+	public Set<Player> getOnlineHunters() {
+		return getHunters().stream()
+			.filter(p -> p.isOnline())
+			.map(p -> p.getPlayer())
+			.filter(p -> p != null)
+			.collect(Collectors.toSet());
+	}
+	public OfflinePlayer getPrey() {
 		if (preyTeam == null) return null;
 		return preyTeam.getEntries().stream()
-			.map(Bukkit::getPlayerExact)
+			.map(Bukkit::getOfflinePlayer)
 			.filter(p -> p != null)
 			.findFirst().get();
+	}
+	public Player getOnlinePrey() {
+		OfflinePlayer prey = getPrey();
+		if (prey == null || !prey.isOnline()) return null;
+		return prey.getPlayer();
 	}
 
 
@@ -166,12 +179,12 @@ public final class ManhuntTeamController extends GameTeamController {
 	public Collection<LivingEntity> getEntities() {
 		Set<LivingEntity> entities = new HashSet<>();
 
-		Player prey = getTeamPrey();
+		Player prey = getOnlinePrey();
 		if (prey != null) {
 			entities.add(prey);
 		}
 
-		entities.addAll(getTeamHunters());
+		entities.addAll(getOnlineHunters());
 
 		return entities;
 	}
@@ -201,7 +214,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 
 	@Override
-	public void joinPlayer(Player player) {
+	public void joinPlayer(OfflinePlayer player) {
 		if (preyTeam.hasPlayer(player)) return;
 		joinHunter(player);
 	}
@@ -215,19 +228,23 @@ public final class ManhuntTeamController extends GameTeamController {
 		player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
 	}
 
-	public void joinPrey(Player player) {
+	public void joinPrey(OfflinePlayer player) {
 		Location gameLocation = getGame().getAreaController().pickRandom(0.0, 0.2);
 
-		joinAnyPlayer(player, gameLocation);
-
-		player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 30, 1, false, false));
-		player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 20 * 40, 0, false, true));
-
 		preyTeam.addEntry(player.getName());
-		player.setScoreboard(getGame().getScoreboard());
+
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer == null) return;
+
+		onlinePlayer.setScoreboard(getGame().getScoreboard());
+
+		joinAnyPlayer(onlinePlayer, gameLocation);
+
+		onlinePlayer.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 30, 1, false, false));
+		onlinePlayer.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 20 * 40, 0, false, true));
 
 
-		player.showTitle(Title.title(
+		onlinePlayer.showTitle(Title.title(
 			Component.text("You are the ")
 				.append(Component.text("Prey")
 					.color(NamedTextColor.BLUE)
@@ -241,10 +258,10 @@ public final class ManhuntTeamController extends GameTeamController {
 		));
 	}
 
-	public void joinHunter(Player player) {
+	public void joinHunter(OfflinePlayer player) {
 		if (hunterTeam.hasPlayer(player) || preyTeam.hasPlayer(player)) return;
 
-		Set<Player> hunters = getTeamHunters();
+		Set<Player> hunters = getOnlineHunters();
 		GameAreaController areaController = getGame().getAreaController();
 
 		Location hunterLocation;
@@ -256,17 +273,20 @@ public final class ManhuntTeamController extends GameTeamController {
 			hunterLocation = areaController.pickRandom(0.3, 0.7);
 		}
 
-		joinAnyPlayer(player, hunterLocation);
-
 		hunterTeam.addEntry(player.getName());
-		player.setScoreboard(getGame().getScoreboard());
 
-		player.showTitle(Title.title(
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer == null) return;
+
+		joinAnyPlayer(onlinePlayer, hunterLocation);
+		onlinePlayer.setScoreboard(getGame().getScoreboard());
+
+		onlinePlayer.showTitle(Title.title(
 			Component.text("You are a ")
 			.append(Component.text("Hunter")
 				.color(NamedTextColor.RED)),
 			Component.text("Go and seek ")
-			.append(Component.text(getTeamPrey().getName())
+			.append(Component.text(getPrey().getName())
 				.color(NamedTextColor.BLUE)),
 			Title.Times.times(
 				Duration.ofMillis(500),
@@ -276,27 +296,31 @@ public final class ManhuntTeamController extends GameTeamController {
 		));
 	}
 
-	public void joinSpectator(Player player) {
+	public void joinSpectator(OfflinePlayer player) {
 		if (hunterTeam.hasPlayer(player) || preyTeam.hasPlayer(player)) return;
 
 		Location gameLocation = getGame().getAreaController().pickRandom(0.0, 1.0);
 
-		player.teleport(gameLocation);
-		player.setBedSpawnLocation(gameLocation, true);
-		player.setGameMode(GameMode.SPECTATOR);
-
 		spectatorTeam.addEntry(player.getName());
-		player.setScoreboard(getGame().getScoreboard());
 
-		Player prey = getTeamPrey();
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer == null) return;
+
+		onlinePlayer.teleport(gameLocation);
+		onlinePlayer.setBedSpawnLocation(gameLocation, true);
+		onlinePlayer.setGameMode(GameMode.SPECTATOR);
+
+		onlinePlayer.setScoreboard(getGame().getScoreboard());
+
+		Player prey = getOnlinePrey();
 		if (prey != null) {
-			player.teleport(prey.getLocation());
+			onlinePlayer.teleport(prey.getLocation());
 		}
 	}
 
 
 	@Override
-	public void discardPlayer(Player player) {
+	public void discardPlayer(OfflinePlayer player) {
 		hunterTeam.removeEntry(player.getName());
 		preyTeam.removeEntry(player.getName());
 
@@ -304,15 +328,19 @@ public final class ManhuntTeamController extends GameTeamController {
 	}
 
 	@Override
-	public void removePlayer(Player player) {
+	public void removePlayer(OfflinePlayer player) {
 		hunterTeam.removeEntry(player.getName());
 		preyTeam.removeEntry(player.getName());
 		spectatorTeam.removeEntry(player.getName());
-		player.teleport(getGame().getAreaController().getReturnLocation());
+
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer != null) {
+			onlinePlayer.teleport(getGame().getAreaController().getReturnLocation());
+		}
 	}
 
 	// @Override
-	// public void updatePlayerTeam(Player player) {
+	// public void updatePlayerTeam(OfflinePlayer player) {
 	// 	String newPlayer = player.getName();
 	// 	if (! huntersBound && ! preyTeam.hasEntry(newPlayer) && ! hunterTeam.hasEntry(newPlayer)) {
 	// 		for (String hunterName : hunterTeam.getEntries()) {

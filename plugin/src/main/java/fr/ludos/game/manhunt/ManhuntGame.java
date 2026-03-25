@@ -205,7 +205,7 @@ public class ManhuntGame extends Game {
 
 
 	public void revealPrey() {
-		Player prey = teamController.getTeamPrey();
+		Player prey = teamController.getOnlinePrey();
 		if (prey == null) return;
 
 		lastPreyLocation = prey.getLocation();
@@ -218,7 +218,7 @@ public class ManhuntGame extends Game {
 			.append(Component.text(" Z:" + lastPreyLocation.getBlockZ()).color(NamedTextColor.BLUE))
 		);
 
-		for (Player hunter : teamController.getTeamHunters()) {
+		for (Player hunter : teamController.getOnlineHunters()) {
 			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), (ItemStack stack) -> ManhuntCompass.fromItemStack(stack, this))) {
 				compass.setLocation(prey);
 			}
@@ -230,8 +230,8 @@ public class ManhuntGame extends Game {
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		Set<Player> hunters = teamController.getTeamHunters();
-		Player prey = teamController.getTeamPrey();
+		Set<Player> hunters = teamController.getOnlineHunters();
+		Player prey = teamController.getOnlinePrey();
 
 		if (hunters.isEmpty() || prey == null) {
 			timer.resume();
@@ -251,12 +251,12 @@ public class ManhuntGame extends Game {
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 
-		var hunters = teamController.getTeamHunters();
+		Set<Player> hunters = teamController.getOnlineHunters();
 		if (hunters.contains(player)) {
 			hunters.remove(player);
 		}
 
-		var prey = teamController.getTeamPrey();
+		Player prey = teamController.getOnlinePrey();
 
 		if (hunters.isEmpty() || prey == null) {
 			timer.pause();
