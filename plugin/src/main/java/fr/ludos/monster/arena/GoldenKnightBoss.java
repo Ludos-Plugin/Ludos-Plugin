@@ -35,21 +35,20 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 
 	private enum CombatProfile {
-		DODGEABLE(45, 95, 72, 125, 6.0, 4.5, 2.5, 3.5, 1.45, 90, 13, 4, 2, 0.62, 18.0, 0.70, 5, 36),
-		DENSE(34, 82, 62, 108, 8.5, 5.5, 3.5, 5.0, 1.7, 120, 8, 5, 3, 0.78, 22.0, 0.82, 7, 36),
-		INFERNAL(24, 70, 52, 92, 11.0, 7.0, 4.5, 6.5, 1.95, 140, 5, 7, 4, 0.92, 26.0, 0.96, 9, 48);
+		DODGEABLE(95, 72, 125, 6.0, 4.5, 2.5, 3.5, 1.45, 90, 13, 4, 2, 0.62, 18.0, 0.70, 5, 36),
+		DENSE(82, 62, 108, 8.5, 5.5, 3.5, 5.0, 1.7, 120, 8, 5, 3, 0.78, 22.0, 0.82, 7, 36),
+		INFERNAL(70, 52, 92, 11.0, 7.0, 4.5, 6.5, 1.95, 140, 5, 7, 4, 0.92, 26.0, 0.96, 9, 48);
 
-		final int attackCooldown, lightningMeleeCooldown, dashCooldown, attractionCooldown;
+		final int lightningMeleeCooldown, dashCooldown, attractionCooldown;
 		final double lightningDamage, dashDamage, erosionDamage, earthShatterDamage, dashSpeed;
 		final int orbPatternTicks, orbVolleyInterval, orbCount, strikeCount;
 		final double fireballSpeed, pullRadius, pullPower;
 		final int explosionDamage, dashTriggerChance;
 
-		CombatProfile(int attackCooldown, int lightningMeleeCooldown, int dashCooldown, int attractionCooldown,
+		CombatProfile(int lightningMeleeCooldown, int dashCooldown, int attractionCooldown,
 					  double lightningDamage, double dashDamage, double erosionDamage, double earthShatterDamage,
 					  double dashSpeed, int orbPatternTicks, int orbVolleyInterval, int orbCount, int strikeCount,
 					  double fireballSpeed, double pullRadius, double pullPower, int explosionDamage, int dashTriggerChance) {
-			this.attackCooldown = attackCooldown;
 			this.lightningMeleeCooldown = lightningMeleeCooldown;
 			this.dashCooldown = dashCooldown;
 			this.attractionCooldown = attractionCooldown;
@@ -128,7 +127,7 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 
 	private static final double MELEE_DIST_SQ = 49.0, DASH_DIST_SQ = 20.25, FOCUS_DIST_SQ = 1600.0, RANGED_DIST_SQ = 3025.0;
 	private static final double LIGHTNING_DIST_SQ = 64.0, EROSION_DIST_SQ = 6.25;
-	private static final double GRAVITY_EXEMPT_RADIUS = 3.0, RANGED_MIN_DIST_SQ = 49.0;
+	private static final double GRAVITY_EXEMPT_RADIUS = 6.0, RANGED_MIN_DIST_SQ = 49.0;
 	private static final double FORCE_PULL_DIST_SQ = 324.0;
 	private static final int STUCK_TICKS_THRESHOLD = 45;
 	private static final double STUCK_MOVE_EPSILON_SQ = 0.0025;
@@ -367,8 +366,8 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 	}
 
 	private int getAttractionTriggerCooldown(CombatProfile profile) {
-		if (phase == 1) return profile.attractionCooldown + 70;
-		return profile.attractionCooldown;
+		if (phase == 1) return profile.attractionCooldown + 90;
+		return profile.attractionCooldown + 18;
 	}
 
 	private int getDashTriggerCooldown(CombatProfile profile) {
@@ -377,8 +376,8 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 	}
 
 	private int getTeleportAssaultTriggerCooldown() {
-		int baseCooldown = getElement() == Element.FIRE ? 40 : 30;
-		if (phase == 1) return baseCooldown + 25;
+		int baseCooldown = getElement() == Element.FIRE ? 55 : 45;
+		if (phase == 1) return baseCooldown + 35;
 		return baseCooldown;
 	}
 

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
@@ -78,7 +79,7 @@ public abstract class ArenaMonsterBoss<TEntity extends LivingEntity> extends Spe
 	@Nullable
 	protected final Player selectFocusTarget(LivingEntity boss, World world, Location center, double maxDistanceSq) {
 		return getArenaTargets(world, center, maxDistanceSq).stream()
-			.filter(player -> !player.isDead())
+			.filter(player -> !player.isDead() || player.getGameMode() == GameMode.SPECTATOR)
 			.min((p1, p2) -> {
 				double dist1 = Math.sqrt(p1.getLocation().distanceSquared(center));
 				double dist2 = Math.sqrt(p2.getLocation().distanceSquared(center));

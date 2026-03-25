@@ -115,13 +115,16 @@ public abstract class SpecialMonster<TEntity extends LivingEntity> {
 	protected final boolean isArenaTarget(Player player, World world, Location center, double maxDistanceSquared) {
 		if (!game.isArenaPlayer(player)) return false;
 		if (!player.getWorld().equals(world)) return false;
+
 		return player.getLocation().distanceSquared(center) <= maxDistanceSquared;
 	}
 
 	protected final boolean teleportNearArenaTarget(LivingEntity entity, Player target, double radius, boolean snapToGround) {
 		if (entity == null || target == null) return false;
+
 		if (!entity.isValid() || entity.isDead()) return false;
 		if (!target.isOnline() || target.isDead()) return false;
+
 		if (!target.getWorld().equals(entity.getWorld())) return false;
 
 		Location destination = target.getLocation().clone().add(
