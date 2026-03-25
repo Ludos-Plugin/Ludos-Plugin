@@ -5,9 +5,11 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.game.arena.ArenaGame;
@@ -95,6 +97,23 @@ public abstract class SpecialMonster<TEntity extends LivingEntity> {
 			maxHealthAttr.setBaseValue(maxHealth);
 		}
 		livingEntity.setHealth(Math.min(maxHealth, livingEntity.getHealth()));
+	}
+
+	protected final void setAttributeBase(LivingEntity livingEntity, Attribute attribute, double value) {
+		AttributeInstance instance = livingEntity.getAttribute(attribute);
+		if (instance != null) {
+			instance.setBaseValue(value);
+		}
+	}
+
+	protected final int tickCooldown(int value) {
+		return value > 0 ? value - 1 : 0;
+	}
+
+	protected final boolean isArenaTarget(Player player, World world, Location center, double maxDistanceSquared) {
+		if (!game.isArenaPlayer(player)) return false;
+		if (!player.getWorld().equals(world)) return false;
+		return player.getLocation().distanceSquared(center) <= maxDistanceSquared;
 	}
 
 	private void disposeTask() {
