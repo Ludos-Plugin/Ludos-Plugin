@@ -38,8 +38,9 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.game.arena.ArenaGame;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
-public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
+public class GoldenKnightBoss extends SpecialMonster<WitherSkeleton> {
 	private enum CombatProfile {
 		DODGEABLE(45, 95, 72, 125, 6.0, 4.5, 2.5, 3.5, 1.45, 90, 13, 4, 2, 0.62, 18.0, 0.70, 5, 36),
 		DENSE(34, 82, 62, 108, 8.5, 5.5, 3.5, 5.0, 1.7, 120, 8, 5, 3, 0.78, 22.0, 0.82, 7, 36),
@@ -79,21 +80,21 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 	private enum AttackPattern {
 		LIGHTNING_MELEE {
 			@Override
-			boolean perform(DarkKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile) {
+			boolean perform(GoldenKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile) {
 				if (!(focusTarget != null && self.lightningMeleeCooldown <= 0 && focusTarget.getLocation().distanceSquared(boss.getLocation()) <= MELEE_DIST_SQ)) return false;
 				self.lightningPattern(boss); self.lightningMeleeCooldown = profile.lightningMeleeCooldown; return true;
 			}
 		},
 		DASH {
 			@Override
-			boolean perform(DarkKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile) {
+			boolean perform(GoldenKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile) {
 				if (!(focusTarget != null && self.dashCooldown <= 0 && focusTarget.getLocation().distanceSquared(boss.getLocation()) > DASH_DIST_SQ)) return false;
 				self.dashPattern(boss, focusTarget, profile); self.dashCooldown = profile.dashCooldown; return true;
 			}
 		},
 		EROSION {
 			@Override
-			boolean perform(DarkKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile) {
+			boolean perform(GoldenKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile) {
 				if (focusTarget == null) return false;
 
 				self.erosionBurstPattern(boss, focusTarget, profile);
@@ -102,7 +103,7 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 		},
 		GRAVITY {
 			@Override
-			boolean perform(DarkKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile) {
+			boolean perform(GoldenKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile) {
 				Player p = rangedTarget != null ? rangedTarget : focusTarget;
 				if (!self.gravityAttractionPattern(boss, p, profile, true)) return false;
 				self.attractionCooldown = profile.attractionCooldown; return true;
@@ -110,25 +111,23 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 		},
 		EARTH_SHATTER {
 			@Override
-			boolean perform(DarkKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile) {
+			boolean perform(GoldenKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile) {
 				self.earthShatterPattern(boss);
 				return true;
 			}
 		},
 		ORBITING_ORBS {
 			@Override
-			boolean perform(DarkKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile) {
+			boolean perform(GoldenKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile) {
 				self.orbitingOrbsPattern(boss);
 				return true;
 			}
 		};
 
-		abstract boolean perform(DarkKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile);
+		abstract boolean perform(GoldenKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile);
 	}
 
 	private static final double MAX_HEALTH = 460.0;
-	private static final int DARK_KNIGHT_MODEL_DATA = 1;
-	private static final double CHEST_Y = 0.1, LEGGINGS_Y = -0.08;
 	private static final int NO_HIT_TICKS_FOR_ATTRACTION = 120;
 	private static final int FAR_DISTANCE_TICKS_FOR_FORCE_PULL = 80;
 
@@ -145,6 +144,9 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 	private int lightningMeleeCooldown = 0;
 	private int dashCooldown = 0;
 	private int attractionCooldown = 0;
+	private int closeCombatCooldown = 0;
+	private int earthShatterCooldown = 0;
+	private int orbPatternCooldown = 0;
 	private int ticksSinceBossHitAPlayer = 0;
 	private int distantTicks = 0;
 	private int stuckTicks = 0;
@@ -152,18 +154,8 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 	private final List<ArmorStand> activeOrbs = new ArrayList<>();
 
 	@org.jetbrains.annotations.Nullable
-	private ArmorStand chestVisual;
-
-	@org.jetbrains.annotations.Nullable
-	private ArmorStand leggingsVisual;
-
-	@org.jetbrains.annotations.Nullable
-	private Location previousBossLocation;
-
-	@org.jetbrains.annotations.Nullable
 	private Location lastStuckCheckLocation;
 
-	private double armorAnimPhase = 0.0;
 	private final Map<UUID, Double> aggroScores = new HashMap<>();
 
 	@org.jetbrains.annotations.Nullable
@@ -172,8 +164,8 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 	@org.jetbrains.annotations.Nullable
 	private BukkitTask orbitTask;
 
-	public DarkKnightBoss(ArenaGame game) {
-		super("dark_knight", game);
+	public GoldenKnightBoss(ArenaGame game) {
+		super("golden_knight", game);
 	}
 
 	@Override
@@ -184,7 +176,7 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 
 		WitherSkeleton b = (WitherSkeleton) w.spawnEntity(location, EntityType.WITHER_SKELETON);
 
-		b.customName(Component.text("The Dark Knight").color(NamedTextColor.DARK_PURPLE));
+		b.customName(Component.text("The Golden Knight").color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
 
 		b.setCustomNameVisible(true);
 		b.setRemoveWhenFarAway(false);
@@ -198,53 +190,40 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 
 		b.setHealth(MAX_HEALTH);
 
-		b.getEquipment().setItemInMainHand(new ItemStack(Material.AIR));
+		ItemStack weapon = new ItemStack(Material.NETHERITE_SWORD);
+		ItemMeta weaponMeta = weapon.getItemMeta();
+		if (weaponMeta != null) {
+			weaponMeta.setCustomModelData(10);
+			weapon.setItemMeta(weaponMeta);
+		}
+
+		b.getEquipment().setItemInMainHand(weapon);
 		b.getEquipment().setItemInMainHandDropChance(0.0f);
-		b.getEquipment().setHelmet(createDarkKnightHelmet());
+		b.getEquipment().setHelmet(new ItemStack(Material.GOLDEN_HELMET));
 		b.getEquipment().setHelmetDropChance(0.0f);
+		b.getEquipment().setChestplate(new ItemStack(Material.GOLDEN_CHESTPLATE));
+		b.getEquipment().setLeggings(new ItemStack(Material.GOLDEN_LEGGINGS));
+		b.getEquipment().setBoots(new ItemStack(Material.GOLDEN_BOOTS));
+		b.getEquipment().setChestplateDropChance(0.0f);
+		b.getEquipment().setLeggingsDropChance(0.0f);
+		b.getEquipment().setBootsDropChance(0.0f);
 
 		b.setCanPickupItems(false); b.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, false, false));
 
 		return b;
 	}
 
-	private ItemStack createDarkKnightHelmet() {
-		return createCustomModelItem(Material.CARVED_PUMPKIN, DARK_KNIGHT_MODEL_DATA);
-	}
-
-	private ItemStack createDarkKnightChestplate() {
-		return createCustomModelItem(Material.IRON_CHESTPLATE, DARK_KNIGHT_MODEL_DATA);
-	}
-
-	private ItemStack createDarkKnightLeggings() {
-		return createCustomModelItem(Material.IRON_LEGGINGS, DARK_KNIGHT_MODEL_DATA);
-	}
-
-	private ItemStack createCustomModelItem(Material material, int modelData) {
-		ItemStack i = new ItemStack(material);
-		ItemMeta m = i.getItemMeta();
-
-		m.setCustomModelData(modelData);
-		i.setItemMeta(m);
-
-		return i;
-	}
-
 	@Override
-	protected void onMonsterSpawn(WitherSkeleton entity) {
-		spawnArmorVisuals(entity);
-	}
+	protected void onMonsterSpawn(WitherSkeleton entity) {}
 
 	@Override
 	protected void onMonsterTick(WitherSkeleton entity) {
-		ensureHelmetVisual(entity);
 		processIncomingAggro(entity);
 		decayAggroScores();
 		enforceWaterStride(entity);
 		updateDistantPressure(entity);
 		handleStuckMovement(entity);
 		spawnAmbientAura(entity);
-		updateArmorVisuals(entity);
 		updatePhase(entity);
 
 		CombatProfile p = resolveProfile(entity);
@@ -253,18 +232,17 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 		lightningMeleeCooldown = tickCooldown(lightningMeleeCooldown);
 		dashCooldown = tickCooldown(dashCooldown);
 		attractionCooldown = tickCooldown(attractionCooldown);
+		closeCombatCooldown = tickCooldown(closeCombatCooldown);
+		earthShatterCooldown = tickCooldown(earthShatterCooldown);
+		orbPatternCooldown = tickCooldown(orbPatternCooldown);
 
 		if (phase >= 3) {
 			lightningMeleeCooldown = tickCooldown(lightningMeleeCooldown);
 			dashCooldown = tickCooldown(dashCooldown);
 			attractionCooldown = tickCooldown(attractionCooldown);
-
-			if (attackTick > 0) attackTick--;
-		}
-
-		if (attackTick > 0) {
-			attackTick--;
-			return;
+			closeCombatCooldown = tickCooldown(closeCombatCooldown);
+			earthShatterCooldown = tickCooldown(earthShatterCooldown);
+			orbPatternCooldown = tickCooldown(orbPatternCooldown);
 		}
 
 		triggerPattern(entity);
@@ -285,81 +263,6 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 		entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ENDER_DRAGON_DEATH, 0.85f, 0.9f);
 	}
 
-
-	private void spawnArmorVisuals(WitherSkeleton boss) {
-		World w = boss.getWorld();
-
-		chestVisual = createVisualStand(w, createDarkKnightChestplate(), false, new EulerAngle(Math.toRadians(-2.0), 0.0, 0.0));
-		leggingsVisual = createVisualStand(w, createDarkKnightLeggings(), false, new EulerAngle(0.0, 0.0, 0.0));
-
-		previousBossLocation = boss.getLocation().clone();
-		armorAnimPhase = 0.0;
-
-		updateArmorVisuals(boss);
-	}
-
-	private ArmorStand createVisualStand(World w, ItemStack item, boolean small, EulerAngle head) {
-		ArmorStand s = (ArmorStand) w.spawnEntity(w.getSpawnLocation(), EntityType.ARMOR_STAND);
-
-		s.setVisible(false);
-		s.setMarker(true);
-		s.setGravity(false);
-		s.setInvulnerable(true);
-		s.setSilent(true);
-		s.setBasePlate(false);
-		s.setArms(false);
-		s.setPersistent(false);
-		s.setCollidable(false);
-		s.setSmall(small);
-		s.setHeadPose(head);
-		s.getEquipment().setHelmet(item);
-
-		return s;
-	}
-
-	private void ensureHelmetVisual(WitherSkeleton boss) {
-		ItemStack currentHelmet = boss.getEquipment() != null ? boss.getEquipment().getHelmet() : null;
-		if (currentHelmet == null || currentHelmet.getType().isAir()) {
-			boss.getEquipment().setHelmet(createDarkKnightHelmet());
-			boss.getEquipment().setHelmetDropChance(0.0f);
-		}
-	}
-
-	private void updateArmorVisuals(WitherSkeleton boss) {
-		if (!boss.isValid() || boss.isDead()) return;
-
-		if (chestVisual == null || !chestVisual.isValid() || leggingsVisual == null || !leggingsVisual.isValid()) {
-			spawnArmorVisuals(boss);
-			return;
-		}
-
-		Location base = boss.getLocation();
-		double moveSpeed = previousBossLocation != null && previousBossLocation.getWorld() != null && previousBossLocation.getWorld().equals(base.getWorld())
-			? Math.sqrt(previousBossLocation.distanceSquared(base)) : 0.0;
-
-		previousBossLocation = base.clone();
-
-		armorAnimPhase += 0.22 + Math.min(0.65, moveSpeed * 3.5);
-		double motionFactor = Math.min(1.0, moveSpeed * 10.0);
-		double bob = Math.sin(armorAnimPhase * 1.7) * (0.012 + motionFactor * 0.022);
-		double chestPitch = Math.toRadians(-3.0 + Math.sin(armorAnimPhase) * (2.0 + motionFactor * 3.0));
-		double leggingsPitch = Math.toRadians(Math.sin(armorAnimPhase + 1.1) * (1.2 + motionFactor * 2.0));
-		double subtleYaw = Math.toRadians(Math.cos(armorAnimPhase * 0.8) * (1.8 + motionFactor * 2.4));
-
-		Location chestLoc = base.clone().add(0.0, CHEST_Y + bob, 0.0);
-		Location legsLoc = base.clone().add(0.0, LEGGINGS_Y + (bob * 0.55), 0.0);
-
-		chestLoc.setYaw(base.getYaw());
-		chestLoc.setPitch(0.0f);
-		legsLoc.setYaw(base.getYaw());
-		legsLoc.setPitch(0.0f);
-
-		chestVisual.setHeadPose(new EulerAngle(chestPitch, subtleYaw, 0.0));
-		leggingsVisual.setHeadPose(new EulerAngle(leggingsPitch, -subtleYaw, 0.0));
-		chestVisual.teleport(chestLoc);
-		leggingsVisual.teleport(legsLoc);
-	}
-
 	private void updatePhase(WitherSkeleton boss) {
 		double healthRatio = boss.getHealth() / MAX_HEALTH;
 		int nextPhase = healthRatio > 0.66 ? 1 : healthRatio > 0.33 ? 2 : 3;
@@ -368,55 +271,63 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 
 		phase = nextPhase;
 		boss.getWorld().playSound(boss.getLocation(), Sound.ENTITY_WITHER_AMBIENT, 1.0f, 0.7f + (0.1f * phase));
-		boss.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, boss.getLocation().add(0, 1.4, 0), 40, 0.6, 0.6, 0.6, 0.02);
+		boss.getWorld().spawnParticle(Particle.SMOKE_LARGE, boss.getLocation().add(0, 1.4, 0), 18, 0.45, 0.45, 0.45, 0.01);
 	}
 
 	private void triggerPattern(WitherSkeleton boss) {
-		int random = ThreadLocalRandom.current().nextInt(100);
 		CombatProfile profile = resolveProfile(boss);
 		Player focusTarget = selectFocusTarget(boss, boss.getWorld(), boss.getLocation(), FOCUS_DIST_SQ);
 		Player rangedAggro = selectRangedAggroTarget(boss, boss.getWorld(), boss.getLocation(), RANGED_DIST_SQ);
 
+		if (focusTarget != null) {
+			boss.setTarget(focusTarget);
+		}
+
 		if (distantTicks >= FAR_DISTANCE_TICKS_FOR_FORCE_PULL && attractionCooldown <= 0
 			&& violentAttractionPattern(boss, profile)) {
 			attractionCooldown = Math.max(12, profile.attractionCooldown / 2);
-			return;
 		}
 
 		if (attractionCooldown <= 0 && ticksSinceBossHitAPlayer >= NO_HIT_TICKS_FOR_ATTRACTION
-			&& AttackPattern.GRAVITY.perform(this, boss, focusTarget, rangedAggro, profile)) return;
+			&& AttackPattern.GRAVITY.perform(this, boss, focusTarget, rangedAggro, profile)) {
+			attractionCooldown = profile.attractionCooldown;
+		}
 
-		if (rangedAggro != null && attractionCooldown <= 0) {
-			if (random < 56 && AttackPattern.GRAVITY.perform(this, boss, focusTarget, rangedAggro, profile)) return;
-			if (random < 88) {
-				AttackPattern.ORBITING_ORBS.perform(this, boss, focusTarget, rangedAggro, profile);
-				return;
+		if (rangedAggro != null && attractionCooldown <= 0 && ThreadLocalRandom.current().nextInt(100) < 42) {
+			if (AttackPattern.GRAVITY.perform(this, boss, focusTarget, rangedAggro, profile)) {
+				attractionCooldown = profile.attractionCooldown;
 			}
 		}
 
-		if (AttackPattern.LIGHTNING_MELEE.perform(this, boss, focusTarget, rangedAggro, profile)) return;
-		if (random < profile.dashTriggerChance && AttackPattern.DASH.perform(this, boss, focusTarget, rangedAggro, profile)) return;
-
-		chooseCorePattern(random, profile, focusTarget != null).perform(this, boss, focusTarget, rangedAggro, profile);
-	}
-
-	private AttackPattern chooseCorePattern(int random, CombatProfile profile, boolean hasFocusTarget) {
-		if (phase == 1) {
-			return (random < 52 || random >= 86) ? AttackPattern.EARTH_SHATTER : AttackPattern.ORBITING_ORBS;
+		if (rangedAggro != null && orbPatternCooldown <= 0 && (orbitTask == null || orbitTask.isCancelled())) {
+			if (ThreadLocalRandom.current().nextInt(100) < (phase >= 3 ? 48 : 28)) {
+				AttackPattern.ORBITING_ORBS.perform(this, boss, focusTarget, rangedAggro, profile);
+				orbPatternCooldown = phase >= 3 ? 56 : 84;
+			}
 		}
 
-		if (phase == 3) {
-			if (hasFocusTarget && random < 55) return AttackPattern.EROSION;
-			return random < 82 ? AttackPattern.ORBITING_ORBS : AttackPattern.EARTH_SHATTER;
+		if (focusTarget != null
+			&& closeCombatCooldown <= 0
+			&& focusTarget.getLocation().distanceSquared(boss.getLocation()) <= MELEE_DIST_SQ) {
+			brutalCloseCombatPattern(boss, focusTarget, profile);
+			closeCombatCooldown = phase >= 3 ? 18 : 30;
 		}
 
-		int earthTier = profile == CombatProfile.INFERNAL ? 0 : profile == CombatProfile.DENSE ? 1 : 2;
-		int[] earthChances = {30, 38, 45};
-		int[] orbitChances = {66, 62, 70};
+		if (focusTarget != null && lightningMeleeCooldown <= 0
+			&& focusTarget.getLocation().distanceSquared(boss.getLocation()) <= MELEE_DIST_SQ) {
+			AttackPattern.LIGHTNING_MELEE.perform(this, boss, focusTarget, rangedAggro, profile);
+		}
 
-		return random < earthChances[earthTier] ? AttackPattern.EARTH_SHATTER :
-			   random < orbitChances[earthTier] ? AttackPattern.ORBITING_ORBS :
-			   hasFocusTarget ? AttackPattern.EROSION : AttackPattern.ORBITING_ORBS;
+		if (focusTarget != null && dashCooldown <= 0
+			&& focusTarget.getLocation().distanceSquared(boss.getLocation()) > DASH_DIST_SQ
+			&& ThreadLocalRandom.current().nextInt(100) < profile.dashTriggerChance) {
+			AttackPattern.DASH.perform(this, boss, focusTarget, rangedAggro, profile);
+		}
+
+		if (earthShatterCooldown <= 0 && ThreadLocalRandom.current().nextInt(100) < (phase >= 3 ? 38 : 24)) {
+			AttackPattern.EARTH_SHATTER.perform(this, boss, focusTarget, rangedAggro, profile);
+			earthShatterCooldown = phase >= 3 ? 30 : 46;
+		}
 	}
 
 	private void lightningPattern(WitherSkeleton boss) {
@@ -525,7 +436,7 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 
 	private void dashPattern(WitherSkeleton boss, Player focusTarget, CombatProfile profile) {
 		Location startLoc = boss.getLocation();
-		spawnGroundRing(startLoc, 1.4, Particle.SOUL_FIRE_FLAME, 24);
+		spawnGroundRing(startLoc, 1.4, Particle.SMOKE_NORMAL, 24);
 		spawnGroundRing(focusTarget.getLocation(), 0.9, Particle.CRIT_MAGIC, 14);
 
 		Vector dashDirection = focusTarget.getLocation().toVector().subtract(startLoc.toVector());
@@ -552,7 +463,7 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 
 				Location trailLoc = boss.getLocation().clone().add(0, 1.0, 0);
 
-				world.spawnParticle(Particle.SOUL_FIRE_FLAME, trailLoc, 4, 0.22, 0.1, 0.22, 0.01);
+				world.spawnParticle(Particle.CRIT, trailLoc, 3, 0.22, 0.1, 0.22, 0.01);
 				world.spawnParticle(Particle.SWEEP_ATTACK, trailLoc, 2, 0.2, 0.1, 0.2, 0.0);
 				world.spawnParticle(Particle.SMOKE_NORMAL, trailLoc, 6, 0.2, 0.2, 0.2, 0.01);
 
@@ -565,6 +476,47 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 				ticks++;
 			}
 		}.runTaskTimer(getGame().getPlugin(), 0L, 1L);
+	}
+
+	private void brutalCloseCombatPattern(WitherSkeleton boss, Player focusTarget, CombatProfile profile) {
+		if (!focusTarget.isOnline() || focusTarget.isDead()) return;
+
+		World world = boss.getWorld();
+		Location center = boss.getLocation();
+
+		boss.swingMainHand();
+		world.playSound(center, Sound.ENTITY_PLAYER_ATTACK_SWEEP, 1.15f, 0.7f);
+		world.playSound(center, Sound.ENTITY_WITHER_SKELETON_STEP, 0.9f, 0.7f);
+		world.spawnParticle(Particle.SWEEP_ATTACK, center.clone().add(0, 1.0, 0), 2, 0.35, 0.12, 0.35, 0.0);
+
+		double firstHitDamage = profile.lightningDamage + (phase >= 3 ? 2.4 : 1.2);
+		dealBossDamage(boss, focusTarget, firstHitDamage);
+
+		Vector reelIn = center.toVector().subtract(focusTarget.getLocation().toVector());
+		if (reelIn.lengthSquared() > 0.0001) {
+			reelIn.normalize().multiply(0.45).setY(0.14);
+			focusTarget.setVelocity(focusTarget.getVelocity().multiply(0.5).add(reelIn));
+		}
+
+		focusTarget.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, phase >= 3 ? 24 : 16, 0, false, true, true));
+
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				if (!isAlive() || boss.isDead() || !focusTarget.isOnline() || focusTarget.isDead()) return;
+				if (!focusTarget.getWorld().equals(boss.getWorld())) return;
+
+				double distanceSq = focusTarget.getLocation().distanceSquared(boss.getLocation());
+				if (distanceSq > 64.0) return;
+
+				boss.swingMainHand();
+				world.playSound(boss.getLocation(), Sound.ENTITY_PLAYER_ATTACK_STRONG, 1.05f, 0.64f);
+				world.spawnParticle(Particle.CRIT, focusTarget.getLocation().clone().add(0, 1.0, 0), 6, 0.22, 0.2, 0.22, 0.02);
+
+				double secondHitDamage = profile.dashDamage + (phase >= 3 ? 2.0 : 1.0);
+				dealBossDamage(boss, focusTarget, secondHitDamage);
+			}
+		}.runTaskLater(getGame().getPlugin(), 6L);
 	}
 
 	private void earthShatterPattern(WitherSkeleton boss) {
@@ -798,11 +750,11 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 	private void spawnAmbientAura(WitherSkeleton boss) {
 		Location auraCenter = boss.getLocation().clone().add(0, 1.05, 0);
 		CombatProfile profile = resolveProfile(boss);
-		int particleCount = profile == CombatProfile.DODGEABLE ? 3 : profile == CombatProfile.DENSE ? 6 : 9;
+		int particleCount = profile == CombatProfile.DODGEABLE ? 2 : profile == CombatProfile.DENSE ? 3 : 2;
 
-		boss.getWorld().spawnParticle(Particle.SOUL, auraCenter, particleCount, 0.35, 0.45, 0.35, 0.01);
+		boss.getWorld().spawnParticle(Particle.SMOKE_NORMAL, auraCenter, particleCount, 0.32, 0.4, 0.32, 0.01);
 		if (profile == CombatProfile.INFERNAL) {
-			boss.getWorld().spawnParticle(Particle.DRAGON_BREATH, auraCenter, 2, 0.28, 0.35, 0.28, 0.01);
+			boss.getWorld().spawnParticle(Particle.SMOKE_LARGE, auraCenter, 1, 0.2, 0.22, 0.2, 0.005);
 		}
 	}
 
@@ -874,7 +826,8 @@ public class DarkKnightBoss extends SpecialMonster<WitherSkeleton> {
 					);
 
 					currentOrb.teleport(orbLocation);
-					boss.getWorld().spawnParticle(Particle.SOUL, orbLocation, 2, 0.02, 0.02, 0.02, 0.0);
+					int orbParticleCount = profile == CombatProfile.INFERNAL ? 1 : 2;
+					boss.getWorld().spawnParticle(Particle.SMOKE_NORMAL, orbLocation, orbParticleCount, 0.02, 0.02, 0.02, 0.0);
 				}
 
 				if (ticks % profile.orbVolleyInterval == 0) {

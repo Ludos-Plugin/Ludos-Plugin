@@ -1,9 +1,7 @@
 package fr.ludos.game.arena;
 
 import java.util.HashSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -25,28 +23,22 @@ import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 import org.bukkit.entity.AbstractSkeleton;
-import org.bukkit.entity.SmallFireball;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.Utility;
-import fr.ludos.game.arena.monster.DarkKnightBoss;
+import fr.ludos.game.arena.monster.GoldenKnightBoss;
 import fr.ludos.item.Categories;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -59,7 +51,6 @@ public final class ArenaWaveController extends ArenaGame {
 	private static final int MIN_MOBS_NON_BOSS_WAVE = 11;
 	private static final int MAX_MOB_COUNT = 100;
 	private static final int STEAK_REWARD_PER_BOSS_WAVE = 64;
-	private static final long FIREBALL_PARRY_WINDOW_MS = 325L;
 
 	private static final List<WaveUnit> WAVE_UNITS = List.of(
 		new WaveUnit(EntityType.ZOMBIE, 12, 30, false),
@@ -67,24 +58,32 @@ public final class ArenaWaveController extends ArenaGame {
 		new WaveUnit(EntityType.SKELETON, 14, 22, false),
 		new WaveUnit(EntityType.STRAY, 17, 14, false),
 		new WaveUnit(EntityType.SPIDER, 12, 18, false),
+		new WaveUnit(EntityType.CAVE_SPIDER, 18, 12, false),
+		new WaveUnit(EntityType.CREEPER, 22, 15, false),
+		new WaveUnit(EntityType.ENDERMAN, 38, 9, false),
+		new WaveUnit(EntityType.BLAZE, 44, 8, false),
+		new WaveUnit(EntityType.MAGMA_CUBE, 36, 9, false),
+		new WaveUnit(EntityType.SLIME, 20, 14, false),
 		new WaveUnit(EntityType.PILLAGER, 26, 20, false),
 		new WaveUnit(EntityType.VINDICATOR, 34, 14, false),
 		new WaveUnit(EntityType.WITCH, 42, 10, false),
+		new WaveUnit(EntityType.PIGLIN_BRUTE, 92, 4, false),
 		new WaveUnit(EntityType.EVOKER, 88, 6, false),
+		new WaveUnit(EntityType.VEX, 52, 6, false),
 		new WaveUnit(EntityType.RAVAGER, 140, 3, false),
 		new WaveUnit(EntityType.HOGLIN, 62, 5, false),
+		new WaveUnit(EntityType.ZOGLIN, 84, 4, false),
 		new WaveUnit(EntityType.WITHER_SKELETON, 900, 1, true)
 	);
 
 	private final Set<UUID> aliveWaveMonsters = new HashSet<>();
-	private DarkKnightBoss currentBoss;
+	private GoldenKnightBoss currentBoss;
 	private int wave = 0;
 	private int bossesDefeated = 0;
 	private boolean bossWaveActive = false;
 	private boolean preparationPhase = false;
 	private BukkitTask preparationTask;
 	private BukkitTask waveCheckTask;
-	private final Map<UUID, Long> lastShieldRaiseMillis = new HashMap<>();
 
 	protected ArenaWaveController(Builder builder) {
 		super(builder);
@@ -99,7 +98,6 @@ public final class ArenaWaveController extends ArenaGame {
 	protected void onGameStop() {
 		preparationTask = Utility.cancelTask(preparationTask);
 		waveCheckTask = Utility.cancelTask(waveCheckTask);
-		lastShieldRaiseMillis.clear();
 		despawnAllMonsters();
 		getGameAreaController().resetBorder();
 	}
@@ -113,6 +111,7 @@ public final class ArenaWaveController extends ArenaGame {
 	public void onPlayerMove(PlayerMoveEvent event) {
 		if (!isArenaPlayer(event.getPlayer())) return;
 		if (!preparationPhase) return;
+
 		if (isSamePosition(event.getFrom(), event.getTo())) return;
 
 		event.setTo(event.getFrom());
@@ -127,52 +126,6 @@ public final class ArenaWaveController extends ArenaGame {
 		event.setCancelled(true);
 	}
 
-	@EventHandler
-	public void onParryInput(PlayerInteractEvent event) {
-		Player player = event.getPlayer();
-		if (!isArenaPlayer(player)) return;
-		if (preparationPhase) return;
-
-		Action action = event.getAction();
-		if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return;
-
-		ItemStack handItem = event.getItem();
-		if (handItem == null || handItem.getType() != Material.SHIELD) return;
-
-		if (event.getHand() != EquipmentSlot.HAND && event.getHand() != EquipmentSlot.OFF_HAND) return;
-
-		lastShieldRaiseMillis.put(player.getUniqueId(), System.currentTimeMillis());
-	}
-
-	@EventHandler
-	public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-		if (!(event.getEntity() instanceof Player player)) return;
-		if (!isArenaPlayer(player)) return;
-		if (!(event.getDamager() instanceof SmallFireball fireball)) return;
-		if (preparationPhase) return;
-		if (!isParryTiming(player)) return;
-
-		event.setCancelled(true);
-		fireball.remove();
-
-		LivingEntity target = pickFireballParryTarget(player);
-		if (target == null) return;
-
-		Location launchFrom = player.getEyeLocation().clone().add(player.getLocation().getDirection().normalize().multiply(0.4));
-		Vector direction = target.getEyeLocation().toVector().subtract(launchFrom.toVector());
-		if (direction.lengthSquared() < 0.0001) return;
-
-		direction.normalize().multiply(1.65);
-		SmallFireball reflected = (SmallFireball) player.getWorld().spawnEntity(launchFrom, EntityType.SMALL_FIREBALL);
-		reflected.setShooter(player);
-		reflected.setDirection(direction);
-		reflected.setVelocity(direction);
-		reflected.setIsIncendiary(false);
-		reflected.setYield(0.0f);
-
-		player.getWorld().playSound(player.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 0.8f);
-		player.getWorld().spawnParticle(Particle.CRIT, player.getLocation().clone().add(0, 1.0, 0), 12, 0.3, 0.25, 0.3, 0.02);
-	}
 
 	@EventHandler
 	public void onFoodLevelChange(FoodLevelChangeEvent event) {
@@ -185,8 +138,8 @@ public final class ArenaWaveController extends ArenaGame {
 
 	@EventHandler
 	public void onEntityDeath(EntityDeathEvent event) {
-		Entity entity = event.getEntity();
-		event.getDrops().clear();
+		// Entity entity = event.getEntity();
+		// event.getDrops().clear();
 
 		// if (aliveWaveMonsters.remove(entity.getUniqueId())) {
 		// 	event.getDrops().clear();
@@ -288,7 +241,7 @@ public final class ArenaWaveController extends ArenaGame {
 
 		grantBossWaveCombatSupplies();
 
-		currentBoss = new DarkKnightBoss(this);
+		currentBoss = new GoldenKnightBoss(this);
 
 		currentBoss.spawn(center);
 
@@ -296,7 +249,7 @@ public final class ArenaWaveController extends ArenaGame {
 			aliveWaveMonsters.add(currentBoss.getEntity().getUniqueId());
 		}
 
-		Bukkit.broadcast(Component.text("Boss Wave: The Dark Knight emerges").color(NamedTextColor.DARK_PURPLE));
+		Bukkit.broadcast(Component.text("Boss Wave: The Golden Knight emerges").color(NamedTextColor.DARK_PURPLE));
 
 		center.getWorld().strikeLightningEffect(center);
 		center.getWorld().playSound(center, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.7f);
@@ -605,38 +558,6 @@ public final class ArenaWaveController extends ArenaGame {
 		if (instance != null) {
 			instance.setBaseValue(value);
 		}
-	}
-
-	private boolean isParryTiming(Player player) {
-		Long lastRaise = lastShieldRaiseMillis.get(player.getUniqueId());
-		if (lastRaise == null) return false;
-		if (!player.isBlocking()) return false;
-		return (System.currentTimeMillis() - lastRaise) <= FIREBALL_PARRY_WINDOW_MS;
-	}
-
-	@Nullable
-	private LivingEntity pickFireballParryTarget(Player player) {
-		if (currentBoss != null && currentBoss.getEntity() != null && currentBoss.getEntity().isValid() && !currentBoss.getEntity().isDead()) {
-			return currentBoss.getEntity();
-		}
-
-		Location from = player.getLocation();
-		LivingEntity nearest = null;
-		double nearestDistSq = Double.MAX_VALUE;
-
-		for (UUID id : aliveWaveMonsters) {
-			Entity entity = Bukkit.getEntity(id);
-			if (!(entity instanceof LivingEntity living)) continue;
-			if (living.isDead() || !living.isValid()) continue;
-
-			double distSq = living.getLocation().distanceSquared(from);
-			if (distSq < nearestDistSq) {
-				nearestDistSq = distSq;
-				nearest = living;
-			}
-		}
-
-		return nearest;
 	}
 
 	private record WaveUnit(EntityType type, int cost, int weight, boolean bossEcho) { }
