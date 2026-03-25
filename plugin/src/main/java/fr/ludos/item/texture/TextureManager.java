@@ -1,16 +1,22 @@
 package fr.ludos.item.texture;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.inventory.ItemStack;
-import fr.ludos.Ludos;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Stream;
+
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.inventory.ItemStack;
+
+import fr.ludos.Ludos;
 
 public final class TextureManager implements CommandExecutor {
     private static TextureManager instance;

@@ -35,6 +35,7 @@ public final class ArenaLoadoutService {
 
 		ItemStack sword = enchantedItem(Material.DIAMOND_SWORD, Enchantment.DAMAGE_ALL, 3);
 		inventory.setItem(0, sword);
+		inventory.setItemInOffHand(new ItemStack(Material.SHIELD));
 
 		ItemStack helmet = enchantedArmor(Material.DIAMOND_HELMET);
 		ItemStack chestplate = enchantedArmor(Material.DIAMOND_CHESTPLATE);
