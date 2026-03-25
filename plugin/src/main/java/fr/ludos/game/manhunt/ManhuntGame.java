@@ -18,6 +18,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
+import net.kyori.adventure.util.TriState;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -349,11 +350,13 @@ public class ManhuntGame extends Game {
 
 		public @Nullable WorldCreator createWorldCreator() {
 			String worldName = "manhunt_" + UUID.randomUUID();
-			return new WorldCreator(worldName, new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), worldName))
+			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), worldName))
 				.environment(Environment.NORMAL)
 				.type(WorldType.NORMAL)
 				.generateStructures(true)
 				.seed(new Random().nextLong());
+			wc.keepSpawnLoaded(TriState.FALSE);
+			return wc;
 		}
 
 		@Override

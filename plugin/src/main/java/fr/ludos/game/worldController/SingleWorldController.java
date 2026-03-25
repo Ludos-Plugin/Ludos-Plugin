@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import fr.ludos.game.Game;
+import net.kyori.adventure.util.TriState;
 
 public class SingleWorldController extends GameWorldController {
 	private final WorldCreator worldCreator;
@@ -33,9 +34,11 @@ public class SingleWorldController extends GameWorldController {
 			throw new IllegalStateException("World has already been initialized");
 		}
 
+		worldCreator.keepSpawnLoaded(TriState.FALSE);
 		World world = worldCreator.createWorld();
-		world.setAutoSave(false);
 		world.setKeepSpawnInMemory(false);
+		world.setAutoSave(false);
+
 		this.world = world;
 	}
 
