@@ -17,15 +17,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
+import com.comphenix.protocol.PacketType.Play;
+
 import fr.ludos.game.Game;
-import fr.ludos.game.GameProcessBase;
+import fr.ludos.game.TwoStepGameProcessBase;
 
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 
-public abstract class GameTeamController extends GameProcessBase {
+public abstract class GameTeamController extends TwoStepGameProcessBase {
 	private final Game game;
 	public final Game getGame() {
 		return game;
@@ -51,23 +53,29 @@ public abstract class GameTeamController extends GameProcessBase {
 	public abstract Collection<LivingEntity> getEntities();
 	public abstract Collection<Team> getTeams();
 
-	public Collection<Player> getPlayers() {
+	public Collection<OfflinePlayer> getPlayers() {
 		return getEntities().stream()
-			.filter(e -> e instanceof Player)
-			.map(e -> (Player)e)
+			.filter(e -> e instanceof OfflinePlayer)
+			.map(e -> (OfflinePlayer)e)
 			.collect(Collectors.toSet());
 	}
 
-	public boolean areAllies(LivingEntity entity1, LivingEntity entity2) {
-		if (entity1 == null || entity2 == null) return false;
-		if (entity1.equals(entity2)) return true;
+	public boolean areAllies(String entityName1, String entityName2) {
+		if (entityName1 == null || entityName2 == null) return false;
+		if (entityName1.equals(entityName2)) return true;
 
 		Scoreboard scoreboard = game.getScoreboard();
 
-		var entity1Team = scoreboard.getEntryTeam(entity1.getName());
-		var entity2Team = scoreboard.getEntryTeam(entity2.getName());
+		var entity1Team = scoreboard.getEntryTeam(entityName1);
+		var entity2Team = scoreboard.getEntryTeam(entityName2);
 
 		return entity1Team != null && entity1Team.equals(entity2Team);
+	}
+	public boolean areAllies(LivingEntity entity1, LivingEntity entity2) {
+		return areAllies(entity1.getName(), entity2.getName());
+	}
+	public boolean areAllies(OfflinePlayer player1, OfflinePlayer player2) {
+		return areAllies(player1.getName(), player2.getName());
 	}
 
 	public Set<LivingEntity> getEnemies(Player player) {
@@ -75,7 +83,7 @@ public abstract class GameTeamController extends GameProcessBase {
 			.filter(other -> ! areAllies(player, other))
 			.collect(Collectors.toSet());
 	}
-	public Set<Player> getEnemyPlayers(Player player) {
+	public Set<OfflinePlayer> getEnemyPlayers(OfflinePlayer player) {
 		return getPlayers().stream()
 			.filter(other -> ! areAllies(player, other))
 			.collect(Collectors.toSet());
@@ -93,14 +101,22 @@ public abstract class GameTeamController extends GameProcessBase {
 	protected abstract void discardPlayer(OfflinePlayer player);
 	public abstract void removePlayer(OfflinePlayer player);
 
+	public final void tryJoinPlayer(OfflinePlayer player) {
+		if (joinOption == GameJoinOption.auto) {
+			joinPlayer(player);
+		}
+		else {
+			discardPlayer(player);
+		}
+	}
+
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		if (joinOption == GameJoinOption.auto) {
-			joinPlayer(event.getPlayer());
-		}
-		else {
-			discardPlayer(event.getPlayer());
-		}
+		Player player = event.getPlayer();
+
+		if (!game.isStarted() || !game.getGroup().getPlayers().contains(player)) return;
+
+		tryJoinPlayer(player);
 	}
 }

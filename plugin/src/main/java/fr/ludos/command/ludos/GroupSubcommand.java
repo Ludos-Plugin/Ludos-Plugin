@@ -140,15 +140,15 @@ public enum GroupSubcommand implements Subcommand {
 			return "/" + label + " group join <memberName>";
 		}
 	},
-	quit() {
+	leave() {
 		@Override
 		public String getDescription() {
-			return "Quit the current group.";
+			return "Leave the current group.";
 		}
 		@Override
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 			if (!(sender instanceof Player player)) {
-				sender.sendMessage("Only players can quit groups.");
+				sender.sendMessage("Only players can leave groups.");
 				return true;
 			}
 
@@ -171,7 +171,7 @@ public enum GroupSubcommand implements Subcommand {
 		}
 		@Override
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " group quit";
+			return "/" + label + " group leave";
 		}
 	},
 	kick() {

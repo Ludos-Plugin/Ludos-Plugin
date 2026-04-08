@@ -16,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
 import fr.ludos.game.areaController.GameAreaController;
+import fr.ludos.game.worldController.GameWorldController;
 
 public class WorldBorderAreaController extends GameAreaController {
 
@@ -43,7 +44,8 @@ public class WorldBorderAreaController extends GameAreaController {
 	}
 
 	@Override
-	protected void onAreaInit() {
+	protected void onSetup() {
+		GameWorldController worldController = getGame().getWorldController();
 		World world = getGame().getWorldController().getWorld();
 		WorldBorder border = world.getWorldBorder();
 		initialBorderCenter = border.getCenter();
@@ -58,12 +60,12 @@ public class WorldBorderAreaController extends GameAreaController {
 	}
 
 	@Override
-	protected void onAreaStart() {
+	protected void onStart() {
 		setBorder(gameLocation, getAreaDiameter(), 3);
 	}
 
 	@Override
-	protected void onAreaStop() {
+	protected void onStop() {
 		resetBorder();
 	}
 

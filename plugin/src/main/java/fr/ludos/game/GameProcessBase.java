@@ -15,7 +15,7 @@ public abstract class GameProcessBase implements GameProcess {
 
 	protected abstract JavaPlugin getPlugin();
 
-	public final void start() {
+	public void start() {
 		if (started) return;
 		started = true;
 
@@ -34,7 +34,7 @@ public abstract class GameProcessBase implements GameProcess {
 	protected void onInit() { }
 	protected void onStart() { }
 
-	public final void stop() {
+	public void stop() {
 		if (! started) return;
 		started = false;
 

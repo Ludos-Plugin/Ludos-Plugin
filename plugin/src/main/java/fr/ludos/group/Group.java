@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -32,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.item.LevelItem.LevelState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -79,6 +81,32 @@ public final class Group implements ConfigurationSerializable {
 	}
 	public void setGame(@Nullable Game game) {
 		this.game = game;
+	}
+
+	private final List<Consumer<OfflinePlayer>> leaveGroupListeners = new ArrayList<>();
+	public void addLeaveGroupListener(Consumer<OfflinePlayer> listener) {
+		leaveGroupListeners.add(listener);
+	}
+	public void removeLeaveGroupListener(Consumer<OfflinePlayer> listener) {
+		leaveGroupListeners.remove(listener);
+	}
+	private void notifyLeaveGroup(OfflinePlayer player) {
+		for (Consumer<OfflinePlayer> listener : leaveGroupListeners) {
+			listener.accept(player);
+		}
+	}
+
+	private final List<Consumer<OfflinePlayer>> joinGroupListeners = new ArrayList<>();
+	public void addJoinGroupListener(Consumer<OfflinePlayer> listener) {
+		joinGroupListeners.add(listener);
+	}
+	public void removeJoinGroupListener(Consumer<OfflinePlayer> listener) {
+		joinGroupListeners.remove(listener);
+	}
+	private void notifyJoinGroup(OfflinePlayer player) {
+		for (Consumer<OfflinePlayer> listener : joinGroupListeners) {
+			listener.accept(player);
+		}
 	}
 
 
@@ -200,6 +228,32 @@ public final class Group implements ConfigurationSerializable {
 		}
 		this.members.clear();
 	}
+	private final boolean electNewLeader() {
+		if (members.isEmpty()) return false;
+
+		OfflinePlayer newLeader = members.iterator().next();
+		members.remove(newLeader);
+		this.leader = newLeader;
+
+		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
+		Group.saveConfigGroup(plugin, this);
+
+		Component promotionMessage = Component.text("You have been promoted to group leader.");
+		Player onlineNewLeader = newLeader.getPlayer();
+		if (onlineNewLeader != null) {
+			onlineNewLeader.sendMessage(promotionMessage);
+		}
+
+		Component joinMessage = Component.text("You have joined " + newLeader.getName() + "'s group.");
+		for (OfflinePlayer member : members) {
+			Player onlineMember = member.getPlayer();
+			if (onlineMember != null) {
+				onlineMember.sendMessage(joinMessage);
+			}
+		}
+
+		return true;
+	}
 
 	public final void addPlayer(OfflinePlayer player) {
 		if (isLeader(player)) return;
@@ -216,12 +270,7 @@ public final class Group implements ConfigurationSerializable {
 		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 		Group.saveConfigGroup(plugin, this);
 
-
-		Game game = getGame();
-		if (game != null) {
-			game.getTeamController().addPlayer(player);
-		}
-
+		notifyJoinGroup(player);
 
 		Player onlinePlayer = player.getPlayer();
 		Component targetMessage = Component.text("You have joined " + leader.getName() + "'s group.");
@@ -240,26 +289,13 @@ public final class Group implements ConfigurationSerializable {
 		if (!wasLeader && !isMember(player)) return;
 
 		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
-
-		Component playerLeftMessage;
+		boolean shouldDisband = false;
+		Component playerLeftMessage = shouldDisband
+			? Component.text("You have left the group. Since you were the leader and there are no more members, the group has been disbanded.")
+			: Component.text("You have left the group.");
 		if (wasLeader) {
-			playerLeftMessage = Component.text("You have left your group.");
-
-			if (members.isEmpty()) {
-				disband();
-			} else {
-				OfflinePlayer newLeader = getMembers().iterator().next();
-
-				members.remove(leader);
-				leader = newLeader;
-
-				Group.saveConfigGroup(plugin, this);
-
-				Component newLeaderMessage = Component.text("The previous leader has left the group. You are now the new leader.");
-				Player onlineNewLeader = newLeader.getPlayer();
-				if (onlineNewLeader != null) {
-					onlineNewLeader.sendMessage(newLeaderMessage);
-				}
+			if (!electNewLeader()) {
+				shouldDisband = true;
 			}
 		}
 		else {
@@ -267,18 +303,16 @@ public final class Group implements ConfigurationSerializable {
 			playerGroupMap.remove(player);
 
 			Group.saveConfigGroup(plugin, this);
-
-			playerLeftMessage = Component.text("You have left " + leader.getName() + "'s group.");
 		}
 
+		if (shouldDisband) {
+			disband();
+		}
+		else {
+			notifyLeaveGroup(player);
+		}
 
 		Player onlinePlayer = player.getPlayer();
-		Game game = getGame();
-		if (game != null && onlinePlayer != null) {
-			game.getTeamController().removePlayer(onlinePlayer);
-		}
-
-
 		if (onlinePlayer != null) {
 			onlinePlayer.sendMessage(playerLeftMessage);
 		}
@@ -294,12 +328,12 @@ public final class Group implements ConfigurationSerializable {
 		if (isLeader(player)) return;
 		if (isMember(player)) return;
 
-		Component invitationMessage = Component.text("You have been invited to join " + leader + "'s group. Click ")
+		Component invitationMessage = Component.text("You have been invited to join " + leader.getName() + "'s group. Click ")
 			.append(
 				Component.text("Here")
 					.color(NamedTextColor.GOLD)
 					.clickEvent(
-						ClickEvent.runCommand(String.format("/ludos:ludos group join %s", leader))
+						ClickEvent.runCommand(String.format("/ludos:ludos group join %s", leader.getName()))
 					)
 			)
 			.append(Component.text(" to join."));

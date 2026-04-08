@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.io.File;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -24,6 +25,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
@@ -59,6 +61,8 @@ import fr.ludos.game.Game;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaController;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaOption;
 import fr.ludos.game.areaController.worldborder.WorldBorderLocationOption;
+import fr.ludos.game.lobbyController.LobbyWaitPlayersOption;
+import fr.ludos.game.lobbyController.structure.StructureLobbyController;
 import fr.ludos.game.teamController.GameJoinOption;
 import fr.ludos.game.worldController.SingleWorldController;
 import fr.ludos.group.Group;
@@ -89,6 +93,12 @@ public class ManhuntGame extends Game {
 	@Override
 	public ManhuntTeamController getTeamController() {
 		return this.teamController;
+	}
+
+	private final StructureLobbyController lobbyController;
+	@Override
+	public StructureLobbyController getLobbyController() {
+		return this.lobbyController;
 	}
 
 	private final ManhuntCompass.Events compassEvents;
@@ -122,7 +132,7 @@ public class ManhuntGame extends Game {
 			returnLocation = leader.getLocation();
 		}
 
-		this.scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
+		this.scoreboard = Bukkit.getServer().getScoreboardManager().getNewScoreboard();
 		this.worldController = new SingleWorldController(
 			this,
 			builder.createWorldCreator(),
@@ -138,6 +148,43 @@ public class ManhuntGame extends Game {
 			ManhuntGameConfigs.getChosenPlayers(config),
 			ManhuntGameConfigs.getChosenPrey(config)
 		);
+		this.lobbyController = new StructureLobbyController(
+			this,
+			ManhuntGameConfigs.getWaitPlayersOption(config),
+			ManhuntGameConfigs.getWaitDurationOption(config),
+			(location) -> {
+				Location structureLocation = location.clone();
+				structureLocation.setY(275);
+
+				structureLocation.setX(structureLocation.getBlockX());
+				structureLocation.setZ(structureLocation.getBlockZ());
+
+				// Build enclosed platform
+				for (int x = -5; x <= 5; x++) {
+					for (int z = -5; z <= 5; z++) {
+						Location blockLoc = structureLocation.clone().add(x, 0, z);
+						blockLoc.getBlock().setType(Material.OBSIDIAN);
+					}
+				}
+
+				// Add walls
+				for (int x = -5; x <= 5; x++) {
+					for (int y = 1; y <= 3; y++) {
+						structureLocation.clone().add(x, y, -5).getBlock().setType(Material.OBSIDIAN);
+						structureLocation.clone().add(x, y, 5).getBlock().setType(Material.OBSIDIAN);
+					}
+				}
+
+				for (int z = -4; z <= 4; z++) {
+					for (int y = 1; y <= 3; y++) {
+						structureLocation.clone().add(-5, y, z).getBlock().setType(Material.OBSIDIAN);
+						structureLocation.clone().add(5, y, z).getBlock().setType(Material.OBSIDIAN);
+					}
+				}
+
+				return structureLocation;
+			}
+		);
 
 		timer = new ManhuntTimer(this, ManhuntGameConfigs.getReveal(config));
 		compassEvents = new ManhuntCompass.Events(this);
@@ -147,17 +194,15 @@ public class ManhuntGame extends Game {
 	protected void onGameStart() {
 		World world = worldController.getWorld();
 		world.setTime(1000);
+		Collection<OfflinePlayer> players = teamController.getPlayers();
 
-		Set<Player> hunters = teamController.getSelectedHunters();
-		Player prey = teamController.getSelectedPrey();
+		for (OfflinePlayer offlinePlayer : players) {
+			Player player = offlinePlayer.getPlayer();
+			if (player == null) continue;
 
-		prey.getInventory().clear();
-		Utility.revokeAllAdvancements(prey);
-
-
-		for (Player hunter : hunters) {
-			hunter.getInventory().clear();
-			Utility.revokeAllAdvancements(hunter);
+			player.getInventory().clear();
+			player.setScoreboard(scoreboard);
+			Utility.revokeAllAdvancements(player);
 		}
 
 		compassEvents.start();
@@ -168,7 +213,10 @@ public class ManhuntGame extends Game {
 			public void run() {
 				if (lastPreyLocation == null) return;
 
-				for (Player player : Bukkit.getOnlinePlayers()) {
+				for (OfflinePlayer offlinePlayer : players) {
+					Player player = offlinePlayer.getPlayer();
+					if (player == null) continue;
+
 					player.sendActionBar(
 						Component.text("Prey's location:")
 						.append(Component.text(" X:" + lastPreyLocation.getBlockX()).color(NamedTextColor.RED))
@@ -182,10 +230,11 @@ public class ManhuntGame extends Game {
 		saturationTask = new BukkitRunnable() {
 			@Override
 			public void run() {
-				for (Player hunter : hunters) {
-					hunter.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 1, 0, true, false));
+				for (OfflinePlayer offlinePlayer : players) {
+					Player player = offlinePlayer.getPlayer();
+					if (player == null) continue;
+					player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 1, 0, true, false));
 				}
-				prey.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 1, 0, true, false));
 			}
 		}.runTaskTimer(getPlugin(), 400, 400);
 

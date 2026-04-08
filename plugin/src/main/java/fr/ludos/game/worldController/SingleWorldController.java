@@ -29,7 +29,7 @@ public class SingleWorldController extends GameWorldController {
 
 
 	@Override
-	protected void onInit() {
+	protected void onSetup() {
 		if (world != null) {
 			throw new IllegalStateException("World has already been initialized");
 		}
@@ -43,7 +43,7 @@ public class SingleWorldController extends GameWorldController {
 	}
 
 	@Override
-	protected void onDeinit() {
+	protected void onSetdown() {
 		if (world == null) {
 			throw new IllegalStateException("World has not been initialized");
 		}
@@ -55,6 +55,10 @@ public class SingleWorldController extends GameWorldController {
 		new BukkitRunnable() {
 			public void run() {
 				List<Player> playersInWorld = tempWorld.getPlayers();
+
+				// Load the world
+				Bukkit.getWorld(getReturnWorldUUID());
+
 				if (playersInWorld.size() > 0) {
 					for (Player player : playersInWorld) {
 						if (player.isDead()) {

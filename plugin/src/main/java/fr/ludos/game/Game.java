@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.command.Command;
@@ -34,6 +35,7 @@ import fr.ludos.Ludos;
 import fr.ludos.Utility;
 import fr.ludos.book.BookUtility;
 import fr.ludos.game.areaController.GameAreaController;
+import fr.ludos.game.lobbyController.GameLobbyController;
 import fr.ludos.game.teamController.GameTeamController;
 import fr.ludos.game.worldController.GameWorldController;
 import fr.ludos.group.Group;
@@ -45,7 +47,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public abstract class Game extends GameProcessBase {
+public abstract class Game extends TwoStepGameProcessBase {
 	private static final Map<String, Builder> registered = new HashMap<>();
 	public static Map<String, Builder> getRegistered() {
 		return registered;
@@ -96,6 +98,7 @@ public abstract class Game extends GameProcessBase {
 	public abstract GameWorldController getWorldController();
 	public abstract GameAreaController getAreaController();
 	public abstract GameTeamController getTeamController();
+	public abstract GameLobbyController getLobbyController();
 
 	protected Game(Builder builder, Group group) {
 		this.builder = builder;
@@ -109,32 +112,53 @@ public abstract class Game extends GameProcessBase {
 		try {
 			game = registered.get(id).build(group);
 		} catch (Exception e) {
-			Bukkit.getServer().broadcast(Component.text("Error while starting game " + id + ": " + e.getMessage()).color(NamedTextColor.RED));
+			Bukkit.getServer().broadcast(Component.text("Error while building game " + id + ": " + e.getMessage()).color(NamedTextColor.RED));
 			e.printStackTrace();
 			return false;
 		}
 
-		game.start();
+		game.setup();
 		return true;
 	}
 
+	private void onJoinGroup(OfflinePlayer player) {
+		getTeamController().addPlayer(player);
+	}
+	private void onLeaveGroup(OfflinePlayer player) {
+		getTeamController().removePlayer(player);
+	}
+
 	@Override
-	protected final void onInit() {
+	protected final void onSetup() {
 		Game oldGame = group.getGame();
 		if (oldGame != null && oldGame != this) {
 			oldGame.stop();
 		}
+
+		getWorldController().setup();
+		getAreaController().setup();
+		getTeamController().setup();
+
+		onGameSetup();
+
+		getLobbyController().start();
+
 		group.setGame(this);
-
 		activeGames.add(this);
+	}
 
+	@Override
+	protected final void onInit() {
 		onGameInit();
 	}
 	@Override
 	protected final void onStart() {
-		getWorldController().start();
-		getAreaController().start();
 		getTeamController().start();
+		getAreaController().start();
+		getWorldController().start();
+
+		getGroup().addJoinGroupListener(this::onJoinGroup);
+		getGroup().addLeaveGroupListener(this::onLeaveGroup);
 
 		onGameStart();
 
@@ -145,34 +169,49 @@ public abstract class Game extends GameProcessBase {
 		}
 	}
 
-	protected void onGameInit() { }
-	protected void onGameStart() { }
 
-
-	@Override
-	protected final void onDeinit() {
-		group.setGame(null);
-
-		activeGames.remove(this);
-
-		onGameDeinit();
-	}
 	@Override
 	protected final void onStop() {
-		getTeamController().stop();
-		getAreaController().stop();
-		getWorldController().stop();
-
-		onGameStop();
-
 		for (Role role : activeRoles.values()) {
 			role.stop();
 		}
 		activeRoles.clear();
+
+		onGameStop();
+
+		getGroup().removeJoinGroupListener(this::onJoinGroup);
+		getGroup().removeLeaveGroupListener(this::onLeaveGroup);
+
+		getTeamController().stop();
+		getAreaController().stop();
+		getWorldController().stop();
+	}
+	@Override
+	protected final void onDeinit() {
+		onGameDeinit();
+	}
+	@Override
+	protected final void onSetdown() {
+		group.setGame(null);
+		activeGames.remove(this);
+
+		getLobbyController().stop();
+
+		onGameSetdown();
+
+		getTeamController().setdown();
+		getAreaController().setdown();
+		getWorldController().setdown();
 	}
 
-	protected void onGameDeinit() { }
+	protected void onGameSetup() { }
+	protected void onGameInit() { }
+	protected void onGameStart() { }
+
 	protected void onGameStop() { }
+	protected void onGameDeinit() { }
+	protected void onGameSetdown() { }
+
 
 	public LinkedHashMap<String, GameEvents> modifyEvents(LinkedHashMap<String, GameEvents> events) {
 		return events;

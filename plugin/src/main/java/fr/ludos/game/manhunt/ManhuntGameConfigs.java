@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -18,6 +19,8 @@ import org.bukkit.entity.Player;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaOption;
 import fr.ludos.game.areaController.worldborder.WorldBorderLocationOption;
+import fr.ludos.game.lobbyController.LobbyStartDelayOption;
+import fr.ludos.game.lobbyController.LobbyWaitPlayersOption;
 import fr.ludos.game.teamController.GameJoinOption;
 
 public enum ManhuntGameConfigs {
@@ -161,6 +164,60 @@ public enum ManhuntGameConfigs {
 				return joinOptions;
 			return null;
 		}
+	},
+	wait_players (LobbyWaitPlayersOption::getUsage) {
+		@Override
+		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+			if ( args.length == 0 ) {
+				// Field is left empty, send the current config
+				sender.sendMessage( getWaitPlayersOption(config).name() );
+				return true;
+			}
+
+			String givenWaitPlayers = args[0];
+			LobbyWaitPlayersOption waitPlayersOption = Arrays.stream(LobbyWaitPlayersOption.values()).filter(o -> o.name().equals(givenWaitPlayers)).findFirst().orElse(null);
+			if (waitPlayersOption == null) return false;
+
+			setWaitPlayersOption(config, waitPlayersOption);
+
+			sender.sendMessage("Lobby Wait Option set to " + waitPlayersOption.name()); // TODO: Translate
+			return true;
+		}
+
+		@Override
+		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+			// Options are : online, all
+			if (args.length == 1)
+				return waitPlayersOptions;
+			return null;
+		}
+	},
+	start_delay (LobbyStartDelayOption::getUsage) {
+		@Override
+		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+			if ( args.length == 0 ) {
+				// Field is left empty, send the current config
+				sender.sendMessage( getWaitDurationOption(config).name() );
+				return true;
+			}
+
+			String givenWaitDuration = args[0];
+			LobbyStartDelayOption startDelayOption = Arrays.stream(LobbyStartDelayOption.values()).filter(o -> o.name().equals(givenWaitDuration)).findFirst().orElse(null);
+			if (startDelayOption == null) return false;
+
+			setWaitDurationOption(config, startDelayOption);
+
+			sender.sendMessage("Lobby Start Delay Option set to " + startDelayOption.name()); // TODO: Translate
+			return true;
+		}
+
+		@Override
+		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+			// Options are : short, medium, long
+			if (args.length == 1)
+				return waitDurationOptions;
+			return null;
+		}
 	};
 
 	private Supplier<String> usageGetter;
@@ -190,6 +247,11 @@ public enum ManhuntGameConfigs {
 	public static final String joinKey = "join";
 	public static final String joinPath = ManhuntGame.ID + '.' + joinKey;
 
+	public static final String waitPlayersKey = "waitPlayers";
+	public static final String waitPlayersPath = ManhuntGame.ID + '.' + waitPlayersKey;
+	public static final String startDelayKey = "startDelay";
+	public static final String startDelayPath = ManhuntGame.ID + '.' + startDelayKey;
+
 	private static final String allOption = "all";
 	private static final String randomOption = "random";
 
@@ -205,7 +267,12 @@ public enum ManhuntGameConfigs {
 	public static final List<String> joinOptions = Arrays.stream(GameJoinOption.values())
 		.map(v -> v.name())
 		.collect(Collectors.toList());
-
+	public static final List<String> waitPlayersOptions = Arrays.stream(LobbyWaitPlayersOption.values())
+		.map(v -> v.name())
+		.collect(Collectors.toList());
+	public static final List<String> waitDurationOptions = Arrays.stream(LobbyStartDelayOption.values())
+		.map(v -> v.name())
+		.collect(Collectors.toList());
 
 
 	public static String getPreyName(ConfigurationSection config) {
@@ -265,26 +332,46 @@ public enum ManhuntGameConfigs {
 		config.set(joinPath, value);
 	}
 
+	public static LobbyWaitPlayersOption getWaitPlayersOption(ConfigurationSection config) {
+		String waitPlayersString = config.getString(waitPlayersPath);
+		return Arrays.stream(LobbyWaitPlayersOption.values()).filter(o -> o.name().equals(waitPlayersString)).findFirst()
+			.orElse(LobbyWaitPlayersOption.online);
+	}
+	public static void setWaitPlayersOption(ConfigurationSection config, LobbyWaitPlayersOption waitPlayers) {
+		String value = waitPlayers == null ? null : waitPlayers.name();
+		config.set(waitPlayersPath, value);
+	}
+
+	public static LobbyStartDelayOption getWaitDurationOption(ConfigurationSection config) {
+		String startDelayString = config.getString(startDelayPath);
+		return Arrays.stream(LobbyStartDelayOption.values()).filter(o -> o.name().equals(startDelayString)).findFirst()
+			.orElse(LobbyStartDelayOption.ten_seconds);
+	}
+	public static void setWaitDurationOption(ConfigurationSection config, LobbyStartDelayOption startDelay) {
+		String value = startDelay == null ? null : startDelay.name();
+		config.set(startDelayPath, value);
+	}
+
 	@Nullable
-	public static Set<Player> getChosenPlayers(ConfigurationSection config) {
+	public static Set<OfflinePlayer> getChosenPlayers(ConfigurationSection config) {
 		Set<String> playerNames = getPlayerNames(config);
 		if (playerNames.isEmpty()) return null;
 
 		return new HashSet<>(
 			playerNames.stream()
-				.map(Bukkit::getPlayerExact)
+				.map(Bukkit::getOfflinePlayer)
 				.filter(p -> p != null)
 				.collect(Collectors.toSet())
 		);
 	}
 
 	@Nullable
-	public static Player getChosenPrey(ConfigurationSection config) {
+	public static OfflinePlayer getChosenPrey(ConfigurationSection config) {
 		String preyName = getPreyName(config);
 		if (preyName == null) {
 			return null;
 		}
-		return Bukkit.getPlayerExact(preyName);
+		return Bukkit.getOfflinePlayer(preyName);
 	}
 
 	public static String getPlayersString(ConfigurationSection config) {

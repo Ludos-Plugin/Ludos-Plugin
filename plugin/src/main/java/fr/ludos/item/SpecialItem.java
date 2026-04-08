@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
@@ -332,7 +333,10 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		}
 
 		protected void updateAllInventories() {
-			for (Player player : game.getTeamController().getPlayers()) {
+			for (OfflinePlayer offlinePlayer : game.getTeamController().getPlayers()) {
+				Player player = offlinePlayer.getPlayer();
+				if (player == null) continue;
+
 				if (canPlayerHaveItem(player)) {
 					updateItemInInventory(player);
 				}

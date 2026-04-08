@@ -44,20 +44,20 @@ public final class ManhuntTeamController extends GameTeamController {
 	public Team preyTeam;
 	public Team spectatorTeam;
 
-	private final Set<Player> selectedHunters;
-	public Set<Player> getSelectedHunters() {
+	private final Set<OfflinePlayer> selectedHunters;
+	public Set<OfflinePlayer> getSelectedHunters() {
 		return selectedHunters;
 	}
-	private final Player selectedPrey;
-	public Player getSelectedPrey() {
+	private final OfflinePlayer selectedPrey;
+	public OfflinePlayer getSelectedPrey() {
 		return selectedPrey;
 	}
 
 
-	public ManhuntTeamController(ManhuntGame game, @Nullable Set<Player> players, @Nullable Player prey) {
+	public ManhuntTeamController(ManhuntGame game, @Nullable Set<OfflinePlayer> players, @Nullable OfflinePlayer prey) {
 		super(game, ManhuntGameConfigs.getJoinOption(game.getGroup().getConfig()));
 
-		Set<Player> finalPlayers;
+		Set<OfflinePlayer> finalPlayers;
 		if (players == null) {
 			finalPlayers = game.getGroup().getOnlinePlayers().stream()
 				.filter(p -> p.isOnline())
@@ -73,7 +73,7 @@ public final class ManhuntTeamController extends GameTeamController {
 		}
 
 		if (prey == null) {
-			Player[] playersArray = finalPlayers.toArray(new Player[finalPlayers.size()]);
+			OfflinePlayer[] playersArray = finalPlayers.toArray(new OfflinePlayer[finalPlayers.size()]);
 			prey = playersArray[ new Random().nextInt(playersArray.length) ];
 		}
 		else if (!prey.isOnline()) {
@@ -87,7 +87,7 @@ public final class ManhuntTeamController extends GameTeamController {
 	}
 
 	@Override
-	protected void onStart() {
+	protected void onSetup() {
 		Scoreboard scoreboard = getGame().getScoreboard();
 
 		hunterTeam = scoreboard.getTeam("Hunters");
@@ -110,12 +110,19 @@ public final class ManhuntTeamController extends GameTeamController {
 			spectatorTeam.color(NamedTextColor.GRAY);
 			spectatorTeam.setAllowFriendlyFire(false);
 		}
+	}
 
+	@Override
+	protected void onStart() {
 		joinPrey(selectedPrey);
 
-		for (Player hunter : selectedHunters) {
+		for (OfflinePlayer hunter : selectedHunters) {
 			if (hunter == null) continue;
-			joinHunter(hunter);
+
+			Player onlineHunter = hunter.getPlayer();
+			if (onlineHunter == null) continue;
+
+			joinHunter(onlineHunter);
 		}
 
 		Set<Player> spectators = getGame().getGroup().getOnlinePlayers().stream()
@@ -130,7 +137,7 @@ public final class ManhuntTeamController extends GameTeamController {
 	}
 
 	@Override
-	protected void onStop() {
+	protected void onSetdown() {
 		if (preyTeam != null) {
 			preyTeam.unregister();
 			preyTeam = null;

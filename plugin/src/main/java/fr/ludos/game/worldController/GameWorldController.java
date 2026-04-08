@@ -3,6 +3,7 @@ package fr.ludos.game.worldController;
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -16,8 +17,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameProcessBase;
+import fr.ludos.game.TwoStepGameProcessBase;
 
-public abstract class GameWorldController extends GameProcessBase {
+public abstract class GameWorldController extends TwoStepGameProcessBase {
 	@Override
 	protected final JavaPlugin getPlugin() {
 		return getGame().getPlugin();
@@ -34,10 +36,15 @@ public abstract class GameWorldController extends GameProcessBase {
 	public final Location getReturnLocation() {
 		return returnLocation;
 	}
+	private final UUID returnWorldUUID;
+	public final UUID getReturnWorldUUID() {
+		return returnWorldUUID;
+	}
 
 	protected GameWorldController(Game game, Location returnLocation) {
 		this.game = Objects.requireNonNull(game, "Game cannot be null");
 		this.returnLocation = Objects.requireNonNull(returnLocation, "Return location cannot be null");
+		this.returnWorldUUID = returnLocation.getWorld().getUID();
 	}
 
 	public static void deleteWorld(World world) {

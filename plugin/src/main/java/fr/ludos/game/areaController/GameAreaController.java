@@ -14,9 +14,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
-import fr.ludos.game.GameProcessBase;
+import fr.ludos.game.TwoStepGameProcessBase;
 
-public abstract class GameAreaController extends GameProcessBase {
+public abstract class GameAreaController extends TwoStepGameProcessBase {
 	@Override
 	protected final JavaPlugin getPlugin() {
 		return getGame().getPlugin();
@@ -48,31 +48,4 @@ public abstract class GameAreaController extends GameProcessBase {
 
 	public abstract Location constrain(Location location);
 	public abstract boolean isInside(Location location);
-
-
-	@Override
-	public final void onStart() {
-		onAreaStart();
-	}
-
-	@Override
-	public final void onStop() {
-		onAreaStop();
-	}
-
-	protected void onAreaStart() { }
-	protected void onAreaStop() { }
-
-	@Override
-	public final void onInit() {
-		onAreaInit();
-	}
-
-	@Override
-	public final void onDeinit() {
-		onAreaDeinit();
-	}
-
-	protected void onAreaInit() { }
-	protected void onAreaDeinit() { }
 }
