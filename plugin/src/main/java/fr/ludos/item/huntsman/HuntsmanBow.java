@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -26,21 +27,30 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class HuntsmanBow extends SpecialItem {
 	private static final String ID = "manhuntHuntsmanBow";
-	private final static Map<ItemStack, HuntsmanBow> cachedItems = new HashMap<>();
+
+	// private final static Map<UUID, HuntsmanBow> cachedItems = new HashMap<>();
 
 
 	public static @Nullable HuntsmanBow fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		HuntsmanBow cached = cachedItems.get(stack);
-		if (cached != null) return cached;
+		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		if (itemId == null) return null;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		// HuntsmanBow cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		return new HuntsmanBow(stack, owner, game);
+		HuntsmanBow bow = new HuntsmanBow(stack, owner, game);
+		// cachedItems.put(itemId, bow);
+
+		return bow;
 	}
 	public static HuntsmanBow createItem(Player owner, Game game) {
 		HuntsmanBow bow = new HuntsmanBow(new ItemStack(Material.BOW), owner, game);
-		bow.initializeItem();
+		UUID itemId = bow.initializeItem();
+
+		// cachedItems.put(itemId, bow);
 
 		return bow;
 	}
@@ -51,7 +61,7 @@ public class HuntsmanBow extends SpecialItem {
 
 
 	@Override
-	public String getId() {
+	public String getTypeId() {
 		return ID;
 	}
 

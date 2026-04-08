@@ -16,10 +16,13 @@ import fr.ludos.game.Game;
 import net.kyori.adventure.text.Component;
 
 
-public abstract class LevelBranchItem<TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends LevelItem<TLevel> {
+public abstract class LevelBranchItem<TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends LevelItem<TLevel> implements BranchItemInterface<TBranch>, LevelItemInterface {
 	private TBranch branch;
 	public TBranch getBranch() {
 		return branch;
+	}
+	public void setBranch(TBranch branch) {
+		this.branch = branch;
 	}
 	private final TBranch[] branches;
 	public TBranch[] getBranches() {
@@ -37,19 +40,19 @@ public abstract class LevelBranchItem<TBranch extends Enum<TBranch> & BranchItem
 	protected void onInitialize() {
 		super.onInitialize();
 
-		setBranch(branch);
+		switchBranch(branch);
 	}
 
 
 	public void cycleBranch() {
-		setBranch(getBranches()[(getBranch().ordinal() + 1) % getBranches().length]);
+		switchBranch(getBranches()[(getBranch().ordinal() + 1) % getBranches().length]);
 
-		Player owner = getOwnerKey();
+		Player owner = getOwner();
 		owner.playSound(owner.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 0.25f, 1);
 	}
 
-	public void setBranch(TBranch branch) {
-		BranchItem.setItemBranch(this, branch, LevelBranchItem::getBranch, (item, newBranch) -> item.branch = newBranch);
+	public void switchBranch(TBranch branch) {
+		BranchItem.setItemBranch(this, branch);
 	}
 
 
@@ -68,14 +71,14 @@ public abstract class LevelBranchItem<TBranch extends Enum<TBranch> & BranchItem
 
 
 	public static abstract class Events<T extends LevelBranchItem<TBranch, TLevel>, TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends LevelItem.Events<T, TLevel> {
-		protected Events(Game game, TLevel baseLevel, @Nullable Integer slot, boolean canDrop) {
-			super(game, baseLevel, slot, canDrop);
+		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
+			super(game, slot, canDrop);
 		}
-		public Events(Game game, TLevel baseLevel, @Nullable Integer slot) {
-			this(game, baseLevel, slot, false);
+		public Events(Game game, @Nullable Integer slot) {
+			this(game, slot, false);
 		}
-		public Events(Game game, TLevel baseLevel) {
-			this(game, baseLevel, null, false);
+		public Events(Game game) {
+			this(game, null, false);
 		}
 
 		protected abstract TBranch[] getBranches();
@@ -93,7 +96,7 @@ public abstract class LevelBranchItem<TBranch extends Enum<TBranch> & BranchItem
 
 		@EventHandler
 		public void onSwitchItem(PlayerItemHeldEvent event) {
-			BranchItem.onSwitchItem(event, (stack) -> getItem(stack, game), LevelBranchItem::getBranch);
+			BranchItem.onSwitchItem(event, (stack) -> getItem(stack, game));
 		}
 	}
 }

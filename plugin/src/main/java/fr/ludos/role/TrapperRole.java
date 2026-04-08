@@ -15,6 +15,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.game.GameEvents;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.item.trapper.TrapperSnareDevice;
 import fr.ludos.item.trapper.TrapperDagger;
@@ -33,19 +34,20 @@ public class TrapperRole extends Role {
 	}
 
 	@Override
-	protected void onStart() {
+	protected void onRoleStart() {
 		invisibilityTask = new BukkitRunnable() {
 			@Override
 			public void run() {
 				for (Player sneakingPlayer : sneakingPlayers) {
 					sneakingPlayer.addPotionEffect(PotionEffectType.INVISIBILITY.createEffect(10,0));
+					sneakingPlayer.setArrowsStuck(0);
 				}
 			}
 		}.runTaskTimer(getGame().getPlugin(), 0, 1);
 	}
 
 	@Override
-	protected void onStop() {
+	protected void onRoleStop() {
 		sneakingPlayers.clear();
 
 		if (invisibilityTask != null) {
@@ -55,7 +57,7 @@ public class TrapperRole extends Role {
 	}
 
 	@Override
-	protected LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
+	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{

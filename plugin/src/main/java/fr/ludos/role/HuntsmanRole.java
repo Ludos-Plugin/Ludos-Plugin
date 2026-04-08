@@ -2,9 +2,6 @@ package fr.ludos.role;
 
 import java.util.LinkedHashMap;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Projectile;
@@ -15,11 +12,14 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
 import fr.ludos.Ludos;
+import fr.ludos.game.Game;
+import fr.ludos.game.GameEvents;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.item.huntsman.HuntsmanArrow;
 import fr.ludos.item.huntsman.HuntsmanBow;
 import fr.ludos.item.huntsman.HuntsmanCrossbow;
-import fr.ludos.item.huntsman.HuntsmanArrow;
-import fr.ludos.game.Game;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 
 public class HuntsmanRole extends Role {
@@ -32,7 +32,7 @@ public class HuntsmanRole extends Role {
 
 
 	@Override
-	protected LinkedHashMap<String, SpecialItem.Events<?>> createItemEvents(Role.Builder builder, Game game) {
+	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{
@@ -56,7 +56,7 @@ public class HuntsmanRole extends Role {
 
 		if (! Role.isPlayerRole(player, id)) return;
 
-		player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, (int)(20 * 2.5), 2));
+		player.addPotionEffect(PotionEffectType.SPEED.createEffect((int)(20 * 2.5), 2));
 	}
 
 
