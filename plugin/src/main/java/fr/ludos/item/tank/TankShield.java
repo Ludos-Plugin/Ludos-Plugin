@@ -134,7 +134,7 @@ public class TankShield extends SpecialItem {
 					defenderInventory.setItemInMainHand(stack);
 				}
 			}
-		}.runTaskLater(getGame().getPlugin(), 1);
+		}.runTaskLater(getGame().getPlugin(), 2);
 	}
 
 	@Override
