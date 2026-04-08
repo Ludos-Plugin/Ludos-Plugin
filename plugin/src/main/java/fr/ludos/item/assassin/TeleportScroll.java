@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import javax.annotation.Nullable;
+
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 
 
 import net.kyori.adventure.text.Component;
@@ -83,18 +87,34 @@ public class TeleportScroll extends SpecialItem {
     public List<Component> getLore(){
         return new ArrayList<>(Arrays.asList(
             Component.text("Téléporte-toi aléatoirement"),
-            Component.text("Cooldown : 5 secondes")
+            Component.text("Perd 2 coeurs max à l'utilisation"),
+            Component.text("Cooldown : 30 secondes")
         ));
     }
 
     public static class Events extends SpecialItem.Events<TeleportScroll> {
-        private static final int COOLDOWN = 20 * 5; // 5 secondes
+        private static final int COOLDOWN = 20 * 30; // 30 secondes
         private static final int MAX_ATTEMPTS = 100;
         private static final int INVULNERABILITY_DURATION = 20; // 1 seconde
+        private static final String HEALTH_MODIFIER_NAME = "teleport_scroll_health_reduction";
         private final Random random = new Random();
 
         public Events(Game game) {
             super(game);
+        }
+
+        @Override
+        protected void onStop() {
+            for (Player player : Role.getPlayersOfRole(AssassinRole.id)) {
+                var healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+                if (healthAttr == null) continue;
+                new ArrayList<>(healthAttr.getModifiers()).stream()
+                    .filter(m -> HEALTH_MODIFIER_NAME.equals(m.getName()))
+                    .forEach(healthAttr::removeModifier);
+                if (player.getHealth() > healthAttr.getValue()) {
+                    player.setHealth(healthAttr.getValue());
+                }
+            }
         }
 
         @EventHandler
@@ -107,7 +127,7 @@ public class TeleportScroll extends SpecialItem {
             ItemStack itemInHand = player.getInventory().getItemInMainHand();
             if (getItem(itemInHand, game) == null) return;
 
-            if (player.getCooldown(Material.ENDER_PEARL) > 0) return;
+            if (player.getCooldown(Material.PAPER) > 0) return;
 
             event.setCancelled(true);
 
@@ -115,6 +135,20 @@ public class TeleportScroll extends SpecialItem {
 
             if (randomLocation != null) {
                 player.teleport(randomLocation);
+
+                // Réduction permanente de 2 coeurs max (4 HP)
+                var healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+                if (healthAttr != null && healthAttr.getValue() > 4) {
+                    healthAttr.addModifier(new AttributeModifier(
+                        UUID.randomUUID(),
+                        HEALTH_MODIFIER_NAME,
+                        -4.0,
+                        AttributeModifier.Operation.ADD_NUMBER
+                    ));
+                    if (player.getHealth() > healthAttr.getValue()) {
+                        player.setHealth(healthAttr.getValue());
+                    }
+                }
 
                 // Annuler les dégâts pendant 1 seconde
                 player.setInvulnerable(true);
@@ -125,7 +159,7 @@ public class TeleportScroll extends SpecialItem {
                     }
                 }.runTaskLater(game.getPlugin(), INVULNERABILITY_DURATION);
 
-                player.setCooldown(Material.ENDER_PEARL, COOLDOWN);
+                player.setCooldown(Material.PAPER, COOLDOWN);
             }
         }
 

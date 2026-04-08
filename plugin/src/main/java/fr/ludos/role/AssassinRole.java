@@ -23,6 +23,7 @@ import fr.ludos.item.SpecialItem;
 import fr.ludos.item.assassin.AssassinDagger;
 import fr.ludos.item.assassin.AssassinBoots;
 import fr.ludos.item.assassin.TeleportScroll;
+import fr.ludos.item.trapper.TrapperSnareDevice;
 import fr.ludos.game.Game;
 
 
@@ -71,6 +72,12 @@ public class AssassinRole extends Role {
                     put("dagger", new AssassinDagger.Events(game));
                     put("boots", new AssassinBoots.Events(game));
                     put("teleport_scroll", new TeleportScroll.Events(game));
+                    put("snare", new TrapperSnareDevice.Events(game) {
+                        @Override
+                        protected Boolean canPlayerHaveItem(HumanEntity owner) {
+                            return Role.isPlayerRole(owner, AssassinRole.id);
+                        }
+                    });
                 }};
         }
     }
