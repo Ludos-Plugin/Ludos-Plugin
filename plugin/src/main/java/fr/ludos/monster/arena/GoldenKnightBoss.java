@@ -14,6 +14,7 @@ import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.WitherSkeleton;
@@ -192,7 +193,15 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 		b.getEquipment().setItemInMainHand(weapon);
 		b.getEquipment().setItemInMainHandDropChance(0.0f);
 
-		b.getEquipment().setHelmet(new ItemStack(Material.GOLDEN_HELMET));
+		ItemStack helmet = new ItemStack(Material.CARVED_PUMPKIN);
+		ItemMeta helmetMeta = helmet.getItemMeta();
+
+		if (helmetMeta != null) {
+			helmetMeta.setCustomModelData(3);
+			helmet.setItemMeta(helmetMeta);
+		}
+		b.getEquipment().setHelmet(helmet);
+
 		b.getEquipment().setChestplate(new ItemStack(Material.GOLDEN_CHESTPLATE));
 		b.getEquipment().setLeggings(new ItemStack(Material.GOLDEN_LEGGINGS));
 		b.getEquipment().setBoots(new ItemStack(Material.GOLDEN_BOOTS));
@@ -909,8 +918,9 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 		}
 	}
 
-	private void dealBossDamage(WitherSkeleton boss, Player player, double amount) {
-		player.damage(amount, boss);
+	@Override
+	protected void dealBossDamage(LivingEntity boss, Player player, double amount) {
+		super.dealBossDamage(boss, player, amount);
 		ticksSinceBossHitAPlayer = 0;
 	}
 

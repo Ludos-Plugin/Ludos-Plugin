@@ -19,12 +19,14 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.entity.Zombie;
 import org.bukkit.entity.AbstractSkeleton;
 import org.bukkit.event.EventHandler;
@@ -135,7 +137,7 @@ public final class ArenaWaveController extends ArenaGame {
 	);
 
 	private final Set<UUID> aliveWaveMonsters = new HashSet<>();
-	private GoldenKnightBoss currentBoss;
+	private ArenaMonsterBoss<? extends LivingEntity> currentBoss;
 	private int wave = 0;
 	private int bossesDefeated = 0;
 	private boolean bossWaveActive = false;
@@ -308,8 +310,11 @@ public final class ArenaWaveController extends ArenaGame {
 		}
 
 		grantBossWaveCombatSupplies();
+		if (currentTheme == WaveTheme.WATER) {
+			grantWaterBossMobilityKit();
+		}
 
-		currentBoss = new GoldenKnightBoss(this, mapThemeToBossElement(currentTheme));
+		currentBoss = createBossForTheme(currentTheme);
 
 		currentBoss.spawn(center);
 
@@ -323,6 +328,27 @@ public final class ArenaWaveController extends ArenaGame {
 
 		center.getWorld().strikeLightningEffect(center);
 		center.getWorld().playSound(center, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.7f);
+	}
+
+	private ArenaMonsterBoss<? extends LivingEntity> createBossForTheme(WaveTheme theme) {
+
+		return new GoldenKnightBoss(this, mapThemeToBossElement(theme));
+	}
+
+	private void grantWaterBossMobilityKit() {
+		ItemStack mobilityTrident = new ItemStack(Material.TRIDENT);
+		mobilityTrident.addUnsafeEnchantment(org.bukkit.enchantments.Enchantment.RIPTIDE, 2);
+		mobilityTrident.addUnsafeEnchantment(org.bukkit.enchantments.Enchantment.DURABILITY, 3);
+
+		for (Player player : getArenaPlayers()) {
+			if (!player.isOnline()) continue;
+
+			player.getInventory().addItem(mobilityTrident.clone());
+		}
+
+		Bukkit.broadcast(Component.text(
+			"Water boss kit: mobility trident granted"
+		).color(NamedTextColor.AQUA));
 	}
 
 	private void grantBossWaveCombatSupplies() {
@@ -639,7 +665,11 @@ public final class ArenaWaveController extends ArenaGame {
 	}
 
 	private WaveTheme resolveWaveTheme(int waveNumber) {
-		int idx = Math.floorMod(waveNumber - 1, 3);
+		if (waveNumber == 1) {
+			return WaveTheme.EARTH;
+		}
+
+		int idx = Math.floorMod(waveNumber - 2, 3);
 		return idx == 0 ? WaveTheme.EARTH : idx == 1 ? WaveTheme.WATER : WaveTheme.FIRE;
 	}
 
@@ -703,8 +733,21 @@ public final class ArenaWaveController extends ArenaGame {
 			return;
 		}
 
+		Location submerged = findBestWaterSpawn(location, false);
+		if (submerged != null) {
+			location.setWorld(submerged.getWorld());
+			location.setX(submerged.getX());
+			location.setY(submerged.getY());
+			location.setZ(submerged.getZ());
+			location.setYaw(submerged.getYaw());
+			location.setPitch(submerged.getPitch());
+			return;
+		}
+
 		Block at = location.getBlock();
-		if (!at.isLiquid()) {
+		if (at.isLiquid()) {
+			location.add(0.0, -1.0, 0.0);
+		} else {
 			int y = location.getWorld() != null ? location.getWorld().getHighestBlockYAt(location) : location.getBlockY();
 			location.setY(y + 0.1);
 		}
@@ -714,23 +757,82 @@ public final class ArenaWaveController extends ArenaGame {
 		World world = base.getWorld();
 		if (world == null) return base;
 
-		for (int radius = 8; radius <= 72; radius += 8) {
-			for (int step = 0; step < 24; step++) {
-				double angle = (Math.PI * 2 * step) / 24.0;
+		Location oceanCandidate = findBestWaterSpawn(base, true);
+		if (oceanCandidate != null) {
+			return oceanCandidate;
+		}
+
+		Location anyWaterCandidate = findBestWaterSpawn(base, false);
+		if (anyWaterCandidate != null) {
+			return anyWaterCandidate;
+		}
+
+		return base.clone();
+	}
+
+	private Location findBestWaterSpawn(Location base, boolean requireOceanBiome) {
+		World world = base.getWorld();
+		if (world == null) return null;
+
+		Location best = null;
+		int bestDepth = -1;
+
+		for (int radius = 0; radius <= 120; radius += 8) {
+			int samples = Math.max(16, radius == 0 ? 1 : 36);
+			for (int step = 0; step < samples; step++) {
+				double angle = (Math.PI * 2 * step) / samples;
 				double x = base.getX() + (Math.cos(angle) * radius);
 				double z = base.getZ() + (Math.sin(angle) * radius);
-				int y = world.getHighestBlockYAt((int) Math.round(x), (int) Math.round(z));
+				int bx = (int) Math.round(x);
+				int bz = (int) Math.round(z);
 
-				for (int dy = 0; dy <= 6; dy++) {
-					Location probe = new Location(world, x, y - dy, z);
-					if (probe.getBlock().isLiquid()) {
-						return probe.add(0.0, 0.2, 0.0);
+				int topY = world.getHighestBlockYAt(bx, bz);
+				for (int y = topY + 2; y >= world.getMinHeight() + 2; y--) {
+					Block block = world.getBlockAt(bx, y, bz);
+					if (!block.isLiquid()) continue;
+
+					if (requireOceanBiome && !isOceanBiome(block.getBiome())) {
+						continue;
 					}
+
+					int depth = measureWaterDepth(world, bx, y, bz);
+					if (depth < 4) continue;
+
+					if (depth > bestDepth) {
+						int spawnY = Math.max(world.getMinHeight() + 2, y - Math.min(3, depth - 1));
+						best = new Location(world, x + 0.5, spawnY + 0.1, z + 0.5);
+						bestDepth = depth;
+					}
+					break;
 				}
+			}
+
+			if (best != null && bestDepth >= 6) {
+				return best;
 			}
 		}
 
-		return base;
+		return best;
+	}
+
+	private int measureWaterDepth(World world, int x, int startY, int z) {
+		int depth = 0;
+		for (int y = startY; y >= world.getMinHeight(); y--) {
+			if (!world.getBlockAt(x, y, z).isLiquid()) {
+				break;
+			}
+			depth++;
+		}
+		return depth;
+	}
+
+	private boolean isOceanBiome(Biome biome) {
+		if (biome == null) return false;
+		String name = biome.name();
+		if (name.contains("OCEAN") || name.contains("DEEP")) {
+			return true;
+		}
+		return name.contains("RIVER") || name.contains("BEACH");
 	}
 
 	private Location resolveNetherCenter(Location base) {
@@ -769,7 +871,7 @@ public final class ArenaWaveController extends ArenaGame {
 
 	private String mapThemeToBossTitle(WaveTheme theme) {
 		return switch (theme) {
-			case WATER -> "Tide Knight";
+			case WATER -> "Abyssal Serpent";
 			case FIRE -> "Inferno Knight";
 			default -> "Golden Knight";
 		};

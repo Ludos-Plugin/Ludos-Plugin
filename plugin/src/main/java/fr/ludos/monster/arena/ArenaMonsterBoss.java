@@ -4,15 +4,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -36,6 +41,9 @@ public abstract class ArenaMonsterBoss<TEntity extends LivingEntity> extends Spe
 	private final Element element;
 	private final int totalPhases;
 	private final Map<UUID, Double> aggroScores = new HashMap<>();
+
+	@Nullable
+	private BossBar bossBar;
 
 	@Nullable
 	private EntityDamageEvent lastProcessedDamageEvent;
@@ -79,7 +87,7 @@ public abstract class ArenaMonsterBoss<TEntity extends LivingEntity> extends Spe
 	@Nullable
 	protected final Player selectFocusTarget(LivingEntity boss, World world, Location center, double maxDistanceSq) {
 		return getArenaTargets(world, center, maxDistanceSq).stream()
-			.filter(player -> !player.isDead() || player.getGameMode() == GameMode.SPECTATOR)
+			.filter(player -> !player.isDead() && player.getGameMode() != GameMode.SPECTATOR)
 			.min((p1, p2) -> {
 				double dist1 = Math.sqrt(p1.getLocation().distanceSquared(center));
 				double dist2 = Math.sqrt(p2.getLocation().distanceSquared(center));
@@ -148,5 +156,74 @@ public abstract class ArenaMonsterBoss<TEntity extends LivingEntity> extends Spe
 	private double getArmorValue(Player player) {
 		AttributeInstance armorAttribute = player.getAttribute(Attribute.GENERIC_ARMOR);
 		return armorAttribute != null ? armorAttribute.getValue() : 0.0;
+	}
+
+	protected final int tickCooldown(int value) {
+		return value > 0 ? value - 1 : 0;
+	}
+
+	protected final boolean isArenaTarget(Player player, World world, Location center, double maxDistanceSquared) {
+		if (!getGame().isArenaPlayer(player)) return false;
+		if (!player.getWorld().equals(world)) return false;
+		return player.getLocation().distanceSquared(center) <= maxDistanceSquared;
+	}
+
+	protected final boolean teleportNearArenaTarget(LivingEntity entity, Player target, double radius, boolean snapToGround) {
+		if (entity == null || target == null) return false;
+		if (!entity.isValid() || entity.isDead()) return false;
+		if (!target.isOnline() || target.isDead()) return false;
+		if (!target.getWorld().equals(entity.getWorld())) return false;
+
+		Location destination = target.getLocation().clone().add(
+			ThreadLocalRandom.current().nextDouble(-radius, radius),
+			0.0,
+			ThreadLocalRandom.current().nextDouble(-radius, radius)
+		);
+
+		if (snapToGround) {
+			getGame().moveToHighestGround(destination);
+		}
+
+		return entity.teleport(destination);
+	}
+
+	protected void dealBossDamage(LivingEntity boss, Player player, double amount) {
+		player.damage(amount, boss);
+	}
+
+	@Nullable
+	protected final Player resolveAttacker(EntityDamageByEntityEvent event) {
+		if (event.getDamager() instanceof Player player) {
+			return player;
+		}
+		if (event.getDamager() instanceof Projectile projectile && projectile.getShooter() instanceof Player shooter) {
+			return shooter;
+		}
+		return null;
+	}
+
+	protected final void initBossBar(String name, BarColor color, BarStyle style) {
+		disposeBossBar();
+		bossBar = Bukkit.createBossBar(name, color, style);
+		for (Player player : getGame().getArenaPlayers()) {
+			if (player.isOnline()) {
+				bossBar.addPlayer(player);
+			}
+		}
+		bossBar.setVisible(true);
+	}
+
+	protected final void refreshBossBar(String name, double currentHealth, double maxHealth) {
+		if (bossBar == null) return;
+		double progress = Math.max(0.0, Math.min(1.0, currentHealth / Math.max(1.0, maxHealth)));
+		bossBar.setProgress(progress);
+		bossBar.setTitle(name + " - " + (int) Math.ceil(Math.max(0.0, currentHealth)) + " HP");
+	}
+
+	protected final void disposeBossBar() {
+		if (bossBar == null) return;
+		bossBar.removeAll();
+		bossBar.setVisible(false);
+		bossBar = null;
 	}
 }
