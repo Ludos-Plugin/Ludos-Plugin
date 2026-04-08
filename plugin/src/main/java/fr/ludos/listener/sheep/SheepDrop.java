@@ -30,28 +30,28 @@ public class SheepDrop {
     
     static {
         // Common (50% total)
-        DROP_RATES.put(Material.WHITE_WOOL, 12.0);        // All Aboard Sheep
-        DROP_RATES.put(Material.GREEN_WOOL, 12.0);        // Grass Sheep
-        DROP_RATES.put(Material.LIGHT_GRAY_WOOL, 13.0);   // Monster Sheep
-        DROP_RATES.put(Material.GRAY_WOOL, 13.0);         // Anvil Sheep
+        DROP_RATES.put(Material.ORANGE_WOOL, 12.0);         // Explosion Sheep
+        DROP_RATES.put(Material.BLUE_WOOL, 12.0);           // Water Sheep
+        DROP_RATES.put(Material.LIGHT_BLUE_WOOL, 13.0);     // Freeze Sheep
+        DROP_RATES.put(Material.BLACK_WOOL, 13.0);          // Blind Sheep
         
         // Uncommon (30% total)
-        DROP_RATES.put(Material.ORANGE_WOOL, 7.5);        // Medium Explosion Sheep
-        DROP_RATES.put(Material.BLUE_WOOL, 7.5);          // Water Sheep
-        DROP_RATES.put(Material.LIME_WOOL, 7.5);          // Nausea Sheep
-        DROP_RATES.put(Material.PINK_WOOL, 7.5);          // Heal Sheep
+        DROP_RATES.put(Material.RED_WOOL, 7.5);             // Large Explosion Sheep
+        DROP_RATES.put(Material.YELLOW_WOOL, 7.5);          // Lava Sheep
+        DROP_RATES.put(Material.MAGENTA_WOOL, 7.5);         // Poison Sheep
+        DROP_RATES.put(Material.PINK_WOOL, 7.5);            // Heal Sheep
         
         // Rare (15% total)
-        DROP_RATES.put(Material.LIGHT_BLUE_WOOL, 3.0);    // Freeze Sheep
-        DROP_RATES.put(Material.BLACK_WOOL, 3.0);         // Blind Sheep
-        DROP_RATES.put(Material.MAGENTA_WOOL, 3.0);       // Poison Sheep
-        DROP_RATES.put(Material.CYAN_WOOL, 3.0);          // Fireball Sheep
-        DROP_RATES.put(Material.PURPLE_WOOL, 3.0);        // Teleport Sheep
+        DROP_RATES.put(Material.LIGHT_GRAY_WOOL, 3.0);      // Monster Sheep
+        DROP_RATES.put(Material.WHITE_WOOL, 3.0);           // All Aboard Sheep
+        DROP_RATES.put(Material.GRAY_WOOL, 3.0);            // Anvil Sheep
+        DROP_RATES.put(Material.CYAN_WOOL, 3.0);            // Fireball Sheep
+        DROP_RATES.put(Material.LIME_WOOL, 3.0);            // Nausea Sheep
         
         // Legendary (5% total)
-        DROP_RATES.put(Material.RED_WOOL, 2.25);           // Large Explosion Sheep
-        DROP_RATES.put(Material.YELLOW_WOOL, 2.25);        // Lava Sheep
-        DROP_RATES.put(Material.BROWN_WOOL, 0.5);         // Nuke Sheep
+        DROP_RATES.put(Material.PURPLE_WOOL, 2.25);         // Teleport Sheep
+        DROP_RATES.put(Material.GREEN_WOOL, 2.25);          // Grass Sheep
+        DROP_RATES.put(Material.BROWN_WOOL, 0.5);           // Nuke Sheep
     }
     
     private final JavaPlugin plugin;

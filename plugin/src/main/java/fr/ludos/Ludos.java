@@ -39,6 +39,7 @@ public class Ludos extends JavaPlugin implements Listener {
 
 	@Override
 	public void onEnable() {
+		saveDefaultConfig();
 		Role.loadConfigRoles(this);
 
         // getServer().getPluginManager().registerEvents(new Sheep(), this);

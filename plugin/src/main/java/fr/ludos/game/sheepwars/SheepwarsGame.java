@@ -1,5 +1,6 @@
 package fr.ludos.game.sheepwars;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -9,13 +10,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Paths;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
@@ -26,14 +28,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.Material;
-import net.kyori.adventure.text.format.TextDecoration;
 
 import fr.ludos.Ludos;
 import fr.ludos.command.CommandUtility;
@@ -45,9 +42,15 @@ import fr.ludos.listener.sheep.SheepDrop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.scoreboard.Team;
 
 
 public class SheepwarsGame extends Game {
+	private static final List<String> MAP_TEMPLATES = List.of(
+		"sheep_wars_with_water",
+		"sheep_wars_without_water"
+	);
+
 	public static final String id = "sheepwars";
 
 	public static final String playersKey = "players";
@@ -67,9 +70,13 @@ public class SheepwarsGame extends Game {
 	private SheepwarsTeamController teamController;
 	private Scoreboard scoreboard;
 	private final SheepRegistry sheepRegistry;
+	private final WorldManager worldManager;
 
 	private List<AbstractSheep> sheepList = null;
 	private SheepDrop sheepDrop;
+	private SheepwarsBlockBreakListener blockBreakListener;
+	private SheepwarsMonsterSpawnListener monsterSpawnListener;
+	private SheepwarsEliminationListener eliminationListener;
 
 	private File path;
 
@@ -78,6 +85,7 @@ public class SheepwarsGame extends Game {
 		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 
 		this.sheepRegistry = new SheepRegistry();
+		this.worldManager = new WorldManager(builder.getPlugin());
 		this.path = new File(builder.getPlugin().getDataFolder(), "sheep.json");
 	}
 
@@ -166,6 +174,12 @@ public class SheepwarsGame extends Game {
 	@Override
 	protected void onStart() {
 		teamController.start();
+		blockBreakListener = new SheepwarsBlockBreakListener();
+		monsterSpawnListener = new SheepwarsMonsterSpawnListener();
+		eliminationListener = new SheepwarsEliminationListener(this);
+		Bukkit.getPluginManager().registerEvents(blockBreakListener, this.getBuilder().getPlugin());
+		Bukkit.getPluginManager().registerEvents(monsterSpawnListener, this.getBuilder().getPlugin());
+		Bukkit.getPluginManager().registerEvents(eliminationListener, this.getBuilder().getPlugin());
 
 		// Register the sheep registry (handles interaction events)
 		Bukkit.getPluginManager().registerEvents(sheepRegistry, this.getBuilder().getPlugin());
@@ -190,16 +204,47 @@ public class SheepwarsGame extends Game {
 				player.getInventory().addItem(currentSheep.createSheepItem(4));
 			}
 
-		}
+			}
 
-		Bukkit.broadcast(
-			Component.text("Sheepwars has started! Use your Sheep Wool wisely!")
-				.color(NamedTextColor.GREEN)
-		);
+			String selectedTemplate = MAP_TEMPLATES.get(ThreadLocalRandom.current().nextInt(MAP_TEMPLATES.size()));
+			worldManager.loadGameWorld(selectedTemplate, () -> {
+				World sheepWarsWorld = worldManager.getActiveWorld();
+				if (sheepWarsWorld == null) {
+					Bukkit.getLogger().severe("SheepWars world loaded callback fired, but the active world was null.");
+					return;
+				}
 
-		// Start the wool drop timer (every 15 seconds)
-		sheepDrop = new SheepDrop(getPlugin(), teamController.getSelectedPlayers(), sheepList);
-		sheepDrop.start();
+				Location firstBoatSpawn;
+				Location secondBoatSpawn;
+				if ("sheep_wars_with_water".equals(selectedTemplate)) {
+					firstBoatSpawn = new Location(sheepWarsWorld, 227, 46, 79);
+					secondBoatSpawn = new Location(sheepWarsWorld, 216, 48, 120);
+				} else if ("sheep_wars_without_water".equals(selectedTemplate)) {
+					firstBoatSpawn = new Location(sheepWarsWorld, 199, 218, 96);
+					secondBoatSpawn = new Location(sheepWarsWorld, 236, 218, 24);
+				} else {
+					Bukkit.getLogger().warning("Unknown SheepWars template: " + selectedTemplate + ". Falling back to with_water spawns.");
+					firstBoatSpawn = new Location(sheepWarsWorld, 227, 46, 79);
+					secondBoatSpawn = new Location(sheepWarsWorld, 216, 48, 120);
+				}
+
+				List<Location> boatSpawns = Arrays.asList(firstBoatSpawn, secondBoatSpawn);
+				List<Team> teams = new ArrayList<>(teamController.getTeams());
+				for (int i = 0; i < teams.size() && i < boatSpawns.size(); i++) {
+					for (Player player : teamController.getTeamPlayers(teams.get(i))) {
+						player.teleport(boatSpawns.get(i));
+					}
+				}
+
+				Bukkit.broadcast(
+					Component.text("Sheepwars has started! Use your Sheep Wool wisely!")
+						.color(NamedTextColor.GREEN)
+				);
+
+				// Start the wool drop timer (every 15 seconds)
+				sheepDrop = new SheepDrop(getPlugin(), teamController.getSelectedPlayers(), sheepList);
+				sheepDrop.start();
+			});
 	}
 
 	@Override
@@ -214,6 +259,21 @@ public class SheepwarsGame extends Game {
 			teamController.stop();
 		}
 
+		if (eliminationListener != null) {
+			HandlerList.unregisterAll(eliminationListener);
+			eliminationListener = null;
+		}
+
+		if (blockBreakListener != null) {
+			HandlerList.unregisterAll(blockBreakListener);
+			blockBreakListener = null;
+		}
+
+		if (monsterSpawnListener != null) {
+			HandlerList.unregisterAll(monsterSpawnListener);
+			monsterSpawnListener = null;
+		}
+
 		// Unregister both sheep registry and shared event handlers
 		HandlerList.unregisterAll(sheepRegistry);
 		if (!sheepList.isEmpty()) {
@@ -221,6 +281,8 @@ public class SheepwarsGame extends Game {
 		}
 
 		resetWorldBorder();
+
+		worldManager.destroyWorld(getLobbySpawnLocation());
 
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
@@ -230,6 +292,16 @@ public class SheepwarsGame extends Game {
 			Component.text("Sheepwars has ended!")
 				.color(NamedTextColor.RED)
 		);
+	}
+
+	private Location getLobbySpawnLocation() {
+		for (World world : Bukkit.getWorlds()) {
+			if (!WorldManager.ACTIVE_WORLD_NAME.equals(world.getName())) {
+				return world.getSpawnLocation();
+			}
+		}
+
+		return Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0).getSpawnLocation();
 	}
 
 	private void setupWorldBorder() {

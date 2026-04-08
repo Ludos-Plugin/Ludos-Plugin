@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.Random;
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
@@ -25,7 +24,6 @@ import fr.ludos.game.TeamController;
 public final class SheepwarsTeamController extends TeamController {
 	private List<Team> teams;
 	private Set<Player> selectedPlayers;
-	private int teamCount;
 
 	public Set<Player> getSelectedPlayers() {
 		return selectedPlayers;
@@ -34,7 +32,6 @@ public final class SheepwarsTeamController extends TeamController {
 	public SheepwarsTeamController(SheepwarsGame game, @Nullable Set<Player> players, int teamCount) {
 		super(game, game.getScoreboard());
 		
-		this.teamCount = teamCount;
 		this.teams = new ArrayList<>();
 		
 		Set<Player> finalPlayers = new HashSet<>();
@@ -48,34 +45,32 @@ public final class SheepwarsTeamController extends TeamController {
 			throw new IllegalArgumentException("No players available for Sheepwars game");
 		}
 
+		if (finalPlayers.size() > 8) {
+			throw new IllegalArgumentException("Sheepwars supports a maximum of 8 players (2 teams of 4)");
+		}
+
 		this.selectedPlayers = finalPlayers;
 	}
 
 	@Override
 	protected void onStart() {
-		NamedTextColor[] teamColors = {
-			NamedTextColor.RED,
-			NamedTextColor.BLUE, 
-			NamedTextColor.GREEN,
-			NamedTextColor.YELLOW
-		};
+		Team redTeam = scoreboard.registerNewTeam("team1");
+		redTeam.displayName(Component.text("Red").color(NamedTextColor.RED));
+		redTeam.color(NamedTextColor.RED);
+		redTeam.setAllowFriendlyFire(false);
+		teams.add(redTeam);
 
-		String[] teamNames = {"Red", "Blue", "Green", "Yellow"};
-
-		for (int i = 0; i < teamCount; i++) {
-			Team team = scoreboard.registerNewTeam("team" + (i + 1));
-			team.displayName(Component.text(teamNames[i]).color(teamColors[i]));
-			team.color(teamColors[i]);
-			team.setAllowFriendlyFire(false);
-			teams.add(team);
-		}
+		Team blueTeam = scoreboard.registerNewTeam("team2");
+		blueTeam.displayName(Component.text("Blue").color(NamedTextColor.BLUE));
+		blueTeam.color(NamedTextColor.BLUE);
+		blueTeam.setAllowFriendlyFire(false);
+		teams.add(blueTeam);
 
 		List<Player> playerList = new ArrayList<>(selectedPlayers);
-		Random random = new Random();
 		
 		for (int i = 0; i < playerList.size(); i++) {
 			Player player = playerList.get(i);
-			Team team = teams.get(i % teamCount);
+			Team team = teams.get(i % 2);
 			team.addEntry(player.getName());
 			
 			player.sendMessage(
@@ -83,6 +78,9 @@ public final class SheepwarsTeamController extends TeamController {
 					.append(team.displayName())
 			);
 		}
+
+		// Only two teams are used in SheepWars: Red and Blue.
+		// The previous Green/Yellow team slots are intentionally not created.
 	}
 
 	@Override
