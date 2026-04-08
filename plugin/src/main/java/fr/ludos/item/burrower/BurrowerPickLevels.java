@@ -7,8 +7,10 @@ import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.item.LevelItem;
+import fr.ludos.item.SpecialItem;
 
 
 public enum BurrowerPickLevels implements LevelItem.Level<BurrowerPickLevels> {
@@ -28,7 +30,7 @@ public enum BurrowerPickLevels implements LevelItem.Level<BurrowerPickLevels> {
 
 	private final static BurrowerPickLevels[] values = BurrowerPickLevels.values();
 
-	private Material material;
+	private final Material material;
 	public Material getMaterial() {
 		return material;
 	}
@@ -72,4 +74,21 @@ public enum BurrowerPickLevels implements LevelItem.Level<BurrowerPickLevels> {
 	public Class<BurrowerPickLevels> getLevelClass() {
 		return BurrowerPickLevels.class;
 	}
+
+	@Override
+	public void onUnequip(SpecialItem item) { }
+
+	@Override
+	public void onEquip(SpecialItem item) { }
+
+	@Override
+	public void onSetLevel(SpecialItem item) {
+		ItemStack stack = item.getStack();
+		stack.setType(material);
+		stack.removeEnchantment(Enchantment.DIG_SPEED);
+		stack.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
+		stack.addEnchantments(enchantments);
+	}
+	@Override
+	public void onUnsetLevel(SpecialItem item) { }
 }

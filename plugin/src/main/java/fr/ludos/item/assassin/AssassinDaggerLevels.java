@@ -7,6 +7,7 @@ import java.util.Map;
 import org.bukkit.enchantments.Enchantment;
 
 import fr.ludos.item.LevelItem;
+import fr.ludos.item.SpecialItem;
 
 
 public enum AssassinDaggerLevels implements LevelItem.Level<AssassinDaggerLevels> {
@@ -31,6 +32,23 @@ public enum AssassinDaggerLevels implements LevelItem.Level<AssassinDaggerLevels
     public Map<Enchantment, Integer> getEnchantments() { return enchantments; }
 
     public boolean appliesPoison() { return appliesPoison; }
+
+    @Override
+    public void onSetLevel(SpecialItem item) {
+        item.getStack().removeEnchantment(Enchantment.DAMAGE_ALL);
+        item.getStack().addEnchantments(enchantments);
+    }
+
+    @Override
+    public void onUnsetLevel(SpecialItem item) {
+        item.getStack().removeEnchantment(Enchantment.DAMAGE_ALL);
+    }
+
+    @Override
+    public void onEquip(SpecialItem item) { }
+
+    @Override
+    public void onUnequip(SpecialItem item) { }
 
     @Override
     public Class<AssassinDaggerLevels> getLevelClass() {

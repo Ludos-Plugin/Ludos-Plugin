@@ -1,7 +1,11 @@
 package fr.ludos.game.manhunt;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import javax.annotation.Nullable;
 
 import net.kyori.adventure.text.Component;
@@ -16,21 +20,39 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
 import fr.ludos.item.SpecialItem;
+import fr.ludos.item.burrower.BurrowerPick;
 import fr.ludos.game.Game;
 
 
 public class ManhuntCompass extends SpecialItem {
 	private static final String ID = "manhuntCompass";
 
+	// private static final Map<UUID, ManhuntCompass> cachedItems = new HashMap<>();
+
+
 	public static @Nullable ManhuntCompass fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		Player owner = SpecialItem.getSpecialItemOwner(stack, ID, game);
+		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		if (itemId == null) return null;
+
+		// ManhuntCompass cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
+		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		return new ManhuntCompass(stack, owner, game);
+		ManhuntCompass compass = new ManhuntCompass(stack, owner, game);
+		// cachedItems.put(itemId, compass);
+
+		return compass;
 	}
 	
 	public static ManhuntCompass createItem(Player owner, Game game) {
-		return new ManhuntCompass(createItemStack(), owner, game);
+		ManhuntCompass compass = new ManhuntCompass(createItemStack(), owner, game);
+		UUID itemId = compass.initializeItem();
+
+		// cachedItems.put(itemId, compass);
+
+		return compass;
 	}
 
 	protected ManhuntCompass(ItemStack stack, Player owner, Game game) {
@@ -38,7 +60,7 @@ public class ManhuntCompass extends SpecialItem {
 	}
 
 	@Override
-	public String getId() {
+	public String getTypeId() {
 		return ID;
 	}
 
@@ -52,7 +74,11 @@ public class ManhuntCompass extends SpecialItem {
 	public List<Component> getLore() {
 		return new ArrayList<Component>(){{
 			add(
-				Component.text("Every three minutes, the position of prey is revealed through the compass.")
+				Component.text("When the timer ends,")
+					.decoration(TextDecoration.ITALIC, false)
+			);
+			add(
+				Component.text("the position of the prey is revealed through the compass.")
 					.decoration(TextDecoration.ITALIC, false)
 			);
 		}};
@@ -107,7 +133,7 @@ public class ManhuntCompass extends SpecialItem {
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {
 			if (! (game instanceof ManhuntGame manhunt)) return false;
-			return manhunt.getTeamController().hunterTeam.hasEntry(owner.getName());
+			return manhunt.getGameTeamController().hunterTeam.hasEntry(owner.getName());
 		}
 
 		// @EventHandler
