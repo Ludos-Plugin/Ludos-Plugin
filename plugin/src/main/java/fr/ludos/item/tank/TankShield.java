@@ -36,6 +36,9 @@ public class TankShield extends SpecialItem {
 	private static final int MAX_HITS_BEFORE_COOLDOWN = 5;
 	private static final int COOLDOWN_DURATION = 5 * 20;
 
+	public static final Map<UUID, Integer> hitCounts = new HashMap<>();
+	// private final Map<UUID, Boolean> isInCooldown = new HashMap<>();
+
 	public static @Nullable TankShield fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
@@ -74,6 +77,75 @@ public class TankShield extends SpecialItem {
 		return ID;
 	}
 
+	public void hit() {
+		UUID playerId = getOwner().getUniqueId();
+
+		int currentHits = hitCounts.getOrDefault(playerId, 0) + 1;
+		hitCounts.put(playerId, currentHits);
+
+		// defender.sendMessage(Component.text("Blocked shots: " + currentHits + "/" + MAX_HITS_BEFORE_COOLDOWN).color(NamedTextColor.YELLOW));
+		ItemStack stack = getStack();
+		ItemMeta meta = stack.getItemMeta();
+
+		boolean makeCooldown = currentHits >= MAX_HITS_BEFORE_COOLDOWN;
+
+		int newDamage;
+		if (makeCooldown) {
+			newDamage = 0;
+		}
+		else {
+			float durabilityRatio = (float)(MAX_HITS_BEFORE_COOLDOWN - (MAX_HITS_BEFORE_COOLDOWN - currentHits)) / MAX_HITS_BEFORE_COOLDOWN;
+			newDamage = Math.max((int)(durabilityRatio * (float)(stack.getType().getMaxDurability())), 1);
+		}
+		if (meta instanceof Damageable damageable) {
+			damageable.setDamage(newDamage);
+			stack.setItemMeta(damageable);
+		}
+
+
+		if (makeCooldown) {
+			startCooldown();
+
+			PlayerInventory defenderInventory = getOwner().getInventory();
+			boolean isOffHand = defenderInventory.getItemInOffHand().equals(stack);
+			
+			if (isOffHand) {
+				defenderInventory.setItemInOffHand(null);
+			} else {
+				defenderInventory.setItemInMainHand(null);
+			}
+			new BukkitRunnable() {
+				public void run() {
+					if (isOffHand) {
+						defenderInventory.setItemInOffHand(stack);
+					} else {
+						defenderInventory.setItemInMainHand(stack);
+					}
+				}
+			}.runTaskLater(getGame().getPlugin(), 5);
+		}
+	}
+
+	public void startCooldown() {
+		Player player = getOwner();
+		UUID playerId = getOwner().getUniqueId();
+
+		hitCounts.put(playerId, 0);
+
+		player.setCooldown(Material.SHIELD, COOLDOWN_DURATION);
+		player.setShieldBlockingDelay(COOLDOWN_DURATION);
+		player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BREAK, 1.0f, 1.0f);
+	}
+
+	public void resetPlayer() {
+		Player player = getOwner();
+		UUID playerId = player.getUniqueId();
+
+		hitCounts.remove(playerId);
+		player.setCooldown(Material.SHIELD, 0);
+		player.setShieldBlockingDelay(0);
+	}
+
 	@Override
 	public Component getName() {
 		return Component.text("Tank Shield")
@@ -86,9 +158,6 @@ public class TankShield extends SpecialItem {
 	}
 
 	public static class Events extends SpecialItem.Events<TankShield> {
-		private final Map<UUID, Integer> hitCounts = new HashMap<>();
-		// private final Map<UUID, Boolean> isInCooldown = new HashMap<>();
-
 		public Events(Game game) {
 			super(game, 40);
 		}
@@ -113,53 +182,24 @@ public class TankShield extends SpecialItem {
 			if (!(event.getEntity() instanceof Player defender))
 				return;
 
-			if (!defender.isBlocking())
+			if (!defender.isBlocking() || defender.getCooldown(Material.SHIELD) > 0) {
+				// event.setCancelled(false);
 				return;
+			}
 
-			if (defender.getCooldown(Material.SHIELD) > 0)
-				return;
 
+			TankShield shield;
+
+			ItemStack mainHand = defender.getInventory().getItemInMainHand();
 			ItemStack offHand = defender.getInventory().getItemInOffHand();
-
-			TankShield shield = TankShield.fromItemStack(offHand, game);
-			if (shield == null)
-				return;
-
-			UUID playerId = defender.getUniqueId();
-
-			int currentHits = hitCounts.getOrDefault(playerId, 0) + 1;
-			hitCounts.put(playerId, currentHits);
-
-			// defender.sendMessage(Component.text("Blocked shots: " + currentHits + "/" + MAX_HITS_BEFORE_COOLDOWN).color(NamedTextColor.YELLOW));
-			ItemStack stack = shield.getStack();
-			ItemMeta meta = stack.getItemMeta();
-
-			boolean makeCooldown = currentHits >= MAX_HITS_BEFORE_COOLDOWN;
-
-			int newDamage;
-			if (makeCooldown) {
-				newDamage = 0;
+			shield = TankShield.fromItemStack(offHand, game);
+			if (shield == null) {
+				shield = TankShield.fromItemStack(mainHand, game);
 			}
-			else {
-				float durabilityRatio = (float)(MAX_HITS_BEFORE_COOLDOWN - (MAX_HITS_BEFORE_COOLDOWN - currentHits)) / MAX_HITS_BEFORE_COOLDOWN;
-				newDamage = Math.max((int)(durabilityRatio * (float)(stack.getType().getMaxDurability())), 1);
-			}
-			if (meta instanceof Damageable damageable) {
-				damageable.setDamage(newDamage);
-				stack.setItemMeta(damageable);
-			}
+			if (shield == null) return;
 
-
-			if (makeCooldown) {
-				startCooldown(defender, offHand);
-
-				PlayerInventory defenderInventory = defender.getInventory();
-
-				defenderInventory.setItemInOffHand(null);
-				new BukkitRunnable() {
-					public void run() { defenderInventory.setItemInOffHand(stack); }
-				}.runTaskLater(game.getPlugin(), 1);
-			}
+			shield.getOwner().sendMessage("You blocked an attack with your shield!");
+			shield.hit();
 		}
 
 		@EventHandler(priority = EventPriority.HIGHEST)
@@ -171,24 +211,11 @@ public class TankShield extends SpecialItem {
 			if (shield == null)
 				return;
 
+			// player.sendMessage("Your shield blocked an attack!");
+
 			event.setCancelled(true);
-		}
 
-		private void startCooldown(Player player, ItemStack shieldItem) {
-			UUID playerId = player.getUniqueId();
-
-			hitCounts.put(playerId, 0);
-
-			player.setCooldown(Material.SHIELD, COOLDOWN_DURATION);
-			player.setShieldBlockingDelay(COOLDOWN_DURATION);
-			player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BREAK, 1.0f, 1.0f);
-		}
-
-		public void resetPlayer(Player player) {
-			UUID playerId = player.getUniqueId();
-			hitCounts.remove(playerId);
-			player.setCooldown(Material.SHIELD, 0);
-			player.setShieldBlockingDelay(0);
+			// shield.hit();
 		}
 	}
 }
