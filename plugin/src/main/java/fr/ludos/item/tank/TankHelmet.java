@@ -98,9 +98,4 @@ public class TankHelmet extends SpecialItem {
 			return Role.isPlayerRole(owner, TankRole.id);
 		}
 	}
-
-
-
-
-
 }

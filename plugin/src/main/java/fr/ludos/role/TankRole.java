@@ -61,13 +61,9 @@ public class TankRole extends Role {
 		}
 	}
 
-	public List<Player> TanksRolePlayers() {
-		return Role.getPlayersOfRole(id);
-	}
-
 	@Override
 	protected void onRoleStop() {
-		for (Player player : TanksRolePlayers()) {
+		for (Player player : Role.getPlayersOfRole(id)) {
 			player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20.0);
 			for (PotionEffect potion : player.getActivePotionEffects()) {
 				player.removePotionEffect(potion.getType());
@@ -77,24 +73,22 @@ public class TankRole extends Role {
 
 	@EventHandler
 	public void onPlayerHit(EntityDamageByEntityEvent event) {
-		if (!TanksRolePlayers().contains((Player) event.getDamager()))
-			return;
+		if (!(event.getEntity() instanceof Player defender)) return;
+		if (!(event.getDamager() instanceof Player attacker)) return;
 
-		if (event.getDamager() instanceof Player) {
-			Player attacker = (Player) event.getDamager();
-			Material material = attacker.getInventory().getItemInMainHand().getType();
+		if (!Role.getPlayersOfRole(id).contains(attacker)) return;
 
-			double multiplier = switch (material) {
-				case WOODEN_SWORD -> 0.9;
-				case IRON_SWORD -> 0.7;
-				case STONE_SWORD -> 0.8;
-				case DIAMOND_SWORD -> 0.6;
-				default -> 1;
-			};
+		Material material = attacker.getInventory().getItemInMainHand().getType();
 
-			event.setDamage(event.getDamage() * multiplier);
+		double multiplier = switch (material) {
+			case WOODEN_SWORD -> 0.9;
+			case IRON_SWORD -> 0.7;
+			case STONE_SWORD -> 0.8;
+			case DIAMOND_SWORD -> 0.6;
+			default -> 1;
+		};
 
-		}
+		event.setDamage(event.getDamage() * multiplier);
 	}
 
 	public static class Builder extends Role.Builder {
