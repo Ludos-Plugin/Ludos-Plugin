@@ -144,8 +144,8 @@ public class BurrowerShovel extends SpecialItem {
 		getOwner().setCooldown(getStack().getType(), 5);
 	}
 
-    private void tunnelBlock(Player player, Location location, List<BlockState> blockBuffer) {
-        Block eyeBlock = location.getBlock();
+	private void tunnelBlock(Player player, Location location, List<BlockState> blockBuffer) {
+		Block eyeBlock = location.getBlock();
 
 		if (! ItemUtilities.isBreakable(eyeBlock)) {
 			return;
@@ -154,9 +154,9 @@ public class BurrowerShovel extends SpecialItem {
 			return;
 		}
 
-        blockBuffer.add(eyeBlock.getState());
-        eyeBlock.setType(Material.AIR, false);
-    }
+		blockBuffer.add(eyeBlock.getState());
+		eyeBlock.setType(Material.AIR, false);
+	}
 
 
 	private void revertTunnel() {
@@ -165,13 +165,13 @@ public class BurrowerShovel extends SpecialItem {
 			return;
 		}
 
-        playerBlocks.forEach(blockState -> {
+		playerBlocks.forEach(blockState -> {
 			Location currentBlockLocation = blockState.getLocation();
 			Block currentBlock = currentBlockLocation.getBlock();
 
 			currentBlock.breakNaturally();
 			currentBlock.setType(blockState.getType(), true);
-        });
+		});
 
 		tunnelBlocks.remove(getOwner());
 

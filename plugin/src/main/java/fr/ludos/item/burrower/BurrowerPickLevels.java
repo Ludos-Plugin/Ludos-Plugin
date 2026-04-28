@@ -75,6 +75,11 @@ public enum BurrowerPickLevels implements LevelItem.Level<BurrowerPickLevels> {
 		return BurrowerPickLevels.class;
 	}
 
+	@Override
+	public void onUnequip(SpecialItem item) { }
+
+	@Override
+	public void onEquip(SpecialItem item) { }
 
 	@Override
 	public void onSetLevel(SpecialItem item) {

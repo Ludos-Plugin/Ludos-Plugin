@@ -85,6 +85,7 @@ public class TrapperDagger extends MultiLevelBranchItem<TrapperDaggerBranches> {
 
 		return dagger;
 	}
+
 	public static TrapperDagger createItem(Player owner, LevelItem.LevelState[] levels, Game game) {
 		TrapperDagger dagger = new TrapperDagger(new ItemStack(Material.STONE_SWORD), owner, TrapperDaggerBranches.SHARPNESS, levels, game);
 		UUID itemId = dagger.initializeItem();
@@ -103,6 +104,7 @@ public class TrapperDagger extends MultiLevelBranchItem<TrapperDaggerBranches> {
 	protected String getTypeId() {
 		return ID;
 	}
+
 	@Override
 	public Component getName() {
 		return Component.text("Trapper Dagger ")

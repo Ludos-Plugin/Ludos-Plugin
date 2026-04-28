@@ -49,11 +49,11 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	public static final String TYPE_ID = "type_id";
 	private static final NamespacedKey typeIdKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), TYPE_ID);
 
-	public static final String ITEM_ID = "item_id";
-	private static final NamespacedKey itemIdKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ITEM_ID);
+	public static final String ITEM_ID_KEY = "item_id";
+	private static final NamespacedKey itemIdKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ITEM_ID_KEY);
 
-	public static final String OWNER = "owner";
-	private static final NamespacedKey ownerKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), OWNER);
+	public static final String OWNER_KEY = "owner";
+	private static final NamespacedKey ownerKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), OWNER_KEY);
 
 	public static final int USAGE_COOLDOWN = 3;
 
@@ -70,20 +70,18 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		return owner;
 	}
 
-	public static @Nullable UUID getSpecialItemId(ItemStack stack, String id, Game game) {
+	public static @Nullable UUID getSpecialItemId(ItemStack stack, String typeId, Game game) {
 		if (stack == null) return null;
 
 		ItemMeta meta = stack.getItemMeta();
 		if (meta == null) return null;
 
-
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
 		if (! container.has(typeIdKey, PersistentDataType.STRING) ) return null;
-		String itemId = container.get(typeIdKey, PersistentDataType.STRING);
+		String found = container.get(typeIdKey, PersistentDataType.STRING);
 
-		if (! itemId.equals(id)) return null;
-
+		if (! found.equals(typeId)) return null;
 		if (! container.has(itemIdKey, PersistentDataType.STRING) ) return null;
 
 		return UUID.fromString(
@@ -148,6 +146,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 		return itemId;
 	}
+
 	protected void onInitialize() { }
 
 

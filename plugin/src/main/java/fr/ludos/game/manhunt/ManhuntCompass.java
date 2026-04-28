@@ -45,6 +45,7 @@ public class ManhuntCompass extends SpecialItem {
 
 		return compass;
 	}
+	
 	public static ManhuntCompass createItem(Player owner, Game game) {
 		ManhuntCompass compass = new ManhuntCompass(createItemStack(), owner, game);
 		UUID itemId = compass.initializeItem();
@@ -57,7 +58,6 @@ public class ManhuntCompass extends SpecialItem {
 	protected ManhuntCompass(ItemStack stack, Player owner, Game game) {
 		super(stack, owner, game);
 	}
-
 
 	@Override
 	public String getTypeId() {
