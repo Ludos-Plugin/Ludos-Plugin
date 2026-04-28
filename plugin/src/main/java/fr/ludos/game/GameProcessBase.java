@@ -38,11 +38,11 @@ public abstract class GameProcessBase implements GameProcess {
 		if (! started) return;
 		started = false;
 
-		onDeinit();
+		onStop();
 
 		HandlerList.unregisterAll(this);
 
-		onStop();
+		onDeinit();
 	}
 	protected void onDeinit() { }
 	protected void onStop() { }
