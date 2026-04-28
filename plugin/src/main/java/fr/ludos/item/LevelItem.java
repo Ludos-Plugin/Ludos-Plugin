@@ -331,15 +331,29 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		public int getLevel() {
 			return level;
 		}
-		public boolean setLevel(int level, int maxLevel) {
+		private boolean setLevelNoEvent(int level, int maxLevel) {
 			if (level < 0 || (maxLevel >= 0 && level > maxLevel)) return false;
 			int oldLevel = this.level;
 			this.level = level;
 			notifyLevelUp(oldLevel);
 			return true;
 		}
+		public boolean setLevel(int level, int maxLevel) {
+			if (setLevelNoEvent(level, maxLevel)) {
+				notifyXpChange();
+				return true;
+			}
+			return false;
+		}
+		private boolean addLevelNoEvent(int maxLevel) {
+			return setLevelNoEvent(level + 1, maxLevel);
+		}
 		public boolean addLvl(int maxLevel) {
-			return setLevel(level + 1, maxLevel);
+			if (addLevelNoEvent(maxLevel)) {
+				notifyXpChange();
+				return true;
+			}
+			return false;
 		}
 
 		private double xp;
@@ -350,7 +364,7 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 			boolean levelUp = false;
 			while (this.level < maxLevel && xp >= levelToXpThreshold.apply(this.level)) {
 				xp -= levelToXpThreshold.apply(this.level);
-				addLvl(maxLevel);
+				addLevelNoEvent(maxLevel);
 				levelUp = true;
 			}
 			this.xp = xp;
