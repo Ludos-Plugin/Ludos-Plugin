@@ -2,13 +2,16 @@ package fr.ludos.role;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -45,7 +48,10 @@ public class AssassinRole extends Role {
 	protected void onRoleStart() {
 		stealthTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), () -> {
 			long now = System.currentTimeMillis();
-			for (Player player : Role.getPlayersOfRole(AssassinRole.id)) {
+			List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
+				.filter((player) -> Role.isPlayerRole(player, id))
+				.collect(Collectors.toUnmodifiableList());
+			for (Player player : players) {
 				if (!player.isOnline()) continue;
 				long last = lastMoveTime.getOrDefault(player.getUniqueId(), now);
 				if (now - last >= STATIONARY_DURATION_MS && !player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
@@ -101,6 +107,11 @@ public class AssassinRole extends Role {
 		if (!player.hasPotionEffect(PotionEffectType.INVISIBILITY)) return;
 
 		event.setDamage(event.getDamage() * 2.5);
+	}
+
+	@Override
+	protected Boolean isPlayerValidInternal(OfflinePlayer player) {
+		return Role.isPlayerRole(player, id);
 	}
 
 

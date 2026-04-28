@@ -71,9 +71,7 @@ public class TrapperRole extends Role {
 
 	@EventHandler
 	public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
-		if (! Role.isPlayerRole(event.getPlayer(), id)) {
-			return;
-		}
+		if (! isPlayerValid(event.getPlayer())) return;
 
 		if (event.isSneaking() && (event.getPlayer().getVelocity().getY() <= 0)) {
 			sneakingPlayers.add(event.getPlayer());

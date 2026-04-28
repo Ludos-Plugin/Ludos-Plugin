@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,6 +22,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import fr.ludos.game.Game;
+import fr.ludos.group.Group;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.LevelItem.LevelState;
 import fr.ludos.item.MultiLevelBranchItem;
@@ -126,6 +128,8 @@ public class TrapperDagger extends MultiLevelBranchItem<TrapperDaggerBranches> {
 			if (!(event.getDamager() instanceof Player attacker) || !(event.getEntity() instanceof Player victim)) {
 				return;
 			}
+			Group group = game.getGroup();
+			if (! isPlayerValid(attacker)) return;
 
 			TrapperDagger dagger = getItem(attacker.getInventory().getItemInMainHand(), game);
 			if (dagger == null) return;
@@ -155,10 +159,11 @@ public class TrapperDagger extends MultiLevelBranchItem<TrapperDaggerBranches> {
 
 		@EventHandler
 		public void onPlayerInteract(PlayerInteractEvent event) {
+			Player player = event.getPlayer();
+			if (! isPlayerValid(player)) return;
+
 			Action action = event.getAction();
 			if (! action.isRightClick()) return;
-
-			Player player = event.getPlayer();
 
 			TrapperDagger dagger = getItem(player.getInventory().getItemInMainHand(), game);
 			if (dagger == null) return;
@@ -186,7 +191,7 @@ public class TrapperDagger extends MultiLevelBranchItem<TrapperDaggerBranches> {
 		}
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, TrapperRole.id);
 		}
 	}

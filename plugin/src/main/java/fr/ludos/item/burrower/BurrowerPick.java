@@ -11,6 +11,7 @@ import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
@@ -203,10 +204,12 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 
 		@EventHandler
 		public void onPlayerInteract(PlayerInteractEvent event) {
+			Player player = event.getPlayer();
+			if (! isPlayerValid(player)) return;
+
 			Action action = event.getAction();
 			if (! action.isRightClick()) return;
 
-			Player player = event.getPlayer();
 			BurrowerPick pickaxe = getItem(player.getInventory().getItemInMainHand(), game);
 			if (pickaxe == null) return;
 
@@ -219,6 +222,8 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 		@EventHandler
 		public void onBlockBreak(BlockBreakEvent event) {
 			Player player = event.getPlayer();
+			if (! isPlayerValid(player)) return;
+
 			ItemStack mainHandItem = player.getInventory().getItemInMainHand();
 
 			BurrowerPick pick = getItem(mainHandItem, game);
@@ -238,7 +243,7 @@ public class BurrowerPick extends LevelBranchItem<BurrowerPickBranches, Burrower
 			return BurrowerPick.createItem(owner, level, game);
 		}
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, BurrowerRole.id);
 		}
 

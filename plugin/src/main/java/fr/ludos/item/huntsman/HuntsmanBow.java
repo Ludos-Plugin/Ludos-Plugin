@@ -9,6 +9,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.HumanEntity;
@@ -85,9 +86,8 @@ public class HuntsmanBow extends SpecialItem {
 
 		@EventHandler
 		public void onShootArrow(EntityShootBowEvent event) {
-			if ( ! (event.getEntity() instanceof Player) ) {
-				return;
-			}
+			if ( ! (event.getEntity() instanceof Player player) ) return;
+			if (! isPlayerValid(player)) return;
 
 			Arrow arrowProjectile = (Arrow) event.getProjectile();
 			arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
@@ -108,7 +108,7 @@ public class HuntsmanBow extends SpecialItem {
 			return HuntsmanBow.createItem(owner, game);
 		}
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, HuntsmanRole.id);
 		}
 	}

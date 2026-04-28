@@ -16,6 +16,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import fr.ludos.Ludos;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.HumanEntity;
@@ -97,10 +98,10 @@ public class TeleportScroll extends SpecialItem {
 
 		@EventHandler
 		public void onScrollUse(PlayerInteractEvent event) {
-			if (!event.getAction().isRightClick()) return;
-
 			Player player = event.getPlayer();
-			if (! Role.isPlayerRole(player, AssassinRole.id)) return;
+			if (! isPlayerValid(player)) return;
+
+			if (!event.getAction().isRightClick()) return;
 
 			ItemStack itemInHand = player.getInventory().getItemInMainHand();
 			if (getItem(itemInHand, game) == null) return;
@@ -168,7 +169,7 @@ public class TeleportScroll extends SpecialItem {
 		}
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, AssassinRole.id);
 		}
 	}

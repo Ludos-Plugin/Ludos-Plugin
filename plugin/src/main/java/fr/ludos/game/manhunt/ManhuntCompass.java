@@ -13,6 +13,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
@@ -131,7 +132,7 @@ public class ManhuntCompass extends SpecialItem {
 		}
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			if (! (game instanceof ManhuntGame manhunt)) return false;
 			return manhunt.getTeamController().hunterTeam.hasEntry(owner.getName());
 		}

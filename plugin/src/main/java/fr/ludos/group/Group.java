@@ -143,6 +143,11 @@ public final class Group implements ConfigurationSerializable {
 		return members.contains(player);
 	}
 
+	public final boolean isPlayer(OfflinePlayer player) {
+		if (player == null) return false;
+		return player.equals(leader) || members.contains(player);
+	}
+
 
 	private static void initializeGroup(Group group) {
 		for (OfflinePlayer member : group.getMembers()) {

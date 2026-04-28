@@ -11,6 +11,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -88,7 +89,7 @@ public class AssassinBoots extends SpecialItem {
 		@EventHandler
 		public void onPlayerMove(PlayerMoveEvent event) {
 			Player player = event.getPlayer();
-			if (! Role.isPlayerRole(player, AssassinRole.id)) return;
+			if (! isPlayerValid(player)) return;
 
 			ItemStack bootsStack = player.getInventory().getBoots();
 			if (getItem(bootsStack, game) == null) return;
@@ -100,7 +101,8 @@ public class AssassinBoots extends SpecialItem {
 		@EventHandler
 		public void onFallDamage(EntityDamageEvent event) {
 			if (! (event.getEntity() instanceof Player player)) return;
-			if (! Role.isPlayerRole(player, AssassinRole.id)) return;
+			if (! isPlayerValid(player)) return;
+
 			if (event.getCause() != EntityDamageEvent.DamageCause.FALL) return;
 
 			ItemStack bootsStack = player.getInventory().getBoots();
@@ -128,7 +130,7 @@ public class AssassinBoots extends SpecialItem {
 		}
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, AssassinRole.id);
 		}
 	}

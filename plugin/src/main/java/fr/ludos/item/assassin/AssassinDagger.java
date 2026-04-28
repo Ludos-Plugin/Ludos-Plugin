@@ -11,6 +11,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -85,7 +86,7 @@ public class AssassinDagger extends SpecialItem {
 		@EventHandler
 		public void onDaggerHit(EntityDamageByEntityEvent event) {
 			if (! (event.getDamager() instanceof Player player)) return;
-			if (! Role.isPlayerRole(player, AssassinRole.id)) return;
+			if (! isPlayerValid(player)) return;
 
 			ItemStack itemInHand = player.getInventory().getItemInMainHand();
 			if (getItem(itemInHand, game) == null) return;
@@ -109,7 +110,7 @@ public class AssassinDagger extends SpecialItem {
 			return AssassinDagger.createItem(owner, game);
 		}
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, AssassinRole.id);
 		}
 	}

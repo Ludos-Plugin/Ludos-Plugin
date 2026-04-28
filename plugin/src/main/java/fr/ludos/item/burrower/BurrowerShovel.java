@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -202,6 +203,7 @@ public class BurrowerShovel extends SpecialItem {
 			if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) {
 				return;
 			}
+			if (! isPlayerValid(event.getPlayer())) return;
 
 			ItemStack mainItem = event.getItem();
 
@@ -230,7 +232,7 @@ public class BurrowerShovel extends SpecialItem {
 			return BurrowerShovel.createItem(owner, game);
 		}
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, BurrowerRole.id);
 		}
 	}

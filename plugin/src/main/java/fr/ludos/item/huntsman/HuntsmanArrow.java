@@ -10,6 +10,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -95,7 +96,7 @@ public class HuntsmanArrow extends SpecialItem {
 		@EventHandler
 		public void onShootArrow(EntityShootBowEvent event) {
 			if (! (event.getEntity() instanceof Player player) ) return;
-			if (! Role.isPlayerRole(player, HuntsmanRole.id)) return;
+			if (! isPlayerValid(player)) return;
 
 			ItemStack launcher = event.getBow();
 			List<HuntsmanArrow> arrows = findAllIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
@@ -168,7 +169,7 @@ public class HuntsmanArrow extends SpecialItem {
 			return arrow;
 		}
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, HuntsmanRole.id);
 		}
 	}

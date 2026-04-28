@@ -3,8 +3,9 @@ package fr.ludos.role;
 import java.util.LinkedHashMap;
 
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.StructureType;
 import org.bukkit.entity.Player;
-import org.bukkit.generator.structure.StructureType;
 import org.bukkit.util.StructureSearchResult;
 
 import fr.ludos.Ludos;
@@ -69,30 +70,30 @@ public class BurrowerRole extends Role {
 	// 	}
 	// }
 
-	public void radar(Player player) {
-		try {
-			int maxDistanceDetection = 200;
+	// public void radar(Player player) {
+	// 	try {
+	// 		int maxDistanceDetection = 200;
 
-			StructureSearchResult location = player.getWorld().locateNearestStructure(player.getLocation(), StructureType.MINESHAFT, maxDistanceDetection, false);
+	// 		Location location = player.getWorld().locateNearestStructure(player.getLocation(), StructureType.MINESHAFT, maxDistanceDetection, false);
 
-			int distanceFromThePlayer = location.getLocation().getBlockZ() - player.getLocation().getBlockZ();
+	// 		int distanceFromThePlayer = location.getLocation().getBlockZ() - player.getLocation().getBlockZ();
 
-			if (distanceFromThePlayer < maxDistanceDetection) {
+	// 		if (distanceFromThePlayer < maxDistanceDetection) {
 
-				player.sendMessage(ChatColor.GREEN + "Mineshaft détecté à : " +
-					" x : " + location.getLocation().getX() +
-					", y : " + location.getLocation().getY() +
-					", z : " + location.getLocation().getZ());
+	// 			player.sendMessage(ChatColor.GREEN + "Mineshaft détecté à : " +
+	// 				" x : " + location.getLocation().getX() +
+	// 				", y : " + location.getLocation().getY() +
+	// 				", z : " + location.getLocation().getZ());
 
-			} else {
-				player.sendMessage(ChatColor.RED + "Aucun mineshaft détecté à proximité.");
-			}
+	// 		} else {
+	// 			player.sendMessage(ChatColor.RED + "Aucun mineshaft détecté à proximité.");
+	// 		}
 
 
-		} catch (Exception e) {
+	// 	} catch (Exception e) {
 
-		}
-	}
+	// 	}
+	// }
 
 	// @EventHandler
     // public void onPrepareItemCraft(PrepareItemCraftEvent event) {
@@ -129,6 +130,10 @@ public class BurrowerRole extends Role {
 	// 	return randomOre;
 	// }
 
+	@Override
+	protected Boolean isPlayerValidInternal(OfflinePlayer player) {
+		return Role.isPlayerRole(player, id);
+	}
 
 
 	public static class Builder extends Role.Builder {
