@@ -35,7 +35,11 @@ import org.bukkit.scoreboard.Scoreboard;
 import fr.ludos.Ludos;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.game.Game;
-import fr.ludos.game.TeamController;
+import fr.ludos.game.GameAreaController;
+import fr.ludos.game.GameTeamController;
+import fr.ludos.game.worldborder.WorldBorderAreaController;
+import fr.ludos.game.worldborder.WorldBorderAreaOption;
+import fr.ludos.game.worldborder.WorldBorderLocationOption;
 import fr.ludos.item.sheep.AbstractSheep;
 import fr.ludos.item.sheep.SheepRegistry;
 import fr.ludos.listener.sheep.SheepDrop;
@@ -80,9 +84,22 @@ public class SheepwarsGame extends Game {
 
 	private File path;
 
+	private final Builder builder;
+	public Builder getSheepwarsBuilder() {
+		return this.builder;
+	}
+
+	private final WorldBorderAreaController areaController;
+	@Override
+	public WorldBorderAreaController getGameAreaController() {
+		return this.areaController;
+	}
+
 	public SheepwarsGame(Builder builder) {
 		super(builder);
+		this.builder = builder;
 		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+		this.areaController = new WorldBorderAreaController(this, WorldBorderLocationOption.here, WorldBorderAreaOption.large);
 
 		this.sheepRegistry = new SheepRegistry();
 		this.worldManager = new WorldManager(builder.getPlugin());
@@ -94,7 +111,7 @@ public class SheepwarsGame extends Game {
 	}
 
 	@Override
-	public TeamController getTeamController() {
+	public GameTeamController getGameTeamController() {
 		return teamController;
 	}
 
@@ -105,7 +122,7 @@ public class SheepwarsGame extends Game {
 	}
 
 	@Override
-	protected void onInit() {
+	protected void onGameInit() {
 		FileConfiguration config = getBuilder().getPlugin().getConfig();
 
 		Set<Player> players = null;
@@ -133,11 +150,11 @@ public class SheepwarsGame extends Game {
 		}
 
 		JSONArray sheepJsonArray = new JSONArray();
-		
+
 		if (!path.exists()) {
 			path.getParentFile().mkdirs();
 			InputStream inputStream = JavaPlugin.getPlugin(Ludos.class).getResource("sheep.json");
-			
+
 			if (inputStream != null) {
 				try (InputStreamReader reader = new InputStreamReader(inputStream)) {
 					sheepJsonArray = (JSONArray) new JSONParser().parse(reader);
@@ -172,7 +189,7 @@ public class SheepwarsGame extends Game {
 	}
 
 	@Override
-	protected void onStart() {
+	protected void onGameStart() {
 		teamController.start();
 		blockBreakListener = new SheepwarsBlockBreakListener();
 		monsterSpawnListener = new SheepwarsMonsterSpawnListener();
@@ -197,7 +214,7 @@ public class SheepwarsGame extends Game {
 			player.setFoodLevel(10);
 			player.setSaturation(20);
 			player.setScoreboard(scoreboard);
-			
+
 			player.getInventory().clear();
 
 			for(AbstractSheep currentSheep : sheepList) {
@@ -248,7 +265,7 @@ public class SheepwarsGame extends Game {
 	}
 
 	@Override
-	protected void onStop() {
+	protected void onGameStop() {
 		// Stop the wool drop timer
 		if (sheepDrop != null) {
 			sheepDrop.stop();
@@ -324,7 +341,7 @@ public class SheepwarsGame extends Game {
 		}
 
 		// WorldBorder border = world.getWorldBorder();
-		
+
 		// SheepwarsAreaOptions areaOption = SheepwarsAreaOptions.medium;
 		// String areaStr = config.getString(areaPath);
 		// if (areaStr != null) {
@@ -333,7 +350,7 @@ public class SheepwarsGame extends Game {
 		// 		areaOption = configArea;
 		// 	}
 		// }
-		
+
 		// Location centerLocation = world.getSpawnLocation();
 		// String locationStr = config.getString(locationPath);
 		// if ("here".equals(locationStr)) {
@@ -343,13 +360,13 @@ public class SheepwarsGame extends Game {
 		// 	}
 		// } else if ("random".equals(locationStr)) {
 		// 	centerLocation = Utility.getGroundedLocationAround(
-		// 		world.getSpawnLocation(), 
-		// 		100, 
-		// 		1000, 
+		// 		world.getSpawnLocation(),
+		// 		100,
+		// 		1000,
 		// 		world.getSpawnLocation()
 		// 	);
 		// }
-		
+
 		// border.setCenter(centerLocation);
 		// border.setSize(areaOption.getSize() * 2);
 		// border.setWarningDistance(50);
@@ -357,9 +374,9 @@ public class SheepwarsGame extends Game {
 		// border.setDamageBuffer(10.0);
 
 		// config.set(borderWorldUUIDPath, world.getUID().toString());
-		// config.set(borderLocationPath, 
-		// 	centerLocation.getX() + "," + 
-		// 	centerLocation.getY() + "," + 
+		// config.set(borderLocationPath,
+		// 	centerLocation.getX() + "," +
+		// 	centerLocation.getY() + "," +
 		// 	centerLocation.getZ()
 		// );
 		// getBuilder().getPlugin().saveConfig();
@@ -390,20 +407,20 @@ public class SheepwarsGame extends Game {
 			player.setScoreboard(scoreboard);
 		}
 
-        // player.sendMessage(Component.text("Bienvenue sur le serveur Ludos!", NamedTextColor.AQUA, TextDecoration.BOLD));
-        // ItemStack sheepItem = new ItemStack(Material.SHEEP_SPAWN_EGG, 1);
+		// player.sendMessage(Component.text("Bienvenue sur le serveur Ludos!", NamedTextColor.AQUA, TextDecoration.BOLD));
+		// ItemStack sheepItem = new ItemStack(Material.SHEEP_SPAWN_EGG, 1);
 
-        // if (!player.getInventory().contains(sheepItem)) {
-        //     player.getInventory().addItem(sheepItem);
-        // } 
+		// if (!player.getInventory().contains(sheepItem)) {
+		//     player.getInventory().addItem(sheepItem);
+		// }
 
-        // ItemMeta meta = sheepItem.getItemMeta();
+		// ItemMeta meta = sheepItem.getItemMeta();
 
-        // List<Component> lore = meta.lore();
-        // lore.add(Component.text("Gros mouton sa mère, хорошо, хорошо, хорошо", NamedTextColor.YELLOW, TextDecoration.BOLD));
-        // meta.lore(lore);
+		// List<Component> lore = meta.lore();
+		// lore.add(Component.text("Gros mouton sa mère, хорошо, хорошо, хорошо", NamedTextColor.YELLOW, TextDecoration.BOLD));
+		// meta.lore(lore);
 
-        // sheepItem.setItemMeta(meta);
+		// sheepItem.setItemMeta(meta);
 	}
 
 	public static class Builder extends Game.Builder {

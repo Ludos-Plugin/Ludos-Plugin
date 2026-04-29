@@ -44,7 +44,7 @@ public final class SheepwarsEliminationListener implements Listener {
 			return;
 		}
 
-		SheepwarsTeamController teamController = (SheepwarsTeamController) game.getTeamController();
+		SheepwarsTeamController teamController = (SheepwarsTeamController) game.getGameTeamController();
 		if (teamController == null || !teamController.getSelectedPlayers().contains(player)) {
 			return;
 		}

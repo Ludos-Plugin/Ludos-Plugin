@@ -1,45 +1,43 @@
 package fr.ludos.game;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.HashMap;
+
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.Scoreboard;
+import org.jetbrains.annotations.NotNull;
+
+import fr.ludos.Ludos;
+import fr.ludos.book.BookUtility;
+import fr.ludos.item.SpecialItem;
+import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
-import org.jetbrains.annotations.NotNull;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
-import fr.ludos.Ludos;
-import fr.ludos.Utility;
-import fr.ludos.book.BookUtility;
-import fr.ludos.role.Role;
-
-
-public abstract class Game implements Listener {
-
+public abstract class Game extends GameProcessBase {
 	@Nullable
 	private static Game current = null;
 	@Nullable
 	public static Game getCurrent() {
 		return current;
 	}
-
-	private boolean started = false;
 
 	private static final Map<String, Builder> registered = new HashMap<>();
 	public static Map<String, Builder> getRegistered() {
@@ -58,75 +56,27 @@ public abstract class Game implements Listener {
 		return registered.values().stream().collect( Collectors.toList() );
 	}
 
+	public static void registerGame(Builder builder) {
+		registered.put(builder.getId(), builder);
+	}
 
 	private final Map<String, Role> activeRoles = new HashMap<>();
 	public Map<String, Role> getActiveRoles() {
 		return activeRoles;
 	}
 
-	private final Builder builder;
-	protected Builder getBuilder() {
+	protected final Builder builder;
+	public Builder getBuilder() {
 		return builder;
 	}
-
-	public Ludos getPlugin() {
+	@Override
+	public JavaPlugin getPlugin() {
 		return builder.getPlugin();
 	}
 
-	public Game(Builder builder) {
-		this.builder = builder;
-	}
-
-	private final void start() {
-		if (started) return;
-		started = true;
-
-		stopCurrentGame();
-		current = this;
-
-
-		onInit();
-
-		Bukkit.getPluginManager().registerEvents(this, getPlugin());
-
-		for (Role.Builder roleBuilder : Role.getRegistered().values()) {
-			Role role = roleBuilder.build(this);
-			activeRoles.put(roleBuilder.getId(), role);
-			role.start();
-		}
-
-		try {
-			onStart();
-		} catch (Exception e) {
-			getPlugin().getLogger().severe("Error while starting game " + builder.getId() + ": " + e.getMessage());
-			e.printStackTrace();
-			stop();
-		}
-	}
-	protected void onInit() { }
-	protected void onStart() { }
-
-	private final void stop() {
-		if (! started) return;
-		started = false;
-
-		HandlerList.unregisterAll(this);
-
-		for (Role role : activeRoles.values()) {
-			role.stop();
-		}
-		activeRoles.clear();
-
-		onStop();
-	}
-	protected void onStop() { }
-
-	public abstract TeamController getTeamController();
-	public abstract Boolean canPlayerHaveRole(Player player, String roleId);
-
-	public static void registerGame(Builder builder) {
-		registered.put(builder.getId(), builder);
-	}
+	public abstract Scoreboard getScoreboard();
+	public abstract GameTeamController getGameTeamController();
+	public abstract GameAreaController getGameAreaController();
 
 	public static boolean startGame(String id) {
 		if (! registered.containsKey(id)) return false;
@@ -147,9 +97,67 @@ public abstract class Game implements Listener {
 	public static void stopCurrentGame() {
 		if (current != null) {
 			current.stop();
-			current = null;
 		}
 	}
+
+	public Game(Builder builder) {
+		this.builder = builder;
+	}
+
+	@Override
+	protected final void onInit() {
+		stopCurrentGame();
+		current = this;
+
+		onGameInit();
+	}
+	@Override
+	protected final void onStart() {
+		getGameAreaController().start();
+		getGameTeamController().start();
+
+		onGameStart();
+
+		for (Role.Builder roleBuilder : Role.getRegistered().values()) {
+			Role role = roleBuilder.build(this);
+			activeRoles.put(roleBuilder.getId(), role);
+			role.start();
+		}
+	}
+
+	protected void onGameInit() { }
+	protected void onGameStart() { }
+
+
+	@Override
+	protected final void onDeinit() {
+		current = null;
+
+		onGameDeinit();
+	}
+	@Override
+	protected final void onStop() {
+		getGameAreaController().stop();
+		getGameTeamController().stop();
+
+		onGameStop();
+
+		for (Role role : activeRoles.values()) {
+			role.stop();
+		}
+		activeRoles.clear();
+	}
+
+	protected void onGameDeinit() { }
+	protected void onGameStop() { }
+
+	public LinkedHashMap<String, GameEvents> modifyEvents(LinkedHashMap<String, GameEvents> events) {
+		return events;
+	}
+
+	public abstract Boolean canPlayerHaveRole(Player player, String roleId);
+
+
 
 	public static abstract class Builder {
 		public final Ludos plugin;

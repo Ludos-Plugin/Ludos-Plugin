@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 
 import javax.annotation.Nullable;
@@ -16,6 +18,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -47,24 +50,24 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		return levelState;
 	}
 	private final TLevel[] levels;
-	public TLevel getLevel(int levelIndex) {
-		return levels[levelIndex];
-	}
-	public TLevel getLevel() {
-		return getLevel(levelState.getLevel());
-	}
 	public int getMaxLevelIndex() {
 		return levels.length - 1;
 	}
 
-	public TLevel getLvl() {
+	public int getLvl() {
+		return levelState.getLevel();
+	}
+	public TLevel getLvlObject() {
 		return levels[levelState.getLevel()];
+	}
+	public TLevel getLvlObject(int level) {
+		return levels[level];
 	}
 	public double getXp() {
 		return levelState.getXp();
 	}
 
-	public static LevelState levelFromItemStack(ItemStack stack, String id, Game game) {
+	public static LevelState levelFromItemStack(ItemStack stack, Game game) {
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 
 		if ( ! container.has(levelKey, PersistentDataType.INTEGER) ) return null;
@@ -110,19 +113,21 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 	}
 	public static <TLevel extends Enum<TLevel> & Level<TLevel>> Component getXpLoreField(LevelItem<TLevel> item) {
 		int maxLevel = item.getMaxLevelIndex();
-		TLevel level = item.getLevel();
+		TLevel level = item.getLvlObject();
+		int levelNum = level.ordinal();
 
-		boolean isMax = maxLevel >= 0 && level.ordinal() >= maxLevel;
+		boolean isMax = maxLevel >= 0 && levelNum >= maxLevel;
 		double levelThreshold = isMax ? 0 : level.getXpThreshold();
 
 		return getXpLoreField(isMax, levelThreshold, item.getLevelState().getXp());
 	}
 	public static <TBranch extends Enum<TBranch> & MultiLevelBranchItem.Branch<TBranch>> Component getBranchXpLoreField(MultiLevelBranchItem<TBranch> item) {
 		int maxLevel = item.getMaxBranchIndex();
-		LevelState level = item.getCurrentBranchLevel();
+		LevelState level = item.getLevelState();
+		int levelNum = level.getLevel();
 
-		boolean isMax = maxLevel >= 0 && level.getLevel() >= maxLevel;
-		double levelThreshold = isMax ? 0 : item.getBranch().getXpThreshold();
+		boolean isMax = maxLevel >= 0 && levelNum >= maxLevel;
+		double levelThreshold = isMax ? 0 : item.getBranch().getXpThreshold(levelNum);
 
 		return getXpLoreField(isMax, levelThreshold, level.getXp());
 	}
@@ -139,9 +144,61 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		return getLevelLoreField(item.getLevelState().getLevel());
 	}
 	public static <TBranch extends Enum<TBranch> & MultiLevelBranchItem.Branch<TBranch>> Component getBranchLevelLoreField(MultiLevelBranchItem<TBranch> item) {
-		return getLevelLoreField(item.getCurrentBranchLevel().getLevel());
+		return getLevelLoreField(item.getLevelState().getLevel());
 	}
 
+
+	/**
+	 * Utility function to handle level switching when player switches leveles.
+	 * @param <TItem> The type of the item, must extend SpecialItem
+	 * @param <TLevel> The type of the level, must be an enum that implements LevelItem.Level
+	 * @param item The item whose level is being switched
+	 * @param newLevel The new level to switch to
+	 * @param newXp The new XP value to set
+	 */
+	public static <TItem extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & Level<TLevel>> void setItemLevel(TItem item, LevelState levelState) {
+		TLevel oldLevel = item.getLvlObject();
+		TLevel newLevel = item.getLvlObject(levelState.getLevel());
+
+		ItemStack itemStack = item.getStack();
+
+		ItemMeta meta = itemStack.getItemMeta();
+		meta.getPersistentDataContainer().set(levelKey, PersistentDataType.INTEGER, newLevel.ordinal());
+		meta.getPersistentDataContainer().set(xpKey, PersistentDataType.DOUBLE, levelState.getXp());
+		itemStack.setItemMeta(meta);
+
+		item.setLvl(newLevel.ordinal());
+
+		if (oldLevel != null) {
+			oldLevel.onUnsetLevel(item);
+		}
+		newLevel.onSetLevel(item);
+
+		item.update();
+	}
+
+	/**
+	 * Utility function to handle level switching when player switches items.
+	 * @param <TItem> The type of the item, must extend SpecialItem
+	 * @param <TLevel> The type of the level, must be an enum that implements LevelItem.Level
+	 * @param event The PlayerItemHeldEvent to handle
+	 * @param getItem An "SpecialItem from ItemStack" function, used to get the item being switched from/to
+	 * @param getLevel A "Level from Item" function, used to get the level of the item being switched from/to
+	 */
+	public static <TItem extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem) {
+		Player player = event.getPlayer();
+
+		TItem oldItem = getItem.apply(player.getInventory().getItem(event.getPreviousSlot()));
+		TItem newItem = getItem.apply(player.getInventory().getItem(event.getNewSlot()));
+		if (oldItem == null && newItem == null) return;
+
+		if (oldItem != null) {
+			oldItem.getLvlObject().onUnequip(oldItem);
+		}
+		if (newItem != null) {
+			newItem.getLvlObject().onEquip(newItem);
+		}
+	}
 
 	public LevelItem(Class<TLevel> levelClass, ItemStack stack, Player owner, LevelState level, Game game) {
 		super(stack, owner, game);
@@ -149,7 +206,15 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		this.levelState = level;
 		this.levels = levelClass.getEnumConstants();
 
-		this.levelState.addLevelUpListener( (lvlState) -> {
+		this.levelState.addLevelUpListener( (lvlState, oldLevel) -> {
+			TLevel oldLevelObj = levels[oldLevel];
+			oldLevelObj.onUnsetLevel(this);
+
+			TLevel newLevelObj = getLvlObject();
+			newLevelObj.onSetLevel(this);
+
+			if (lvlState.getLevel() <= oldLevel) return;
+
 			getOwner().sendMessage(
 				LevelItem.getLevelUpMessage(this)
 			);
@@ -164,7 +229,7 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 	protected void onInitialize() {
 		super.onInitialize();
 
-		saveLevelState(this, levelState);
+		setItemLevel(this, getLevelState());
 	}
 
 
@@ -182,12 +247,12 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 	public final void setXp(double value) {
 		LevelItem.LevelState state = getLevelState();
 
-		state.setXp(value, getMaxLevelIndex(), (lvl) -> levels[lvl].getXpThreshold());
+		state.setXp(value, getMaxLevelIndex(), (level) -> levels[level].getXpThreshold());
 	}
 	public final void addXp(double xp) {
 		LevelItem.LevelState state = getLevelState();
 
-		state.addXp(xp, getMaxLevelIndex(), (lvl) -> levels[lvl].getXpThreshold());
+		state.addXp(xp, getMaxLevelIndex(), (level) -> levels[level].getXpThreshold());
 	}
 
 	@Override
@@ -203,8 +268,29 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 
 	public static interface Level<T extends Enum<T> & Level<T>> {
 		public Class<T> getLevelClass();
-
 		public double getXpThreshold();
+
+		/**
+		 * Called when item is equipped (mainhand) while the level is set.
+		 * @param item The item being equipped
+		 */
+		public void onEquip(SpecialItem item);
+		/**
+		 * Called when item is unequipped (mainhand) while the level is set.
+		 * @param item The item being unequipped
+		 */
+		public void onUnequip(SpecialItem item);
+
+		/**
+		 * Called when the level is set on the item, including when the item is created with a non-zero level. Should be used to apply the level's effects.
+		 * @param item The item on which the level is being set
+		 */
+		public void onSetLevel(SpecialItem item);
+		/**
+		 * Called when the level is unset on the item, including when the item is created with a non-zero level. Should be used to remove the level's effects.
+		 * @param item The item on which the level is being unset
+		 */
+		public void onUnsetLevel(SpecialItem item);
 	}
 
 	public static class LevelState {
@@ -224,19 +310,19 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 			}
 		}
 
-		private final List<Consumer<LevelState>> levelUpListeners = new ArrayList<>();
+		private final List<BiConsumer<LevelState, Integer>> levelUpListeners = new ArrayList<>();
 
-		public void addLevelUpListener(Consumer<LevelState> listener) {
+		public void addLevelUpListener(BiConsumer<LevelState, Integer> listener) {
 			levelUpListeners.add(listener);
 		}
 
-		public void removeLevelUpListener(Consumer<LevelState> listener) {
+		public void removeLevelUpListener(BiConsumer<LevelState, Integer> listener) {
 			levelUpListeners.remove(listener);
 		}
 
-		private void notifyLevelUp() {
-			for (Consumer<LevelState> listener : levelUpListeners) {
-				listener.accept(this);
+		private void notifyLevelUp(int oldLevel) {
+			for (BiConsumer<LevelState, Integer> listener : levelUpListeners) {
+				listener.accept(this, oldLevel);
 			}
 		}
 
@@ -245,14 +331,29 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		public int getLevel() {
 			return level;
 		}
-		public boolean setLevel(int level, int maxLevel) {
+		private boolean setLevelNoEvent(int level, int maxLevel) {
 			if (level < 0 || (maxLevel >= 0 && level > maxLevel)) return false;
+			int oldLevel = this.level;
 			this.level = level;
-			notifyLevelUp();
+			notifyLevelUp(oldLevel);
 			return true;
 		}
+		public boolean setLevel(int level, int maxLevel) {
+			if (setLevelNoEvent(level, maxLevel)) {
+				notifyXpChange();
+				return true;
+			}
+			return false;
+		}
+		private boolean addLevelNoEvent(int maxLevel) {
+			return setLevelNoEvent(level + 1, maxLevel);
+		}
 		public boolean addLvl(int maxLevel) {
-			return setLevel(level + 1, maxLevel);
+			if (addLevelNoEvent(maxLevel)) {
+				notifyXpChange();
+				return true;
+			}
+			return false;
 		}
 
 		private double xp;
@@ -263,7 +364,7 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 			boolean levelUp = false;
 			while (this.level < maxLevel && xp >= levelToXpThreshold.apply(this.level)) {
 				xp -= levelToXpThreshold.apply(this.level);
-				addLvl(maxLevel);
+				addLevelNoEvent(maxLevel);
 				levelUp = true;
 			}
 			this.xp = xp;
@@ -291,22 +392,16 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 	}
 
 	public static abstract class Events<T extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & Level<TLevel>> extends SpecialItem.Events<T> {
-		protected final TLevel baseLevel;
 		protected final Map<Player, LevelItem.LevelState> deadPlayerLevels = new HashMap<>();
 
-		protected Events(Game game, TLevel baseLevel, @Nullable Integer slot, boolean canDrop) {
+		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
 			super(game, slot, canDrop);
-			if (baseLevel == null) {
-				throw new IllegalArgumentException("Base level cannot be null");
-			}
-
-			this.baseLevel = baseLevel;
 		}
-		protected Events(Game game, TLevel baseLevel, @Nullable Integer slot) {
-			this(game, baseLevel, slot, false);
+		protected Events(Game game, @Nullable Integer slot) {
+			this(game, slot, false);
 		}
-		protected Events(Game game, TLevel baseLevel) {
-			this(game, baseLevel, null, false);
+		protected Events(Game game) {
+			this(game, null, false);
 		}
 
 
@@ -322,7 +417,7 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 				return;
 			}
 
-			deadPlayerLevels.put( player, specialItem.getLevelState().copy() );
+			deadPlayerLevels.put(player, specialItem.getLevelState().copy());
 		}
 
 		@Override
