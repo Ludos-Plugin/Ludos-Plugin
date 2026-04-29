@@ -570,11 +570,15 @@ public abstract class AbstractSheep implements org.bukkit.event.Listener {
 
         Boolean isOwner = owner != null && owner.equals(uuid);
 
-        if(!isOwner) return;
+        if (isOwner) {
+            player.setNoDamageTicks(0);
+            event.setDamage(0);
+            event.setCancelled(true);
+            return;
+        }
 
-        player.setNoDamageTicks(0);
-        event.setDamage(0);
-        event.setCancelled(true);
+        // Reduce all other sheep damage to keep the game balanced.
+        event.setDamage(event.getDamage() * 0.25);
     }
 
     /**

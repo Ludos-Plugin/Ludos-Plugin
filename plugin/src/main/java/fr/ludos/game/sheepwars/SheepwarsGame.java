@@ -31,6 +31,11 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import fr.ludos.Ludos;
 import fr.ludos.command.CommandUtility;
@@ -201,9 +206,9 @@ public class SheepwarsGame extends Game {
 		// Register the sheep registry (handles interaction events)
 		Bukkit.getPluginManager().registerEvents(sheepRegistry, this.getBuilder().getPlugin());
 
-		// Also register the first sheep for shared event handlers (damage, death, movement)
-		if (!sheepList.isEmpty()) {
-			Bukkit.getPluginManager().registerEvents(sheepList.get(0), this.getBuilder().getPlugin());
+		// Register all sheep instances for shared event handlers (damage, death, movement)
+		for (AbstractSheep sheep : sheepList) {
+			Bukkit.getPluginManager().registerEvents(sheep, this.getBuilder().getPlugin());
 		}
 
 		setupWorldBorder();
@@ -220,6 +225,9 @@ public class SheepwarsGame extends Game {
 			for(AbstractSheep currentSheep : sheepList) {
 				player.getInventory().addItem(currentSheep.createSheepItem(4));
 			}
+
+			// Equip netherite armor to the player
+			equipNetheriteArmor(player);
 
 			}
 
@@ -266,6 +274,11 @@ public class SheepwarsGame extends Game {
 
 	@Override
 	protected void onGameStop() {
+		// Remove netherite armor from all players
+		for (Player player : teamController.getSelectedPlayers()) {
+			removeNetheriteArmor(player);
+		}
+
 		// Stop the wool drop timer
 		if (sheepDrop != null) {
 			sheepDrop.stop();
@@ -398,6 +411,40 @@ public class SheepwarsGame extends Game {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	private ItemStack createProtectedArmorPiece(Material material) {
+		ItemStack item = new ItemStack(material);
+		ItemMeta meta = item.getItemMeta();
+		if (meta != null) {
+			meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, 4, true);
+			item.setItemMeta(meta);
+		}
+		return item;
+	}
+
+	/**
+	 * Equips netherite armor to a player.
+	 * @param player The player to equip
+	 */
+	private void equipNetheriteArmor(Player player) {
+		PlayerInventory inventory = player.getInventory();
+		inventory.setHelmet(createProtectedArmorPiece(Material.NETHERITE_HELMET));
+		inventory.setChestplate(createProtectedArmorPiece(Material.NETHERITE_CHESTPLATE));
+		inventory.setLeggings(createProtectedArmorPiece(Material.NETHERITE_LEGGINGS));
+		inventory.setBoots(createProtectedArmorPiece(Material.NETHERITE_BOOTS));
+	}
+
+	/**
+	 * Removes netherite armor from a player.
+	 * @param player The player to remove armor from
+	 */
+	private void removeNetheriteArmor(Player player) {
+		PlayerInventory inventory = player.getInventory();
+		inventory.setHelmet(null);
+		inventory.setChestplate(null);
+		inventory.setLeggings(null);
+		inventory.setBoots(null);
 	}
 
 	@EventHandler
