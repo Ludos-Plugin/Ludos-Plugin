@@ -55,7 +55,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	public static final String OWNER_KEY = "owner";
 	private static final NamespacedKey ownerKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), OWNER_KEY);
 
-	public static final int USAGE_COOLDOWN = 3;
+	public static final int USAGE_COOLDOWN = 4;
 
 	private final Game game;
 	public Game getGame() { return game; }

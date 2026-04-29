@@ -25,7 +25,6 @@ import fr.ludos.item.LevelItem;
 import fr.ludos.item.LevelItem.LevelState;
 import fr.ludos.item.MultiLevelBranchItem;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.item.burrower.BurrowerPick;
 import fr.ludos.item.huntsman.HuntsmanCrossbow;
 import fr.ludos.item.huntsman.HuntsmanCrossbowBranches;
 import fr.ludos.role.Role;

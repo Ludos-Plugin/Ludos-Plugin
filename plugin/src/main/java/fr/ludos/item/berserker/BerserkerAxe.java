@@ -31,9 +31,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.item.burrower.BurrowerPick;
-import fr.ludos.item.burrower.BurrowerPickBranches;
-import fr.ludos.item.burrower.BurrowerPickLevels;
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.role.Role;
@@ -106,7 +103,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		LevelState levelState = LevelItem.levelFromItemStack(stack, ID, game);
+		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
 		if (levelState == null) return null;
 		Variant variant = getSpecialItemVariant(stack, game);
 		if (variant == null) return null;

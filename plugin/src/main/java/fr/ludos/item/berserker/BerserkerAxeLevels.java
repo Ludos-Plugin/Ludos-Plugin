@@ -64,6 +64,12 @@ public enum BerserkerAxeLevels implements LevelItem.Level<BerserkerAxeLevels> {
 	public Class<BerserkerAxeLevels> getLevelClass() {
 		return BerserkerAxeLevels.class;
 	}
+
+	@Override
+	public void onEquip(SpecialItem item) { }
+	@Override
+	public void onUnequip(SpecialItem item) { }
+
 	@Override
 	public void onSetLevel(SpecialItem item) {
 		ItemStack stack = item.getStack();
