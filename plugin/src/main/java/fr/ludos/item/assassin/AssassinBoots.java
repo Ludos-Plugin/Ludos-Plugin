@@ -32,24 +32,15 @@ public class AssassinBoots extends SpecialItem {
 		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
-		// AssassinBoots cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
 		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		AssassinBoots boots = new AssassinBoots(stack, owner, game);
-		// cachedItems.put(itemId, boots);
-
-		return boots;
+		return new AssassinBoots(stack, owner, game);
 	}
 
 	public static AssassinBoots createItem(Player owner, Game game) {
 		AssassinBoots boots = new AssassinBoots(new ItemStack(Material.IRON_BOOTS), owner, game);
 		boots.initializeItem();
-
-		// cachedItems.put(itemId, boots);
-
 		return boots;
 	}
 
@@ -78,8 +69,6 @@ public class AssassinBoots extends SpecialItem {
 	}
 
 
-
-
 	public static class Events extends SpecialItem.Events<AssassinBoots> {
 		public Events(Game game) {
 			super(game);
@@ -106,13 +95,8 @@ public class AssassinBoots extends SpecialItem {
 			ItemStack bootsStack = player.getInventory().getBoots();
 			if (getItem(bootsStack, game) == null) return;
 
-			double fallDistance = player.getFallDistance();
-			if (fallDistance <= 4) {
+			if (event.getDamage() <= 2) {
 				event.setCancelled(true);
-			} else {
-				double reducedDistance = fallDistance - 4;
-				double damage = Math.max(0, reducedDistance - 3.0) * 0.5;
-				event.setDamage(damage);
 			}
 		}
 
