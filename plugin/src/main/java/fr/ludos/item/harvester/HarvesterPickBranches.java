@@ -1,6 +1,7 @@
-package fr.ludos.item.burrower;
+package fr.ludos.item.harvester;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Bukkit;
@@ -8,25 +9,32 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 
 import fr.ludos.item.BranchItem;
+import fr.ludos.item.Categories;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.role.HarvesterRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-
-public enum BurrowerPickBranches implements BranchItem.Branch<BurrowerPickBranches> {
+public enum HarvesterPickBranches implements BranchItem.Branch<HarvesterPickBranches> {
 	Pickaxe (
 		Component.text("Pickaxe").color(NamedTextColor.AQUA),
 		Component.text("Mines blocks normally.")
 	) {
 		@Override
-		public void onBreakBlock(BurrowerPick pick, BlockBreakEvent event) {
+		public void onBreakBlock(HarvesterPick pick, BlockBreakEvent event) {
 			Block targetBlock = event.getBlock();
 
-			pick.awardBreak(targetBlock);
+			HarvesterRole.awardBreak(event.getPlayer(), targetBlock, pick.getGame());
 		}
 
 		@Override
@@ -43,7 +51,7 @@ public enum BurrowerPickBranches implements BranchItem.Branch<BurrowerPickBranch
 		Component.text("Mines a 3x3 area.")
 	) {
 		@Override
-		public void onBreakBlock(BurrowerPick pick, BlockBreakEvent event) {
+		public void onBreakBlock(HarvesterPick pick, BlockBreakEvent event) {
 			Player player = pick.getOwner();
 
 			List<Block> lastTwoTargetBlocks = player.getLastTwoTargetBlocks(null, 100);
@@ -55,7 +63,7 @@ public enum BurrowerPickBranches implements BranchItem.Branch<BurrowerPickBranch
 
 			BlockFace face = targetBlock.getFace(adjacentBlock);
 
-			pick.breakRadius(targetBlock, face);
+			pick.breakRadius(targetBlock, face, player);
 		}
 
 
@@ -94,10 +102,10 @@ public enum BurrowerPickBranches implements BranchItem.Branch<BurrowerPickBranch
 		return description;
 	}
 
-	public abstract void onBreakBlock(BurrowerPick pick, BlockBreakEvent event);
+	public abstract void onBreakBlock(HarvesterPick pick, BlockBreakEvent event);
 
 
-	private BurrowerPickBranches(Component name, Component description) {
+	private HarvesterPickBranches(Component name, Component description) {
 		this.name = name;
 		this.description = description;
 	}

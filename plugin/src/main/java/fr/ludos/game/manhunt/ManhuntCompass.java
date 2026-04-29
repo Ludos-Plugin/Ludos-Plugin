@@ -20,7 +20,6 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
 import fr.ludos.item.SpecialItem;
-import fr.ludos.item.burrower.BurrowerPick;
 import fr.ludos.game.Game;
 
 
@@ -45,7 +44,7 @@ public class ManhuntCompass extends SpecialItem {
 
 		return compass;
 	}
-	
+
 	public static ManhuntCompass createItem(Player owner, Game game) {
 		ManhuntCompass compass = new ManhuntCompass(createItemStack(), owner, game);
 		UUID itemId = compass.initializeItem();

@@ -24,7 +24,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.item.SpecialItem;
-import fr.ludos.item.burrower.BurrowerShovel;
 import fr.ludos.game.Game;
 import fr.ludos.role.BerserkerRole;
 import fr.ludos.role.Role;

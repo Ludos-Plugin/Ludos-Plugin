@@ -31,9 +31,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.item.burrower.BurrowerPick;
-import fr.ludos.item.burrower.BurrowerPickBranches;
-import fr.ludos.item.burrower.BurrowerPickLevels;
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.role.Role;

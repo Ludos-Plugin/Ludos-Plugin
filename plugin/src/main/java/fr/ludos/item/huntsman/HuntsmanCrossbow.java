@@ -33,7 +33,7 @@ import fr.ludos.game.Game;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.MultiLevelBranchItem;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.item.burrower.BurrowerPick;
+import fr.ludos.item.harvester.HarvesterPick;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
