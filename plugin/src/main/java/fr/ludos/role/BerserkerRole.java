@@ -112,7 +112,6 @@ public class BerserkerRole extends Role {
 
 	@EventHandler
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
-		Bukkit.broadcastMessage(event.getDamage() + "");
 		if (!(event.getDamager() instanceof Player player)) return;
 		if (!(event.getEntity() instanceof LivingEntity target)) return;
 		if (!Role.isPlayerRole(player, ID)) return;
