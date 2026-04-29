@@ -424,22 +424,22 @@ public class SheepwarsGame extends Game {
 	}
 
 	/**
-	 * Equips netherite armor to a player.
+	 * Equips iron armor to a player.
 	 * @param player The player to equip
 	 */
-	private void equipNetheriteArmor(Player player) {
+	private void equipIronArmor(Player player) {
 		PlayerInventory inventory = player.getInventory();
-		inventory.setHelmet(createProtectedArmorPiece(Material.NETHERITE_HELMET));
-		inventory.setChestplate(createProtectedArmorPiece(Material.NETHERITE_CHESTPLATE));
-		inventory.setLeggings(createProtectedArmorPiece(Material.NETHERITE_LEGGINGS));
-		inventory.setBoots(createProtectedArmorPiece(Material.NETHERITE_BOOTS));
+		inventory.setHelmet(createProtectedArmorPiece(Material.IRON_HELMET));
+		inventory.setChestplate(createProtectedArmorPiece(Material.IRON_CHESTPLATE));
+		inventory.setLeggings(createProtectedArmorPiece(Material.IRON_LEGGINGS));
+		inventory.setBoots(createProtectedArmorPiece(Material.IRON_BOOTS));
 	}
 
 	/**
-	 * Removes netherite armor from a player.
+	 * Removes iron armor from a player.
 	 * @param player The player to remove armor from
 	 */
-	private void removeNetheriteArmor(Player player) {
+	private void removeIronArmor(Player player) {
 		PlayerInventory inventory = player.getInventory();
 		inventory.setHelmet(null);
 		inventory.setChestplate(null);
