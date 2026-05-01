@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
@@ -115,7 +116,8 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 		@EventHandler
 		public void onShootArrow(EntityShootBowEvent event) {
-			if (! (event.getEntity() instanceof HumanEntity player)) return;
+			if (! (event.getEntity() instanceof Player player)) return;
+			if (! isPlayerValid(player)) return;
 
 			if (player.hasCooldown(Material.CROSSBOW)) return;
 
@@ -145,6 +147,8 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 			ProjectileSource source = arrowProjectile.getShooter();
 			if (! (source instanceof Player player)) return;
 
+			if (! isPlayerValid(player)) return;
+
 			HuntsmanCrossbow crossbow = HuntsmanCrossbow.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
 			if (crossbow == null) return;
 
@@ -169,10 +173,11 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 		@EventHandler
 		public void onPlayerInteract(PlayerInteractEvent event) {
+			Player player = event.getPlayer();
+			if (! isPlayerValid(player)) return;
+
 			Action action = event.getAction();
 			if (! action.isLeftClick()) return;
-
-			Player player = event.getPlayer();
 
 			HuntsmanCrossbow crossbow = getItem(player.getInventory().getItemInMainHand(), game);
 			if (crossbow == null) return;
@@ -200,7 +205,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 			return HuntsmanCrossbow.createItem(owner, levels, game);
 		}
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, HuntsmanRole.id);
 		}
 	}

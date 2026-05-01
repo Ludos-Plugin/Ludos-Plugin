@@ -7,10 +7,10 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.attribute.AttributeModifier.Operation;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -198,7 +198,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 
 		@Override
 		public void updateItemInInventory(Player player) {
-			if (!canPlayerHaveItem(player)) return;
+			if (!isPlayerValid(player)) return;
 
 			LevelState playerLevel = deadPlayerLevels.get(player);
 			if (playerLevel == null) {
@@ -252,7 +252,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		}
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, BerserkerRole.ID);
 		}
 	}

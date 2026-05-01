@@ -1,4 +1,4 @@
-package fr.ludos.game.worldborder;
+package fr.ludos.game.areaController.worldborder;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;

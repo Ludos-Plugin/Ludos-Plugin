@@ -1,4 +1,4 @@
-package fr.ludos.game;
+package fr.ludos.game.teamController;
 
 import java.util.Arrays;
 import java.util.List;

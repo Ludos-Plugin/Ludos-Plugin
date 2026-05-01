@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -143,7 +144,7 @@ public abstract class Role extends GameProcessBase {
 	}
 
 	@Nullable
-	public static Builder getRole(HumanEntity player) {
+	public static Builder getPlayerRole(OfflinePlayer player) {
 		return registered.getOrDefault(playerRoles.getOrDefault(player.getName(), ""), null);
 	}
 
@@ -152,12 +153,12 @@ public abstract class Role extends GameProcessBase {
 		return registered.getOrDefault(roleId, null);
 	}
 
-	public static boolean isPlayerRole(HumanEntity player, String role) {
-		Builder currentRole = getRole(player);
+	public static boolean isPlayerRole(OfflinePlayer player, String role) {
+		Builder currentRole = getPlayerRole(player);
 		return (currentRole != null && currentRole.getId().equals(role));
 	}
 
-	public static void setRole(HumanEntity player, String roleId) {
+	public static void setRole(OfflinePlayer player, String roleId) {
 		if ( playerRoles.containsKey(player.getName()) && playerRoles.get(player.getName()).equalsIgnoreCase(roleId) ) return;
 
 		Role.Builder role = getRegistered().get(roleId);
@@ -187,6 +188,14 @@ public abstract class Role extends GameProcessBase {
 		plugin.saveConfig();
 	}
 
+
+	public final Boolean isPlayerValid(OfflinePlayer player) {
+		if (! game.getGroup().isPlayer(player)) return false;
+		return isPlayerValidInternal(player);
+	}
+	protected Boolean isPlayerValidInternal(OfflinePlayer player) {
+		return true;
+	}
 
 	/**
 	 * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.

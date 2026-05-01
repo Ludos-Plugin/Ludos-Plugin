@@ -11,6 +11,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,19 +29,30 @@ import fr.ludos.game.Game;
 public class AssassinBoots extends SpecialItem {
 	public static final String ID = "assassin_boots";
 
+	// private final static Map<UUID, AssassinBoots> cachedItems = new HashMap<>();
+
 	public static @Nullable AssassinBoots fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
+		// AssassinBoots cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
 		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		return new AssassinBoots(stack, owner, game);
+		AssassinBoots boots = new AssassinBoots(stack, owner, game);
+		// cachedItems.put(itemId, boots);
+
+		return boots;
 	}
 
 	public static AssassinBoots createItem(Player owner, Game game) {
 		AssassinBoots boots = new AssassinBoots(new ItemStack(Material.IRON_BOOTS), owner, game);
-		boots.initializeItem();
+		UUID itemId = boots.initializeItem();
+
+		// cachedItems.put(itemId, boots);
+
 		return boots;
 	}
 
@@ -77,7 +89,7 @@ public class AssassinBoots extends SpecialItem {
 		@EventHandler
 		public void onPlayerMove(PlayerMoveEvent event) {
 			Player player = event.getPlayer();
-			if (! Role.isPlayerRole(player, AssassinRole.id)) return;
+			if (! isPlayerValid(player)) return;
 
 			ItemStack bootsStack = player.getInventory().getBoots();
 			if (getItem(bootsStack, game) == null) return;
@@ -89,7 +101,8 @@ public class AssassinBoots extends SpecialItem {
 		@EventHandler
 		public void onFallDamage(EntityDamageEvent event) {
 			if (! (event.getEntity() instanceof Player player)) return;
-			if (! Role.isPlayerRole(player, AssassinRole.id)) return;
+			if (! isPlayerValid(player)) return;
+
 			if (event.getCause() != EntityDamageEvent.DamageCause.FALL) return;
 
 			ItemStack bootsStack = player.getInventory().getBoots();
@@ -112,7 +125,7 @@ public class AssassinBoots extends SpecialItem {
 		}
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, AssassinRole.id);
 		}
 	}

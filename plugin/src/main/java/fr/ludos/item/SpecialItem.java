@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
@@ -310,11 +311,17 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		protected abstract T getItem(ItemStack stack, Game game);
 		protected abstract T createItem(Player owner, Game game);
 
-		protected abstract Boolean canPlayerHaveItem(HumanEntity owner);
+		public final Boolean isPlayerValid(OfflinePlayer player) {
+			if (! game.getGroup().isPlayer(player)) return false;
+			return isPlayerValidInternal(player);
+		}
+		protected Boolean isPlayerValidInternal(OfflinePlayer player) {
+			return true;
+		}
 
 
 		protected void removeFromAllInventories() {
-			for (Player player : Bukkit.getOnlinePlayers()) {
+			for (Player player : getGame().getGroup().getOnlinePlayers()) {
 				PlayerInventory inventory = player.getInventory();
 				List<T> items = SpecialItem.findAllIn(inventory, (ItemStack stack) -> getItem(stack, game));
 				for(T item : items) {
@@ -327,8 +334,11 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		}
 
 		protected void updateAllInventories() {
-			for (Player player : game.getGameTeamController().getPlayers()) {
-				if (canPlayerHaveItem(player)) {
+			for (OfflinePlayer offlinePlayer : game.getTeamController().getPlayers()) {
+				Player player = offlinePlayer.getPlayer();
+				if (player == null) continue;
+
+				if (isPlayerValid(player)) {
 					updateItemInInventory(player);
 				}
 			}
@@ -337,7 +347,9 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		@EventHandler
 		public void onPlayerDropItem(PlayerDropItemEvent event) {
 			if (canDrop) return;
-			if (! canPlayerHaveItem(event.getPlayer())) return;
+			Player player = event.getPlayer();
+			if (! game.getGroup().isPlayer(player)) return;
+			if (! isPlayerValid(player)) return;
 
 			ItemStack item = event.getItemDrop().getItemStack();
 
@@ -349,7 +361,11 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		@EventHandler
 		public void onInventoryClickItem(InventoryClickEvent event) {
 			if (canDrop) return;
-			if (! canPlayerHaveItem(event.getWhoClicked())) return;
+			HumanEntity entity = event.getWhoClicked();
+			Player player = Bukkit.getPlayer(entity.getUniqueId());
+			if (player == null) return;
+			if (! game.getGroup().isPlayer(player)) return;
+			if (! isPlayerValid(player)) return;
 
 			ItemStack item = event.getCursor();
 			if (item.getType().isAir()) {
@@ -392,7 +408,8 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 
 		public void updateItemInInventory(Player player) {
-			if (! canPlayerHaveItem(player)) return;
+			if (! game.getGroup().isPlayer(player)) return;
+			if (! isPlayerValid(player)) return;
 
 			PlayerInventory inventory = player.getInventory();
 			if (T.containedIn(inventory, (ItemStack stack) -> getItem(stack, game))) return;

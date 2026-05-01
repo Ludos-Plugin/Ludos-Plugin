@@ -9,8 +9,8 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
@@ -123,17 +123,17 @@ public class BerserkerRageBrew extends SpecialItem {
 		}
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, BerserkerRole.ID);
 		}
 
 		@EventHandler
 		public void onPlayerInteract(PlayerItemConsumeEvent event) {
+			Player player = event.getPlayer();
+			if (! isPlayerValid(player)) return;
+
 			BerserkerRageBrew brew = getItem(event.getItem(), game);
 			if (brew == null) return;
-
-			Player player = event.getPlayer();
-			if (!canPlayerHaveItem(player)) return;
 
 			event.setReplacement(brew.getStack());
 

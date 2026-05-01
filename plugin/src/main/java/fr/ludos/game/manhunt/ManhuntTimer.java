@@ -51,7 +51,7 @@ public class ManhuntTimer extends GameProcessBase {
 	protected final void onStart() {
 		resume();
 
-		for (Player player : Bukkit.getOnlinePlayers()) {
+		for (Player player : game.getGroup().getOnlinePlayers()) {
 			bossbar.addPlayer(player);
 		}
 		bossbar.setVisible(true);

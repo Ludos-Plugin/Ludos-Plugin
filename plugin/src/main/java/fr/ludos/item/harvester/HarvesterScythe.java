@@ -2,20 +2,18 @@ package fr.ludos.item.harvester;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -191,7 +189,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 			HarvesterScythe scythe = getItem(attacker.getInventory().getItemInMainHand(), game);
 			if (scythe == null) return;
 
-			if (game.getGameTeamController().areAllies(attacker, primaryTarget)) return;
+			if (game.getTeamController().areAllies(attacker, primaryTarget)) return;
 
 			if (event.getCause() == DamageCause.ENTITY_ATTACK) {
 				int enchantmentLevel = scythe.getStack().getEnchantmentLevel(Enchantment.SWEEPING_EDGE);
@@ -218,7 +216,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, HarvesterRole.id);
 		}
 	}

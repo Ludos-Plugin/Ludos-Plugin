@@ -1,5 +1,6 @@
 package fr.ludos;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -295,6 +296,15 @@ public class Utility {
 					)
 			)
 			.toList();
+	}
+
+	public static void deleteRecursive(File file) {
+		if (file.isDirectory()) {
+			for (File subFile : file.listFiles()) {
+				deleteRecursive(subFile);
+			}
+		}
+		file.delete();
 	}
 
 	public static void revokeAllAdvancements(Player player) {
