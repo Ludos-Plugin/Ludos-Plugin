@@ -20,6 +20,8 @@ import fr.ludos.book.BookUtility;
 import fr.ludos.command.ludos.LudosCommand;
 import fr.ludos.game.Game;
 import fr.ludos.game.manhunt.ManhuntGame;
+import fr.ludos.packets.player.PlayerPackets;
+import fr.ludos.packets.player.PlayerPacketsFactory;
 import fr.ludos.role.AssassinRole;
 import fr.ludos.role.BerserkerRole;
 import fr.ludos.role.HarvesterRole;
@@ -37,6 +39,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class Ludos extends JavaPlugin implements Listener {
 
 	public static final String namespace = "ludos";
+
+	public final PlayerPackets playerPackets = PlayerPacketsFactory.createHandler();
 
 	public Ludos() { }
 

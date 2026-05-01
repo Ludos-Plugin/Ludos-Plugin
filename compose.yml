@@ -1,13 +1,4 @@
 services:
-  plugin:
-    container_name: ludos-plugin
-    build:
-      context: ./plugin
-      dockerfile: Dockerfile
-    volumes:
-      - ./plugin:/plugin
-      - ./data/plugins:/plugin/build/output
-
   server:
     container_name: ludos-server
     image: itzg/minecraft-server:stable-java17
