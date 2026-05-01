@@ -21,7 +21,7 @@ import fr.ludos.game.GameEvents;
 import fr.ludos.item.assassin.AssassinBoots;
 import fr.ludos.item.assassin.AssassinDagger;
 import fr.ludos.item.assassin.TeleportScroll;
-import fr.ludos.item.trapper.TrapperSnareDevice;
+import fr.ludos.item.assassin.trap.AssassinSnareDevice;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 
@@ -49,6 +49,7 @@ public class AssassinRole extends Role {
 				long last = lastMoveTime.getOrDefault(player.getUniqueId(), now);
 				if (now - last >= STATIONARY_DURATION_MS && !player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
 					player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, INVISIBILITY_DURATION, 0, false, false));
+					player.setArrowsStuck(0);
 				}
 			}
 		}, 0L, 20L);
@@ -71,12 +72,7 @@ public class AssassinRole extends Role {
 					put("dagger", new AssassinDagger.Events(game));
 					put("boots", new AssassinBoots.Events(game));
 					put("teleport_scroll", new TeleportScroll.Events(game));
-					put("snare", new TrapperSnareDevice.Events(game) {
-						@Override
-						protected Boolean canPlayerHaveItem(HumanEntity owner) {
-							return Role.isPlayerRole(owner, AssassinRole.id);
-						}
-					});
+					put("snare", new AssassinSnareDevice.Events(game));
 				}};
 		}
 	}

@@ -1,11 +1,11 @@
-package fr.ludos.item.trapper;
+package fr.ludos.item.assassin.trap;
 
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
-public abstract class TrapperTrap {
+public abstract class AssassinTrap {
 	private final Player owner;
 	public Player getOwner() {
 		return owner;
@@ -22,7 +22,7 @@ public abstract class TrapperTrap {
 	}
 
 
-	public TrapperTrap(Player owner, Location location, World world) {
+	public AssassinTrap(Player owner, Location location, World world) {
 		this.owner = owner;
 		this.location = location;
 		this.world = world;

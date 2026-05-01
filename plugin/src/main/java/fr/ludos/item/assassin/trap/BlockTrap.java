@@ -1,4 +1,4 @@
-package fr.ludos.item.trapper;
+package fr.ludos.item.assassin.trap;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -6,7 +6,7 @@ import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
-public abstract class BlockTrap extends TrapperTrap {
+public abstract class BlockTrap extends AssassinTrap {
 	private final Material type;
 	protected Material getType() {
 		return type;

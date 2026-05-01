@@ -1,4 +1,4 @@
-package fr.ludos.item.trapper;
+package fr.ludos.item.assassin.trap;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -16,7 +16,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnareDeviceBranches> {
+public enum AssassinSnareDeviceBranches implements BranchItem.Branch<AssassinSnareDeviceBranches> {
 	REVEALING (
 		Component.text("Revealing")
 			.color(NamedTextColor.YELLOW)
@@ -25,7 +25,7 @@ public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnare
 		Material.ENDER_EYE
 	) {
 		@Override
-		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
+		public AssassinTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
 			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), block.getType()) {
@@ -53,7 +53,7 @@ public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnare
 		Material.COBWEB
 	) {
 		@Override
-		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
+		public AssassinTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
 			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), Material.COARSE_DIRT) {
@@ -83,7 +83,7 @@ public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnare
 		Material.ENDER_PEARL
 	) {
 		@Override
-		public TrapperTrap createTrap(Player owner, Block block, BlockFace face) {
+		public AssassinTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
 			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), Material.END_ROD) {
@@ -102,7 +102,7 @@ public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnare
 	};
 
 
-	public final static TrapperSnareDeviceBranches[] values = TrapperSnareDeviceBranches.values();
+	public final static AssassinSnareDeviceBranches[] values = AssassinSnareDeviceBranches.values();
 
 	private final Component name;
 	@Override
@@ -127,10 +127,10 @@ public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnare
 	}
 
 
-	private TrapperSnareDeviceBranches(Component name, Component description, Material type) {
+	private AssassinSnareDeviceBranches(Component name, Component description, Material type) {
 		this(name, description, type, 0);
 	}
-	private TrapperSnareDeviceBranches(Component name, Component description, Material type, int limit) {
+	private AssassinSnareDeviceBranches(Component name, Component description, Material type, int limit) {
 		this.name = name;
 		this.description = description;
 		this.type = type;
@@ -149,5 +149,5 @@ public enum TrapperSnareDeviceBranches implements BranchItem.Branch<TrapperSnare
 	@Override
 	public void onDeselectBranch(SpecialItem item) { }
 
-	public abstract TrapperTrap createTrap(Player owner, Block block, BlockFace face);
+	public abstract AssassinTrap createTrap(Player owner, Block block, BlockFace face);
 }
