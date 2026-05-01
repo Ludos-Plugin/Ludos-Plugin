@@ -1,6 +1,7 @@
 package fr.ludos.command.ludos;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -9,9 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -158,7 +157,7 @@ public enum GroupSubcommand implements Subcommand {
 				return true;
 			}
 
-			group.removePlayer(player);
+			group.removePlayer(player, false);
 
 			Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 			plugin.saveConfig();
@@ -203,7 +202,7 @@ public enum GroupSubcommand implements Subcommand {
 				OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
 
 				if (group.isMember(target)) {
-					group.removePlayer(target);
+					group.removePlayer(target, true);
 					leader.sendMessage("Kicked " + targetName + " from the group.");
 				} else {
 					sender.sendMessage(targetName + " is not a member of your group.");
@@ -312,7 +311,9 @@ public enum GroupSubcommand implements Subcommand {
 				return true;
 			}
 
-			Set<Player> targets = CommandUtility.getPlayersFromArgs(args, 0, sender);
+			Set<Player> targets = CommandUtility.getPlayersFromArgs(args, 0, sender).stream()
+				.filter(p -> ! group.isPlayer(p))
+				.collect(Collectors.toSet());
 
 			if (targets.isEmpty()) {
 				sender.sendMessage("No valid player names provided.");
@@ -328,7 +329,19 @@ public enum GroupSubcommand implements Subcommand {
 		}
 		@Override
 		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			return CommandUtility.getOnlinePlayerNames();
+			if (! (sender instanceof Player player)) return null;
+
+			Group group = Group.getGroupOfPlayer(player);
+			if (group == null) return null;
+
+			HashSet<Player> onlines = Bukkit.getServer().getOnlinePlayers()
+				.stream()
+				.collect(Collectors.toCollection(HashSet::new));
+			onlines.removeAll(group.getPlayers());
+
+			return onlines.stream()
+				.map(Player::getName)
+				.toList();
 		}
 		@Override
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {

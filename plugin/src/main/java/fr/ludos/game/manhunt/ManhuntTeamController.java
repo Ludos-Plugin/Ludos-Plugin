@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,10 +40,6 @@ public final class ManhuntTeamController extends GameTeamController {
 	public Team preyTeam;
 	public Team spectatorTeam;
 
-	private final Set<OfflinePlayer> selectedHunters;
-	public Set<OfflinePlayer> getSelectedHunters() {
-		return selectedHunters;
-	}
 	private final OfflinePlayer selectedPrey;
 	public OfflinePlayer getSelectedPrey() {
 		return selectedPrey;
@@ -51,19 +49,15 @@ public final class ManhuntTeamController extends GameTeamController {
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<OfflinePlayer> players, @Nullable OfflinePlayer prey) {
 		super(game, ManhuntGameConfigs.getJoinOption(game.getGroup().getConfig()));
 
-		Set<OfflinePlayer> finalPlayers;
-		if (players == null) {
-			finalPlayers = game.getGroup().getOnlinePlayers().stream()
-				.filter(p -> p.isOnline())
+		Set<Player> finalPlayers = game.getGroup().getOnlinePlayers();
+		if (players != null) {
+			finalPlayers = finalPlayers.stream()
+				.filter(p -> players.contains(p))
 				.collect(Collectors.toSet());
-		} else {
-			finalPlayers = players.stream()
-				.filter(p -> p.isOnline())
-				.collect(Collectors.toSet());
-		}
 
-		if (finalPlayers.isEmpty()) {
-			throw new IllegalArgumentException("No players available (Check if the configured players are online)");
+			if (finalPlayers.isEmpty()) {
+				throw new IllegalArgumentException("No players available (Check if the configured players are online)");
+			}
 		}
 
 		if (prey == null) {
@@ -76,7 +70,6 @@ public final class ManhuntTeamController extends GameTeamController {
 
 		finalPlayers.remove(prey);
 
-		this.selectedHunters = finalPlayers;
 		this.selectedPrey = prey;
 	}
 
@@ -110,23 +103,16 @@ public final class ManhuntTeamController extends GameTeamController {
 	protected void onStart() {
 		joinPrey(selectedPrey);
 
-		for (OfflinePlayer hunter : selectedHunters) {
+		Set<Player> hunters = getGame().getGroup().getOnlinePlayers();
+		hunters.remove(selectedPrey);
+
+		for (OfflinePlayer hunter : hunters) {
 			if (hunter == null) continue;
 
 			Player onlineHunter = hunter.getPlayer();
 			if (onlineHunter == null) continue;
 
 			joinHunter(onlineHunter);
-		}
-
-		Set<Player> spectators = getGame().getGroup().getOnlinePlayers().stream()
-			.filter(p -> p.isOnline())
-			.filter(p -> p != getSelectedPrey())
-			.filter(p -> !selectedHunters.contains(p))
-			.collect(Collectors.toSet());
-
-		for (Player spectator : spectators) {
-			joinSpectator(spectator);
 		}
 	}
 
@@ -148,27 +134,29 @@ public final class ManhuntTeamController extends GameTeamController {
 		if (hunterTeam == null) return Set.of();
 		return hunterTeam.getEntries().stream()
 			.map(Bukkit::getOfflinePlayer)
-			.filter(p -> p != null)
 			.collect(Collectors.toSet());
 	}
 	public Set<Player> getOnlineHunters() {
-		return getHunters().stream()
-			.filter(p -> p.isOnline())
-			.map(p -> p.getPlayer())
-			.filter(p -> p != null)
+		if (hunterTeam == null) return Set.of();
+		return hunterTeam.getEntries().stream()
+			.map(Bukkit::getOfflinePlayer)
+			.map(OfflinePlayer::getPlayer)
+			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
-	}
-	public OfflinePlayer getPrey() {
-		if (preyTeam == null) return null;
+		}
+	public Set<OfflinePlayer> getPrey() {
+		if (preyTeam == null) return Set.of();
 		return preyTeam.getEntries().stream()
 			.map(Bukkit::getOfflinePlayer)
-			.filter(p -> p != null)
-			.findFirst().get();
+			.collect(Collectors.toSet());
 	}
-	public Player getOnlinePrey() {
-		OfflinePlayer prey = getPrey();
-		if (prey == null || !prey.isOnline()) return null;
-		return prey.getPlayer();
+	public Set<Player> getOnlinePrey() {
+		if (preyTeam == null) return Set.of();
+		return preyTeam.getEntries().stream()
+			.map(Bukkit::getOfflinePlayer)
+			.map(OfflinePlayer::getPlayer)
+			.filter(Objects::nonNull)
+			.collect(Collectors.toSet());
 	}
 
 
@@ -180,20 +168,47 @@ public final class ManhuntTeamController extends GameTeamController {
 	public Collection<LivingEntity> getEntities() {
 		Set<LivingEntity> entities = new HashSet<>();
 
-		Player prey = getOnlinePrey();
-		if (prey != null) {
-			entities.add(prey);
-		}
-
+		entities.addAll(getOnlinePrey());
 		entities.addAll(getOnlineHunters());
 
 		return entities;
 	}
 
+	private String compilePreyNames() {
+		List<String> preys = getPrey().stream()
+			.map(OfflinePlayer::getName)
+			.collect(Collectors.toList());
+		boolean isLong = preys.size() > 3;
+
+		StringBuilder builder = new StringBuilder();
+
+		if (isLong) {
+			builder.append(preys.get(0));
+			builder.append(", ");
+			builder.append(preys.get(1));
+			builder.append(", ");
+			builder.append(preys.get(2));
+			builder.append("...");
+		}
+		else {
+			builder.append(String.join(", ", preys));
+		}
+
+		return builder.toString();
+	}
+
 
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
-		Player player = event.getEntity();
+		Player player = event.getPlayer();
+		if (! getGame().getGroup().isPlayer(player)) return;
+
+
+		if (! isStarted()) {
+			event.setCancelled(true);
+			event.getPlayer().setHealth(20);
+		}
+
 		if (! preyTeam.hasEntry(player.getName())) {
 			Utility.onDeathSpectate(event, 5, getPlugin());
 			return;
@@ -287,7 +302,7 @@ public final class ManhuntTeamController extends GameTeamController {
 			.append(Component.text("Hunter")
 				.color(NamedTextColor.RED)),
 			Component.text("Go and seek ")
-			.append(Component.text(getPrey().getName())
+			.append(Component.text(compilePreyNames())
 				.color(NamedTextColor.BLUE)),
 			Title.Times.times(
 				Duration.ofMillis(500),
@@ -313,9 +328,9 @@ public final class ManhuntTeamController extends GameTeamController {
 
 		onlinePlayer.setScoreboard(getGame().getScoreboard());
 
-		Player prey = getOnlinePrey();
-		if (prey != null) {
-			onlinePlayer.teleport(prey.getLocation());
+		Optional<Player> prey = getOnlinePrey().stream().findFirst();
+		if (prey.isPresent()) {
+			onlinePlayer.teleport(prey.get().getLocation());
 		}
 	}
 

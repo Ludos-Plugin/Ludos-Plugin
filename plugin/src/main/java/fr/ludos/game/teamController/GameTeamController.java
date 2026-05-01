@@ -7,8 +7,6 @@ import java.util.stream.Collectors;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
@@ -99,15 +97,5 @@ public abstract class GameTeamController extends TwoStepGameProcessBase {
 		else {
 			discardPlayer(player);
 		}
-	}
-
-
-	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent event) {
-		Player player = event.getPlayer();
-
-		if (!game.isStarted() || !game.getGroup().getPlayers().contains(player)) return;
-
-		tryJoinPlayer(player);
 	}
 }

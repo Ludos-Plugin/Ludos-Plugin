@@ -15,7 +15,6 @@ import fr.ludos.Ludos;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.Subcommand;
 import fr.ludos.game.Game;
-import fr.ludos.group.Group;
 import fr.ludos.role.Role;
 
 public enum LudosSubcommand implements Subcommand {

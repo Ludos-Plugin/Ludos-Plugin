@@ -115,10 +115,14 @@ public abstract class Game extends TwoStepGameProcessBase {
 	}
 
 	private void onJoinGroup(OfflinePlayer player) {
-		getTeamController().addPlayer(player);
+		if (isStarted()) {
+			getTeamController().addPlayer(player);
+		}
 	}
 	private void onLeaveGroup(OfflinePlayer player) {
-		getTeamController().removePlayer(player);
+		if (isStarted()) {
+			getTeamController().removePlayer(player);
+		}
 	}
 
 	@Override
@@ -128,11 +132,11 @@ public abstract class Game extends TwoStepGameProcessBase {
 			oldGame.stop();
 		}
 
+		onGameSetup();
+
 		getWorldController().setup();
 		getAreaController().setup();
 		getTeamController().setup();
-
-		onGameSetup();
 
 		getLobbyController().start();
 
@@ -149,6 +153,8 @@ public abstract class Game extends TwoStepGameProcessBase {
 		getTeamController().start();
 		getAreaController().start();
 		getWorldController().start();
+
+		getLobbyController().stop();
 
 		getGroup().addJoinGroupListener(this::onJoinGroup);
 		getGroup().addLeaveGroupListener(this::onLeaveGroup);

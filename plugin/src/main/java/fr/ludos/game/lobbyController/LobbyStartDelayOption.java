@@ -1,14 +1,7 @@
 package fr.ludos.game.lobbyController;
 
 import java.util.Arrays;
-import java.util.Set;
 import java.util.stream.Collectors;
-
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-
-import fr.ludos.group.Group;
 
 public enum LobbyStartDelayOption {
 	five_seconds (5),

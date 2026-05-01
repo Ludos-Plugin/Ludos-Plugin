@@ -5,6 +5,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.game.Game;
 import fr.ludos.game.GameProcessBase;
@@ -55,8 +56,8 @@ public class GameLobbyController extends GameProcessBase {
 			.allMatch( player -> player != null && player.getWorld().equals(gameWorld) );
 	}
 
-	public final void startOnTimer(int seconds) {
-		new BukkitRunnable() {
+	public final BukkitTask startOnTimer(int seconds) {
+		return new BukkitRunnable() {
 			int timeLeft = seconds;
 
 			@Override
