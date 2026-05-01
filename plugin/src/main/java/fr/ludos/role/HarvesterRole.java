@@ -3,6 +3,7 @@ package fr.ludos.role;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -353,6 +354,11 @@ public class HarvesterRole extends Role {
 		@Override
 		public String getId() {
 			return id;
+		}
+
+		@Override
+		public EnumSet<RoleFlag> getRoleFlags() {
+			return EnumSet.of(RoleFlag.SUPPORT);
 		}
 
 		public Builder(Ludos plugin) {
