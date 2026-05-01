@@ -9,24 +9,26 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.EnumWrappers;
 
 import net.kyori.adventure.text.Component;
 
@@ -132,38 +134,70 @@ public class Utility {
 		return location;
 	}
 
-	public static void respawnPlayer(Player player) {
-		PacketContainer packet = ProtocolLibrary.getProtocolManager()
-			.createPacket(com.comphenix.protocol.PacketType.Play.Client.CLIENT_COMMAND);
-
-		packet.getClientCommands().write(0, EnumWrappers.ClientCommand.PERFORM_RESPAWN);
-
-		ProtocolLibrary.getProtocolManager().receiveClientPacket(player, packet);
-	}
-
-	public static void onDeathSpectate(Player player, float spectateSeconds, JavaPlugin plugin) {
+	public static void onDeathSpectate(PlayerDeathEvent event, float spectateSeconds, JavaPlugin plugin) {
+		Player player = event.getPlayer();
 		Location deathLocation = player.getLocation().clone();
 
-		try {
-			respawnPlayer(player);
-		}
-		catch (NoClassDefFoundError e) {
-			Bukkit.getLogger().warning("ProtocolLib.jar is missing, spectating on Death will not work correctly.");
-		}
-		finally {
-			player.setGameMode(GameMode.SPECTATOR);
-			new BukkitRunnable() {
-				public void run() { player.teleport(deathLocation); }
-			}.runTaskLater(plugin, 1);
+		event.setCancelled(true);
+		player.setGameMode(GameMode.SPECTATOR);
 
-			new BukkitRunnable() {
-				public void run() {
-					if (player.getGameMode() == GameMode.SPECTATOR) {
-						player.setGameMode(GameMode.SURVIVAL);
-						player.teleport(player.getBedSpawnLocation());
-					}
+		Bukkit.broadcast(event.deathMessage());
+
+		for (ItemStack item : event.getDrops()) {
+			player.getWorld().dropItemNaturally(deathLocation, item);
+		}
+		if (! event.getKeepInventory()) {
+			player.getInventory().clear();
+		}
+
+		if (! event.getKeepLevel()) {
+			int xp = event.getDroppedExp();
+			if (xp > 0) {
+				ExperienceOrb xpOrb = player.getWorld().spawn(deathLocation, ExperienceOrb.class);
+				xpOrb.setExperience(xp);
+			}
+		}
+		player.setLevel(event.getNewExp());
+		player.setExp(event.getNewLevel());
+		player.setTotalExperience(event.getNewTotalExp());
+
+
+		new BukkitRunnable() {
+			public void run() { player.teleport(deathLocation); }
+		}.runTaskLater(plugin, 1);
+
+		new BukkitRunnable() {
+			public void run() {
+				if (player.getGameMode() == GameMode.SPECTATOR) {
+					player.setGameMode(GameMode.SURVIVAL);
+					player.teleport(getPlayerSpawnLocation(player));
 				}
-			}.runTaskLater(plugin, (long)(20 * spectateSeconds));
+			}
+		}.runTaskLater(plugin, (long)(20 * spectateSeconds));
+	}
+
+	public static Location getPlayerSpawnLocation(Player player) {
+		Location bedLocation = player.getBedSpawnLocation();
+		if (bedLocation != null) return bedLocation;
+
+		return player.getWorld().getSpawnLocation();
+	}
+
+	@Nullable
+	public static Location getOfflinePlayerSpawnLocation(OfflinePlayer player) {
+		Location bedLocation = player.getBedSpawnLocation();
+		if (bedLocation != null) return bedLocation;
+
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer != null) {
+			return onlinePlayer.getWorld().getSpawnLocation();
+		}
+
+		try {
+			World defaultWorld = Bukkit.getServer().getWorlds().get(0);
+			return defaultWorld.getSpawnLocation();
+		} catch (Exception e) {
+			return null;
 		}
 	}
 

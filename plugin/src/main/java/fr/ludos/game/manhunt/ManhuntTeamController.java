@@ -167,7 +167,7 @@ public final class ManhuntTeamController extends GameTeamController {
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player player = event.getEntity();
 		if (! preyTeam.hasEntry(player.getName())) {
-			Utility.onDeathSpectate(player, 5, getPlugin());
+			Utility.onDeathSpectate(event, 5, getPlugin());
 			return;
 		}
 
