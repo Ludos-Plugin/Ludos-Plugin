@@ -16,8 +16,6 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -38,7 +36,6 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
-import fr.ludos.game.GameProcessBase;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -261,8 +258,6 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 
 	public static abstract class Events<T extends SpecialItem> extends GameEvents {
-		private boolean isStarted = false;
-
 		private final boolean canDrop;
 		@Nullable
 		private final Integer slot;

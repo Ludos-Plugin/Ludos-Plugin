@@ -2,23 +2,14 @@ package fr.ludos.item.harvester;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -34,12 +25,10 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
-import fr.ludos.item.BranchItem;
 import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
@@ -52,17 +41,10 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 	public static final String ID = "manhuntHarvesterScythe";
 
-	private static final double SCYTHE_RANGE = 5.0;
-	private static final double SCYTHE_RANGE_SQUARED = SCYTHE_RANGE * SCYTHE_RANGE;
-	private static final int SCYTHE_MAX_TARGETS = 5;
-	private static final double SCYTHE_CONE_DOT = 0.35;
 	private static final int WALL_COOLDOWN_TICKS = 20 * 8;
 	private static final int WALL_DISTANCE_DEFAULT = 2;
 	private static final int WALL_WIDTH = 5;
 	private static final int WALL_HEIGHT = 3;
-	private static final int WALL_DURATION_TICKS = 20 * 4;
-	private static final double LIGHTNING_PROC_CHANCE = 0.05;
-	private static final double LIGHTNING_TRUE_DAMAGE = 3.0;
 
 	// private final static Map<UUID, HarvesterScythe> cachedItems = new HashMap();
 
@@ -186,8 +168,6 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 	}
 
 	public static class Events extends LevelItem.Events<HarvesterScythe, HarvesterScytheLevels> {
-		private final Set<UUID> slashingPlayers = new HashSet<>();
-
 		public Events(Game game) {
 			super(game, 0);
 		}

@@ -1,13 +1,10 @@
 package fr.ludos.item.huntsman;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
@@ -33,7 +30,6 @@ import fr.ludos.game.Game;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.MultiLevelBranchItem;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.item.harvester.HarvesterPick;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;

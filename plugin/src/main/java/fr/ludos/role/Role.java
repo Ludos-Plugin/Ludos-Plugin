@@ -27,7 +27,6 @@ import fr.ludos.book.BookUtility;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
 import fr.ludos.game.GameProcessBase;
-import fr.ludos.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -41,8 +40,6 @@ import net.kyori.adventure.text.format.TextDecoration;
  */
 public abstract class Role extends GameProcessBase {
 	private static final String rolesKey = "playerRoles";
-
-	private boolean started = false;
 
 	public static Map<String, Builder> getRegistered() {
 		return registered;

@@ -1,33 +1,17 @@
 package fr.ludos;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.TextDecoration;
-
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.EnumWrappers;
-
-import fr.ludos.item.ItemUtilities;
-
-import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
@@ -35,11 +19,16 @@ import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.GameMode;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import org.bukkit.entity.Player;
-import org.bukkit.generator.BiomeProvider;
+
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.wrappers.EnumWrappers;
+
+import net.kyori.adventure.text.Component;
 
 public class Utility {
 	private static final Random random = new Random();
@@ -68,19 +57,28 @@ public class Utility {
 	}};
 
 	private static HashSet<Biome> getOverworldBiomes() {
+		@SuppressWarnings("unchecked")
 		HashSet<Biome> biomes = (HashSet<Biome>) allBiomes.clone();
 		biomes.removeAll(forbiddenOverworldBiomes);
+
 		return biomes;
 	}
 
 	private static HashSet<Biome> getNetherBiomes() {
-		return (HashSet<Biome>) netherBiomes.clone();
+		@SuppressWarnings("unchecked")
+		HashSet<Biome> biomes = (HashSet<Biome>) netherBiomes.clone();
+
+		return biomes;
 	}
 
 	private static HashSet<Biome> getEndBiomes() {
-		return (HashSet<Biome>) endBiomes.clone();
+		@SuppressWarnings("unchecked")
+		HashSet<Biome> biomes = (HashSet<Biome>) endBiomes.clone();
+
+		return biomes;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static Location getRandomBiomeLocation(Location searchOrigin, int biomeSearchSize, int min, int max, Location fallback, int retries, Set<Biome> avoidBiomes) {
 		World world = searchOrigin.getWorld();
 
@@ -204,7 +202,7 @@ public class Utility {
 			)
 			.toList();
 	}
-	public static Collection<List<Block>> getAllBlockColumns(Block block, BlockFace face, Pair<Integer, Integer> boundsX, Pair<Integer, Integer> boundsY, Pair<Integer, Integer> boundsZ) {
+	public static List<List<Block>> getAllBlockColumns(Block block, BlockFace face, Pair<Integer, Integer> boundsX, Pair<Integer, Integer> boundsY, Pair<Integer, Integer> boundsZ) {
 		if (boundsX.getLeft() > boundsX.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsX);
 		if (boundsY.getLeft() > boundsY.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsY);
 		if (boundsZ.getLeft() > boundsZ.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsZ);
@@ -224,7 +222,7 @@ public class Utility {
 			)
 			.toList();
 	}
-	public static Collection<List<Block>> getAllBlockRows(Block block, BlockFace face, Pair<Integer, Integer> boundsX, Pair<Integer, Integer> boundsY, Pair<Integer, Integer> boundsZ) {
+	public static List<List<Block>> getAllBlockRows(Block block, BlockFace face, Pair<Integer, Integer> boundsX, Pair<Integer, Integer> boundsY, Pair<Integer, Integer> boundsZ) {
 		if (boundsX.getLeft() > boundsX.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsX);
 		if (boundsY.getLeft() > boundsY.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsY);
 		if (boundsZ.getLeft() > boundsZ.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsZ);
@@ -244,7 +242,7 @@ public class Utility {
 			)
 			.toList();
 	}
-	public static Collection<List<Block>> getAllBlockLayers(Block block, BlockFace face, Pair<Integer, Integer> boundsX, Pair<Integer, Integer> boundsY, Pair<Integer, Integer> boundsZ) {
+	public static List<List<Block>> getAllBlockLayers(Block block, BlockFace face, Pair<Integer, Integer> boundsX, Pair<Integer, Integer> boundsY, Pair<Integer, Integer> boundsZ) {
 		if (boundsX.getLeft() > boundsX.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsX);
 		if (boundsY.getLeft() > boundsY.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsY);
 		if (boundsZ.getLeft() > boundsZ.getRight()) throw new IllegalArgumentException("Invalid bounds: " + boundsZ);

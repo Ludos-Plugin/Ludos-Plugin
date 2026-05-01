@@ -22,7 +22,6 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
 import fr.ludos.book.BookUtility;
-import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;

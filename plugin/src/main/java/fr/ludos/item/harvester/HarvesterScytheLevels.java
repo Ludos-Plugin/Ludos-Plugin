@@ -1,6 +1,5 @@
 package fr.ludos.item.harvester;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,7 +7,6 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
-import fr.ludos.item.LevelItem;
 import fr.ludos.item.LevelItem.Level;
 import fr.ludos.item.SpecialItem;
 

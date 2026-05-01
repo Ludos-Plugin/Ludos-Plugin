@@ -1,16 +1,10 @@
 package fr.ludos.book;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
-import org.bukkit.plugin.java.JavaPlugin;
-
-import fr.ludos.Ludos;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -18,11 +12,8 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.internal.parser.node.TagNode;
 import net.kyori.adventure.text.minimessage.internal.parser.node.TagPart;
 import net.kyori.adventure.text.minimessage.internal.parser.node.TextNode;
-import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslator;
 import net.kyori.adventure.text.minimessage.tree.Node;
 import net.kyori.adventure.text.minimessage.tree.Node.Root;
-import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class BookUtility {
 	public static final int MC_CHAR_WIDTH_DEFAULT = 5; // Default width for unknown characters
@@ -205,7 +196,6 @@ public class BookUtility {
 				.build();
 		}
 
-		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
 		int totalPadding = lineWidth - totalWidth - 2;
 		return Component.text()
 			.append(leftComponent)
@@ -222,7 +212,6 @@ public class BookUtility {
 		int textWidth = getPixelWidth(component);
 		if (textWidth >= lineWidth) return component;
 
-		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
 		int totalPadding = lineWidth - textWidth - 1;
 
 		return Component.text()
@@ -240,7 +229,6 @@ public class BookUtility {
 		int textWidth = getPixelWidth(component);
 		if (textWidth >= lineWidth) return component;
 
-		int spaceWidth = MC_SPACE_CHAR_WIDTH + 1;
 		double totalPadding = (lineWidth - textWidth - 1) / 2;
 
 		return Component.text()

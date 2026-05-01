@@ -3,32 +3,27 @@ package fr.ludos.item.tank;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+
 import javax.annotation.Nullable;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-
 import org.bukkit.Material;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-
-import org.bukkit.entity.Entity;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import fr.ludos.item.LevelItem;
-import fr.ludos.item.SpecialItem;
-import fr.ludos.item.trapper.TrapperDagger;
-import fr.ludos.item.trapper.TrapperDaggerBranches;
 import fr.ludos.game.Game;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
 import fr.ludos.role.TankRole;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class TankDashObject extends SpecialItem {
 	private static final String ID = "tank_dasher";

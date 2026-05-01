@@ -4,29 +4,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.annotation.Nullable;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import fr.ludos.item.SpecialItem;
 import fr.ludos.game.Game;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.role.BerserkerRole;
 import fr.ludos.role.Role;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class BerserkerRageBrew extends SpecialItem {
@@ -67,7 +65,10 @@ public class BerserkerRageBrew extends SpecialItem {
 
 	public static BerserkerRageBrew createItem(Player owner, Game game) {
 		BerserkerRageBrew brew = new BerserkerRageBrew(owner, game);
-		brew.initializeItem();
+		UUID itemId = brew.initializeItem();
+
+		// cachedItems.put(itemId, brew);
+
 		return brew;
 	}
 
