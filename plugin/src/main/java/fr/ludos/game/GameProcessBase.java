@@ -14,7 +14,6 @@ public abstract class GameProcessBase implements GameProcess {
 
 	public void start() {
 		if (started) return;
-		started = true;
 
 		onInit();
 
@@ -27,6 +26,8 @@ public abstract class GameProcessBase implements GameProcess {
 			e.printStackTrace();
 			stop();
 		}
+
+		started = true;
 	}
 	protected void onInit() { }
 	protected void onStart() { }

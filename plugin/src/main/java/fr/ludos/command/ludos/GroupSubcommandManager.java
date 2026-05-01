@@ -7,12 +7,7 @@ import java.util.stream.Collectors;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-
-import fr.ludos.Ludos;
-import fr.ludos.command.CommandUtility;
 
 public final class GroupSubcommandManager implements TabExecutor {
 	public static final String arg = "group";

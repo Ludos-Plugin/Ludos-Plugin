@@ -14,7 +14,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 
 import fr.ludos.command.CommandUtility;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaOption;
@@ -335,7 +334,7 @@ public enum ManhuntGameConfigs {
 	public static LobbyWaitPlayersOption getWaitPlayersOption(ConfigurationSection config) {
 		String waitPlayersString = config.getString(waitPlayersPath);
 		return Arrays.stream(LobbyWaitPlayersOption.values()).filter(o -> o.name().equals(waitPlayersString)).findFirst()
-			.orElse(LobbyWaitPlayersOption.online);
+			.orElse(LobbyWaitPlayersOption.all);
 	}
 	public static void setWaitPlayersOption(ConfigurationSection config, LobbyWaitPlayersOption waitPlayers) {
 		String value = waitPlayers == null ? null : waitPlayers.name();

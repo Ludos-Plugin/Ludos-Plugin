@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -28,7 +27,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -53,7 +51,7 @@ import net.kyori.adventure.util.TriState;
 public class ManhuntGame extends Game {
 	public static final String ID = "manhunt";
 
-	private final Scoreboard scoreboard;
+	private Scoreboard scoreboard;
 	@Override
 	public Scoreboard getScoreboard() {
 		return this.scoreboard;
@@ -114,7 +112,6 @@ public class ManhuntGame extends Game {
 			returnLocation = leader.getLocation();
 		}
 
-		this.scoreboard = Bukkit.getServer().getScoreboardManager().getNewScoreboard();
 		this.worldController = new SingleWorldController(
 			this,
 			builder.createWorldCreator(),
@@ -173,17 +170,21 @@ public class ManhuntGame extends Game {
 	}
 
 	@Override
+	protected void onGameSetup() {
+		super.onGameSetup();
+		this.scoreboard = Bukkit.getServer().getScoreboardManager().getNewScoreboard();
+	}
+
+	@Override
 	protected void onGameStart() {
+		super.onGameStart();
+
 		World world = worldController.getWorld();
 		world.setTime(1000);
-		Collection<OfflinePlayer> players = teamController.getPlayers();
 
-		for (OfflinePlayer offlinePlayer : players) {
-			Player player = offlinePlayer.getPlayer();
-			if (player == null) continue;
-
-			player.getInventory().clear();
+		for (Player player : getGroup().getOnlinePlayers()) {
 			player.setScoreboard(scoreboard);
+			player.getInventory().clear();
 			Utility.revokeAllAdvancements(player);
 		}
 
@@ -195,10 +196,7 @@ public class ManhuntGame extends Game {
 			public void run() {
 				if (lastPreyLocation == null) return;
 
-				for (OfflinePlayer offlinePlayer : players) {
-					Player player = offlinePlayer.getPlayer();
-					if (player == null) continue;
-
+				for (Player player : getGroup().getOnlinePlayers()) {
 					player.sendActionBar(
 						Component.text("Prey's location:")
 						.append(Component.text(" X:" + lastPreyLocation.getBlockX()).color(NamedTextColor.RED))
@@ -212,7 +210,7 @@ public class ManhuntGame extends Game {
 		saturationTask = new BukkitRunnable() {
 			@Override
 			public void run() {
-				for (OfflinePlayer offlinePlayer : players) {
+				for (OfflinePlayer offlinePlayer : getGroup().getOnlinePlayers()) {
 					Player player = offlinePlayer.getPlayer();
 					if (player == null) continue;
 					player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 1, 0, true, false));
@@ -226,8 +224,14 @@ public class ManhuntGame extends Game {
 
 	@Override
 	protected void onGameStop() {
+		super.onGameStop();
+
 		compassEvents.stop();
 		timer.stop();
+
+		for (Player player : getGroup().getOnlinePlayers()) {
+			player.setScoreboard(Bukkit.getServer().getScoreboardManager().getMainScoreboard());
+		}
 
 		areaController.resetBorder();
 
@@ -244,10 +248,19 @@ public class ManhuntGame extends Game {
 		Bukkit.getServer().broadcast(Component.text("The Game of Manhunt ended"));
 	}
 
+	@Override
+	protected void onGameSetdown() {
+		super.onGameSetdown();
+
+		this.scoreboard = null;
+	}
+
 
 	public void revealPrey() {
-		Player prey = teamController.getOnlinePrey();
-		if (prey == null) return;
+		Set<Player> preys = teamController.getOnlinePrey();
+		if (preys.isEmpty()) return;
+
+		Player prey = preys.stream().findAny().get();
 
 		lastPreyLocation = prey.getLocation();
 
@@ -269,41 +282,6 @@ public class ManhuntGame extends Game {
 	}
 
 
-	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent event) {
-		Set<Player> hunters = teamController.getOnlineHunters();
-		Player prey = teamController.getOnlinePrey();
-
-		if (hunters.isEmpty() || prey == null) {
-			timer.resume();
-			return;
-		}
-
-		var player = event.getPlayer();
-
-		if (!hunters.contains(player) && player != prey) {
-			player.setGameMode(GameMode.SPECTATOR);
-
-			player.teleport(prey.getLocation());
-		}
-	}
-
-	@EventHandler
-	public void onPlayerQuit(PlayerQuitEvent event) {
-		Player player = event.getPlayer();
-
-		Set<Player> hunters = teamController.getOnlineHunters();
-		if (hunters.contains(player)) {
-			hunters.remove(player);
-		}
-
-		Player prey = teamController.getOnlinePrey();
-
-		if (hunters.isEmpty() || prey == null) {
-			timer.pause();
-		}
-	}
-
 	@Override
 	public Boolean canPlayerHaveRole(Player player, String roleId) {
 		// if (teamController.preyTeam.getEntries().contains(player.getName())) {
@@ -312,6 +290,17 @@ public class ManhuntGame extends Game {
 
 		return true;
 	}
+
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
+		if (! getGroup().isPlayer(player)) return;
+		if (isStarted()) {
+			player.setScoreboard(scoreboard);
+		}
+	}
+
+
 	public static class Builder extends Game.Builder {
 
 		public Builder(Ludos plugin) {

@@ -1,5 +1,7 @@
 package fr.ludos.game.manhunt;
 
+import java.util.Set;
+
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -7,6 +9,7 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -23,6 +26,9 @@ public class ManhuntTimer extends GameProcessBase {
 	private BossBar bossbar;
 
 	private boolean isRunning = false;
+	public boolean isRunning() {
+		return isRunning;
+	}
 
 	private BukkitTask task;
 
@@ -43,8 +49,64 @@ public class ManhuntTimer extends GameProcessBase {
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
+		if (! game.getGroup().isPlayer(player)) return;
+
 		bossbar.addPlayer(event.getPlayer());
 		bossbar.setVisible(true);
+
+		if (isRunning()) return;
+
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				Set<Player> hunters = game.getTeamController().getOnlineHunters();
+				Set<Player> prey = game.getTeamController().getOnlinePrey();
+
+				if (! prey.isEmpty() && ! hunters.isEmpty()) {
+					resume();
+
+					Bukkit.broadcast(
+						Component.text("The game has resumed!")
+					);
+				}
+			}
+		}.runTaskLater(getPlugin(), 1);
+	}
+
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent event) {
+		Player player = event.getPlayer();
+		if (! game.getGroup().isPlayer(player)) return;
+		if (! isRunning()) return;
+
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				Set<Player> hunters = game.getTeamController().getOnlineHunters();
+				Set<Player> prey = game.getTeamController().getOnlinePrey();
+
+				if (prey.isEmpty()) {
+					pause();
+
+					Bukkit.broadcast(
+						Component.text("The game has been paused because the Prey has left the game.")
+							.append(Component.text('\n'))
+							.append(Component.text("Waiting for them to join back..."))
+					);
+				}
+				if (hunters.isEmpty()) {
+					pause();
+
+					Bukkit.broadcast(
+						Component.text("The game has been paused because all Hunters have left the game.")
+							.append(Component.text('\n'))
+							.append(Component.text("Waiting for them to join back..."))
+					);
+				}
+
+			}
+		}.runTaskLater(getPlugin(), 1);
 	}
 
 	@Override

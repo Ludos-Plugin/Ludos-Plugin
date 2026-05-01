@@ -1,7 +1,6 @@
 package fr.ludos.group;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,18 +8,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.MemorySection;
@@ -33,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
-import fr.ludos.item.LevelItem.LevelState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -181,7 +176,7 @@ public final class Group implements ConfigurationSerializable {
 
 		Group oldGroup = getGroupOfPlayer(leader);
 		if (oldGroup != null) {
-			oldGroup.removePlayer(leader);
+			oldGroup.removePlayer(leader, false);
 		}
 
 
@@ -261,43 +256,51 @@ public final class Group implements ConfigurationSerializable {
 	}
 
 	public final void addPlayer(OfflinePlayer player) {
-		if (isLeader(player)) return;
-		if (isMember(player)) return;
+		Player onlinePlayer = player.getPlayer();
+		if (isPlayer(player)) {
+
+			if (onlinePlayer != null) {
+				Component alreadyJoinedMessage = Component.text("You are already in this group.");
+				onlinePlayer.sendMessage(alreadyJoinedMessage);
+			}
+			return;
+		}
 
 		Group currentGroup = getGroupOfPlayer(player);
 		if (currentGroup != null) {
-			currentGroup.removePlayer(player);
-		}
-
-		members.add(player);
-		playerGroupMap.put(player, this);
-
-		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
-		Group.saveConfigGroup(plugin, this);
-
-		notifyJoinGroup(player);
-
-		Player onlinePlayer = player.getPlayer();
-		Component targetMessage = Component.text("You have joined " + leader.getName() + "'s group.");
-		if (onlinePlayer != null) {
-			onlinePlayer.sendMessage(targetMessage);
+			currentGroup.removePlayer(player, false);
 		}
 
 		Component joinMessage = Component.text(player.getName() + " has joined the group.");
 		for (Player member : getOnlinePlayers()) {
 			member.sendMessage(joinMessage);
 		}
+
+		members.add(player);
+		playerGroupMap.put(player, this);
+
+		Component targetMessage = Component.text("You have joined " + leader.getName() + "'s group.");
+		if (onlinePlayer != null) {
+			onlinePlayer.sendMessage(targetMessage);
+		}
+
+		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
+		Group.saveConfigGroup(plugin, this);
+
+		notifyJoinGroup(player);
 	}
 
-	public final void removePlayer(OfflinePlayer player) {
+	public final void removePlayer(OfflinePlayer player, boolean kick) {
 		boolean wasLeader = isLeader(player);
 		if (!wasLeader && !isMember(player)) return;
 
 		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 		boolean shouldDisband = false;
-		Component playerLeftMessage = shouldDisband
-			? Component.text("You have left the group. Since you were the leader and there are no more members, the group has been disbanded.")
-			: Component.text("You have left the group.");
+		Component playerLeftMessage = kick
+			? Component.text("You have been kicked from " + leader.getName() + "'s group.")
+			: shouldDisband
+				? Component.text("You have left the group. Since you were the leader and there are no more members, the group has been disbanded.")
+				: Component.text("You have left the group.");
 		if (wasLeader) {
 			if (!electNewLeader()) {
 				shouldDisband = true;
