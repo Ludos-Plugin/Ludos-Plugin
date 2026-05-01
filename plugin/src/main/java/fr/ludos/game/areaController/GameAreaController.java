@@ -1,20 +1,33 @@
-package fr.ludos.game;
+package fr.ludos.game.areaController;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.WorldCreator;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
-public abstract class GameAreaController extends GameProcessBase {
-	private final Game game;
-	protected final Game getGame() {
-		return game;
-	}
+import fr.ludos.Utility;
+import fr.ludos.game.Game;
+import fr.ludos.game.TwoStepGameProcessBase;
 
+public abstract class GameAreaController extends TwoStepGameProcessBase {
 	@Override
 	protected final JavaPlugin getPlugin() {
 		return getGame().getPlugin();
 	}
 
-	public GameAreaController(Game game) {
+	private final Game game;
+	protected final Game getGame() {
+		return game;
+	}
+
+	protected GameAreaController(Game game) {
 		if (game == null) {
 			throw new IllegalArgumentException("Game cannot be null");
 		}
@@ -22,8 +35,6 @@ public abstract class GameAreaController extends GameProcessBase {
 		this.game = game;
 	}
 
-
-	public abstract void setup(Location base);
 
 	public abstract Location getCenter();
 

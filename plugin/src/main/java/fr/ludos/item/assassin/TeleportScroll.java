@@ -5,46 +5,56 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+
 import javax.annotation.Nullable;
-
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import fr.ludos.item.SpecialItem;
-import fr.ludos.role.Role;
-import fr.ludos.role.AssassinRole;
 import fr.ludos.game.Game;
+import fr.ludos.item.SpecialItem;
+import fr.ludos.role.AssassinRole;
+import fr.ludos.role.Role;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class TeleportScroll extends SpecialItem {
 	public static final String ID = "teleport_scroll";
+
+	// private final static Map<UUID, TeleportScroll> cachedItems = new HashMap<>();
 
 	public static @Nullable TeleportScroll fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
+		// TeleportScroll cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
+
 		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		return new TeleportScroll(stack, owner, game);
+		TeleportScroll scroll = new TeleportScroll(stack, owner, game);
+		// cachedItems.put(itemId, scroll);
+
+		return scroll;
 	}
 
 	public static TeleportScroll createItem(Player owner, Game game) {
 		TeleportScroll scroll = new TeleportScroll(new ItemStack(Material.PAPER), owner, game);
-		scroll.initializeItem();
+		UUID itemId = scroll.initializeItem();
+
+		// cachedItems.put(itemId, scroll);
+
 		return scroll;
 	}
 
@@ -99,10 +109,10 @@ public class TeleportScroll extends SpecialItem {
 
 		@EventHandler
 		public void onScrollUse(PlayerInteractEvent event) {
-			if (!event.getAction().isRightClick()) return;
-
 			Player player = event.getPlayer();
-			if (! Role.isPlayerRole(player, AssassinRole.id)) return;
+			if (! isPlayerValid(player)) return;
+
+			if (!event.getAction().isRightClick()) return;
 
 			ItemStack itemInHand = player.getInventory().getItemInMainHand();
 			if (getItem(itemInHand, game) == null) return;
@@ -183,7 +193,7 @@ public class TeleportScroll extends SpecialItem {
 		}
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, AssassinRole.id);
 		}
 	}

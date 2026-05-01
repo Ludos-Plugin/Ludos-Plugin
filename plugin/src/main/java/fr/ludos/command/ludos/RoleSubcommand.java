@@ -28,7 +28,7 @@ public enum RoleSubcommand implements Subcommand {
 				return true;
 			}
 
-			Role.Builder getRole = Role.getRole(getTarget);
+			Role.Builder getRole = Role.getPlayerRole(getTarget);
 			sender.sendMessage(getRole == null ? noRoleLabel : getRole.getId());
 			return true;
 		}

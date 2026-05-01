@@ -10,6 +10,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -29,9 +30,14 @@ import fr.ludos.game.Game;
 public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 	public static final String ID = "assassin_dagger";
 
+	// private final static Map<UUID, AssassinDagger> cachedItems = new HashMap<>();
+
 	public static @Nullable AssassinDagger fromItemStack(ItemStack stack, Game game) {
 		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
+
+		// AssassinDagger cached = cachedItems.get(itemId);
+		// if (cached != null) return cached;
 
 		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
@@ -39,12 +45,18 @@ public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
 		if (levelState == null) levelState = new LevelState();
 
-		return new AssassinDagger(stack, owner, levelState, game);
+		AssassinDagger dagger = new AssassinDagger(stack, owner, levelState, game);
+		// cachedItems.put(itemId, dagger);
+
+		return dagger;
 	}
 
 	public static AssassinDagger createItem(Player owner, LevelState level, Game game) {
 		AssassinDagger dagger = new AssassinDagger(new ItemStack(Material.IRON_SWORD), owner, level, game);
-		dagger.initializeItem();
+		UUID itemId = dagger.initializeItem();
+
+		// cachedItems.put(itemId, dagger);
+
 		return dagger;
 	}
 
@@ -81,8 +93,8 @@ public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 
 		@EventHandler
 		public void onDaggerHit(EntityDamageByEntityEvent event) {
-			if (!(event.getDamager() instanceof Player player)) return;
-			if (!Role.isPlayerRole(player, AssassinRole.id)) return;
+			if (! (event.getDamager() instanceof Player player)) return;
+			if (! isPlayerValid(player)) return;
 
 			ItemStack itemInHand = player.getInventory().getItemInMainHand();
 			AssassinDagger dagger = getItem(itemInHand, game);
@@ -119,7 +131,7 @@ public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 		}
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, AssassinRole.id);
 		}
 	}

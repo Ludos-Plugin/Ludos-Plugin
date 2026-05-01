@@ -6,6 +6,7 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -141,7 +143,9 @@ public class HarvesterRole extends Role {
 		if (!Categories.isChestplate(chestplate)) return;
 		if (!isExplosiveChestplate(chestplate)) return;
 
-		List<Player> enemies = getGame().getGameTeamController().getEnemyPlayers(harvester).stream()
+		List<Player> enemies = getGame().getTeamController().getEnemyPlayers(harvester).stream()
+			.map(OfflinePlayer::getPlayer)
+			.filter(Objects::nonNull)
 			.filter(enemy -> enemy.getWorld().equals(harvester.getWorld()))
 			.filter(enemy -> enemy.getLocation().distanceSquared(harvester.getLocation()) <= EXPLOSIVE_RADIUS_SQUARED)
 			.collect(Collectors.toList());

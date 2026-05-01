@@ -403,7 +403,7 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		@EventHandler
 		public void onPlayerDeath(PlayerDeathEvent event) {
 			Player player = event.getEntity();
-			if (! canPlayerHaveItem(player)) return;
+			if (! isPlayerValid(player)) return;
 
 			T specialItem = SpecialItem.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
 			if ( specialItem == null ) {

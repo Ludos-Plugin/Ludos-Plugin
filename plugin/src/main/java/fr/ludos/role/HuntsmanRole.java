@@ -2,8 +2,10 @@ package fr.ludos.role;
 
 import java.util.LinkedHashMap;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -50,11 +52,16 @@ public class HuntsmanRole extends Role {
 		if (! (arrowProjectile instanceof Arrow arrow)) return;
 
 		ProjectileSource source = arrow.getShooter();
-		if (! (source instanceof HumanEntity player)) return;
+		if (! (source instanceof Player player)) return;
 
-		if (! Role.isPlayerRole(player, id)) return;
+		if (! isPlayerValid(player)) return;
 
 		player.addPotionEffect(PotionEffectType.SPEED.createEffect((int)(20 * 2.5), 2));
+	}
+
+	@Override
+	protected Boolean isPlayerValidInternal(OfflinePlayer player) {
+		return Role.isPlayerRole(player, id);
 	}
 
 

@@ -15,6 +15,7 @@ import fr.ludos.Ludos;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.Subcommand;
 import fr.ludos.game.Game;
+import fr.ludos.group.Group;
 import fr.ludos.role.Role;
 
 public enum LudosSubcommand implements Subcommand {
@@ -111,6 +112,49 @@ public enum LudosSubcommand implements Subcommand {
 				Role.getRegistered().keySet().stream().sorted()
 					.collect(Collectors.joining(" | "))
 			);
+			usage.append(' ');
+			usage.append("[option]");
+			return usage.toString();
+		}
+	},
+	group() {
+		@Override
+		public String getDescription() {
+			return "Manage Ludos groups.";
+		}
+		@Override
+		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			if (args.length == 0) return false;
+
+			String arg = args[0].toLowerCase();
+			GroupSubcommand option = Arrays.stream(GroupSubcommand.values()).filter(o -> o.name().equalsIgnoreCase(arg)).findFirst().orElse(null);
+			if (option == null) return false;
+
+			return option.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+		}
+		@Override
+		public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			if (args.length <= 1) {
+				return Arrays.stream(GroupSubcommand.values())
+					.map(GroupSubcommand::name)
+					.collect(Collectors.toList());
+			}
+
+			String arg = args[0].toLowerCase();
+			GroupSubcommand option = Arrays.stream(GroupSubcommand.values()).filter(o -> o.name().equalsIgnoreCase(arg)).findFirst().orElse(null);
+			if (option == null) return null;
+
+			return option.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+		}
+		@Override
+		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
+			StringBuilder usage = new StringBuilder("/" + label + " group ");
+			usage.append('<');
+			usage.append(
+				Arrays.stream(GroupSubcommand.values()).sorted().map(GroupSubcommand::name)
+					.collect(Collectors.joining(" | "))
+			);
+			usage.append('>');
 			usage.append(' ');
 			usage.append("[option]");
 			return usage.toString();

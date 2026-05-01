@@ -1,17 +1,22 @@
 package fr.ludos.game;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -22,6 +27,11 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
 import fr.ludos.book.BookUtility;
+import fr.ludos.game.areaController.GameAreaController;
+import fr.ludos.game.lobbyController.GameLobbyController;
+import fr.ludos.game.teamController.GameTeamController;
+import fr.ludos.game.worldController.GameWorldController;
+import fr.ludos.group.Group;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -30,17 +40,15 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public abstract class Game extends GameProcessBase {
-	@Nullable
-	private static Game current = null;
-	@Nullable
-	public static Game getCurrent() {
-		return current;
-	}
-
+public abstract class Game extends TwoStepGameProcessBase {
 	private static final Map<String, Builder> registered = new HashMap<>();
 	public static Map<String, Builder> getRegistered() {
 		return registered;
+	}
+
+	private static final Set<Game> activeGames = new HashSet<>();
+	public static Set<Game> getActiveGames() {
+		return Collections.unmodifiableSet(activeGames);
 	}
 
 	@Nullable
@@ -59,10 +67,6 @@ public abstract class Game extends GameProcessBase {
 		registered.put(builder.getId(), builder);
 	}
 
-	private final Map<String, Role> activeRoles = new HashMap<>();
-	public Map<String, Role> getActiveRoles() {
-		return activeRoles;
-	}
 
 	protected final Builder builder;
 	public Builder getBuilder() {
@@ -73,47 +77,81 @@ public abstract class Game extends GameProcessBase {
 		return builder.getPlugin();
 	}
 
-	public abstract Scoreboard getScoreboard();
-	public abstract GameTeamController getGameTeamController();
-	public abstract GameAreaController getGameAreaController();
+	private final Group group;
+	public Group getGroup() {
+		return group;
+	}
 
-	public static boolean startGame(String id) {
+	private final Map<String, Role> activeRoles = new HashMap<>();
+	public Map<String, Role> getActiveRoles() {
+		return activeRoles;
+	}
+
+	public abstract Scoreboard getScoreboard();
+	public abstract GameWorldController getWorldController();
+	public abstract GameAreaController getAreaController();
+	public abstract GameTeamController getTeamController();
+	public abstract GameLobbyController getLobbyController();
+
+	protected Game(Builder builder, Group group) {
+		this.builder = builder;
+		this.group = group;
+	}
+
+	public static boolean startGame(String id, Group group) {
 		if (! registered.containsKey(id)) return false;
 
 		Game game;
 		try {
-			game = registered.get(id).build();
+			game = registered.get(id).build(group);
 		} catch (Exception e) {
-			Bukkit.getServer().broadcast(Component.text("Error while starting game " + id + ": " + e.getMessage()).color(NamedTextColor.RED));
+			Bukkit.getServer().broadcast(Component.text("Error while building game " + id + ": " + e.getMessage()).color(NamedTextColor.RED));
 			e.printStackTrace();
 			return false;
 		}
 
-		game.start();
+		game.setup();
 		return true;
 	}
 
-	public static void stopCurrentGame() {
-		if (current != null) {
-			current.stop();
-		}
+	private void onJoinGroup(OfflinePlayer player) {
+		getTeamController().addPlayer(player);
+	}
+	private void onLeaveGroup(OfflinePlayer player) {
+		getTeamController().removePlayer(player);
 	}
 
-	public Game(Builder builder) {
-		this.builder = builder;
+	@Override
+	protected final void onSetup() {
+		Game oldGame = group.getGame();
+		if (oldGame != null && oldGame != this) {
+			oldGame.stop();
+		}
+
+		getWorldController().setup();
+		getAreaController().setup();
+		getTeamController().setup();
+
+		onGameSetup();
+
+		getLobbyController().start();
+
+		group.setGame(this);
+		activeGames.add(this);
 	}
 
 	@Override
 	protected final void onInit() {
-		stopCurrentGame();
-		current = this;
-
 		onGameInit();
 	}
 	@Override
 	protected final void onStart() {
-		getGameAreaController().start();
-		getGameTeamController().start();
+		getTeamController().start();
+		getAreaController().start();
+		getWorldController().start();
+
+		getGroup().addJoinGroupListener(this::onJoinGroup);
+		getGroup().addLeaveGroupListener(this::onLeaveGroup);
 
 		onGameStart();
 
@@ -124,31 +162,49 @@ public abstract class Game extends GameProcessBase {
 		}
 	}
 
-	protected void onGameInit() { }
-	protected void onGameStart() { }
 
-
-	@Override
-	protected final void onDeinit() {
-		current = null;
-
-		onGameDeinit();
-	}
 	@Override
 	protected final void onStop() {
-		getGameAreaController().stop();
-		getGameTeamController().stop();
-
-		onGameStop();
-
 		for (Role role : activeRoles.values()) {
 			role.stop();
 		}
 		activeRoles.clear();
+
+		onGameStop();
+
+		getGroup().removeJoinGroupListener(this::onJoinGroup);
+		getGroup().removeLeaveGroupListener(this::onLeaveGroup);
+
+		getTeamController().stop();
+		getAreaController().stop();
+		getWorldController().stop();
+	}
+	@Override
+	protected final void onDeinit() {
+		onGameDeinit();
+	}
+	@Override
+	protected final void onSetdown() {
+		group.setGame(null);
+		activeGames.remove(this);
+
+		getLobbyController().stop();
+
+		onGameSetdown();
+
+		getTeamController().setdown();
+		getAreaController().setdown();
+		getWorldController().setdown();
 	}
 
-	protected void onGameDeinit() { }
+	protected void onGameSetup() { }
+	protected void onGameInit() { }
+	protected void onGameStart() { }
+
 	protected void onGameStop() { }
+	protected void onGameDeinit() { }
+	protected void onGameSetdown() { }
+
 
 	public LinkedHashMap<String, GameEvents> modifyEvents(LinkedHashMap<String, GameEvents> events) {
 		return events;
@@ -210,12 +266,12 @@ public abstract class Game extends GameProcessBase {
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
 
-		public abstract boolean executeGameConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args);
+		public abstract boolean executeGameConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, ConfigurationSection config, @NotNull String[] args);
 		public abstract List<String> gameConfigTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args);
 		public abstract String getGameConfigUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label);
 
 
-		public abstract Game build();
+		public abstract Game build(Group group);
 
 		public Builder(Ludos plugin) {
 			this.plugin = plugin;

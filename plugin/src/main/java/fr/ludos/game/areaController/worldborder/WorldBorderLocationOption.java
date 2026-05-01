@@ -1,12 +1,19 @@
-package fr.ludos.game.worldborder;
+package fr.ludos.game.areaController.worldborder;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public enum WorldBorderLocationOption {
-	here (),
-	random ();
+import org.bukkit.Location;
 
+public enum WorldBorderLocationOption {
+	here () {
+		@Override
+		public final Location getLocation(Location location) {
+			return location.clone();
+		}
+	};
+
+	public abstract Location getLocation(Location location);
 
 	public static String getUsage() {
 		StringBuilder sb = new StringBuilder();

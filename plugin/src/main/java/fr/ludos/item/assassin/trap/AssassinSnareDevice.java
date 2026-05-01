@@ -10,9 +10,9 @@ import javax.annotation.Nullable;
 
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -101,12 +101,12 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches>
 			trapTask = new BukkitRunnable() {
 				@Override
 				public void run() {
-					var game = Game.getCurrent();
+					var game = getGame();
 					if (game == null) return;
 
 					for (var playerTrapEntries : traps.entrySet()) {
 						Player player = playerTrapEntries.getKey();
-						Set<LivingEntity> targets = game.getGameTeamController().getEnemies(player);
+						Set<LivingEntity> targets = game.getTeamController().getEnemies(player);
 
 						for (var branchTrapEntries : playerTrapEntries.getValue().entrySet()) {
 							AssassinSnareDeviceBranches branch = branchTrapEntries.getKey();
@@ -160,9 +160,10 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches>
 		@EventHandler
 		public void onPlayerInteract(PlayerInteractEvent event) {
 			Player player = event.getPlayer();
+			if (! isPlayerValid(player)) return;
+
 			AssassinSnareDevice snareDevice = getItem(player.getInventory().getItemInMainHand(), game);
 			if (snareDevice == null) return;
-
 
 			if (! snareDevice.refreshUseCooldown()) return;
 			event.setCancelled(true);
@@ -196,7 +197,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches>
 
 		@EventHandler
 		public void onItemDrop(PlayerDropItemEvent event) {
-			if (! canPlayerHaveItem(event.getPlayer())) return;
+			if (! isPlayerValid(event.getPlayer())) return;
 
 			if (event.getItemDrop().getItemStack().getType() == Material.ARROW) {
 				event.setCancelled(true);
@@ -215,7 +216,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches>
 			return AssassinSnareDevice.createItem(owner, game);
 		}
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, AssassinRole.id);
 		}
 	}

@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.HumanEntity;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
@@ -126,9 +126,9 @@ public class ManhuntCompass extends SpecialItem {
 		}
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			if (! (game instanceof ManhuntGame manhunt)) return false;
-			return manhunt.getGameTeamController().hunterTeam.hasEntry(owner.getName());
+			return manhunt.getTeamController().hunterTeam.hasEntry(owner.getName());
 		}
 
 		// @EventHandler
