@@ -1,26 +1,22 @@
 package fr.ludos.game.manhunt;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.CompassMeta;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.CompassMeta;
 
-import fr.ludos.item.SpecialItem;
 import fr.ludos.game.Game;
+import fr.ludos.item.SpecialItem;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class ManhuntCompass extends SpecialItem {

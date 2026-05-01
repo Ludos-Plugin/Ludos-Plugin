@@ -7,12 +7,8 @@ import java.util.stream.Collectors;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.Ludos;
-import fr.ludos.command.CommandUtility;
 import fr.ludos.role.Role;
 
 public final class RoleSubcommandManager implements TabExecutor {

@@ -5,9 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -19,13 +16,14 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.Ludos;
-import fr.ludos.item.SpecialItem;
-import fr.ludos.item.assassin.AssassinDagger;
-import fr.ludos.item.assassin.AssassinBoots;
-import fr.ludos.item.assassin.TeleportScroll;
-import fr.ludos.item.trapper.TrapperSnareDevice;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
+import fr.ludos.item.assassin.AssassinBoots;
+import fr.ludos.item.assassin.AssassinDagger;
+import fr.ludos.item.assassin.TeleportScroll;
+import fr.ludos.item.trapper.TrapperSnareDevice;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 
 public class AssassinRole extends Role {

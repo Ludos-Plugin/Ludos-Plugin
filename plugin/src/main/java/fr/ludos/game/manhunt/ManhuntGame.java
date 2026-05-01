@@ -1,45 +1,30 @@
 package fr.ludos.game.manhunt;
 
-import java.util.Optional;
-import java.util.Iterator;
-import java.time.Duration;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.UUID;
-import java.util.Random;
 import java.util.stream.Collectors;
+
 import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.EnumUtils;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.title.Title;
-
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.WorldBorder;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.attribute.Attribute;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.advancement.Advancement;
-import org.bukkit.advancement.AdvancementProgress;
-import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.Scoreboard;
 
 import fr.ludos.Ludos;
 import fr.ludos.Utility;
@@ -49,6 +34,9 @@ import fr.ludos.game.GameJoinOption;
 import fr.ludos.game.worldborder.WorldBorderAreaController;
 import fr.ludos.game.worldborder.WorldBorderAreaOption;
 import fr.ludos.game.worldborder.WorldBorderLocationOption;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 
 public class ManhuntGame extends Game {

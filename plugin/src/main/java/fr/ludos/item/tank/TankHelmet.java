@@ -1,26 +1,21 @@
 package fr.ludos.item.tank;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.ArrayList;
+
 import javax.annotation.Nullable;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
 
-import fr.ludos.item.SpecialItem;
 import fr.ludos.game.Game;
-import fr.ludos.game.manhunt.ManhuntGame;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
 import fr.ludos.role.TankRole;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class TankHelmet extends SpecialItem {
 	private static final String ID = "tank_helmet";

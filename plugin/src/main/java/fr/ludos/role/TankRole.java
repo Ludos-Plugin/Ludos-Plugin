@@ -3,24 +3,19 @@ package fr.ludos.role;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
-import fr.ludos.item.SpecialItem.Events;
-import fr.ludos.role.Role;
-import fr.ludos.role.Role.Builder;
-
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 public class TankRole extends Role {
 	public static final String id = "tank";
@@ -73,8 +68,8 @@ public class TankRole extends Role {
 
 	@EventHandler
 	public void onPlayerHit(EntityDamageByEntityEvent event) {
-		if (!(event.getEntity() instanceof Player defender)) return;
-		if (!(event.getDamager() instanceof Player attacker)) return;
+		if (! (event.getEntity() instanceof Player defender)) return;
+		if (! (event.getDamager() instanceof Player attacker)) return;
 
 		if (!Role.getPlayersOfRole(id).contains(attacker)) return;
 

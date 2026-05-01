@@ -1,41 +1,37 @@
 package fr.ludos.game.manhunt;
 
-import java.util.Optional;
 import java.time.Duration;
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import java.util.HashSet;
-import java.util.stream.Collectors;
+import java.util.List;
 import java.util.Random;
-import javax.annotation.Nullable;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.title.Title;
+import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import fr.ludos.Utility;
 import fr.ludos.command.ludos.GameSubcommand;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameAreaController;
 import fr.ludos.game.GameTeamController;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
 
 
 public final class ManhuntTeamController extends GameTeamController {

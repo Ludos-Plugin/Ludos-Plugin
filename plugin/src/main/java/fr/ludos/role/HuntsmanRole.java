@@ -7,14 +7,12 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
-import fr.ludos.item.SpecialItem;
 import fr.ludos.item.huntsman.HuntsmanArrow;
 import fr.ludos.item.huntsman.HuntsmanBow;
 import fr.ludos.item.huntsman.HuntsmanCrossbow;

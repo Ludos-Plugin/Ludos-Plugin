@@ -1,20 +1,11 @@
 package fr.ludos.role;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -26,28 +17,22 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.FireworkEffectMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.RayTraceResult;
-import org.bukkit.util.Vector;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
-import fr.ludos.item.ItemUtilities;
-import fr.ludos.item.SpecialItem;
 import fr.ludos.item.berserker.BerserkerAxe;
 import fr.ludos.item.berserker.BerserkerRageBrew;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class BerserkerRole extends Role {
@@ -144,7 +129,7 @@ public class BerserkerRole extends Role {
 		player.swingOffHand();
 
 		Entity target = player.getTargetEntity(4);
-		if (!(target instanceof LivingEntity livingTarget)) return;
+		if (! (target instanceof LivingEntity livingTarget)) return;
 
 		Material offHandAxeMaterial = offHandAxe.getStack().getType();
 		if (player.getCooldown(offHandAxeMaterial) > 0) return;
@@ -161,7 +146,7 @@ public class BerserkerRole extends Role {
 		if (attackDamageAttribute == null) return;
 		attackDamageAttribute.addModifier(damageModifier);
 
-		player.attack(target);
+		player.attack(livingTarget);
 		event.setCancelled(true);
 
 		attackDamageAttribute.removeModifier(damageModifier);

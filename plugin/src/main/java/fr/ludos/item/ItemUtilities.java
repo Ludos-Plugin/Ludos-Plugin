@@ -1,10 +1,9 @@
 package fr.ludos.item;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 
 
 public class ItemUtilities {

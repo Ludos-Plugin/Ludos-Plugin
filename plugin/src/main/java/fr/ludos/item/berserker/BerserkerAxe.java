@@ -1,40 +1,35 @@
 package fr.ludos.item.berserker;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import javax.annotation.Nullable;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.attribute.AttributeModifier.Operation;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.checkerframework.checker.units.qual.s;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.EntityDamageEvent;
 
-import fr.ludos.item.LevelItem;
-import fr.ludos.item.SpecialItem;
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
-import fr.ludos.role.Role;
+import fr.ludos.item.LevelItem;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.role.BerserkerRole;
+import fr.ludos.role.Role;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
@@ -64,10 +59,6 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 	}
 
 	public static final String VARIANT_KEY = "variant";
-
-	// +3 ADD_NUMBER → 1 (base) + 3 = 4 damage, weaker than a sword by design
-	private static final UUID DAMAGE_MODIFIER_ID = UUID.fromString("3f8a1b2c-4d5e-6f70-8901-a2b3c4d5e6f7");
-	private static final double BASE_DAMAGE_BONUS = 3.0;
 
 	private final static NamespacedKey variantKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), VARIANT_KEY);
 
@@ -118,7 +109,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		BerserkerAxeLevels lvl = BerserkerAxeLevels.values()[level.getLevel()];
 		Material mat = lvl.getMaterialForVariant(variant);
 		BerserkerAxe axe = new BerserkerAxe(new ItemStack(mat), owner, variant, level, game);
-		axe.initializeItem();
+		UUID itemId = axe.initializeItem();
 
 		// cachedItems.put(itemId, axe);
 

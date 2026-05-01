@@ -1,12 +1,10 @@
 package fr.ludos.item;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;

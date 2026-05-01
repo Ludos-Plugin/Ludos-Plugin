@@ -1,8 +1,5 @@
 package fr.ludos.item.harvester;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +8,6 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -144,7 +140,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 		BlockFace face = targetBlock.getFace(adjacentBlock);
 		World world = targetBlock.getWorld();
 
-		Collection<List<Block>> digBlocks;
+		List<List<Block>> digBlocks;
 		if (face == BlockFace.UP || face == BlockFace.DOWN) {
 			digBlocks = Utility.getAllBlockRows(
 				targetBlock, face,
@@ -174,7 +170,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 			@Override
 			public void run() {
-				List<Block> blockColumn = ((List<Block>) digBlocks.toArray()[current]);
+				List<Block> blockColumn = digBlocks.get(current);
 				for (Block block : blockColumn) {
 					if (! ItemUtilities.isBreakable(block)) continue;
 					world.playEffect(block.getLocation(), org.bukkit.Effect.STEP_SOUND, block.getType());
@@ -204,7 +200,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 			@Override
 			public void run() {
-				List<BlockState> blockColumn = ((List<BlockState>) blocks.toArray()[current]);
+				List<BlockState> blockColumn = blocks.get(current);
 				for (BlockState state : blockColumn) {
 					Location location = state.getLocation();
 					Block block = location.getBlock();

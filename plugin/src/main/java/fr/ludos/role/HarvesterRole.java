@@ -1,15 +1,13 @@
 package fr.ludos.role;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.EnumMap;
-import java.util.Collections;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import org.bukkit.ChatColor;
@@ -38,7 +36,6 @@ import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
 import fr.ludos.item.Categories;
 import fr.ludos.item.LevelItem;
-import fr.ludos.item.SpecialItem;
 import fr.ludos.item.harvester.HarvesterPick;
 import fr.ludos.item.harvester.HarvesterScythe;
 import fr.ludos.item.harvester.HarvesterSpade;

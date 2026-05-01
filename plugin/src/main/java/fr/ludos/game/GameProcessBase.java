@@ -2,10 +2,7 @@ package fr.ludos.game;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import fr.ludos.role.Role;
 
 public abstract class GameProcessBase implements GameProcess {
 	private boolean started = false;
