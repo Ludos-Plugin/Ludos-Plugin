@@ -1,4 +1,4 @@
-package fr.ludos.item.trapper;
+package fr.ludos.item.assassin.trap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,18 +27,18 @@ import org.bukkit.scheduler.BukkitTask;
 import fr.ludos.game.Game;
 import fr.ludos.item.BranchItem;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.role.AssassinRole;
 import fr.ludos.role.Role;
-import fr.ludos.role.TrapperRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
-public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
+public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches> {
 	private final static String ID = "trapperSnareGrimoire";
 
 	// private final static Map<UUID, TrapperSnareDevice> cachedItems = new HashMap<>();
 
 
-	public static TrapperSnareDevice fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+	public static AssassinSnareDevice fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
@@ -50,13 +50,13 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		Integer branchIndex = BranchItem.branchFromItemStack(stack, game);
 		if (branchIndex == null) return null;
 
-		TrapperSnareDevice device = new TrapperSnareDevice(stack, owner, TrapperSnareDeviceBranches.values()[branchIndex], game);
+		AssassinSnareDevice device = new AssassinSnareDevice(stack, owner, AssassinSnareDeviceBranches.values()[branchIndex], game);
 		// cachedItems.put(itemId, device);
 
 		return device;
 	}
-	public static TrapperSnareDevice createItem(Player owner, Game game) {
-		TrapperSnareDevice device = new TrapperSnareDevice(new ItemStack(Material.ENCHANTED_BOOK), owner, TrapperSnareDeviceBranches.REVEALING, game);
+	public static AssassinSnareDevice createItem(Player owner, Game game) {
+		AssassinSnareDevice device = new AssassinSnareDevice(new ItemStack(Material.ENCHANTED_BOOK), owner, AssassinSnareDeviceBranches.REVEALING, game);
 		UUID itemId = device.initializeItem();
 
 		// cachedItems.put(itemId, device);
@@ -64,8 +64,8 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		return device;
 	}
 
-	protected TrapperSnareDevice(ItemStack stack, Player owner, TrapperSnareDeviceBranches branch, Game game) {
-		super(TrapperSnareDeviceBranches.class, stack, owner, branch, game);
+	protected AssassinSnareDevice(ItemStack stack, Player owner, AssassinSnareDeviceBranches branch, Game game) {
+		super(AssassinSnareDeviceBranches.class, stack, owner, branch, game);
 	}
 
 
@@ -88,9 +88,9 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 	}
 
 
-	public static class Events extends BranchItem.Events<TrapperSnareDevice, TrapperSnareDeviceBranches> {
+	public static class Events extends BranchItem.Events<AssassinSnareDevice, AssassinSnareDeviceBranches> {
 		private BukkitTask trapTask = null;
-		public final Map<Player, Map<TrapperSnareDeviceBranches, ArrayList<TrapperTrap>>> traps = new HashMap<>();
+		public final Map<Player, Map<AssassinSnareDeviceBranches, ArrayList<AssassinTrap>>> traps = new HashMap<>();
 
 		public Events(Game game) {
 			super(game, 1);
@@ -109,13 +109,13 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 						Set<LivingEntity> targets = game.getGameTeamController().getEnemies(player);
 
 						for (var branchTrapEntries : playerTrapEntries.getValue().entrySet()) {
-							TrapperSnareDeviceBranches branch = branchTrapEntries.getKey();
-							ArrayList<TrapperTrap> branchTraps = branchTrapEntries.getValue();
+							AssassinSnareDeviceBranches branch = branchTrapEntries.getKey();
+							ArrayList<AssassinTrap> branchTraps = branchTrapEntries.getValue();
 							if (branch.getLimit() > 0 && branchTraps.size() >= branch.getLimit()) {
 								continue;
 							}
 
-							for (TrapperTrap trap : branchTraps) {
+							for (AssassinTrap trap : branchTraps) {
 								for (LivingEntity target : targets) {
 									if (target.isDead()) continue;
 									if (target instanceof Player playerTarget && (playerTarget.getGameMode() == GameMode.SPECTATOR || playerTarget.getGameMode() == GameMode.CREATIVE)) continue;
@@ -142,15 +142,15 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 			}
 		}
 
-		private ArrayList<TrapperTrap> getTraps(Player player, TrapperSnareDeviceBranches branch) {
+		private ArrayList<AssassinTrap> getTraps(Player player, AssassinSnareDeviceBranches branch) {
 			return traps.computeIfAbsent(player, k -> new HashMap<>())
 				.computeIfAbsent(branch, k -> new ArrayList<>());
 		}
-		private void addTrap(Player player, TrapperSnareDeviceBranches branch, TrapperTrap trap) {
+		private void addTrap(Player player, AssassinSnareDeviceBranches branch, AssassinTrap trap) {
 			getTraps(player, branch).add(trap);
 		}
-		private void removeTrap(Player player, TrapperSnareDeviceBranches branch, TrapperTrap trap) {
-			ArrayList<TrapperTrap> playerTraps = getTraps(player, branch);
+		private void removeTrap(Player player, AssassinSnareDeviceBranches branch, AssassinTrap trap) {
+			ArrayList<AssassinTrap> playerTraps = getTraps(player, branch);
 			if (playerTraps != null) {
 				playerTraps.remove(trap);
 			}
@@ -159,7 +159,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 		@EventHandler
 		public void onPlayerInteract(PlayerInteractEvent event) {
 			Player player = event.getPlayer();
-			TrapperSnareDevice snareDevice = getItem(player.getInventory().getItemInMainHand(), game);
+			AssassinSnareDevice snareDevice = getItem(player.getInventory().getItemInMainHand(), game);
 			if (snareDevice == null) return;
 
 
@@ -185,7 +185,7 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 						break;
 					}
 
-					TrapperSnareDeviceBranches branch = snareDevice.getBranch();
+					AssassinSnareDeviceBranches branch = snareDevice.getBranch();
 
 					getTraps(player, branch).add(branch.createTrap(player, clickedBlock, face));
 				}
@@ -205,17 +205,17 @@ public class TrapperSnareDevice extends BranchItem<TrapperSnareDeviceBranches> {
 
 		@Override
 		@Nullable
-		protected TrapperSnareDevice getItem(ItemStack stack, Game game) {
-			return TrapperSnareDevice.fromItemStack(stack, game);
+		protected AssassinSnareDevice getItem(ItemStack stack, Game game) {
+			return AssassinSnareDevice.fromItemStack(stack, game);
 		}
 
 		@Override
-		protected TrapperSnareDevice createItem(Player owner, Game game) {
-			return TrapperSnareDevice.createItem(owner, game);
+		protected AssassinSnareDevice createItem(Player owner, Game game) {
+			return AssassinSnareDevice.createItem(owner, game);
 		}
 		@Override
 		protected Boolean canPlayerHaveItem(HumanEntity owner) {
-			return Role.isPlayerRole(owner, TrapperRole.id);
+			return Role.isPlayerRole(owner, AssassinRole.id);
 		}
 	}
 }
