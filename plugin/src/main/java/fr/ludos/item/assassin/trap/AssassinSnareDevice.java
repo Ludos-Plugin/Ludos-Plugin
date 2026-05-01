@@ -110,7 +110,8 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches>
 
 						for (var branchTrapEntries : playerTrapEntries.getValue().entrySet()) {
 							AssassinSnareDeviceBranches branch = branchTrapEntries.getKey();
-							ArrayList<AssassinTrap> branchTraps = branchTrapEntries.getValue();
+							@SuppressWarnings("unchecked")
+							ArrayList<AssassinTrap> branchTraps = ((ArrayList<AssassinTrap>) branchTrapEntries.getValue().clone());
 							if (branch.getLimit() > 0 && branchTraps.size() >= branch.getLimit()) {
 								continue;
 							}
