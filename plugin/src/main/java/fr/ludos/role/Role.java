@@ -1,5 +1,6 @@
 package fr.ludos.role;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,7 +16,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -206,6 +206,9 @@ public abstract class Role extends GameProcessBase {
 		public final JavaPlugin getPlugin() { return plugin; }
 
 		public abstract String getId();
+		public EnumSet<RoleFlag> getRoleFlags() {
+			return EnumSet.noneOf(RoleFlag.class);
+		}
 
 		public abstract TextComponent getDisplayName();
 		public abstract TextComponent getDescription();
