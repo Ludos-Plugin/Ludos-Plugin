@@ -1,7 +1,6 @@
 package fr.ludos.game.manhunt;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -14,7 +13,6 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -42,6 +40,7 @@ import fr.ludos.game.areaController.worldborder.WorldBorderAreaController;
 import fr.ludos.game.lobbyController.structure.StructureLobbyController;
 import fr.ludos.game.worldController.SingleWorldController;
 import fr.ludos.group.Group;
+import fr.ludos.structure.LobbyStructure;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -131,38 +130,7 @@ public class ManhuntGame extends Game {
 			this,
 			ManhuntGameConfigs.getWaitPlayersOption(config),
 			ManhuntGameConfigs.getWaitDurationOption(config),
-			(location) -> {
-				Location structureLocation = location.clone();
-				structureLocation.setY(275);
-
-				structureLocation.setX(structureLocation.getBlockX());
-				structureLocation.setZ(structureLocation.getBlockZ());
-
-				// Build enclosed platform
-				for (int x = -5; x <= 5; x++) {
-					for (int z = -5; z <= 5; z++) {
-						Location blockLoc = structureLocation.clone().add(x, 0, z);
-						blockLoc.getBlock().setType(Material.OBSIDIAN);
-					}
-				}
-
-				// Add walls
-				for (int x = -5; x <= 5; x++) {
-					for (int y = 1; y <= 3; y++) {
-						structureLocation.clone().add(x, y, -5).getBlock().setType(Material.OBSIDIAN);
-						structureLocation.clone().add(x, y, 5).getBlock().setType(Material.OBSIDIAN);
-					}
-				}
-
-				for (int z = -4; z <= 4; z++) {
-					for (int y = 1; y <= 3; y++) {
-						structureLocation.clone().add(-5, y, z).getBlock().setType(Material.OBSIDIAN);
-						structureLocation.clone().add(5, y, z).getBlock().setType(Material.OBSIDIAN);
-					}
-				}
-
-				return structureLocation;
-			}
+			new LobbyStructure.Builder()
 		);
 
 		timer = new ManhuntTimer(this, ManhuntGameConfigs.getReveal(config));
