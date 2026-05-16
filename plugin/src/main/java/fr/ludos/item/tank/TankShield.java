@@ -1,11 +1,13 @@
 package fr.ludos.item.tank;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
@@ -19,21 +21,22 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.game.Game;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.item.LevelItem;
 import fr.ludos.role.Role;
 import fr.ludos.role.TankRole;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-public class TankShield extends SpecialItem {
-	private static final String ID = "tankShield";
-	private static final int MAX_HITS_BEFORE_COOLDOWN = 5;
-	private static final int COOLDOWN_DURATION = 5 * 20;
 
-	public static final Map<UUID, Integer> hitCounts = new HashMap<>();
-	// private final Map<UUID, Boolean> isInCooldown = new HashMap<>();
+public class TankShield extends LevelItem<TankShieldLevels> {
+	private static final String ID = "tankShield";
+	private static final int COOLDOWN_DURATION = 10 * 20;
+
 
 	public static @Nullable TankShield fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
@@ -44,15 +47,17 @@ public class TankShield extends SpecialItem {
 
 		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
+		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
+		if (levelState == null) return null;
 
-		TankShield shield = new TankShield(stack, owner, game);
+		TankShield shield = new TankShield(stack, owner, levelState, game);
 		// cachedItems.put(itemId, dagger);
 
 		return shield;
 	}
 
-	public static TankShield createItem(Player owner, Game game) {
-		TankShield shield = new TankShield(createItemStack(), owner, game);
+	public static TankShield createItem(Player owner, LevelState level, Game game) {
+		TankShield shield = new TankShield(createItemStack(), owner, level, game);
 		shield.initializeItem();
 
 		ItemMeta meta = shield.getStack().getItemMeta();
@@ -64,8 +69,8 @@ public class TankShield extends SpecialItem {
 		return shield;
 	}
 
-	protected TankShield(ItemStack stack, Player owner, Game game) {
-		super(stack, owner, game);
+	protected TankShield(ItemStack stack, Player owner, LevelState level, Game game) {
+		super(TankShieldLevels.class, stack, owner, level, game);
 	}
 
 	@Override
@@ -74,41 +79,42 @@ public class TankShield extends SpecialItem {
 	}
 
 	public void hit() {
-		UUID playerId = getOwner().getUniqueId();
-
-		int currentHits = hitCounts.getOrDefault(playerId, 0) + 1;
-		hitCounts.put(playerId, currentHits);
+		hit(1);
+	}
+	public void hit(double damage) {
+		// UUID playerId = getOwner().getUniqueId();
 
 		ItemStack stack = getStack();
 		ItemMeta meta = stack.getItemMeta();
+		if (! (meta instanceof Damageable damageable)) { return; }
 
-		boolean doCooldown = currentHits >= MAX_HITS_BEFORE_COOLDOWN;
+		TankShieldLevels level = getLvlObject(getLvl());
 
-		int newDamage;
-		if (doCooldown) {
-			newDamage = 0;
-		}
-		else {
-			float durabilityRatio = (float)(MAX_HITS_BEFORE_COOLDOWN - (MAX_HITS_BEFORE_COOLDOWN - currentHits)) / MAX_HITS_BEFORE_COOLDOWN;
-			newDamage = Math.max((int)(durabilityRatio * (float)(stack.getType().getMaxDurability())), 1);
-		}
-		if (meta instanceof Damageable damageable) {
-			damageable.setDamage(newDamage);
-			stack.setItemMeta(damageable);
-		}
+		int currentDamage = damageable.getDamage();
+		int maxDamage = stack.getType().getMaxDurability();
 
+		double durabilityPerDamage = level.durabilityPerDamage();
+		int newDamage = (int) Math.ceil(currentDamage + durabilityPerDamage * damage);
 
-		if (doCooldown) {
+		damageable.setDamage(newDamage);
+		stack.setItemMeta(damageable);
+
+		if (newDamage >= maxDamage) {
+			damageable.setDamage(0);
 			doCooldown();
 		}
+		else {
+			damageable.setDamage(newDamage);
+		}
+		stack.setItemMeta(damageable);
+
+		addXp(damage);
+		updateLore();
 	}
 
 	public void doCooldown() {
 		Player player = getOwner();
 		ItemStack stack = getStack();
-
-		UUID playerId = getOwner().getUniqueId();
-		hitCounts.put(playerId, 0);
 
 		player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BREAK, 1.0f, 1.0f);
 		// player.setShieldBlockingDelay(COOLDOWN_DURATION);
@@ -139,24 +145,89 @@ public class TankShield extends SpecialItem {
 				.decoration(TextDecoration.ITALIC, false);
 	}
 
+	@Override
+	public List<Component> getLore() {
+		List<Component> lore = super.getLore();
+
+		TankShieldLevels level = getLvlObject();
+		int durability = level.getDurability();
+
+		lore.add(Component.text("A sturdy shield that can block a limited amount of damage before going on cooldown.")
+			.color(NamedTextColor.GRAY));
+		lore.add(
+			Component.text("Ability: Block up to ")
+				.color(NamedTextColor.GRAY)
+				.append(
+			Component.text(durability + " damage")
+				.color(NamedTextColor.YELLOW)
+				.decorate(TextDecoration.ITALIC)
+				.decorate(TextDecoration.BOLD)
+			)
+				.append(
+			Component.text(" at once before going on cooldown")
+				.color(NamedTextColor.GRAY)
+			)
+		);
+
+		return lore;
+	}
+
 	private static ItemStack createItemStack() {
 		ItemStack stack = new ItemStack(Material.SHIELD);
 		return stack;
 	}
 
-	public static class Events extends SpecialItem.Events<TankShield> {
+	public static class Events extends LevelItem.Events<TankShield, TankShieldLevels> {
+		private BukkitTask rechargeTask;
 		public Events(Game game) {
 			super(game, 40);
+		}
+
+		@Override
+		protected void onItemStart() {
+			rechargeTask = new BukkitRunnable() {
+				@Override
+				public void run() {
+					Player[] tankPlayers = getGame().getGroup().getOnlinePlayers().stream()
+						.filter(p -> Role.isPlayerRole(p, TankRole.id))
+						.toArray(Player[]::new);
+					for (Player player : tankPlayers) {
+						PlayerInventory inventory = player.getInventory();
+						for (TankShield shield : TankShield.findAllIn(inventory, (ItemStack stack) -> TankShield.fromItemStack(stack, game))) {
+							ItemStack stack = shield.getStack();
+							ItemMeta meta = stack.getItemMeta();
+							if (! (meta instanceof Damageable damageable)) continue;
+
+							TankShieldLevels level = shield.getLvlObject();
+							int regen = (int) Math.ceil(level.durabilityPerDamage() * 0.5);
+
+							int currentDamage = damageable.getDamage();
+							damageable.setDamage(Math.max(currentDamage - regen, 0));
+							stack.setItemMeta(damageable);
+						}
+					}
+				}
+
+			}.runTaskTimer(getPlugin(), 0, 20);
+		}
+
+		@Override
+		protected void onItemStop() {
+			if (rechargeTask != null) {
+				rechargeTask.cancel();
+			}
+			rechargeTask = null;
+		}
+
+		@Override
+		protected TankShield createItem(Player owner, LevelState level, Game game) {
+			return TankShield.createItem(owner, level, game);
 		}
 
 		@Override
 		@Nullable
 		protected TankShield getItem(ItemStack stack, Game game) {
 			return TankShield.fromItemStack(stack, game);
-		}
-
-		protected TankShield createItem(Player owner, Game game) {
-			return TankShield.createItem(owner, game);
 		}
 
 		@Override
@@ -181,7 +252,7 @@ public class TankShield extends SpecialItem {
 			}
 			if (shield == null) return;
 
-			shield.hit();
+			shield.hit(event.getDamage());
 		}
 
 		@EventHandler(priority = EventPriority.HIGHEST)

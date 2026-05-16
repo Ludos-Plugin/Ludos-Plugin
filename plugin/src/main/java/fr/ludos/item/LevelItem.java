@@ -253,6 +253,7 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 	@Override
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
+		lore.add(getLevelLoreField(this));
 		lore.add(getXpLoreField(this));
 
 		return lore;
