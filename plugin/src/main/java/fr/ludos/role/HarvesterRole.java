@@ -182,8 +182,8 @@ public class HarvesterRole extends Role {
 
 		double oreXp = getOreReward(block);
 		if (oreXp == 0) return;
-		for (var test : levelItemGetters) {
-			LevelItem.findAllIn(inventory, (itemStack) -> test.apply(itemStack, game)).forEach(item -> item.addXp(oreXp));
+		for (var itemType : levelItemGetters) {
+			LevelItem.findAllIn(inventory, (itemStack) -> itemType.apply(itemStack, game)).forEach(item -> item.addXp(oreXp));
 		}
 	}
 
