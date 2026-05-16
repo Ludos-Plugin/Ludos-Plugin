@@ -14,6 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -118,7 +119,7 @@ public class TankDashObject extends SpecialItem {
 				);
 
 				for (Entity entity : player.getNearbyEntities(COLLISION_RADIUS, COLLISION_RADIUS, COLLISION_RADIUS)) {
-					if (! (entity instanceof Player target)) continue;
+					if (! (entity instanceof Damageable target)) continue;
 					if (alreadyHit.contains(target.getUniqueId())) continue;
 
 					alreadyHit.add(target.getUniqueId());
@@ -132,7 +133,6 @@ public class TankDashObject extends SpecialItem {
 						.setY(0.4);
 					target.setVelocity(knockback);
 				}
-
 				ticks++;
 			}
 		}.runTaskTimer(this.getGame().getPlugin(), 0, 1);
