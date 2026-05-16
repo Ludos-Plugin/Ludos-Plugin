@@ -323,11 +323,22 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		protected void removeFromAllInventories() {
 			for (Player player : getGame().getGroup().getOnlinePlayers()) {
 				PlayerInventory inventory = player.getInventory();
-				List<T> items = SpecialItem.findAllIn(inventory, (ItemStack stack) -> getItem(stack, game));
-				for(T item : items) {
+				for(T item : SpecialItem.findAllIn(inventory, (ItemStack stack) -> getItem(stack, game))) {
 					inventory.remove(item.getStack());
 					if (inventory.getItemInOffHand().equals(item.getStack())) {
 						inventory.setItemInOffHand(null);
+					}
+					else if (inventory.getHelmet() != null && inventory.getHelmet().equals(item.getStack())) {
+						inventory.setHelmet(null);
+					}
+					else if (inventory.getChestplate() != null && inventory.getChestplate().equals(item.getStack())) {
+						inventory.setChestplate(null);
+					}
+					else if (inventory.getLeggings() != null && inventory.getLeggings().equals(item.getStack())) {
+						inventory.setLeggings(null);
+					}
+					else if (inventory.getBoots() != null && inventory.getBoots().equals(item.getStack())) {
+						inventory.setBoots(null);
 					}
 				}
 			}
