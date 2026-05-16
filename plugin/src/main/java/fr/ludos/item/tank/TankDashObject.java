@@ -6,16 +6,25 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.EntityEffect;
+import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
 import fr.ludos.game.Game;
@@ -27,8 +36,13 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class TankDashObject extends SpecialItem {
 	private static final String ID = "tank_dasher";
-	private static final int COOLDOWN_DURATION = 30;
-	public static final double dashpower = 5.0;
+
+	private static final double DASH_POWER = 1.1;
+	private static final int DASH_DURATION_TICKS = 12;
+	private static final double COLLISION_RADIUS = 1.5;
+	private static final double COLLISION_DAMAGE = 4.0;
+	private static final double COLLISION_KNOCKBACK = 1.2;
+	private static final int COOLDOWN_DURATION = 15 * 20;
 
 	protected TankDashObject(ItemStack stack, Player owner, Game game) {
 		super(stack, owner, game);
@@ -59,14 +73,10 @@ public class TankDashObject extends SpecialItem {
 		return dasher;
 	}
 
-	private static final double COLLISION_RADIUS = 1.5;
-	private static final double COLLISION_DAMAGE = 4.0;
-	private static final double COLLISION_KNOCKBACK = 1.5;
-	private static final int DASH_DURATION_TICKS = 10;
-
-	public void useDash(Vector direction) {
+	public void useDash() {
 		Player player = this.getOwner();
-		player.setVelocity(direction.normalize().multiply(dashpower));
+
+		player.getWorld().playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0f, 1.0f);
 
 		Set<UUID> alreadyHit = new HashSet<>();
 
@@ -75,13 +85,40 @@ public class TankDashObject extends SpecialItem {
 
 			@Override
 			public void run() {
-				if (ticks++ >= DASH_DURATION_TICKS) {
+				if (ticks >= DASH_DURATION_TICKS) {
 					cancel();
 					return;
 				}
 
+				if (ticks % 9 == 0) {
+					player.getWorld().playSound(player.getLocation(), Sound.ENTITY_HORSE_GALLOP, 1.0f, 1.0f);
+				}
+
+				double yaw_rad = Math.toRadians(player.getLocation().getYaw());
+				Vector vel = new Vector(
+						-Math.sin(yaw_rad),
+						0,
+						Math.cos(yaw_rad)
+					)
+					.normalize()
+					.multiply(DASH_POWER);
+
+				player.setVelocity(
+					player.getVelocity()
+						.setX(0)
+						.setZ(0)
+						.add(vel)
+				);
+				player.spawnParticle(
+					Particle.FIREWORKS_SPARK,
+					player.getLocation().add(0, 1.25, 0),
+					1,
+					0.05, 0.05, 0.05,
+					0
+				);
+
 				for (Entity entity : player.getNearbyEntities(COLLISION_RADIUS, COLLISION_RADIUS, COLLISION_RADIUS)) {
-					if (!(entity instanceof Player target)) continue;
+					if (! (entity instanceof Player target)) continue;
 					if (alreadyHit.contains(target.getUniqueId())) continue;
 
 					alreadyHit.add(target.getUniqueId());
@@ -95,6 +132,8 @@ public class TankDashObject extends SpecialItem {
 						.setY(0.4);
 					target.setVelocity(knockback);
 				}
+
+				ticks++;
 			}
 		}.runTaskTimer(this.getGame().getPlugin(), 0, 1);
 	}
@@ -154,9 +193,9 @@ public class TankDashObject extends SpecialItem {
 
 			if (player.getCooldown(Material.FIREWORK_ROCKET) > 0) return;
 
-			dasher.useDash(player.getLocation().getDirection());
+			dasher.useDash();
 
-			player.setCooldown(Material.FIREWORK_ROCKET, COOLDOWN_DURATION * 20);
+			player.setCooldown(Material.FIREWORK_ROCKET, COOLDOWN_DURATION);
 		}
 	}
 
