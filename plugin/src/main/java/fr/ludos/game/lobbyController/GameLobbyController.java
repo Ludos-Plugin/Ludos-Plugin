@@ -57,6 +57,9 @@ public class GameLobbyController extends GameProcessBase {
 	}
 
 	public final BukkitTask startOnTimer(int seconds) {
+		return startOnTimer(seconds, null);
+	}
+	public final BukkitTask startOnTimer(int seconds, Runnable onFinish) {
 		return new BukkitRunnable() {
 			int timeLeft = seconds;
 
@@ -65,6 +68,11 @@ public class GameLobbyController extends GameProcessBase {
 
 				if (timeLeft <= 0) {
 					cancel();
+
+					if (onFinish != null) {
+						onFinish.run();
+					}
+
 					getGame().start();
 					return;
 				}
