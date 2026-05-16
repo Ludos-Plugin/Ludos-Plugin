@@ -14,6 +14,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -144,6 +145,15 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 						if (aboveBlock.getType().isCollidable()) {
 							cancel();
 							return;
+						}
+
+						for (Entity entity : aboveBlock.getWorld().getNearbyEntities(
+							aboveBlock.getLocation().add(0.5, 0.5, 0.5), 0.5, 1.0, 0.5)) {
+							if (entity.getLocation().getBlockX() == block.getX()
+								&& entity.getLocation().getBlockZ() == block.getZ()
+								&& entity.getLocation().getBlockY() == block.getY() + 1) {
+								entity.teleport(entity.getLocation().add(0.0, 1.0, 0.0));
+							}
 						}
 
 						BlockData aboveBlockData = aboveBlock.getBlockData().clone();
