@@ -101,6 +101,11 @@ public abstract class Game extends TwoStepGameProcessBase {
 	public static boolean startGame(String id, Group group) {
 		if (! registered.containsKey(id)) return false;
 
+		Game oldGame = group.getGame();
+		if (oldGame != null) {
+			oldGame.stop();
+		}
+
 		Game game;
 		try {
 			game = registered.get(id).build(group);
