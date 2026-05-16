@@ -11,6 +11,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import fr.ludos.game.Game;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.util.TriState;
 
 public class SingleWorldController extends GameWorldController {
@@ -32,6 +35,14 @@ public class SingleWorldController extends GameWorldController {
 	protected void onSetup() {
 		if (world != null) {
 			throw new IllegalStateException("World has already been initialized");
+		}
+
+		for (Player player : getGame().getGroup().getOnlinePlayers()) {
+			player.sendMessage(
+				Component.text("Loading world...")
+					.color(NamedTextColor.YELLOW)
+					.decorate(TextDecoration.BOLD)
+			);
 		}
 
 		worldCreator.keepSpawnLoaded(TriState.FALSE);
