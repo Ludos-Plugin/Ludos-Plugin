@@ -94,7 +94,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		lore.add(getCycleBranchAnnotation("key.use"));
+		lore.add(getCycleBranchAnnotation("key.attack"));
 		return lore;
 	}
 
