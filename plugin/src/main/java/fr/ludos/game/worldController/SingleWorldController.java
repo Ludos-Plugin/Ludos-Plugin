@@ -42,44 +42,53 @@ public class SingleWorldController extends GameWorldController {
 		this.world = world;
 	}
 
+	private boolean evacuateWorld(World world) {
+		List<Player> playersInWorld = world.getPlayers();
+
+		// Load the world
+		Bukkit.getWorld(getReturnWorldUUID());
+
+		if (playersInWorld.size() > 0) {
+			for (Player player : playersInWorld) {
+				if (player.isDead()) {
+					player.spigot().respawn();
+				}
+				player.teleport(getReturnLocation());
+			}
+		}
+
+		world.setAutoSave(false);
+		world.setKeepSpawnInMemory(false);
+		boolean unloaded = Bukkit.unloadWorld(world, false);
+
+		if (unloaded) {
+			deleteWorld(world);
+		}
+
+		return unloaded;
+	}
+
 	@Override
 	protected void onSetdown() {
 		if (world == null) {
 			throw new IllegalStateException("World has not been initialized");
 		}
 
-		Location returnLocation = getReturnLocation();
-
 		World tempWorld = world;
-
-		new BukkitRunnable() {
-			public void run() {
-				List<Player> playersInWorld = tempWorld.getPlayers();
-
-				// Load the world
-				Bukkit.getWorld(getReturnWorldUUID());
-
-				if (playersInWorld.size() > 0) {
-					for (Player player : playersInWorld) {
-						if (player.isDead()) {
-							player.spigot().respawn();
-						}
-						player.teleport(returnLocation);
-					}
-					return;
-				}
-
-				tempWorld.setAutoSave(false);
-				tempWorld.setKeepSpawnInMemory(false);
-				boolean unloaded = Bukkit.unloadWorld(tempWorld, false);
-
-				if (unloaded) {
-					deleteWorld(tempWorld);
-					this.cancel();
-				}
-			}
-		}.runTaskTimer(getPlugin(), 0, 20);
-
 		world = null;
+
+
+		if (getPlugin().isEnabled()) {
+			new BukkitRunnable() {
+				public void run() {
+					if (evacuateWorld(tempWorld)) {
+						this.cancel();
+					}
+				}
+			}.runTaskTimer(getPlugin(), 0, 20);
+		}
+		else {
+			evacuateWorld(tempWorld);
+		}
 	}
 }
