@@ -285,6 +285,8 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		protected final void onStart() {
 			updateAllInventories();
 
+			game.getActiveItems().add(this);
+
 			onItemStart();
 		}
 
@@ -299,6 +301,8 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		@Override
 		protected final void onStop() {
 			removeFromAllInventories();
+
+			game.getActiveItems().remove(this);
 
 			onItemStop();
 		}

@@ -136,6 +136,9 @@ public class Utility {
 	}
 
 	public static void onDeathSpectate(PlayerDeathEvent event, float spectateSeconds, JavaPlugin plugin) {
+		onDeathSpectate(event, spectateSeconds, plugin, null);
+	}
+	public static void onDeathSpectate(PlayerDeathEvent event, float spectateSeconds, JavaPlugin plugin, Runnable onFinish) {
 		Player player = event.getPlayer();
 		Location deathLocation = player.getLocation().clone();
 
@@ -172,6 +175,9 @@ public class Utility {
 				if (player.getGameMode() == GameMode.SPECTATOR) {
 					player.setGameMode(GameMode.SURVIVAL);
 					player.teleport(getPlayerSpawnLocation(player));
+					if (onFinish != null) {
+						onFinish.run();
+					}
 				}
 			}
 		}.runTaskLater(plugin, (long)(20 * spectateSeconds));

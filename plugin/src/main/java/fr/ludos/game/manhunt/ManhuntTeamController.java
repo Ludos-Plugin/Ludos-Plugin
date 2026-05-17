@@ -30,6 +30,7 @@ import org.bukkit.scoreboard.Team;
 import fr.ludos.Utility;
 import fr.ludos.game.areaController.GameAreaController;
 import fr.ludos.game.teamController.GameTeamController;
+import fr.ludos.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
@@ -210,7 +211,11 @@ public final class ManhuntTeamController extends GameTeamController {
 		}
 
 		if (! preyTeam.hasEntry(player.getName())) {
-			Utility.onDeathSpectate(event, 5, getPlugin());
+			Utility.onDeathSpectate(event, 5, getPlugin(), () -> {
+				for (SpecialItem.Events<?> item : getGame().getActiveItems()) {
+					item.updateItemInInventory(player);
+				}
+			});
 			return;
 		}
 

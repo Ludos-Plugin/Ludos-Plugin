@@ -1,5 +1,6 @@
 package fr.ludos.game;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import fr.ludos.game.lobbyController.GameLobbyController;
 import fr.ludos.game.teamController.GameTeamController;
 import fr.ludos.game.worldController.GameWorldController;
 import fr.ludos.group.Group;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -85,6 +87,11 @@ public abstract class Game extends TwoStepGameProcessBase {
 	private final Map<String, Role> activeRoles = new HashMap<>();
 	public Map<String, Role> getActiveRoles() {
 		return activeRoles;
+	}
+
+	private final Set<SpecialItem.Events<?>> activeItems = new HashSet<>();
+	public Set<SpecialItem.Events<?>> getActiveItems() {
+		return activeItems;
 	}
 
 	public abstract Scoreboard getScoreboard();
