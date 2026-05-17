@@ -205,8 +205,8 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 				playerLevel = new LevelState();
 			}
 
-			List<BerserkerAxe> axes = SpecialItem.findAllIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
-			BerserkerAxe offHandAxe = getItem(player.getInventory().getItemInOffHand(), game);
+			List<BerserkerAxe> axes = SpecialItem.findAllIn(player.getInventory(), this::getItem);
+			BerserkerAxe offHandAxe = getItem(player.getInventory().getItemInOffHand());
 
 			boolean hasFirst = axes.stream().anyMatch(axe -> axe.getVariant() == Variant.FIRST);
 			boolean hasSecond = axes.stream().anyMatch(axe -> axe.getVariant() == Variant.SECOND)
@@ -234,7 +234,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 			double finalDamage = event.getFinalDamage();
 			if (finalDamage <= 0) return;
 
-			SpecialItem.findAllIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game))
+			SpecialItem.findAllIn(player.getInventory(), this::getItem)
 				.forEach(axe -> {
 					axe.addXp(finalDamage);
 				});
@@ -242,12 +242,12 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 
 		@Override
 		@Nullable
-		protected BerserkerAxe getItem(ItemStack stack, Game game) {
+		public BerserkerAxe getItem(ItemStack stack) {
 			return BerserkerAxe.getItem(stack, game);
 		}
 
 		@Override
-		protected BerserkerAxe createItem(Player owner, LevelState level, Game game) {
+		public BerserkerAxe createItem(Player owner, LevelState level) {
 			return BerserkerAxe.createItem(owner, Variant.FIRST, level, game);
 		}
 

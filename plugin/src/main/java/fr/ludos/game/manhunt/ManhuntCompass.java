@@ -117,11 +117,12 @@ public class ManhuntCompass extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected ManhuntCompass getItem(ItemStack stack, Game game) {
+		public ManhuntCompass getItem(ItemStack stack) {
 			return ManhuntCompass.fromItemStack(stack, game);
 		}
 
-		protected ManhuntCompass createItem(Player owner, Game game) {
+		@Override
+		public ManhuntCompass createItem(Player owner) {
 			return ManhuntCompass.createItem(owner, game);
 		}
 

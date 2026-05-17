@@ -162,7 +162,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches>
 			Player player = event.getPlayer();
 			if (! isPlayerValid(player)) return;
 
-			AssassinSnareDevice snareDevice = getItem(player.getInventory().getItemInMainHand(), game);
+			AssassinSnareDevice snareDevice = getItem(player.getInventory().getItemInMainHand());
 			if (snareDevice == null) return;
 
 			if (! snareDevice.refreshUseCooldown()) return;
@@ -207,12 +207,12 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches>
 
 		@Override
 		@Nullable
-		protected AssassinSnareDevice getItem(ItemStack stack, Game game) {
+		public AssassinSnareDevice getItem(ItemStack stack) {
 			return AssassinSnareDevice.fromItemStack(stack, game);
 		}
 
 		@Override
-		protected AssassinSnareDevice createItem(Player owner, Game game) {
+		public AssassinSnareDevice createItem(Player owner) {
 			return AssassinSnareDevice.createItem(owner, game);
 		}
 		@Override

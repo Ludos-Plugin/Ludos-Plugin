@@ -115,7 +115,7 @@ public class TeleportScroll extends SpecialItem {
 			if (!event.getAction().isRightClick()) return;
 
 			ItemStack itemInHand = player.getInventory().getItemInMainHand();
-			if (getItem(itemInHand, game) == null) return;
+			if (getItem(itemInHand) == null) return;
 
 			if (player.getCooldown(Material.PAPER) > 0) return;
 
@@ -183,12 +183,12 @@ public class TeleportScroll extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected TeleportScroll getItem(ItemStack stack, Game game) {
+		public TeleportScroll getItem(ItemStack stack) {
 			return TeleportScroll.fromItemStack(stack, game);
 		}
 
 		@Override
-		protected TeleportScroll createItem(Player owner, Game game) {
+		public TeleportScroll createItem(Player owner) {
 			return TeleportScroll.createItem(owner, game);
 		}
 

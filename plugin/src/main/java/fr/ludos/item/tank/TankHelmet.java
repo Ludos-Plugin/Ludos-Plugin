@@ -79,12 +79,12 @@ public class TankHelmet extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected TankHelmet getItem(ItemStack stack, Game game) {
+		public TankHelmet getItem(ItemStack stack) {
 			return TankHelmet.fromItemStack(stack, game);
 		}
 
 		@Override
-		protected TankHelmet createItem(Player owner, Game game) {
+		public TankHelmet createItem(Player owner) {
 			return TankHelmet.createItem(owner, game);
 		}
 

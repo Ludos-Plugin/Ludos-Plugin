@@ -327,8 +327,8 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 
 		@Nullable
-		protected abstract T getItem(ItemStack stack, Game game);
-		protected abstract T createItem(Player owner, Game game);
+		public abstract T getItem(ItemStack stack);
+		public abstract T createItem(Player owner);
 
 		public final Boolean isPlayerValid(OfflinePlayer player) {
 			if (! game.getGroup().isPlayer(player)) return false;
@@ -342,7 +342,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		protected void removeFromAllInventories() {
 			for (Player player : getGame().getGroup().getOnlinePlayers()) {
 				PlayerInventory inventory = player.getInventory();
-				for(T item : SpecialItem.findAllIn(inventory, (ItemStack stack) -> getItem(stack, game))) {
+				for(T item : SpecialItem.findAllIn(inventory, this::getItem)) {
 					inventory.remove(item.getStack());
 					if (inventory.getItemInOffHand().equals(item.getStack())) {
 						inventory.setItemInOffHand(null);
@@ -383,7 +383,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 			ItemStack item = event.getItemDrop().getItemStack();
 
-			if (getItem(item, game) != null) {
+			if (getItem(item) != null) {
 				event.setCancelled(true);
 			}
 		}
@@ -402,7 +402,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 				item = event.getCurrentItem();
 			}
 
-			if (getItem(item, game) == null) return;
+			if (getItem(item) == null) return;
 
 			InventoryType invType = event.getInventory().getType();
 
@@ -420,7 +420,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 			if (canDrop) return;
 			ItemStack item = event.getEntity().getItemStack();
 
-			if (getItem(item, game) == null) return;
+			if (getItem(item) == null) return;
 
 			event.setCancelled(true);
 		}
@@ -442,9 +442,9 @@ public abstract class SpecialItem implements SpecialItemInterface {
 			if (! isPlayerValid(player)) return;
 
 			PlayerInventory inventory = player.getInventory();
-			if (T.containedIn(inventory, (ItemStack stack) -> getItem(stack, game))) return;
+			if (T.containedIn(inventory, this::getItem)) return;
 
-			T item = createItem(player, game);
+			T item = createItem(player);
 			if (item == null) return;
 
 			int index = (slot == null) ? -1 : slot.intValue();

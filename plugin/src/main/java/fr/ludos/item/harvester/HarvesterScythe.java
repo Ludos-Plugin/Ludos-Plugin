@@ -181,13 +181,13 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 		}
 
 		@Override
-		protected HarvesterScythe createItem(Player owner, LevelState level, Game game) {
+		public HarvesterScythe createItem(Player owner, LevelState level) {
 			return HarvesterScythe.createItem(owner, level, game);
 		}
 
 		@Override
 		@Nullable
-		protected HarvesterScythe getItem(ItemStack stack, Game game) {
+		public HarvesterScythe getItem(ItemStack stack) {
 			return HarvesterScythe.fromItemStack(stack, game);
 		}
 
@@ -196,7 +196,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 			if (!(event.getDamager() instanceof Player attacker)) return;
 			if (!(event.getEntity() instanceof LivingEntity primaryTarget)) return;
 
-			HarvesterScythe scythe = getItem(attacker.getInventory().getItemInMainHand(), game);
+			HarvesterScythe scythe = getItem(attacker.getInventory().getItemInMainHand());
 			if (scythe == null) return;
 
 			if (game.getTeamController().areAllies(attacker, primaryTarget)) return;
@@ -213,7 +213,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 			if (!action.isRightClick()) return;
 
 			Player player = event.getPlayer();
-			HarvesterScythe scythe = getItem(player.getInventory().getItemInMainHand(), game);
+			HarvesterScythe scythe = getItem(player.getInventory().getItemInMainHand());
 			if (scythe == null) return;
 
 			if (player.hasCooldown(scythe.getStack().getType())) return;
