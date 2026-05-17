@@ -108,10 +108,10 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 
 		state.setLevel(level, getMaxBranchIndex());
 	}
-	public void addLvl() {
+	public void addLvl(int level) {
 		LevelItem.LevelState state = getLevelState();
 
-		state.addLvl(getMaxBranchIndex());
+		state.addLvl(level, getMaxBranchIndex());
 	}
 
 	public double getXp() {

@@ -8,4 +8,6 @@ import org.jetbrains.annotations.NotNull;
 public interface Subcommand extends TabExecutor {
 	public abstract String getDescription();
 	public abstract String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label);
+
+	public abstract boolean requireOp();
 }

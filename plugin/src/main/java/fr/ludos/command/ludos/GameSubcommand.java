@@ -63,6 +63,10 @@ public enum GameSubcommand implements Subcommand {
 					.collect(Collectors.joining(" | "))
 				+ "> [solo]";
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	stop() {
 		@Override
@@ -103,6 +107,10 @@ public enum GameSubcommand implements Subcommand {
 		@Override
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
 			return "/" + label + " game stop";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	},
 	// config() {
@@ -182,6 +190,10 @@ public enum GameSubcommand implements Subcommand {
 					.collect(Collectors.joining(" | "))
 				+ "> [player]";
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	help() {
 		@Override
@@ -204,6 +216,10 @@ public enum GameSubcommand implements Subcommand {
 
 			sender.sendMessage(option.getUsage(sender, command, label));
 			return true;
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 		@Override
 		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {

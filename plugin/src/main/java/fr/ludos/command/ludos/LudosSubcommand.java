@@ -3,6 +3,7 @@ package fr.ludos.command.ludos;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -66,6 +67,10 @@ public enum LudosSubcommand implements Subcommand {
 			usage.append("[option]");
 			return usage.toString();
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	role() {
 		@Override
@@ -115,6 +120,10 @@ public enum LudosSubcommand implements Subcommand {
 			usage.append("[option]");
 			return usage.toString();
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	group() {
 		@Override
@@ -158,6 +167,32 @@ public enum LudosSubcommand implements Subcommand {
 			usage.append("[option]");
 			return usage.toString();
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
+	},
+	cheats() {
+		@Override
+		public String getDescription() {
+			return "Use operator-only cheats on held game items.";
+		}
+		@Override
+		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			return new CheatsSubcommandManager().onCommand(sender, command, label, args);
+		}
+		@Override
+		public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			return new CheatsSubcommandManager().onTabComplete(sender, command, label, args);
+		}
+		@Override
+		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
+			return "/" + label + " cheats <xp|level> <amount>";
+		}
+		@Override
+		public boolean requireOp() {
+			return true;
+		}
 	},
 	guidebook() {
 		@Override
@@ -183,6 +218,10 @@ public enum LudosSubcommand implements Subcommand {
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
 			return "/" + label + " guidebook [player]";
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	help() {
 		@Override
@@ -206,7 +245,7 @@ public enum LudosSubcommand implements Subcommand {
 		@Override
 		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 			if (args.length == 1) {
-				return Arrays.stream(LudosSubcommand.values())
+				return LudosSubcommand.getAllowedSubcommands(sender)
 					.map(LudosSubcommand::name)
 					.collect(Collectors.toList());
 			}
@@ -224,5 +263,18 @@ public enum LudosSubcommand implements Subcommand {
 			usage.append('>');
 			return usage.toString();
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	};
+
+	public static Stream<LudosSubcommand> getAllowedSubcommands(@Nullable CommandSender sender) {
+		if (! (sender instanceof Player player) || ! player.isOp()) {
+			return Arrays.stream(LudosSubcommand.values()).filter(s -> ! s.requireOp());
+		}
+		else {
+			return Arrays.stream(LudosSubcommand.values());
+		}
+	}
 }

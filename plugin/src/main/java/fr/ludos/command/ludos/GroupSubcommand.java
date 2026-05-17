@@ -54,6 +54,10 @@ public enum GroupSubcommand implements Subcommand {
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
 			return "/" + label + " group create [member1] [member2] ...";
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	disband() {
 		@Override
@@ -92,6 +96,10 @@ public enum GroupSubcommand implements Subcommand {
 		@Override
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
 			return "/" + label + " group disband";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	},
 	join() {
@@ -138,6 +146,10 @@ public enum GroupSubcommand implements Subcommand {
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
 			return "/" + label + " group join <memberName>";
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	leave() {
 		@Override
@@ -171,6 +183,10 @@ public enum GroupSubcommand implements Subcommand {
 		@Override
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
 			return "/" + label + " group leave";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	},
 	kick() {
@@ -232,6 +248,10 @@ public enum GroupSubcommand implements Subcommand {
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
 			return "/" + label + " group kick [player1] [player2] ...";
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	config() {
 		@Override
@@ -290,6 +310,10 @@ public enum GroupSubcommand implements Subcommand {
 					.collect(Collectors.joining(" | "))
 				+ "> [option]";
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	invite() {
 		@Override
@@ -347,6 +371,10 @@ public enum GroupSubcommand implements Subcommand {
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
 			return "/" + label + " group invite [player1] [player2] ...";
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	get() {
 		@Override
@@ -377,6 +405,10 @@ public enum GroupSubcommand implements Subcommand {
 		@Override
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
 			return "/" + label + " group get";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	},
 	help() {
@@ -429,6 +461,10 @@ public enum GroupSubcommand implements Subcommand {
 			usage.append("[option]");
 
 			return usage.toString();
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	};
 }

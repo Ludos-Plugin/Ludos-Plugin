@@ -14,7 +14,7 @@ import fr.ludos.game.Game;
 import net.kyori.adventure.text.Component;
 
 
-public abstract class LevelBranchItem<TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends LevelItem<TLevel> implements BranchItemInterface<TBranch>, LevelItemInterface {
+public abstract class LevelBranchItem<TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends LevelItem<TLevel> implements BranchItemInterface<TBranch> {
 	private TBranch branch;
 	public TBranch getBranch() {
 		return branch;
