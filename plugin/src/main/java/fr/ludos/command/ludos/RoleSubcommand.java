@@ -42,6 +42,10 @@ public enum RoleSubcommand implements Subcommand {
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
 			return "/" + label + " role get [player]";
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	set() {
 		@Override
@@ -87,6 +91,10 @@ public enum RoleSubcommand implements Subcommand {
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
 			return "/" + label + " role set <role_id> [player]";
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	config() {
 		@Override
@@ -123,6 +131,10 @@ public enum RoleSubcommand implements Subcommand {
 				Role.getRegistered().keySet().stream().sorted()
 					.collect(Collectors.joining(" | "))
 				+ "> [option]";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	},
 	guidebook() {
@@ -162,6 +174,10 @@ public enum RoleSubcommand implements Subcommand {
 					.collect(Collectors.joining(" | "))
 				+ "> [player]";
 		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
 	},
 	reset() {
 		@Override
@@ -184,6 +200,10 @@ public enum RoleSubcommand implements Subcommand {
 		@Override
 		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
 			return "/" + label + " role reset [player]";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	},
 	help() {
@@ -245,6 +265,10 @@ public enum RoleSubcommand implements Subcommand {
 			usage.append("[option]");
 
 			return usage.toString();
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	};
 

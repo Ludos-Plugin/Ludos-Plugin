@@ -19,13 +19,14 @@ public class LudosCommand implements TabExecutor {
 	private final GameSubcommandManager gameCommand;
 	private final RoleSubcommandManager roleCommand;
 	private final GroupSubcommandManager groupCommand;
+	private final CheatsSubcommandManager cheatsCommand;
 
 	public LudosCommand() {
 		this.gameCommand = new GameSubcommandManager();
 		this.roleCommand = new RoleSubcommandManager();
 		this.groupCommand = new GroupSubcommandManager();
+		this.cheatsCommand = new CheatsSubcommandManager();
 	}
-
 
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -35,7 +36,7 @@ public class LudosCommand implements TabExecutor {
 		}
 
 		String arg = args[0];
-		LudosSubcommand option = Arrays.stream(LudosSubcommand.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
+		LudosSubcommand option = LudosSubcommand.getAllowedSubcommands(sender).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 		if (option == null) return false;
 
 		switch (option) {
@@ -46,12 +47,14 @@ public class LudosCommand implements TabExecutor {
 			case group:
 				return groupCommand.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 			case guidebook:
-				Player player = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
-				if (player != null) {
+				Player targetPlayer = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
+				if (targetPlayer != null) {
 					ItemStack book = Ludos.createGuidebook();
-					player.getInventory().addItem(book);
+					targetPlayer.getInventory().addItem(book);
 				}
 				return true;
+			case cheats:
+				return cheatsCommand.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 			case help:
 				sender.sendMessage(getUsage());
 				return true;
@@ -63,7 +66,8 @@ public class LudosCommand implements TabExecutor {
 	@Override
 	public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length <= 1) {
-			return Arrays.stream(LudosSubcommand.values()).map(LudosSubcommand::name)
+			return LudosSubcommand.getAllowedSubcommands(sender)
+				.map(LudosSubcommand::name)
 				.collect(Collectors.toList());
 		}
 
@@ -80,6 +84,8 @@ public class LudosCommand implements TabExecutor {
 				return groupCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 			case guidebook:
 				return CommandUtility.getOnlinePlayerNames();
+			case cheats:
+				return cheatsCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 			default:
 				return null;
 		}
@@ -90,7 +96,8 @@ public class LudosCommand implements TabExecutor {
 
 		usage.append('<');
 		usage.append(
-			Arrays.stream(LudosSubcommand.values()).map(LudosSubcommand::name)
+			LudosSubcommand.getAllowedSubcommands(null)
+				.map(LudosSubcommand::name)
 				.collect(Collectors.joining(" | "))
 		);
 		usage.append('>');
