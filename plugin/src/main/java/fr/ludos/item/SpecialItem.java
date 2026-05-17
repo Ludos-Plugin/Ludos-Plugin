@@ -109,10 +109,14 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	public static Component getActionAnnotation(final @NotNull String keybind, Component action) {
 		return Component.text("Press ")
 				.color(NamedTextColor.GRAY)
-			.append(Component.keybind(keybind)
-				.color(NamedTextColor.YELLOW))
-			.append(Component.text(" to ")
-				.color(NamedTextColor.GRAY))
+			.append(
+				Component.keybind(keybind)
+					.color(NamedTextColor.YELLOW)
+			)
+			.append(
+				Component.text(" to ")
+					.color(NamedTextColor.GRAY)
+			)
 			.append(action)
 			.decoration(TextDecoration.ITALIC, false);
 	}
@@ -255,6 +259,17 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 	public static <T extends SpecialItem> T addSpecialItem(Player player, Function<Player, T> constructor) {
 		return constructor.apply(player);
+	}
+
+	public static <T extends SpecialItem, TData> Component buildDataLore(String label, TData data) {
+		return
+			Component.text(label + ": ")
+				.color(NamedTextColor.GRAY)
+				.append(
+					Component.text(data.toString())
+						.color(NamedTextColor.YELLOW)
+				)
+			.decoration(TextDecoration.ITALIC, false);
 	}
 
 

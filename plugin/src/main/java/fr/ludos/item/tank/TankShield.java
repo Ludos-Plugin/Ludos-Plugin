@@ -35,7 +35,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class TankShield extends LevelItem<TankShieldLevels> {
 	private static final String ID = "tankShield";
-	private static final int COOLDOWN_DURATION = 10 * 20;
+	private static final int COOLDOWN_DURATION_SECONDS = 10;
 
 
 	public static @Nullable TankShield fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
@@ -100,7 +100,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		stack.setItemMeta(damageable);
 
 		if (newDamage >= maxDamage) {
-			damageable.setDamage(0);
+			damageable.setDamage(maxDamage);
 			doCooldown();
 		}
 		else {
@@ -118,7 +118,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 
 		player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BREAK, 1.0f, 1.0f);
 		// player.setShieldBlockingDelay(COOLDOWN_DURATION);
-		player.setCooldown(Material.SHIELD, COOLDOWN_DURATION);
+		player.setCooldown(Material.SHIELD, COOLDOWN_DURATION_SECONDS * 20);
 
 		PlayerInventory defenderInventory = getOwner().getInventory();
 		boolean isOffHand = defenderInventory.getItemInOffHand().equals(stack);
@@ -152,21 +152,16 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		TankShieldLevels level = getLvlObject();
 		int durability = level.getDurability();
 
-		lore.add(Component.text("A sturdy shield that can block a limited amount of damage before going on cooldown.")
-			.color(NamedTextColor.GRAY));
 		lore.add(
-			Component.text("Ability: Block up to ")
-				.color(NamedTextColor.GRAY)
-				.append(
-			Component.text(durability + " damage")
-				.color(NamedTextColor.YELLOW)
-				.decorate(TextDecoration.ITALIC)
-				.decorate(TextDecoration.BOLD)
-			)
-				.append(
-			Component.text(" at once before going on cooldown")
-				.color(NamedTextColor.GRAY)
-			)
+			SpecialItem.buildDataLore("Durability", durability + " damage")
+		);
+		lore.add(
+			SpecialItem.buildDataLore("Cooldown", COOLDOWN_DURATION_SECONDS + " seconds")
+		);
+		lore.add(
+			Component.text("Slowly recharges durability.")
+				.color(NamedTextColor.DARK_PURPLE)
+				.decoration(TextDecoration.ITALIC, false)
 		);
 
 		return lore;
