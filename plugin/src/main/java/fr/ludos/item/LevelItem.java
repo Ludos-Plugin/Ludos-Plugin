@@ -399,14 +399,14 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		}
 
 
-		protected abstract T createItem(Player owner, LevelState level, Game game);
+		public abstract T createItem(Player owner, LevelState level);
 
 		@EventHandler
 		public void onPlayerDeath(PlayerDeathEvent event) {
 			Player player = event.getEntity();
 			if (! isPlayerValid(player)) return;
 
-			T specialItem = SpecialItem.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
+			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
 			if ( specialItem == null ) {
 				return;
 			}
@@ -415,13 +415,13 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		}
 
 		@Override
-		protected T createItem(Player owner, Game game) {
+		public T createItem(Player owner) {
 			if (!deadPlayerLevels.containsKey(owner)) {
-				return createItem(owner, new LevelState(), game);
+				return createItem(owner, new LevelState());
 			}
 
 			LevelState deadLevels = deadPlayerLevels.get(owner);
-			return createItem(owner, deadLevels, game);
+			return createItem(owner, deadLevels);
 		}
 	}
 }

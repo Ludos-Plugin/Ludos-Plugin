@@ -97,7 +97,7 @@ public class HuntsmanArrow extends SpecialItem {
 			if (! isPlayerValid(player)) return;
 
 			ItemStack launcher = event.getBow();
-			List<HuntsmanArrow> arrows = findAllIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
+			List<HuntsmanArrow> arrows = findAllIn(player.getInventory(), (ItemStack stack) -> getItem(stack));
 
 			// prevent arrow consumption or restore count if not possible
 			if (arrowMagazineSize == null) {
@@ -106,7 +106,7 @@ public class HuntsmanArrow extends SpecialItem {
 
 				if (launcher.getType() == Material.CROSSBOW) {
 					if (arrows.size() == 0) {
-						HuntsmanArrow newArrow = createItem(player, game);
+						HuntsmanArrow newArrow = createItem(player);
 						newArrow.getStack().setAmount(1);
 						player.getInventory().addItem(newArrow.getStack());
 					}
@@ -129,7 +129,7 @@ public class HuntsmanArrow extends SpecialItem {
 				.mapToInt(item -> {
 					if (item.getItemMeta() instanceof CrossbowMeta meta) {
 						return (int) meta.getChargedProjectiles().stream()
-							.filter(charged -> getItem(charged, game) != null)
+							.filter(charged -> getItem(charged) != null)
 							.count();
 					}
 					return 0;
@@ -146,7 +146,7 @@ public class HuntsmanArrow extends SpecialItem {
 			new BukkitRunnable() {
 				@Override
 				public void run() {
-					HuntsmanArrow arrow = createItem(player, game);
+					HuntsmanArrow arrow = createItem(player);
 					arrow.getStack().setAmount(arrowMagazineSize);
 
 					player.getInventory().addItem(arrow.getStack());
@@ -157,11 +157,11 @@ public class HuntsmanArrow extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected HuntsmanArrow getItem(ItemStack stack, Game game) {
+		public HuntsmanArrow getItem(ItemStack stack) {
 			return HuntsmanArrow.fromItemStack(stack, game);
 		}
 		@Override
-		protected HuntsmanArrow createItem(Player owner, Game game) {
+		public HuntsmanArrow createItem(Player owner) {
 			HuntsmanArrow arrow = HuntsmanArrow.createItem(owner, game);
 			arrow.getStack().setAmount(arrowMagazineSize == null ? 64 : arrowMagazineSize);
 			return arrow;

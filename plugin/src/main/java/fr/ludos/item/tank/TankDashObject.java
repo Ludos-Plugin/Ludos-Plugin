@@ -164,12 +164,12 @@ public class TankDashObject extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected TankDashObject getItem(ItemStack stack, Game game) {
+		public TankDashObject getItem(ItemStack stack) {
 			return TankDashObject.fromItemStack(stack, game);
 		}
 
 		@Override
-		protected TankDashObject createItem(Player owner, Game game) {
+		public TankDashObject createItem(Player owner) {
 			return TankDashObject.createItem(owner, game);
 		}
 

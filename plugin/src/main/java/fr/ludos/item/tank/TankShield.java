@@ -215,13 +215,13 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		}
 
 		@Override
-		protected TankShield createItem(Player owner, LevelState level, Game game) {
+		public TankShield createItem(Player owner, LevelState level) {
 			return TankShield.createItem(owner, level, game);
 		}
 
 		@Override
 		@Nullable
-		protected TankShield getItem(ItemStack stack, Game game) {
+		public TankShield getItem(ItemStack stack) {
 			return TankShield.fromItemStack(stack, game);
 		}
 

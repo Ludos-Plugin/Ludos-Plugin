@@ -176,7 +176,7 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 			Player player = event.getEntity();
 			if (! isPlayerValid(player)) return;
 
-			T specialItem = SpecialItem.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
+			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
 			if ( specialItem == null ) return;
 
 			deadPlayerLevels.put(player,
@@ -194,10 +194,11 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 		}
 
 		protected abstract TBranch[] getBranches();
-		protected abstract T createItem(Player owner, LevelItem.LevelState[] levels, Game game);
+
+		public abstract T createItem(Player owner, LevelItem.LevelState[] levels);
 
 		@Override
-		protected final T createItem(Player owner, Game game) {
+		public final T createItem(Player owner) {
 			LevelItem.LevelState[] levels;
 			if (owner != null && deadPlayerLevels != null && deadPlayerLevels.containsKey(owner)) {
 				levels = deadPlayerLevels.get(owner);
@@ -206,12 +207,12 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 				levels = new LevelItem.LevelState[getBranches().length];
 			}
 
-			return createItem(owner, levels, game);
+			return createItem(owner, levels);
 		}
 
 		@EventHandler
 		public void onSwitchItem(PlayerItemHeldEvent event) {
-			BranchItem.onSwitchItem(event, (stack) -> getItem(stack, game));
+			BranchItem.onSwitchItem(event, this::getItem);
 		}
 	}
 }

@@ -97,7 +97,7 @@ public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 			if (! isPlayerValid(player)) return;
 
 			ItemStack itemInHand = player.getInventory().getItemInMainHand();
-			AssassinDagger dagger = getItem(itemInHand, game);
+			AssassinDagger dagger = getItem(itemInHand);
 			if (dagger == null) return;
 
 			if (!(event.getEntity() instanceof LivingEntity target)) return;
@@ -121,12 +121,12 @@ public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 
 		@Override
 		@Nullable
-		protected AssassinDagger getItem(ItemStack stack, Game game) {
+		public AssassinDagger getItem(ItemStack stack) {
 			return AssassinDagger.fromItemStack(stack, game);
 		}
 
 		@Override
-		protected AssassinDagger createItem(Player owner, LevelState level, Game game) {
+		public AssassinDagger createItem(Player owner, LevelState level) {
 			return AssassinDagger.createItem(owner, level, game);
 		}
 

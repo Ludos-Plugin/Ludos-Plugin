@@ -121,7 +121,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 			if (player.hasCooldown(Material.CROSSBOW)) return;
 
-			HuntsmanCrossbow crossbow = getItem(event.getBow(), game);
+			HuntsmanCrossbow crossbow = getItem(event.getBow());
 			if (crossbow == null) return;
 
 			Arrow arrowProjectile = (Arrow) event.getProjectile();
@@ -149,7 +149,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 			if (! isPlayerValid(player)) return;
 
-			HuntsmanCrossbow crossbow = HuntsmanCrossbow.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
+			HuntsmanCrossbow crossbow = HuntsmanCrossbow.findIn(player.getInventory(), this::getItem);
 			if (crossbow == null) return;
 
 
@@ -179,7 +179,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 			Action action = event.getAction();
 			if (! action.isLeftClick()) return;
 
-			HuntsmanCrossbow crossbow = getItem(player.getInventory().getItemInMainHand(), game);
+			HuntsmanCrossbow crossbow = getItem(player.getInventory().getItemInMainHand());
 			if (crossbow == null) return;
 
 			if (! crossbow.refreshUseCooldown()) return;
@@ -197,11 +197,11 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 		@Override
 		@Nullable
-		protected HuntsmanCrossbow getItem(ItemStack stack, Game game) {
+		public HuntsmanCrossbow getItem(ItemStack stack) {
 			return HuntsmanCrossbow.fromItemStack(stack, game);
 		}
 		@Override
-		protected HuntsmanCrossbow createItem(Player owner, LevelItem.LevelState[] levels, Game game) {
+		public HuntsmanCrossbow createItem(Player owner, LevelItem.LevelState[] levels) {
 			return HuntsmanCrossbow.createItem(owner, levels, game);
 		}
 		@Override

@@ -151,7 +151,7 @@ public class HarvesterPick extends LevelBranchItem<HarvesterPickBranches, Harves
 			if (! action.isRightClick()) return;
 
 			Player player = event.getPlayer();
-			HarvesterPick pickaxe = getItem(player.getInventory().getItemInMainHand(), game);
+			HarvesterPick pickaxe = getItem(player.getInventory().getItemInMainHand());
 			if (pickaxe == null) return;
 
 			if (! pickaxe.refreshUseCooldown()) return;
@@ -165,7 +165,7 @@ public class HarvesterPick extends LevelBranchItem<HarvesterPickBranches, Harves
 			Player player = event.getPlayer();
 			ItemStack mainHandItem = player.getInventory().getItemInMainHand();
 
-			HarvesterPick pick = getItem(mainHandItem, game);
+			HarvesterPick pick = getItem(mainHandItem);
 			if (pick == null) return;
 
 			pick.getBranch().onBreakBlock(pick, event);
@@ -173,11 +173,11 @@ public class HarvesterPick extends LevelBranchItem<HarvesterPickBranches, Harves
 
 		@Override
 		@Nullable
-		protected HarvesterPick getItem(ItemStack stack, Game game) {
+		public HarvesterPick getItem(ItemStack stack) {
 			return HarvesterPick.fromItemStack(stack, game);
 		}
 		@Override
-		protected HarvesterPick createItem(Player owner, LevelState level, Game game) {
+		public HarvesterPick createItem(Player owner, LevelState level) {
 			return HarvesterPick.createItem(owner, level, game);
 		}
 		@Override

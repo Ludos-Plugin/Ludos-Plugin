@@ -10,7 +10,6 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityShootBowEvent;
@@ -98,11 +97,11 @@ public class HuntsmanBow extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected HuntsmanBow getItem(ItemStack stack, Game game) {
+		public HuntsmanBow getItem(ItemStack stack) {
 			return HuntsmanBow.fromItemStack(stack, game);
 		}
 		@Override
-		protected HuntsmanBow createItem(Player owner, Game game) {
+		public HuntsmanBow createItem(Player owner) {
 			return HuntsmanBow.createItem(owner, game);
 		}
 		@Override

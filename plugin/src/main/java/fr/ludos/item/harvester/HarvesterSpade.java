@@ -250,7 +250,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 			ItemStack mainItem = event.getItem();
 
-			HarvesterSpade spade = getItem(mainItem, game);
+			HarvesterSpade spade = getItem(mainItem);
 			if (spade == null) {
 				return;
 			}
@@ -263,7 +263,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 			Player player = event.getPlayer();
 			ItemStack mainHandItem = player.getInventory().getItemInMainHand();
 
-			HarvesterSpade spade = getItem(mainHandItem, game);
+			HarvesterSpade spade = getItem(mainHandItem);
 			if (spade == null) return;
 
 			HarvesterRole.awardBreak(event.getPlayer(), event.getBlock(), spade.getGame());
@@ -271,11 +271,11 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 		@Override
 		@Nullable
-		protected HarvesterSpade getItem(ItemStack stack, Game game) {
+		public HarvesterSpade getItem(ItemStack stack) {
 			return HarvesterSpade.fromItemStack(stack, game);
 		}
 		@Override
-		protected HarvesterSpade createItem(Player owner, LevelState level, Game game) {
+		public HarvesterSpade createItem(Player owner, LevelState level) {
 			return HarvesterSpade.createItem(owner, level, game);
 		}
 		@Override

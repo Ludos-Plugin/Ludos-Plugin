@@ -92,7 +92,7 @@ public class AssassinBoots extends SpecialItem {
 			if (! isPlayerValid(player)) return;
 
 			ItemStack bootsStack = player.getInventory().getBoots();
-			if (getItem(bootsStack, game) == null) return;
+			if (getItem(bootsStack) == null) return;
 
 			// Vitesse constante
 			player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 2, 1, true, false));
@@ -106,7 +106,7 @@ public class AssassinBoots extends SpecialItem {
 			if (event.getCause() != EntityDamageEvent.DamageCause.FALL) return;
 
 			ItemStack bootsStack = player.getInventory().getBoots();
-			if (getItem(bootsStack, game) == null) return;
+			if (getItem(bootsStack) == null) return;
 
 			if (event.getDamage() <= 2) {
 				event.setCancelled(true);
@@ -115,12 +115,12 @@ public class AssassinBoots extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected AssassinBoots getItem(ItemStack stack, Game game) {
+		public AssassinBoots getItem(ItemStack stack) {
 			return AssassinBoots.fromItemStack(stack, game);
 		}
 
 		@Override
-		protected AssassinBoots createItem(Player owner, Game game) {
+		public AssassinBoots createItem(Player owner) {
 			return AssassinBoots.createItem(owner, game);
 		}
 

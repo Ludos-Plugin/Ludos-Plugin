@@ -113,12 +113,12 @@ public class BerserkerRageBrew extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected BerserkerRageBrew getItem(ItemStack stack, Game game) {
+		public BerserkerRageBrew getItem(ItemStack stack) {
 			return BerserkerRageBrew.getItem(stack, game);
 		}
 
 		@Override
-		protected BerserkerRageBrew createItem(Player owner, Game game) {
+		public BerserkerRageBrew createItem(Player owner) {
 			return BerserkerRageBrew.createItem(owner, game);
 		}
 
@@ -132,7 +132,7 @@ public class BerserkerRageBrew extends SpecialItem {
 			Player player = event.getPlayer();
 			if (! isPlayerValid(player)) return;
 
-			BerserkerRageBrew brew = getItem(event.getItem(), game);
+			BerserkerRageBrew brew = getItem(event.getItem());
 			if (brew == null) return;
 
 			event.setReplacement(brew.getStack());
