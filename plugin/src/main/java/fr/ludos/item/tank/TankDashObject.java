@@ -1,31 +1,25 @@
 package fr.ludos.item.tank;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.EntityEffect;
-import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
 import fr.ludos.game.Game;
@@ -145,8 +139,15 @@ public class TankDashObject extends SpecialItem {
 
 	@Override
 	public Component getName() {
-		return Component.text("Tank Dasher")
+		return Component.text("Tank Charge")
 				.decoration(TextDecoration.ITALIC, false);
+	}
+
+	@Override
+	public List<Component> getLore() {
+		List<Component> lore = super.getLore();
+		lore.add(SpecialItem.getActionAnnotation("key.use", Component.text("Charge")));
+		return lore;
 	}
 
 	private static ItemStack createItemStack() {
@@ -198,5 +199,4 @@ public class TankDashObject extends SpecialItem {
 			player.setCooldown(Material.FIREWORK_ROCKET, COOLDOWN_DURATION);
 		}
 	}
-
 }
