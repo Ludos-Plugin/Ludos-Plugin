@@ -197,7 +197,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		}
 
 		@Override
-		public void updateItemInInventory(Player player) {
+		public void refreshPlayerInventory(Player player) {
 			if (!isPlayerValid(player)) return;
 
 			LevelState playerLevel = deadPlayerLevels.get(player);
