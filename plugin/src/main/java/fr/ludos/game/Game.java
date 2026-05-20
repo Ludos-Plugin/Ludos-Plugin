@@ -1,6 +1,5 @@
 package fr.ludos.game;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +42,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public abstract class Game extends TwoStepGameProcessBase {
+	public static final String namespace = "game";
+
 	private static final Map<String, Builder> registered = new HashMap<>();
 	public static Map<String, Builder> getRegistered() {
 		return registered;

@@ -1,26 +1,16 @@
 package fr.ludos.game.areaController.worldborder;
 
 import java.util.Objects;
-import java.util.UUID;
 
-import javax.annotation.Nullable;
-
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
-import org.bukkit.WorldCreator;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
 import fr.ludos.game.areaController.GameAreaController;
-import fr.ludos.game.worldController.GameWorldController;
 
 public class WorldBorderAreaController extends GameAreaController {
-
-	private final WorldBorderLocationOption locationOption;
 
 	private Location initialBorderCenter;
 	private double initialBorderSize;
@@ -36,25 +26,22 @@ public class WorldBorderAreaController extends GameAreaController {
 	}
 
 
-	public WorldBorderAreaController(Game game, WorldBorderLocationOption location, WorldBorderAreaOption area) {
+	public WorldBorderAreaController(Game game, WorldBorderAreaOption area) {
 		super(game);
 
-		this.locationOption = location;
 		this.areaOption = area;
 	}
 
 	@Override
 	protected void onSetup() {
-		GameWorldController worldController = getGame().getWorldController();
 		World world = getGame().getWorldController().getWorld();
 		WorldBorder border = world.getWorldBorder();
 		initialBorderCenter = border.getCenter();
 		initialBorderSize = border.getSize();
 
 
-		Location initialLocation = Objects.requireNonNull(world.getSpawnLocation());
+		gameLocation = Objects.requireNonNull(world.getSpawnLocation());
 
-		gameLocation = locationOption.getLocation(initialLocation);
 		double highestY = gameLocation.getWorld().getHighestBlockYAt(gameLocation) + 1;
 		gameLocation.setY(highestY);
 	}

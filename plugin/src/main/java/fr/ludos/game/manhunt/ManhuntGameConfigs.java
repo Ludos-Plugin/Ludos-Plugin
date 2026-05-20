@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -16,16 +15,18 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
 import fr.ludos.command.CommandUtility;
+import fr.ludos.command.ConfigSubcommand;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaOption;
-import fr.ludos.game.areaController.worldborder.WorldBorderLocationOption;
-import fr.ludos.game.lobbyController.LobbyStartDelayOption;
-import fr.ludos.game.lobbyController.LobbyWaitPlayersOption;
-import fr.ludos.game.teamController.GameJoinOption;
 
-public enum ManhuntGameConfigs {
-	prey (() -> "[player]") {
+public enum ManhuntGameConfigs implements ConfigSubcommand {
+	prey {
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+		public String getDescription() {
+			return "Select which player will be prey; random if unset";
+		}
+
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			if ( args.length == 0 ) {
 				// Field is left empty, send the current config
 				sender.sendMessage( getPreyString(config) );
@@ -49,16 +50,30 @@ public enum ManhuntGameConfigs {
 		}
 
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			// Options are : any single player, or a random player
 			List<String> allPlayers = CommandUtility.getOnlinePlayerNames();
 			allPlayers.add(randomOption);
 			return allPlayers;
 		}
-	},
-	area (WorldBorderAreaOption::getUsage) {
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+		public String getUsage() {
+			return "[player | random]";
+		}
+
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
+	},
+	area {
+		@Override
+		public String getDescription() {
+			return "Defines the size of the game area";
+		}
+
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			if ( args.length == 0 ) {
 				// Field is left empty, send the current config
 				sender.sendMessage( getArea(config).name() );
@@ -76,43 +91,31 @@ public enum ManhuntGameConfigs {
 		}
 
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			// Options are : large, medium, small
 			if (args.length == 1)
 				return areaOptions;
 			return null;
 		}
-	},
-	location (WorldBorderLocationOption::getUsage) {
+
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
-			if ( args.length == 0 ) {
-				// Field is left empty, send the current config
-				sender.sendMessage( getLocation(config).name() );
-				return true;
-			}
-
-			String givenLocation = args[0];
-			WorldBorderLocationOption locationOption = Arrays.stream(WorldBorderLocationOption.values()).filter(o -> o.name().equals(givenLocation)).findFirst().orElse(null);
-			if (locationOption == null) return false;
-
-			setLocation(config, locationOption);
-
-			sender.sendMessage("Game location set to " + locationOption.name()); // TODO: Translate
-			return true;
+		public String getUsage() {
+			return WorldBorderAreaOption.getUsage();
 		}
 
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
-			// Options are : random, here
-			if (args.length == 1)
-				return locationOptions;
-			return null;
+		public boolean requireOp() {
+			return false;
 		}
 	},
-	reveal (ManhuntRevealOptions::getUsage) {
+	reveal {
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+		public String getDescription() {
+			return "Defines the time it takes for the prey to be revealed";
+		}
+
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			if ( args.length == 0 ) {
 				// Field is left empty, send the current config
 				sender.sendMessage( getReveal(config).name() );
@@ -130,106 +133,23 @@ public enum ManhuntGameConfigs {
 		}
 
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			// Options are : short, medium, long
 			if (args.length == 1)
 				return revealOptions;
 			return null;
 		}
-	},
-	join (GameJoinOption::getUsage) {
+
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
-			if ( args.length == 0 ) {
-				// Field is left empty, send the current config
-				sender.sendMessage( getJoinOption(config).name() );
-				return true;
-			}
-
-			String givenJoin = args[0];
-			GameJoinOption joinOption = Arrays.stream(GameJoinOption.values()).filter(o -> o.name().equals(givenJoin)).findFirst().orElse(null);
-			if (joinOption == null) return false;
-
-			setJoinOption(config, joinOption);
-
-			sender.sendMessage("Game Join Option set to " + joinOption.name()); // TODO: Translate
-			return true;
+		public String getUsage() {
+			return ManhuntRevealOptions.getUsage();
 		}
 
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
-			// Options are : auto, manual, none
-			if (args.length == 1)
-				return joinOptions;
-			return null;
-		}
-	},
-	wait_players (LobbyWaitPlayersOption::getUsage) {
-		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
-			if ( args.length == 0 ) {
-				// Field is left empty, send the current config
-				sender.sendMessage( getWaitPlayersOption(config).name() );
-				return true;
-			}
-
-			String givenWaitPlayers = args[0];
-			LobbyWaitPlayersOption waitPlayersOption = Arrays.stream(LobbyWaitPlayersOption.values()).filter(o -> o.name().equals(givenWaitPlayers)).findFirst().orElse(null);
-			if (waitPlayersOption == null) return false;
-
-			setWaitPlayersOption(config, waitPlayersOption);
-
-			sender.sendMessage("Lobby Wait Option set to " + waitPlayersOption.name()); // TODO: Translate
-			return true;
-		}
-
-		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
-			// Options are : online, all
-			if (args.length == 1)
-				return waitPlayersOptions;
-			return null;
-		}
-	},
-	start_delay (LobbyStartDelayOption::getUsage) {
-		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
-			if ( args.length == 0 ) {
-				// Field is left empty, send the current config
-				sender.sendMessage( getWaitDurationOption(config).name() );
-				return true;
-			}
-
-			String givenWaitDuration = args[0];
-			LobbyStartDelayOption startDelayOption = Arrays.stream(LobbyStartDelayOption.values()).filter(o -> o.name().equals(givenWaitDuration)).findFirst().orElse(null);
-			if (startDelayOption == null) return false;
-
-			setWaitDurationOption(config, startDelayOption);
-
-			sender.sendMessage("Lobby Start Delay Option set to " + startDelayOption.name()); // TODO: Translate
-			return true;
-		}
-
-		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
-			// Options are : short, medium, long
-			if (args.length == 1)
-				return waitDurationOptions;
-			return null;
+		public boolean requireOp() {
+			return false;
 		}
 	};
-
-	private Supplier<String> usageGetter;
-	public String getUsage() {
-		return usageGetter.get();
-	}
-
-	private ManhuntGameConfigs(Supplier<String> usageGetter) {
-		this.usageGetter = usageGetter;
-	}
-
-	public abstract boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args);
-	public abstract List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args);
 
 
 	public static final String playersKey = "players";
@@ -243,13 +163,6 @@ public enum ManhuntGameConfigs {
 	public static final String locationPath = ManhuntGame.ID + '.' + locationKey;
 	public static final String revealKey = "reveal";
 	public static final String revealPath = ManhuntGame.ID + '.' + revealKey;
-	public static final String joinKey = "join";
-	public static final String joinPath = ManhuntGame.ID + '.' + joinKey;
-
-	public static final String waitPlayersKey = "waitPlayers";
-	public static final String waitPlayersPath = ManhuntGame.ID + '.' + waitPlayersKey;
-	public static final String startDelayKey = "startDelay";
-	public static final String startDelayPath = ManhuntGame.ID + '.' + startDelayKey;
 
 	private static final String allOption = "all";
 	private static final String randomOption = "random";
@@ -257,19 +170,7 @@ public enum ManhuntGameConfigs {
 	public static final List<String> areaOptions = Arrays.stream(WorldBorderAreaOption.values())
 		.map(v -> v.name())
 		.collect(Collectors.toList());
-	public static final List<String> locationOptions = Arrays.stream(WorldBorderLocationOption.values())
-		.map(v -> v.name())
-		.collect(Collectors.toList());
 	public static final List<String> revealOptions = Arrays.stream(ManhuntRevealOptions.values())
-		.map(v -> v.name())
-		.collect(Collectors.toList());
-	public static final List<String> joinOptions = Arrays.stream(GameJoinOption.values())
-		.map(v -> v.name())
-		.collect(Collectors.toList());
-	public static final List<String> waitPlayersOptions = Arrays.stream(LobbyWaitPlayersOption.values())
-		.map(v -> v.name())
-		.collect(Collectors.toList());
-	public static final List<String> waitDurationOptions = Arrays.stream(LobbyStartDelayOption.values())
 		.map(v -> v.name())
 		.collect(Collectors.toList());
 
@@ -301,16 +202,6 @@ public enum ManhuntGameConfigs {
 		config.set(areaPath, value);
 	}
 
-	public static WorldBorderLocationOption getLocation(ConfigurationSection config) {
-		String locationString = config.getString(locationPath);
-		return Arrays.stream(WorldBorderLocationOption.values()).filter(o -> o.name().equals(locationString)).findFirst()
-			.orElse(WorldBorderLocationOption.here);
-	}
-	public static void setLocation(ConfigurationSection config, WorldBorderLocationOption location) {
-		String value = location == null ? null : location.name();
-		config.set(locationPath, value);
-	}
-
 	public static ManhuntRevealOptions getReveal(ConfigurationSection config) {
 		String revealString = config.getString(revealPath);
 		return Arrays.stream(ManhuntRevealOptions.values()).filter(o -> o.name().equals(revealString)).findFirst()
@@ -319,36 +210,6 @@ public enum ManhuntGameConfigs {
 	public static void setReveal(ConfigurationSection config, ManhuntRevealOptions reveal) {
 		String value = reveal == null ? null : reveal.name();
 		config.set(revealPath, value);
-	}
-
-	public static GameJoinOption getJoinOption(ConfigurationSection config) {
-		String joinString = config.getString(joinPath);
-		return Arrays.stream(GameJoinOption.values()).filter(o -> o.name().equals(joinString)).findFirst()
-			.orElse(GameJoinOption.auto);
-	}
-	public static void setJoinOption(ConfigurationSection config, GameJoinOption join) {
-		String value = join == null ? null : join.name();
-		config.set(joinPath, value);
-	}
-
-	public static LobbyWaitPlayersOption getWaitPlayersOption(ConfigurationSection config) {
-		String waitPlayersString = config.getString(waitPlayersPath);
-		return Arrays.stream(LobbyWaitPlayersOption.values()).filter(o -> o.name().equals(waitPlayersString)).findFirst()
-			.orElse(LobbyWaitPlayersOption.all);
-	}
-	public static void setWaitPlayersOption(ConfigurationSection config, LobbyWaitPlayersOption waitPlayers) {
-		String value = waitPlayers == null ? null : waitPlayers.name();
-		config.set(waitPlayersPath, value);
-	}
-
-	public static LobbyStartDelayOption getWaitDurationOption(ConfigurationSection config) {
-		String startDelayString = config.getString(startDelayPath);
-		return Arrays.stream(LobbyStartDelayOption.values()).filter(o -> o.name().equals(startDelayString)).findFirst()
-			.orElse(LobbyStartDelayOption.ten_seconds);
-	}
-	public static void setWaitDurationOption(ConfigurationSection config, LobbyStartDelayOption startDelay) {
-		String value = startDelay == null ? null : startDelay.name();
-		config.set(startDelayPath, value);
 	}
 
 	@Nullable

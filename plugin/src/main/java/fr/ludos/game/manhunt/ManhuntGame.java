@@ -35,6 +35,7 @@ import org.bukkit.scoreboard.Scoreboard;
 
 import fr.ludos.Ludos;
 import fr.ludos.Utility;
+import fr.ludos.command.ludos.GroupConfigs;
 import fr.ludos.game.Game;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaController;
 import fr.ludos.game.lobbyController.structure.StructureLobbyController;
@@ -118,7 +119,6 @@ public class ManhuntGame extends Game {
 		);
 		this.areaController = new WorldBorderAreaController(
 			this,
-			ManhuntGameConfigs.getLocation(config),
 			ManhuntGameConfigs.getArea(config)
 		);
 		this.teamController = new ManhuntTeamController(
@@ -128,8 +128,8 @@ public class ManhuntGame extends Game {
 		);
 		this.lobbyController = new StructureLobbyController(
 			this,
-			ManhuntGameConfigs.getWaitPlayersOption(config),
-			ManhuntGameConfigs.getWaitDurationOption(config),
+			GroupConfigs.getWaitPlayersOption(config),
+			GroupConfigs.getWaitDurationOption(config),
 			new LobbyStructure.Builder()
 		);
 
@@ -293,17 +293,6 @@ public class ManhuntGame extends Game {
 			);
 		}
 
-		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
-			StringBuilder usage = new StringBuilder("/" + label + " game " + getId() + " config <config> [value]");
-
-			for (ManhuntGameConfigs config : ManhuntGameConfigs.values()) {
-				usage.append("\n  ").append(config.name()).append(" ")
-					.append(config.getUsage());
-			}
-
-			return usage.toString();
-		}
-
 		@Override
 		public boolean executeGameConfig(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			if (args.length == 0) {
@@ -314,9 +303,8 @@ public class ManhuntGame extends Game {
 			ManhuntGameConfigs option = Arrays.stream(ManhuntGameConfigs.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
 			if (option == null) return false;
 
-			return option.handleConfigsCommand(sender, command, label, config, Arrays.copyOfRange(args, 1, args.length));
+			return option.onCommand(sender, command, label + " " + option.toString(), config, Arrays.copyOfRange(args, 1, args.length));
 		}
-
 
 		@Override
 		public List<String> gameConfigTabComplete(CommandSender sender, Command command, String label, String[] args) {
@@ -332,7 +320,18 @@ public class ManhuntGame extends Game {
 			}
 			ManhuntGameConfigs option = ManhuntGameConfigs.valueOf( arg );
 
-			return option.handleConfigsTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+			return option.onTabComplete(sender, command, label + " " + option.toString(), Arrays.copyOfRange(args, 1, args.length));
+		}
+
+		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
+			StringBuilder usage = new StringBuilder("/" + label + " <config> [value]");
+
+			for (ManhuntGameConfigs option : ManhuntGameConfigs.values()) {
+				usage.append("\n  ")
+					.append(option.getUsage());
+			}
+
+			return usage.toString();
 		}
 
 

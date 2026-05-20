@@ -58,7 +58,8 @@ public class Ludos extends JavaPlugin implements Listener {
 		Role.registerRole(new BerserkerRole.Builder(this));
 
 
-		PluginCommand cmd = getCommand("ludos");
+		String commandLabel = "ludos";
+		PluginCommand cmd = getCommand(commandLabel);
 		LudosCommand ludosCommand = new LudosCommand();
 		cmd.setExecutor(ludosCommand);
 		cmd.setTabCompleter(ludosCommand);

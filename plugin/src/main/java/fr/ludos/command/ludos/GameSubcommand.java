@@ -6,12 +6,14 @@ import java.util.stream.Collectors;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.Subcommand;
+import fr.ludos.command.SubcommandManager;
 import fr.ludos.game.Game;
 import fr.ludos.group.Group;
 
@@ -57,11 +59,11 @@ public enum GameSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " game start <" +
+		public String getUsage() {
+			return "<" +
 				Game.getRegistered().keySet().stream().sorted()
 					.collect(Collectors.joining(" | "))
-				+ "> [solo]";
+				+ ">";
 		}
 		@Override
 		public boolean requireOp() {
@@ -105,51 +107,71 @@ public enum GameSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " game stop";
+		public String getUsage() {
+			return "";
 		}
 		@Override
 		public boolean requireOp() {
 			return false;
 		}
 	},
-	// config() {
-	// 	@Override
-	// 	public String getDescription() {
-	// 		return "Configure a game.";
-	// 	}
-	// 	@Override
-	// 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-	// 		if (args.length < 1) return false;
+	config() {
+		@Override
+		public String getDescription() {
+			return "Configure a game.";
+		}
+		@Override
+		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			if (args.length < 1) return false;
+			if (! (sender instanceof Player player)) {
+				sender.sendMessage("Only players can configure games.");
+				return true;
+			}
 
-	// 		String configGameId = args[0].toLowerCase();
-	// 		Game.Builder configGame = Game.getRegistered().get(configGameId);
-	// 		if (configGame == null) {
-	// 			sender.sendMessage("Game not found: " + configGameId);
-	// 			return false;
-	// 		}
+			Group group = Group.getGroupOfPlayer(player);
+			if (group == null) {
+				sender.sendMessage("You are not in a group.");
+				return true;
+			}
 
-	// 		return configGame.executeGameConfig(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-	// 	}
-	// 	@Override
-	// 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-	// 		if (args.length == 1)
-	// 			return Game.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+			String configGameId = args[0].toLowerCase();
+			Game.Builder configGame = Game.getRegistered().get(configGameId);
+			if (configGame == null) {
+				sender.sendMessage("Game not found: " + configGameId);
+				return false;
+			}
 
-	// 		String configGameId = args[0].toLowerCase();
-	// 		Game.Builder configGame = Game.getRegistered().get(configGameId);
-	// 		if (configGame == null) return null;
+			ConfigurationSection configSection = group.getConfig();
+			if (! configSection.isConfigurationSection(Game.namespace)) {
+				configSection.createSection(Game.namespace);
+			}
+			ConfigurationSection gamesSection = configSection.getConfigurationSection(Game.namespace);
 
-	// 		return configGame.gameConfigTabComplete(sender, command, label, java.util.Arrays.copyOfRange(args, 1, args.length));
-	// 	}
-	// 	@Override
-	// 	public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-	// 		return "/" + label + " game config <" +
-	// 			Game.getRegistered().keySet().stream().sorted()
-	// 				.collect(Collectors.joining(" | "))
-	// 			+ "> [option]";
-	// 	}
-	// },
+			return configGame.executeGameConfig(sender, command, label, gamesSection, Arrays.copyOfRange(args, 1, args.length));
+		}
+		@Override
+		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			if (args.length == 1)
+				return Game.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+
+			String configGameId = args[0].toLowerCase();
+			Game.Builder configGame = Game.getRegistered().get(configGameId);
+			if (configGame == null) return null;
+
+			return configGame.gameConfigTabComplete(sender, command, label, java.util.Arrays.copyOfRange(args, 1, args.length));
+		}
+		@Override
+		public String getUsage() {
+			return "<" +
+				Game.getRegistered().keySet().stream().sorted()
+					.collect(Collectors.joining(" | "))
+				+ "> [option]";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
+	},
 	guidebook() {
 		@Override
 		public String getDescription() {
@@ -184,8 +206,8 @@ public enum GameSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " game guidebook <" +
+		public String getUsage() {
+			return "<" +
 				Game.getRegistered().keySet().stream().sorted()
 					.collect(Collectors.joining(" | "))
 				+ "> [player]";
@@ -203,7 +225,7 @@ public enum GameSubcommand implements Subcommand {
 		@Override
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 			if (args.length < 1) {
-				sender.sendMessage(getUsage(sender, command, label));
+				sender.sendMessage(getUsage());
 				return true;
 			}
 
@@ -214,7 +236,7 @@ public enum GameSubcommand implements Subcommand {
 				.findFirst().orElse(null);
 			if (option == null) return false;
 
-			sender.sendMessage(option.getUsage(sender, command, label));
+			sender.sendMessage(option.getUsage());
 			return true;
 		}
 		@Override
@@ -232,32 +254,11 @@ public enum GameSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			StringBuilder usage = new StringBuilder("/" + label + " game ");
-
-			usage.append('<');
-			usage.append(
+		public String getUsage() {
+			return SubcommandManager.getUsage(
 				Arrays.stream(GameSubcommand.values())
 					.filter(o -> o != help)
-					.map(GameSubcommand::name)
-					.collect(Collectors.joining(" | "))
 			);
-			usage.append('>');
-
-			usage.append(' ');
-
-			usage.append('<');
-			usage.append(
-				Game.getRegistered().keySet().stream().sorted()
-					.collect(Collectors.joining(" | "))
-			);
-			usage.append('>');
-
-			usage.append(' ');
-
-			usage.append("[option]");
-
-			return usage.toString();
 		}
 	};
 }

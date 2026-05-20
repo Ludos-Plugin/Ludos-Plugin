@@ -28,6 +28,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import fr.ludos.Utility;
+import fr.ludos.command.ludos.GroupConfigs;
 import fr.ludos.game.areaController.GameAreaController;
 import fr.ludos.game.teamController.GameTeamController;
 import fr.ludos.item.SpecialItem;
@@ -48,7 +49,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<OfflinePlayer> players, @Nullable OfflinePlayer prey) {
-		super(game, ManhuntGameConfigs.getJoinOption(game.getGroup().getConfig()));
+		super(game, GroupConfigs.getGameJoinOption(game.getGroup().getConfig()));
 
 		Set<Player> finalPlayers = game.getGroup().getOnlinePlayers();
 		if (players != null) {

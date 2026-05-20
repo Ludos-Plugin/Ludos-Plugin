@@ -17,9 +17,12 @@ import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.Ludos;
 import fr.ludos.command.CommandUtility;
+import fr.ludos.command.ConfigSubcommandManager;
 import fr.ludos.command.Subcommand;
+import fr.ludos.command.SubcommandManager;
 import fr.ludos.game.Game;
 import fr.ludos.group.Group;
+import fr.ludos.group.Group.JoinMethod;
 
 public enum GroupSubcommand implements Subcommand {
 	create() {
@@ -38,7 +41,7 @@ public enum GroupSubcommand implements Subcommand {
 
 			Set<Player> members = CommandUtility.getPlayersFromArgs(args, 0, sender);
 			for (Player member : members) {
-				group.invitePlayer(member);
+				group.requestPlayerJoin(member, JoinMethod.Invite);
 			}
 
 			Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
@@ -51,8 +54,8 @@ public enum GroupSubcommand implements Subcommand {
 			return CommandUtility.getOnlinePlayerNames();
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " group create [member1] [member2] ...";
+		public String getUsage() {
+			return "[member1] [member2] ...";
 		}
 		@Override
 		public boolean requireOp() {
@@ -94,8 +97,79 @@ public enum GroupSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " group disband";
+		public String getUsage() {
+			return "";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
+		}
+	},
+	invite() {
+		@Override
+		public String getDescription() {
+			return "Invite a player to your group.";
+		}
+		@Override
+		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			if (args.length < 1) return false;
+
+			if (!(sender instanceof Player player)) {
+				sender.sendMessage("Only players can invite others to groups.");
+				return true;
+			}
+
+			Group group = Group.getGroupOfPlayer(player);
+			if (group == null) {
+				sender.sendMessage("You are not in a group.");
+				return true;
+			}
+
+			Set<Player> targets = CommandUtility.getPlayersFromArgs(args, 0, sender).stream()
+				.filter(p -> ! group.isPlayer(p))
+				.collect(Collectors.toSet());
+
+			if (targets.isEmpty()) {
+				sender.sendMessage("No valid player names provided.");
+				return true;
+			}
+
+			boolean hasJoined = false;
+			for (Player target : targets) {
+				if (group.requestPlayerJoin(target, JoinMethod.Invite)) {
+					targets.remove(target);
+				}
+			}
+			if (hasJoined) {
+				Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
+				plugin.saveConfig();
+			}
+
+			if (targets.size() > 0) {
+				player.sendMessage("Invited " + targets.stream().map(Player::getName).collect(Collectors.joining(", ")) + " to the group.");
+			}
+
+			return true;
+		}
+		@Override
+		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			if (! (sender instanceof Player player)) return null;
+
+			Group group = Group.getGroupOfPlayer(player);
+			if (group == null) return null;
+
+			HashSet<Player> onlines = Bukkit.getServer().getOnlinePlayers()
+				.stream()
+				.collect(Collectors.toCollection(HashSet::new));
+			onlines.removeAll(group.getPlayers());
+
+			return onlines.stream()
+				.map(Player::getName)
+				.toList();
+		}
+		@Override
+		public String getUsage() {
+			return "[player1] [player2] ...";
 		}
 		@Override
 		public boolean requireOp() {
@@ -128,10 +202,13 @@ public enum GroupSubcommand implements Subcommand {
 				return true;
 			}
 
-			group.addPlayer(player);
-
-			Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
-			plugin.saveConfig();
+			if (group.requestPlayerJoin(player, JoinMethod.Join)) {
+				Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
+				plugin.saveConfig();
+			}
+			else {
+				player.sendMessage("Requested to join " + leaderName + "'s group.");
+			}
 
 			return true;
 		}
@@ -143,8 +220,8 @@ public enum GroupSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " group join <memberName>";
+		public String getUsage() {
+			return "<memberName>";
 		}
 		@Override
 		public boolean requireOp() {
@@ -181,8 +258,8 @@ public enum GroupSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " group leave";
+		public String getUsage() {
+			return "";
 		}
 		@Override
 		public boolean requireOp() {
@@ -245,8 +322,8 @@ public enum GroupSubcommand implements Subcommand {
 				.collect(Collectors.toList());
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " group kick [player1] [player2] ...";
+		public String getUsage() {
+			return "[member1] [member2] ...";
 		}
 		@Override
 		public boolean requireOp() {
@@ -278,34 +355,15 @@ public enum GroupSubcommand implements Subcommand {
 				return true;
 			}
 
-			String configGameId = args[0].toLowerCase();
-			Game.Builder configGame = Game.getRegistered().get(configGameId);
-			if (configGame == null) {
-				sender.sendMessage("Game not found: " + configGameId);
-				return false;
-			}
-
-			boolean success = configGame.executeGameConfig(sender, command, label, group.getConfig(), Arrays.copyOfRange(args, 1, args.length));
-			if (success) {
-				JavaPlugin plugin = Ludos.getPlugin(Ludos.class);
-				plugin.saveConfig();
-			}
-			return success;
+			return configCommand.onCommand(sender, command, label, group.getConfig(), args);
 		}
 		@Override
 		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			if (args.length == 1)
-				return Game.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
-
-			String configGameId = args[0].toLowerCase();
-			Game.Builder configGame = Game.getRegistered().get(configGameId);
-			if (configGame == null) return null;
-
-			return configGame.gameConfigTabComplete(sender, command, label, java.util.Arrays.copyOfRange(args, 1, args.length));
+			return configCommand.onTabComplete(sender, command, label, args);
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " group config <" +
+		public String getUsage() {
+			return "<" +
 				Game.getRegistered().keySet().stream().sorted()
 					.collect(Collectors.joining(" | "))
 				+ "> [option]";
@@ -315,68 +373,7 @@ public enum GroupSubcommand implements Subcommand {
 			return false;
 		}
 	},
-	invite() {
-		@Override
-		public String getDescription() {
-			return "Invite a player to your group.";
-		}
-		@Override
-		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			if (args.length < 1) return false;
-
-			if (!(sender instanceof Player player)) {
-				sender.sendMessage("Only players can invite others to groups.");
-				return true;
-			}
-
-			Group group = Group.getGroupOfPlayer(player);
-			if (group == null) {
-				sender.sendMessage("You are not in a group.");
-				return true;
-			}
-
-			Set<Player> targets = CommandUtility.getPlayersFromArgs(args, 0, sender).stream()
-				.filter(p -> ! group.isPlayer(p))
-				.collect(Collectors.toSet());
-
-			if (targets.isEmpty()) {
-				sender.sendMessage("No valid player names provided.");
-				return true;
-			}
-
-			for (Player target : targets) {
-				group.invitePlayer(target);
-			}
-			player.sendMessage("Invited " + targets.stream().map(Player::getName).collect(Collectors.joining(", ")) + " to the group.");
-
-			return true;
-		}
-		@Override
-		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			if (! (sender instanceof Player player)) return null;
-
-			Group group = Group.getGroupOfPlayer(player);
-			if (group == null) return null;
-
-			HashSet<Player> onlines = Bukkit.getServer().getOnlinePlayers()
-				.stream()
-				.collect(Collectors.toCollection(HashSet::new));
-			onlines.removeAll(group.getPlayers());
-
-			return onlines.stream()
-				.map(Player::getName)
-				.toList();
-		}
-		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " group invite [player1] [player2] ...";
-		}
-		@Override
-		public boolean requireOp() {
-			return false;
-		}
-	},
-	get() {
+	info() {
 		@Override
 		public String getDescription() {
 			return "Get information about your current group.";
@@ -403,8 +400,8 @@ public enum GroupSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " group get";
+		public String getUsage() {
+			return "";
 		}
 		@Override
 		public boolean requireOp() {
@@ -419,7 +416,7 @@ public enum GroupSubcommand implements Subcommand {
 		@Override
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 			if (args.length < 1) {
-				sender.sendMessage(getUsage(sender, command, label));
+				sender.sendMessage(getUsage());
 				return true;
 			}
 
@@ -430,7 +427,7 @@ public enum GroupSubcommand implements Subcommand {
 				.findFirst().orElse(null);
 			if (option == null) return false;
 
-			sender.sendMessage(option.getUsage(sender, command, label));
+			sender.sendMessage(option.getUsage());
 			return true;
 		}
 		@Override
@@ -444,27 +441,18 @@ public enum GroupSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			StringBuilder usage = new StringBuilder("/" + label + " group ");
-
-			usage.append('<');
-			usage.append(
+		public String getUsage() {
+			return SubcommandManager.getUsage(
 				Arrays.stream(GroupSubcommand.values())
 					.filter(o -> o != help)
-					.map(GroupSubcommand::name)
-					.collect(Collectors.joining(" | "))
 			);
-			usage.append('>');
-
-			usage.append(' ');
-
-			usage.append("[option]");
-
-			return usage.toString();
 		}
 		@Override
 		public boolean requireOp() {
 			return false;
 		}
 	};
+
+
+	protected final ConfigSubcommandManager<GroupConfigs> configCommand = new ConfigSubcommandManager<>(GroupConfigs.values());
 }
