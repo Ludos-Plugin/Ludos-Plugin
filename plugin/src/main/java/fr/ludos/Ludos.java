@@ -14,6 +14,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.book.BookUtility;
@@ -21,6 +22,7 @@ import fr.ludos.command.ludos.LudosCommand;
 import fr.ludos.game.Game;
 import fr.ludos.game.manhunt.ManhuntGame;
 import fr.ludos.group.Group;
+import fr.ludos.group.GroupEvents;
 import fr.ludos.packets.player.PlayerPackets;
 import fr.ludos.packets.player.PlayerPacketsFactory;
 import fr.ludos.role.AssassinRole;
@@ -66,6 +68,8 @@ public class Ludos extends JavaPlugin implements Listener {
 		cmd.setUsage(ludosCommand.getUsage());
 
 		Bukkit.getPluginManager().registerEvents(this, this);
+
+		Bukkit.getPluginManager().registerEvents(new GroupEvents(), this);
 	}
 
 	@Override
@@ -73,7 +77,7 @@ public class Ludos extends JavaPlugin implements Listener {
 		for (Game game : Game.getActiveGames()) {
 			game.stop();
 		}
-		HandlerList.unregisterAll((Listener)this);
+		HandlerList.unregisterAll((Plugin) this);
 	}
 
 

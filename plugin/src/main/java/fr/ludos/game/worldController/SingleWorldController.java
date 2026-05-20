@@ -58,13 +58,14 @@ public class SingleWorldController extends GameWorldController {
 
 		// Load the world
 		Bukkit.getWorld(getReturnWorldUUID());
+		Location returnLocation = getReturnLocation();
 
 		if (playersInWorld.size() > 0) {
 			for (Player player : playersInWorld) {
 				if (player.isDead()) {
 					player.spigot().respawn();
 				}
-				player.teleport(getReturnLocation());
+				player.teleport(returnLocation);
 			}
 		}
 

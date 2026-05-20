@@ -214,7 +214,7 @@ public final class ManhuntTeamController extends GameTeamController {
 		if (! preyTeam.hasEntry(player.getName())) {
 			Utility.onDeathSpectate(event, 5, getPlugin(), () -> {
 				for (SpecialItem.Events<?> item : getGame().getActiveItems()) {
-					item.updateItemInInventory(player);
+					item.refreshPlayerInventory(player);
 				}
 			});
 			return;
@@ -245,9 +245,15 @@ public final class ManhuntTeamController extends GameTeamController {
 		player.teleport(location);
 		player.setBedSpawnLocation(location, true);
 		player.setGameMode(GameMode.SURVIVAL);
+		player.setScoreboard(getGame().getScoreboard());
 		player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 
 		player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 30, 0, false, false));
+
+		player.getInventory().clear();
+		Utility.revokeAllAdvancements(player);
+
+		SpecialItem.Events.refreshPlayerInventory(getGame(), player);
 	}
 
 	public void joinPrey(OfflinePlayer player) {
@@ -257,8 +263,6 @@ public final class ManhuntTeamController extends GameTeamController {
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;
-
-		onlinePlayer.setScoreboard(getGame().getScoreboard());
 
 		joinAnyPlayer(onlinePlayer, gameLocation);
 
@@ -301,7 +305,6 @@ public final class ManhuntTeamController extends GameTeamController {
 		if (onlinePlayer == null) return;
 
 		joinAnyPlayer(onlinePlayer, hunterLocation);
-		onlinePlayer.setScoreboard(getGame().getScoreboard());
 
 		onlinePlayer.showTitle(Title.title(
 			Component.text("You are a ")

@@ -298,7 +298,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		}
 		@Override
 		protected final void onStart() {
-			updateAllInventories();
+			refreshAllPlayerInventories();
 
 			game.getActiveItems().add(this);
 
@@ -339,40 +339,83 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		}
 
 
-		protected void removeFromAllInventories() {
+		public void refreshPlayerInventory(Player player) {
+			if (! game.getGroup().isPlayer(player)) return;
+			if (! isPlayerValid(player)) return;
+
+			PlayerInventory inventory = player.getInventory();
+			if (T.containedIn(inventory, this::getItem)) return;
+
+			T item = createItem(player);
+			if (item == null) return;
+
+			int index = (slot == null) ? -1 : slot.intValue();
+
+			if (index == -1 || inventory.getItem(index) != null) {
+				inventory.addItem(item.getStack());
+			} else {
+				inventory.setItem(index, item.getStack());
+			}
+		}
+
+		public void refreshAllPlayerInventories() {
 			for (Player player : getGame().getGroup().getOnlinePlayers()) {
-				PlayerInventory inventory = player.getInventory();
-				for(T item : SpecialItem.findAllIn(inventory, this::getItem)) {
-					inventory.remove(item.getStack());
-					if (inventory.getItemInOffHand().equals(item.getStack())) {
-						inventory.setItemInOffHand(null);
-					}
-					else if (inventory.getHelmet() != null && inventory.getHelmet().equals(item.getStack())) {
-						inventory.setHelmet(null);
-					}
-					else if (inventory.getChestplate() != null && inventory.getChestplate().equals(item.getStack())) {
-						inventory.setChestplate(null);
-					}
-					else if (inventory.getLeggings() != null && inventory.getLeggings().equals(item.getStack())) {
-						inventory.setLeggings(null);
-					}
-					else if (inventory.getBoots() != null && inventory.getBoots().equals(item.getStack())) {
-						inventory.setBoots(null);
-					}
+				refreshPlayerInventory(player);
+			}
+		}
+
+		public void removeFromPLayerInventory(Player player) {
+			PlayerInventory inventory = player.getInventory();
+			for(T item : SpecialItem.findAllIn(inventory, this::getItem)) {
+				inventory.remove(item.getStack());
+
+				if (inventory.getItemInOffHand().equals(item.getStack())) {
+					inventory.setItemInOffHand(null);
+				}
+				else if (inventory.getHelmet() != null && inventory.getHelmet().equals(item.getStack())) {
+					inventory.setHelmet(null);
+				}
+				else if (inventory.getChestplate() != null && inventory.getChestplate().equals(item.getStack())) {
+					inventory.setChestplate(null);
+				}
+				else if (inventory.getLeggings() != null && inventory.getLeggings().equals(item.getStack())) {
+					inventory.setLeggings(null);
+				}
+				else if (inventory.getBoots() != null && inventory.getBoots().equals(item.getStack())) {
+					inventory.setBoots(null);
 				}
 			}
 		}
 
-		protected void updateAllInventories() {
-			for (OfflinePlayer offlinePlayer : game.getTeamController().getPlayers()) {
-				Player player = offlinePlayer.getPlayer();
-				if (player == null) continue;
-
-				if (isPlayerValid(player)) {
-					updateItemInInventory(player);
-				}
+		public void removeFromAllInventories() {
+			for (Player player : getGame().getGroup().getOnlinePlayers()) {
+				removeFromPLayerInventory(player);
 			}
 		}
+
+		public static void refreshPlayerInventory(Game game, Player player) {
+			for (SpecialItem.Events<?> itemEvents : game.getActiveItems()) {
+				itemEvents.refreshPlayerInventory(player);
+			}
+		}
+		public static void refreshAllPlayerInventories(Game game) {
+			for (SpecialItem.Events<?> itemEvents : game.getActiveItems()) {
+				itemEvents.refreshAllPlayerInventories();
+			}
+		}
+
+		public static void removeFromPlayerInventory(Game game, Player player) {
+			for (SpecialItem.Events<?> itemEvents : game.getActiveItems()) {
+				itemEvents.removeFromPLayerInventory(player);
+			}
+		}
+
+		public static void removeFromAllPlayerInventories(Game game) {
+			for (SpecialItem.Events<?> itemEvents : game.getActiveItems()) {
+				itemEvents.removeFromAllInventories();
+			}
+		}
+
 
 		@EventHandler
 		public void onPlayerDropItem(PlayerDropItemEvent event) {
@@ -428,32 +471,12 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 		@EventHandler
 		public void onPlayerJoin(PlayerJoinEvent event) {
-			updateItemInInventory(event.getPlayer());
+			refreshPlayerInventory(event.getPlayer());
 		}
 
 		@EventHandler
 		public void onPlayerRespawn(PlayerRespawnEvent event)  {
-			updateItemInInventory(event.getPlayer());
-		}
-
-
-		public void updateItemInInventory(Player player) {
-			if (! game.getGroup().isPlayer(player)) return;
-			if (! isPlayerValid(player)) return;
-
-			PlayerInventory inventory = player.getInventory();
-			if (T.containedIn(inventory, this::getItem)) return;
-
-			T item = createItem(player);
-			if (item == null) return;
-
-			int index = (slot == null) ? -1 : slot.intValue();
-
-			if (index == -1 || inventory.getItem(index) != null) {
-				inventory.addItem(item.getStack());
-			} else {
-				inventory.setItem(index, item.getStack());
-			}
+			refreshPlayerInventory(event.getPlayer());
 		}
 	}
 }

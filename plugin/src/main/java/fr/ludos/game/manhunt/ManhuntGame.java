@@ -150,12 +150,6 @@ public class ManhuntGame extends Game {
 		World world = worldController.getWorld();
 		world.setTime(1000);
 
-		for (Player player : getGroup().getOnlinePlayers()) {
-			player.setScoreboard(scoreboard);
-			player.getInventory().clear();
-			Utility.revokeAllAdvancements(player);
-		}
-
 		compassEvents.start();
 		timer.start();
 
@@ -178,9 +172,7 @@ public class ManhuntGame extends Game {
 		saturationTask = new BukkitRunnable() {
 			@Override
 			public void run() {
-				for (OfflinePlayer offlinePlayer : getGroup().getOnlinePlayers()) {
-					Player player = offlinePlayer.getPlayer();
-					if (player == null) continue;
+				for (Player player : getGroup().getOnlinePlayers()) {
 					player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 1, 0, true, false));
 				}
 			}

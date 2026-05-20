@@ -5,9 +5,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -77,6 +80,8 @@ public class StructureLobbyController extends GameLobbyController {
 					if (! player.isOnline()) continue;
 
 					player.teleport(waitLocation);
+
+					player.getInventory().clear();
 				}
 			}
 		}.runTaskTimer(getPlugin(), 0, 20);
@@ -94,6 +99,17 @@ public class StructureLobbyController extends GameLobbyController {
 		if (joinLobbyTask != null) {
 			joinLobbyTask.cancel();
 			joinLobbyTask = null;
+		}
+	}
+
+	@EventHandler
+	public void onPlayerDieInLobby(PlayerDeathEvent event) {
+		Player player = event.getPlayer();
+		if (! getGame().getGroup().isPlayer(player)) return;
+
+		if (joinLobbyTask != null) {
+			event.setCancelled(true);
+			player.playEffect(EntityEffect.TOTEM_RESURRECT);
 		}
 	}
 
