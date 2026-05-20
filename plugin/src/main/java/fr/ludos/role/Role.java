@@ -123,12 +123,18 @@ public abstract class Role extends GameProcessBase {
 	protected abstract LinkedHashMap<String, GameEvents> createGameEvents(Builder builder, Game game);
 
 	public static void loadConfigRoles(Ludos plugin) {
-		ConfigurationSection rolesSection = plugin.getConfig().getConfigurationSection(rolesKey);
-		if (rolesSection != null) {
-			playerRoles = rolesSection.getKeys(false).stream()
-				.filter(Objects::nonNull)
-				.collect(Collectors.toMap((s) -> s, (s) -> plugin.getConfig().getString(rolesKey + '.' + s)));
+		ConfigurationSection configSection = plugin.getConfig();
+		if (! configSection.isConfigurationSection(rolesKey)) {
+			configSection.createSection(rolesKey);
 		}
+		ConfigurationSection rolesSection = configSection.getConfigurationSection(rolesKey);
+		if (rolesSection == null) {
+			return;
+		}
+
+		playerRoles = rolesSection.getKeys(false).stream()
+			.filter(Objects::nonNull)
+			.collect(Collectors.toMap((s) -> s, (s) -> plugin.getConfig().getString(rolesKey + '.' + s)));
 	}
 
 	public static void registerRole(Builder constructor) {

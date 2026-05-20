@@ -12,9 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.command.Subcommand;
 import fr.ludos.game.Game;
 import fr.ludos.group.Group;
-import fr.ludos.item.LevelItem;
 import fr.ludos.item.LevelItemInterface;
-import fr.ludos.item.MultiLevelBranchItem;
 import fr.ludos.item.SpecialItem;
 
 public enum CheatsSubcommand implements Subcommand {
@@ -78,8 +76,8 @@ public enum CheatsSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " cheats xp <amount>";
+		public String getUsage() {
+			return "<amount>";
 		}
 	},
 	level {
@@ -142,8 +140,8 @@ public enum CheatsSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " cheats level <amount>";
+		public String getUsage() {
+			return "<amount>";
 		}
 	},
 	help {
@@ -153,7 +151,7 @@ public enum CheatsSubcommand implements Subcommand {
 		}
 		@Override
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			sender.sendMessage(getUsage(sender, command, label));
+			sender.sendMessage(getUsage());
 			return true;
 		}
 		@Override
@@ -161,8 +159,8 @@ public enum CheatsSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " cheats <xp|level> <amount>";
+		public String getUsage() {
+			return "<xp|level> <amount>";
 		}
 	};
 

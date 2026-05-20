@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
@@ -34,6 +35,12 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 public final class Group implements ConfigurationSerializable {
+
+	public enum JoinMethod {
+		Join,
+		Invite
+	}
+
 	private static final String groupsKey = "groups";
 	static {
 		ConfigurationSerialization.registerClass(Group.class);
@@ -63,6 +70,11 @@ public final class Group implements ConfigurationSerializable {
 			.map(OfflinePlayer::getPlayer)
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
+	}
+
+	private Map<OfflinePlayer, JoinMethod> joinRequests = new HashMap<>();
+	public Map<OfflinePlayer, JoinMethod> getJoinRequests() {
+		return this.joinRequests;
 	}
 
 	private ConfigurationSection config;
@@ -331,21 +343,57 @@ public final class Group implements ConfigurationSerializable {
 		}
 	}
 
-	public final void invitePlayer(Player player) {
-		if (player == null) return;
-		if (isLeader(player)) return;
-		if (isMember(player)) return;
+	public final boolean requestPlayerJoin(Player player, JoinMethod method) {
+		if (player == null) return false;
+		if (isLeader(player)) return false;
+		if (isMember(player)) return false;
+		if (method == null) return false;
 
-		Component invitationMessage = Component.text("You have been invited to join " + leader.getName() + "'s group. Click ")
-			.append(
-				Component.text("Here")
-					.color(NamedTextColor.GOLD)
-					.clickEvent(
-						ClickEvent.runCommand(String.format("/ludos:ludos group join %s", leader.getName()))
+		JoinMethod currentMethod = joinRequests.get(player);
+		if (currentMethod != null && currentMethod != method) {
+			joinRequests.remove(player);
+			addPlayer(player);
+			return true;
+		}
+
+		switch (method) {
+			case Join:
+				Player onlineLeader = leader.getPlayer();
+				if (onlineLeader == null) {
+					Component offlineMessage = Component.text(leader.getName() + " is currently offline and cannot accept your request.");
+					player.sendMessage(offlineMessage);
+				}
+				else {
+					Component joinRequestMessage = Component.text(player.getName() + " has requested to join your group. Click ")
+						.append(
+							Component.text("Here")
+								.color(NamedTextColor.GOLD)
+								.clickEvent(
+									ClickEvent.runCommand(String.format("/ludos:ludos group invite %s", player.getName()))
+								)
+						)
+						.append(Component.text(" to accept."));
+					onlineLeader.sendMessage(joinRequestMessage);
+				}
+
+				joinRequests.put(player, JoinMethod.Join);
+				break;
+			case Invite:
+				Component invitationMessage = Component.text("You have been invited to join " + leader.getName() + "'s group. Click ")
+					.append(
+						Component.text("Here")
+							.color(NamedTextColor.GOLD)
+							.clickEvent(
+								ClickEvent.runCommand(String.format("/ludos:ludos group join %s", leader.getName()))
+							)
 					)
-			)
-			.append(Component.text(" to join."));
-		player.sendMessage(invitationMessage);
+					.append(Component.text(" to join."));
+				player.sendMessage(invitationMessage);
+
+				joinRequests.put(player, JoinMethod.Invite);
+				break;
+		}
+		return false;
 	}
 
 
@@ -423,15 +471,21 @@ public final class Group implements ConfigurationSerializable {
 	}
 
 	public static void loadConfigGroups(Ludos plugin) {
-		ConfigurationSection groupsSection = plugin.getConfig().getConfigurationSection(groupsKey);
-		if (groupsSection != null) {
-			for (Map.Entry<String, Object> groupEntry : groupsSection.getValues(false).entrySet()) {
-				if (groupEntry.getValue() instanceof MemorySection groupData) {
-					try {
-						Group group = Group.deserialize(groupData.getValues(true));
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+		ConfigurationSection configSection = plugin.getConfig();
+		if (! configSection.isConfigurationSection(groupsKey)) {
+			configSection.createSection(groupsKey);
+		}
+		ConfigurationSection groupsSection = configSection.getConfigurationSection(groupsKey);
+		if (groupsSection == null) {
+			return;
+		}
+
+		for (Map.Entry<String, Object> groupEntry : groupsSection.getValues(false).entrySet()) {
+			if (groupEntry.getValue() instanceof MemorySection groupData) {
+				try {
+					Group group = Group.deserialize(groupData.getValues(true));
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		}

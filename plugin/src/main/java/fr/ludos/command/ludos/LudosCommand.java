@@ -1,107 +1,40 @@
 package fr.ludos.command.ludos;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import fr.ludos.Ludos;
-import fr.ludos.command.CommandUtility;
+import fr.ludos.command.Subcommand;
+import fr.ludos.command.SubcommandManager;
 
-public class LudosCommand implements TabExecutor {
-	private final GameSubcommandManager gameCommand;
-	private final RoleSubcommandManager roleCommand;
-	private final GroupSubcommandManager groupCommand;
-	private final CheatsSubcommandManager cheatsCommand;
+public class LudosCommand implements Subcommand {
+	private final SubcommandManager<LudosSubcommand> manager = new SubcommandManager<>(LudosSubcommand::getAllowedSubcommands);
 
-	public LudosCommand() {
-		this.gameCommand = new GameSubcommandManager();
-		this.roleCommand = new RoleSubcommandManager();
-		this.groupCommand = new GroupSubcommandManager();
-		this.cheatsCommand = new CheatsSubcommandManager();
+	@Override
+	public String getDescription() {
+		return "Main Ludos Command";
 	}
 
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		if (args.length == 0) {
-			sender.sendMessage(getUsage());
-			return true;
-		}
-
-		String arg = args[0];
-		LudosSubcommand option = LudosSubcommand.getAllowedSubcommands(sender).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
-		if (option == null) return false;
-
-		switch (option) {
-			case game:
-				return gameCommand.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-			case role:
-				return roleCommand.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-			case group:
-				return groupCommand.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-			case guidebook:
-				Player targetPlayer = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
-				if (targetPlayer != null) {
-					ItemStack book = Ludos.createGuidebook();
-					targetPlayer.getInventory().addItem(book);
-				}
-				return true;
-			case cheats:
-				return cheatsCommand.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-			case help:
-				sender.sendMessage(getUsage());
-				return true;
-			default:
-				return false;
-		}
+		return manager.onCommand(sender, command, label, args);
 	}
 
 	@Override
 	public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		if (args.length <= 1) {
-			return LudosSubcommand.getAllowedSubcommands(sender)
-				.map(LudosSubcommand::name)
-				.collect(Collectors.toList());
-		}
-
-		String arg = args[0];
-		LudosSubcommand option = Arrays.stream(LudosSubcommand.values()).filter(o -> o.name().equalsIgnoreCase(arg)).findFirst().orElse(null);
-		if (option == null) return null;
-
-		switch (option) {
-			case game:
-				return gameCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-			case role:
-				return roleCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-			case group:
-				return groupCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-			case guidebook:
-				return CommandUtility.getOnlinePlayerNames();
-			case cheats:
-				return cheatsCommand.onTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
-			default:
-				return null;
-		}
+		return manager.onTabComplete(sender, command, label, args);
 	}
 
+	@Override
 	public String getUsage() {
-		StringBuilder usage = new StringBuilder("/ludos ");
+		return manager.getUsage();
+	}
 
-		usage.append('<');
-		usage.append(
-			LudosSubcommand.getAllowedSubcommands(null)
-				.map(LudosSubcommand::name)
-				.collect(Collectors.joining(" | "))
-		);
-		usage.append('>');
-
-		return usage.toString();
+	@Override
+	public boolean requireOp() {
+		return false;
 	}
 }
