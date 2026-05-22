@@ -21,7 +21,7 @@ public final class MultiWorldController extends GameWorldController {
 
 	@Override
 	protected void onWorldStop() {
-		super.onStop();
+		super.onWorldStop();
 
 		scheduleFlushWorld(getWorld(), true);
 	}

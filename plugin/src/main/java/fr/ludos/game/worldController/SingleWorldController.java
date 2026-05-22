@@ -14,7 +14,7 @@ public final class SingleWorldController extends GameWorldController {
 
 	@Override
 	protected void onWorldStop() {
-		super.onStop();
+		super.onWorldStop();
 		if (getWorld() == null) return;
 
 		scheduleFlushWorld(getWorld(), true);

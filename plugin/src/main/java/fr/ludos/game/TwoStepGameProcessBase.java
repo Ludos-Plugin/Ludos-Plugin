@@ -34,9 +34,7 @@ public abstract class TwoStepGameProcessBase implements TwoStepGameProcess {
 	protected void onSetup() { }
 
 	public final void start() {
-		if (! setup) {
-			throw new IllegalStateException("Cannot start game process: not setup");
-		}
+		if (! setup) throw new IllegalStateException("Cannot start game process: not setup");
 		if (started) return;
 
 		started = true;
@@ -51,14 +49,15 @@ public abstract class TwoStepGameProcessBase implements TwoStepGameProcess {
 	protected void onStart() { }
 
 	public final void stop() {
-		if (! started) return;
-		started = false;
+		if (started) {
+			started = false;
 
-		onStop();
+			onStop();
 
-		HandlerList.unregisterAll(this);
+			HandlerList.unregisterAll(this);
 
-		onDeinit();
+			onDeinit();
+		}
 
 		setdown();
 	}
