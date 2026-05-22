@@ -41,6 +41,8 @@ public class TankRole extends Role {
 
 	@Override
 	protected void onRoleStart() {
+		super.onRoleStart();
+
 		List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
 			.filter(Role.ofRole(id))
 			.toList();
@@ -60,6 +62,8 @@ public class TankRole extends Role {
 
 	@Override
 	protected void onRoleStop() {
+		super.onRoleStop();
+
 		List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
 			.filter(Role.ofRole(id))
 			.toList();

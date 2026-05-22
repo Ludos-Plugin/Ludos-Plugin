@@ -1,9 +1,8 @@
 package fr.ludos.structure;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;

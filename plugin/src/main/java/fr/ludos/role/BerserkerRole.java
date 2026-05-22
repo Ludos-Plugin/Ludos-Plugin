@@ -75,6 +75,8 @@ public class BerserkerRole extends Role {
 
 	@Override
 	protected void onRoleStart() {
+		super.onRoleStart();
+
 		particleTask = new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -88,6 +90,8 @@ public class BerserkerRole extends Role {
 
 	@Override
 	protected void onRoleStop() {
+		super.onRoleStop();
+
 		if (particleTask != null) {
 			particleTask.cancel();
 			particleTask = null;

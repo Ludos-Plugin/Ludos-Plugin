@@ -4,8 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import net.kyori.adventure.text.Component;
-
 public abstract class GameProcessBase implements GameProcess {
 	private boolean started = false;
 	public final boolean isStarted() {
@@ -14,7 +12,7 @@ public abstract class GameProcessBase implements GameProcess {
 
 	protected abstract JavaPlugin getPlugin();
 
-	public void start() {
+	public final void start() {
 		if (started) return;
 
 		started = true;
@@ -28,7 +26,7 @@ public abstract class GameProcessBase implements GameProcess {
 	protected void onInit() { }
 	protected void onStart() { }
 
-	public void stop() {
+	public final void stop() {
 		if (! started) return;
 		started = false;
 
@@ -40,4 +38,8 @@ public abstract class GameProcessBase implements GameProcess {
 	}
 	protected void onDeinit() { }
 	protected void onStop() { }
+
+	public boolean isClear() {
+		return ! isStarted();
+	}
 }

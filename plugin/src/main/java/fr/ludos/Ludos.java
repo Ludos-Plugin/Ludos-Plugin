@@ -56,6 +56,7 @@ public class Ludos extends JavaPlugin implements Listener {
 
 	@Override
 	public void onEnable() {
+		super.onEnable();
 		Role.loadConfigRoles(this);
 		Group.loadConfigGroups(this);
 
@@ -91,6 +92,7 @@ public class Ludos extends JavaPlugin implements Listener {
 
 	@Override
 	public void onDisable() {
+		super.onDisable();
 		for (Game game : Game.getActiveGames()) {
 			game.stop();
 		}

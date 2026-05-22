@@ -2,7 +2,7 @@ package fr.ludos.game.worldController;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,10 +14,11 @@ import org.bukkit.WorldCreator;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
-import fr.ludos.game.TwoStepGameProcessBase;
+import fr.ludos.game.GameProcessBase;
 import fr.ludos.game.areaController.GameAreaController;
 import fr.ludos.game.lobbyController.GameLobbyController;
 import fr.ludos.group.Group;
@@ -26,7 +27,10 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.util.TriState;
 
-public sealed abstract class GameWorldController extends TwoStepGameProcessBase permits SingleWorldController, MultiWorldController {
+public sealed abstract class GameWorldController extends GameProcessBase permits SingleWorldController, MultiWorldController {
+	private final HashSet<World> scheduledToFlush = new HashSet<>();
+	private BukkitTask flushTask;
+
 	@Override
 	protected final JavaPlugin getPlugin() {
 		return getGame().getPlugin();
@@ -58,19 +62,32 @@ public sealed abstract class GameWorldController extends TwoStepGameProcessBase 
 	}
 
 	@Override
-	protected void onStart() {
-		super.onStart();
-
-		areaController.start();
-		lobbyController.stop();
+	public boolean isClear() {
+		return super.isClear() && scheduledToFlush.isEmpty() && getLobbyController().isClear() && getAreaController().isClear();
 	}
 
 	@Override
-	protected void onStop() {
+	protected final void onStart() {
+		super.onStart();
+
+		onWorldStart();
+
+		lobbyController.stop();
+	}
+
+	protected void onWorldStart() {}
+
+	@Override
+	protected final void onStop() {
 		lobbyController.stop();
 		areaController.stop();
+
+		onWorldStop();
+
 		super.onStop();
 	}
+
+	protected void onWorldStop() {}
 
 	protected GameWorldController(Game game, GameLobbyController lobbyController, GameAreaController areaController, Location returnLocation) {
 		this.game = Objects.requireNonNull(game, "Game cannot be null");
@@ -132,7 +149,7 @@ public sealed abstract class GameWorldController extends TwoStepGameProcessBase 
 		}
 	}
 
-	public boolean flushWorld(boolean evacuate, World world) {
+	public boolean flushWorld(World world, boolean evacuate) {
 		if (evacuate) {
 			transferToWorld(getReturnLocation());
 		}
@@ -151,48 +168,35 @@ public sealed abstract class GameWorldController extends TwoStepGameProcessBase 
 		return unloaded;
 	}
 
-	public void retryFlushWorld(boolean evacuate, World world) {
+	public void scheduleFlushWorld(World world, boolean evacuate) {
 		if (getPlugin().isEnabled()) {
-			new BukkitRunnable() {
-				public void run() {
-					if (flushWorld(evacuate, world)) {
-						cancel();
-					}
-				}
-			}.runTaskTimer(getPlugin(), 0, 20);
-		}
-		else {
-			flushWorld(evacuate, world);
-		}
-	}
-	public void retryFlushWorlds(boolean evacuate, World... worlds) {
-		if (getPlugin().isEnabled()) {
-			List<World> leftToDelete = new ArrayList<>(Arrays.asList(worlds));
+			scheduledToFlush.add(world);
 
-			new BukkitRunnable() {
-				public void run() {
-					List<World> deleted = new ArrayList<>();
-					for (World world : leftToDelete) {
-						if (world == null) {
-							deleted.add(world);
-							continue;
+			if (flushTask == null || flushTask.isCancelled()) {
+				flushTask = new BukkitRunnable() {
+					public void run() {
+						List<World> deleted = new ArrayList<>();
+						for (World world : scheduledToFlush) {
+							if (world == null) {
+								deleted.add(world);
+								continue;
+							}
+							if (flushWorld(world, evacuate)) {
+								deleted.add(world);
+							}
 						}
-						if (flushWorld(evacuate, world)) {
-							deleted.add(world);
+						scheduledToFlush.removeAll(deleted);
+
+						if (scheduledToFlush.size() == 0) {
+							this.cancel();
+							flushTask = null;
 						}
 					}
-					leftToDelete.removeAll(deleted);
-
-					if (leftToDelete.size() == 0) {
-						this.cancel();
-					}
-				}
-			}.runTaskTimer(getPlugin(), 0, 20);
-		}
-		else {
-			for (World world : worlds) {
-				flushWorld(evacuate, world);
+				}.runTaskTimer(getPlugin(), 0, 20);
 			}
+		}
+		else {
+			flushWorld(world, evacuate);
 		}
 	}
 

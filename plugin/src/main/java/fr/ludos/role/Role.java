@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -91,11 +90,16 @@ public abstract class Role extends GameProcessBase {
 		gameEvents = game.modifyEvents(createGameEvents(builder, game));
 	}
 
+	@Override
 	protected final void onInit() {
+		super.onInit();
+
 		onRoleInit();
 	}
 	@Override
 	protected final void onStart() {
+		super.onStart();
+
 		for (GameEvents events : gameEvents.values()) {
 			events.start();
 		}
@@ -107,11 +111,16 @@ public abstract class Role extends GameProcessBase {
 	protected void onRoleStart() { }
 
 
+	@Override
 	protected final void onDeinit() {
+		super.onDeinit();
+
 		onRoleDeinit();
 	}
 	@Override
 	protected final void onStop() {
+		super.onStop();
+
 		for (GameEvents events : gameEvents.values()) {
 			events.stop();
 		}

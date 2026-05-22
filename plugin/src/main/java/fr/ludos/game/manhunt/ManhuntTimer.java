@@ -108,18 +108,18 @@ public class ManhuntTimer extends GameProcessBase {
 				}
 
 			}
-		}.runTaskLater(getPlugin(), 1);
+		}.runTask(getPlugin());
 	}
 
 	@Override
 	protected final void onStart() {
+		super.onStart();
 		resume();
 
 		for (Player player : game.getGroup().getOnlinePlayers()) {
 			bossbar.addPlayer(player);
 		}
 		bossbar.setVisible(true);
-
 	}
 
 	@Override
@@ -133,6 +133,7 @@ public class ManhuntTimer extends GameProcessBase {
 			Component.text("Timer ended. Final Time : " + formattedTime)
 				.color(NamedTextColor.GREEN)
 		);
+		super.onStop();
 	}
 
 	public void resume() {
@@ -151,7 +152,9 @@ public class ManhuntTimer extends GameProcessBase {
 
 		isRunning = false;
 
-		if (task != null) task.cancel();
+		if (task != null) {
+			task.cancel();
+		}
 		task = null;
 	}
 

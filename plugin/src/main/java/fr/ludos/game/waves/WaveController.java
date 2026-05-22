@@ -9,7 +9,6 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import fr.ludos.game.Game;
 import fr.ludos.game.GameProcessBase;
 import fr.ludos.item.SpecialItem;
 import net.kyori.adventure.text.Component;
@@ -18,8 +17,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public abstract class WaveController extends GameProcessBase {
 	private boolean scheduled = false;
 
-	private final Game game;
-	public final Game getGame() {
+	private final WaveGame game;
+	public final WaveGame getGame() {
 		return this.game;
 	}
 
@@ -46,7 +45,7 @@ public abstract class WaveController extends GameProcessBase {
 		return this.loadout;
 	}
 
-	protected WaveController(Game game, int maxWaves, @Nullable WaveLoadoutService loadout) {
+	protected WaveController(WaveGame game, int maxWaves, @Nullable WaveLoadoutService loadout) {
 		if (maxWaves <= 0) throw new IllegalArgumentException("Cannot have fewer waves than 1");
 		this.game = game;
 		this.maxWaves = maxWaves;

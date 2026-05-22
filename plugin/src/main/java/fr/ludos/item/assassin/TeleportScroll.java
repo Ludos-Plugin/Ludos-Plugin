@@ -95,6 +95,8 @@ public class TeleportScroll extends SpecialItem {
 
 		@Override
 		protected void onItemStop() {
+			super.onItemStop();
+
 			for (Player player : Role.getPlayersOfRole(AssassinRole.id)) {
 				var healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
 				if (healthAttr == null) continue;

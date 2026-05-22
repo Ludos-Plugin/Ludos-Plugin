@@ -13,9 +13,10 @@ public final class SingleWorldController extends GameWorldController {
 	}
 
 	@Override
-	protected void onSetdown() {
+	protected void onWorldStop() {
+		super.onStop();
 		if (getWorld() == null) return;
 
-		retryFlushWorld(true, getWorld());
+		scheduleFlushWorld(getWorld(), true);
 	}
 }

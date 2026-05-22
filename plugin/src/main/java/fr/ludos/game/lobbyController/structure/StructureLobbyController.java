@@ -104,15 +104,15 @@ public class StructureLobbyController extends GameLobbyController {
 	protected void onStop() {
 		super.onStop();
 
-		if (startGameTask != null) {
-			startGameTask.cancel();
-			startGameTask = null;
-		}
-
 		if (joinLobbyTask != null) {
 			joinLobbyTask.cancel();
-			joinLobbyTask = null;
 		}
+		joinLobbyTask = null;
+
+		if (startGameTask != null) {
+			startGameTask.cancel();
+		}
+		startGameTask = null;
 	}
 
 	@EventHandler

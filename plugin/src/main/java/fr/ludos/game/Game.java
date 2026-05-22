@@ -24,6 +24,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 
@@ -106,6 +107,11 @@ public abstract class Game extends TwoStepGameProcessBase {
 	public abstract GameWorldController getWorldController();
 	public abstract GameTeamController getTeamController();
 
+	@Override
+	public boolean isClear() {
+		return super.isClear() && getWorldController().isClear() && getTeamController().isClear();
+	}
+
 	protected Game(Builder builder, Group group) {
 		this.builder = builder;
 		this.group = group;
@@ -117,18 +123,21 @@ public abstract class Game extends TwoStepGameProcessBase {
 		Game oldGame = group.getGame();
 		if (oldGame != null) {
 			oldGame.stop();
+
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					if (! oldGame.isClear()) return;
+
+					registered.get(id).build(group).setup();
+					cancel();
+				}
+			}.runTaskTimer(oldGame.getPlugin(), 0, 20);
+		}
+		else {
+			registered.get(id).build(group).setup();
 		}
 
-		Game game;
-		try {
-			game = registered.get(id).build(group);
-		} catch (Exception e) {
-			Bukkit.getServer().broadcast(Component.text("Error while building game " + id + ": " + e.getMessage()).color(NamedTextColor.RED));
-			e.printStackTrace();
-			return false;
-		}
-
-		game.setup();
 		return true;
 	}
 
@@ -175,6 +184,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 	@Override
 	protected final void onSetup() {
+		super.onSetup();
 		Game oldGame = group.getGame();
 		if (oldGame != null && oldGame != this) {
 			oldGame.stop();
@@ -185,7 +195,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 		group.setGame(this);
 		activeGames.add(this);
 
-		getWorldController().setup();
+		getWorldController().start();
 		getTeamController().setup();
 
 		onGameSetup();
@@ -193,11 +203,12 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 	@Override
 	protected final void onInit() {
+		super.onInit();
 		onGameInit();
 	}
 	@Override
 	protected final void onStart() {
-		getWorldController().start();
+		super.onStart();
 		getTeamController().start();
 
 		getGroup().addJoinGroupListener(this::onJoinGroup);
@@ -211,6 +222,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 	@Override
 	protected final void onStop() {
+		super.onStop();
 		onGameStop();
 
 		deactivateRoles();
@@ -225,19 +237,19 @@ public abstract class Game extends TwoStepGameProcessBase {
 		getGroup().removeLeaveGroupListener(this::onLeaveGroup);
 
 		getTeamController().stop();
-		getWorldController().stop();
 	}
 
 	@Override
 	protected final void onDeinit() {
+		super.onDeinit();
 		onGameDeinit();
 	}
 	@Override
 	protected final void onSetdown() {
-		onGameSetdown();
+		super.onSetdown();
+		getWorldController().stop();
 
-		getTeamController().setdown();
-		getWorldController().setdown();
+		onGameSetdown();
 
 		scoreboard = null;
 

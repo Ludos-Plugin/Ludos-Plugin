@@ -78,6 +78,7 @@ public class HarvesterRole extends Role {
 
 	@Override
 	protected void onRoleStart() {
+		super.onRoleStart();
 		// harvesters = Role.getPlayersOfRole(id);
 
 		// passiveResourcesTask = new BukkitRunnable() {    // FIXME: Quentin, quand cette tâche s'éxecute pour la première fois, elle remplace la pelle dans l'inventaire
@@ -90,6 +91,7 @@ public class HarvesterRole extends Role {
 
 	@Override
 	protected void onRoleStop() {
+		super.onRoleStop();
 		// passiveResourcesTask.cancel();
 		// passiveResourcesTask = null;
 	}

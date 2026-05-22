@@ -6,6 +6,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 import fr.ludos.Utility;
 import fr.ludos.game.areaController.GameAreaController;
@@ -101,21 +104,27 @@ public final class ArenaWaveController extends WaveController {
 		GameAreaController areaController = game.getWorldController().getAreaController();
 		Location center = areaController.getCenter();
 
-		Location primarySpawn = areaController.pickRandom(0.45, 0.55);
-		Location secondarySpawn = center.clone().add(primarySpawn.clone().subtract(center));
+		Location primarySpawn = areaController.pickRandom(0.30, 0.35);
+		Location secondarySpawn = center.clone().subtract(primarySpawn.clone().subtract(center));
 		Utility.snapToHighestY(primarySpawn);
 		Utility.snapToHighestY(secondarySpawn);
 
-		primarySpawn.setDirection(secondarySpawn.toVector().subtract(primarySpawn.toVector()).normalize());
-		secondarySpawn.setDirection(primarySpawn.toVector().subtract(secondarySpawn.toVector()).normalize());
+		Vector primaryLookDirection = secondarySpawn.toVector().subtract(primarySpawn.toVector()).normalize();
+		primarySpawn.setDirection(primaryLookDirection);
+
+		Vector secondaryLookDirection = primarySpawn.toVector().subtract(secondarySpawn.toVector()).normalize();
+		secondarySpawn.setDirection(secondaryLookDirection);
 
 		ArenaTeamController teamController = game.getTeamController();
 
+		PotionEffect glowEffect = new PotionEffect(PotionEffectType.GLOWING, 10 * 20, 0, true, false);
 		for (Player player : Utility.getTeamAlivePlayers(teamController.getCombatTeam(0)).toList()) {
 			player.teleport(primarySpawn);
+			player.addPotionEffect(glowEffect);
 		}
 		for (Player player : Utility.getTeamAlivePlayers(teamController.getCombatTeam(1)).toList()) {
 			player.teleport(secondarySpawn);
+			player.addPotionEffect(glowEffect);
 		}
 		for (Player player : Utility.getTeamOnlinePlayers(teamController.getSpectatorTeam()).toList()) {
 			player.teleport(center);

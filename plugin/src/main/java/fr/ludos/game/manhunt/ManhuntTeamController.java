@@ -14,7 +14,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -74,6 +73,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 	@Override
 	protected void onSetup() {
+		super.onSetup();
 		Scoreboard scoreboard = getGame().getScoreboard();
 
 		hunterTeam = scoreboard.getTeam("Hunters");
@@ -100,6 +100,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 	@Override
 	protected void onStart() {
+		super.onStart();
 		joinPrey(selectedPrey);
 
 		Set<Player> hunters = getGame().getGroup().getOnlinePlayers();
@@ -117,6 +118,8 @@ public final class ManhuntTeamController extends GameTeamController {
 
 	@Override
 	protected void onSetdown() {
+		super.onSetdown();
+
 		if (preyTeam != null) {
 			preyTeam.unregister();
 			preyTeam = null;
