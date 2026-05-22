@@ -47,16 +47,17 @@ public class TankRole extends Role {
 			.filter(Role.ofRole(id))
 			.toList();
 
-		PotionEffect absordEffect = new PotionEffect(
-				PotionEffectType.ABSORPTION,
-				Integer.MAX_VALUE,
-				0,
-				false,
-				false);
+		PotionEffect absorbEffect = new PotionEffect(
+			PotionEffectType.ABSORPTION,
+			Integer.MAX_VALUE,
+			0,
+			false,
+			false
+		);
 
 		for (Player player : players) {
 			player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(28.0);
-			player.addPotionEffect(absordEffect);
+			player.addPotionEffect(absorbEffect);
 		}
 	}
 
@@ -70,15 +71,12 @@ public class TankRole extends Role {
 
 		for (Player player : players) {
 			player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20.0);
-			for (PotionEffect potion : player.getActivePotionEffects()) {
-				player.removePotionEffect(potion.getType());
-			}
+			player.removePotionEffect(PotionEffectType.ABSORPTION);
 		}
 	}
 
 	@EventHandler
 	public void onPlayerHit(EntityDamageByEntityEvent event) {
-		if (! (event.getEntity() instanceof Player defender)) return;
 		if (! (event.getDamager() instanceof Player attacker)) return;
 
 		if (!Role.getPlayersOfRole(id).contains(attacker)) return;

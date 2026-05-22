@@ -75,6 +75,7 @@ public class ArenaGame extends WaveGame {
 			this,
 			new StructureLobbyController(
 				this,
+				false,
 				GroupConfigs.getWaitPlayersOption(config),
 				GroupConfigs.getWaitDurationOption(config).getDuration(),
 				new LobbyStructure.Builder(),

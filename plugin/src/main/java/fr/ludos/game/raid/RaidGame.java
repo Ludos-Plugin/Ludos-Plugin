@@ -59,6 +59,7 @@ public class RaidGame extends WaveGame {
 			this,
 			new StructureLobbyController(
 				this,
+				true,
 				GroupConfigs.getWaitPlayersOption(config),
 				GroupConfigs.getWaitDurationOption(config).getDuration(),
 				new LobbyStructure.Builder(),

@@ -35,6 +35,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffectType.Category;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Team;
@@ -148,7 +149,12 @@ public class Utility {
 
 
 	public static void resetPlayerState(Player player) {
-		player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
+		player.getActivePotionEffects()
+			.forEach(effect -> {
+				if (effect.getType().getEffectCategory() == Category.HARMFUL) {
+					player.removePotionEffect(effect.getType());
+				}
+			});
 		player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 
 		player.setFoodLevel(20);
