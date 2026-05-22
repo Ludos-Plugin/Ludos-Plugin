@@ -39,6 +39,7 @@ import fr.ludos.game.waves.DefaultWaveLoadout;
 import fr.ludos.game.waves.WaveController;
 import fr.ludos.generator.OceanChunkGenerator;
 import fr.ludos.item.Categories;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.monster.arena.GoldenKnightBoss;
 import fr.ludos.monster.arena.RaidMonsterBoss;
 import net.kyori.adventure.text.Component;
@@ -197,7 +198,11 @@ public final class RaidWaveController extends WaveController {
 			Utility.resetPlayerState(player);
 			player.setGameMode(GameMode.SURVIVAL);
 
-			applyLoadout(player);
+			if (getCurrentWave() == 0) {
+				applyLoadout(player);
+			} else {
+				SpecialItem.Events.refreshPlayerInventory(getGame(), player);
+			}
 		}
 
 		applyThemePlayerEffects();

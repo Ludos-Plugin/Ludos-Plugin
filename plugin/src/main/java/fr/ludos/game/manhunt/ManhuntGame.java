@@ -92,6 +92,7 @@ public class ManhuntGame extends Game {
 			this,
 			new StructureLobbyController(
 				this,
+				false,
 				GroupConfigs.getWaitPlayersOption(config),
 				GroupConfigs.getWaitDurationOption(config).getDuration(),
 				new LobbyStructure.Builder(),

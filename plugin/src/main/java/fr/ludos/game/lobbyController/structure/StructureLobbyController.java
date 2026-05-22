@@ -28,12 +28,14 @@ import net.kyori.adventure.title.Title.Times;
 public class StructureLobbyController extends GameLobbyController {
 	private final Structure.Builder structureBuilder;
 	private final Runnable startFunc;
+	private final boolean keepInventory;
 
 	private BukkitTask joinLobbyTask;
 	private BukkitTask startGameTask;
 
-	public StructureLobbyController(Game game, LobbyWaitPlayersOption waitPlayersOption, int waitDuration, Structure.Builder structureBuilder, Runnable onStart) {
+	public StructureLobbyController(Game game, boolean keepInventory, LobbyWaitPlayersOption waitPlayersOption, int waitDuration, Structure.Builder structureBuilder, Runnable onStart) {
 		super(game, waitPlayersOption, waitDuration);
+		this.keepInventory = keepInventory;
 		this.startFunc = Objects.requireNonNull(onStart, "No Start function provided for lobby");
 		this.structureBuilder = structureBuilder;
 	}
@@ -49,7 +51,11 @@ public class StructureLobbyController extends GameLobbyController {
 		Set<Player> targetPlayers = Utility.getOnline(getWaitPlayersOption().getPlayers(getGame().getGroup())).collect(Collectors.toSet());
 		for (Player player : targetPlayers) {
 			player.teleport(waitLocation);
-			Utility.resetPlayer(player);
+			if (keepInventory) {
+				Utility.resetPlayerState(player);
+			} else {
+				Utility.resetPlayer(player);
+			}
 		}
 
 		joinLobbyTask = new BukkitRunnable() {
@@ -71,9 +77,6 @@ public class StructureLobbyController extends GameLobbyController {
 
 						startFunc.run();
 					});
-					for (Player waitingPlayer : waitingPlayers) {
-						Utility.resetPlayer(waitingPlayer);
-					}
 					cancel();
 					return;
 				}
@@ -94,7 +97,11 @@ public class StructureLobbyController extends GameLobbyController {
 					if (! player.isOnline()) continue;
 
 					player.teleport(waitLocation);
-					Utility.resetPlayer(player);
+					if (keepInventory) {
+						Utility.resetPlayerState(player);
+					} else {
+						Utility.resetPlayer(player);
+					}
 				}
 			}
 		}.runTaskTimer(getPlugin(), 0, 20);
