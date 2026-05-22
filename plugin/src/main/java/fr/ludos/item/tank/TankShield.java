@@ -183,8 +183,9 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 				@Override
 				public void run() {
 					Player[] tankPlayers = getGame().getGroup().getOnlinePlayers().stream()
-						.filter(p -> Role.isPlayerRole(p, TankRole.id))
+						.filter(Role.ofRole(TankRole.id))
 						.toArray(Player[]::new);
+
 					for (Player player : tankPlayers) {
 						PlayerInventory inventory = player.getInventory();
 						for (TankShield shield : TankShield.findAllIn(inventory, (ItemStack stack) -> TankShield.fromItemStack(stack, game))) {
@@ -198,7 +199,9 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 							int currentDamage = damageable.getDamage();
 							damageable.setDamage(Math.max(currentDamage - regen, 0));
 							stack.setItemMeta(damageable);
+
 						}
+
 					}
 				}
 

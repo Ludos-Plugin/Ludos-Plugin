@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -74,7 +75,7 @@ public class TankDashObject extends SpecialItem {
 
 		player.getWorld().playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0f, 1.0f);
 
-		Set<UUID> alreadyHit = new HashSet<>();
+		Set<Entity> alreadyHit = new HashSet<>();
 
 		new BukkitRunnable() {
 			int ticks = 0;
@@ -120,11 +121,15 @@ public class TankDashObject extends SpecialItem {
 					0
 				);
 
-				for (Entity entity : player.getNearbyEntities(COLLISION_RADIUS, COLLISION_RADIUS, COLLISION_RADIUS)) {
-					if (! (entity instanceof Damageable target)) continue;
-					if (alreadyHit.contains(target.getUniqueId())) continue;
+				Stream<Entity> targetsStream = player.getNearbyEntities(COLLISION_RADIUS, COLLISION_RADIUS, COLLISION_RADIUS).stream()
+					.filter(getGame().getTeamController().isEntityEnemyOf((OfflinePlayer) player));
+				Iterable<Entity> targets = () -> targetsStream.iterator();
 
-					alreadyHit.add(target.getUniqueId());
+				for (Entity entity : targets) {
+					if (! (entity instanceof Damageable target)) continue;
+					if (alreadyHit.contains(target)) continue;
+
+					alreadyHit.add(target);
 
 					target.damage(COLLISION_DAMAGE, player);
 

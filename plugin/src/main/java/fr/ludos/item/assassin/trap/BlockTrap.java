@@ -5,6 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 public abstract class BlockTrap extends AssassinTrap {
 	private final Material type;
@@ -12,8 +13,8 @@ public abstract class BlockTrap extends AssassinTrap {
 		return type;
 	}
 
-	public BlockTrap(Player owner, Location location, World world, Material type) {
-		super(owner, location, world);
+	public BlockTrap(Player owner, Location location, Vector range, World world, Material type) {
+		super(owner, location, range, world);
 		this.type = type;
 		location.getBlock().setType(type);
 	}

@@ -7,6 +7,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 import fr.ludos.item.BranchItem;
 import fr.ludos.item.SpecialItem;
@@ -28,12 +29,7 @@ public enum AssassinSnareDeviceBranches implements BranchItem.Branch<AssassinSna
 		public AssassinTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
-			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), block.getType()) {
-				@Override
-				public Boolean canTriggerEffect(LivingEntity target) {
-					return target.getLocation().distance(this.getLocation()) < 3;
-				}
-
+			return new BlockTrap(owner, trapBlock.getLocation(), new Vector(3, 1, 3), trapBlock.getWorld(), block.getType()) {
 				@Override
 				public void triggerBlockTrapEffect(LivingEntity target) {
 					target.addPotionEffect(PotionEffectType.GLOWING.createEffect(20 * 20, 1));
@@ -56,12 +52,7 @@ public enum AssassinSnareDeviceBranches implements BranchItem.Branch<AssassinSna
 		public AssassinTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
-			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), Material.COARSE_DIRT) {
-				@Override
-				public Boolean canTriggerEffect(LivingEntity target) {
-					return target.getLocation().distance(this.getLocation()) < 7;
-				}
-
+			return new BlockTrap(owner, trapBlock.getLocation(), new Vector(7, 3, 7), trapBlock.getWorld(), Material.COARSE_DIRT) {
 				@Override
 				public void triggerBlockTrapEffect(LivingEntity target) {
 					target.addPotionEffect(PotionEffectType.SLOW.createEffect(20 * 10, 1));
@@ -86,12 +77,7 @@ public enum AssassinSnareDeviceBranches implements BranchItem.Branch<AssassinSna
 		public AssassinTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
-			return new BlockTrap(owner, trapBlock.getLocation(), trapBlock.getWorld(), Material.END_ROD) {
-				@Override
-				public Boolean canTriggerEffect(LivingEntity target) {
-					return target.getLocation().distance(this.getLocation()) < 7;
-				}
-
+			return new BlockTrap(owner, trapBlock.getLocation(), new Vector(7, 3, 7), trapBlock.getWorld(), Material.END_ROD) {
 				@Override
 				public void triggerBlockTrapEffect(LivingEntity target) {
 					this.getOwner().teleport(this.getLocation(), TeleportCause.ENDER_PEARL);

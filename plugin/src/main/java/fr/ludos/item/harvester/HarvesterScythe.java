@@ -199,7 +199,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 			HarvesterScythe scythe = getItem(attacker.getInventory().getItemInMainHand());
 			if (scythe == null) return;
 
-			if (game.getTeamController().areAllies(attacker, primaryTarget)) return;
+			if (game.getTeamController().areEntitiesAllies(attacker, primaryTarget)) return;
 
 			if (event.getCause() == DamageCause.ENTITY_ATTACK) {
 				int enchantmentLevel = scythe.getStack().getEnchantmentLevel(Enchantment.SWEEPING_EDGE);
