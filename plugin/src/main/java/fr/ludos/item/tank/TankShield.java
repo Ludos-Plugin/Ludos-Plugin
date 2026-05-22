@@ -5,9 +5,13 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.EntityEffect;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -19,6 +23,7 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
 import fr.ludos.game.Game;
 import fr.ludos.item.LevelItem;
@@ -33,6 +38,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class TankShield extends LevelItem<TankShieldLevels> {
 	private static final String ID = "tankShield";
 	private static final int COOLDOWN_DURATION_SECONDS = 10;
+	private static final Vector ALLY_PROTECTION_RANGE = new Vector(2.0, 2.0, 2.0);
 
 
 	public static @Nullable TankShield fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
@@ -79,11 +85,9 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		hit(1);
 	}
 	public void hit(double damage) {
-		// UUID playerId = getOwner().getUniqueId();
-
 		ItemStack stack = getStack();
 		ItemMeta meta = stack.getItemMeta();
-		if (! (meta instanceof Damageable damageable)) { return; }
+		if (! (meta instanceof Damageable damageable)) return;
 
 		TankShieldLevels level = getLvlObject(getLvl());
 
@@ -91,10 +95,8 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		int maxDamage = stack.getType().getMaxDurability();
 
 		double durabilityPerDamage = level.durabilityPerDamage();
-		int newDamage = (int) Math.ceil(currentDamage + durabilityPerDamage * damage);
-
-		damageable.setDamage(newDamage);
-		stack.setItemMeta(damageable);
+		double convertedDamage = durabilityPerDamage * damage;
+		int newDamage = (int) Math.ceil(currentDamage + convertedDamage);
 
 		if (newDamage >= maxDamage) {
 			damageable.setDamage(maxDamage);
@@ -107,6 +109,27 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 
 		addXp(damage);
 		updateLore();
+	}
+	public void restore(double health) {
+		ItemStack stack = getStack();
+		ItemMeta meta = stack.getItemMeta();
+		if (! (meta instanceof Damageable damageable)) return;
+
+		TankShieldLevels level = getLvlObject(getLvl());
+
+		int currentDamage = damageable.getDamage();
+
+		double durabilityPerDamage = level.durabilityPerDamage();
+		double convertedHealth = durabilityPerDamage * health;
+		int newDamage = (int) Math.floor(currentDamage - convertedHealth);
+
+		if (newDamage <= 0) {
+			damageable.setDamage(0);
+		}
+		else {
+			damageable.setDamage(newDamage);
+		}
+		stack.setItemMeta(damageable);
 	}
 
 	public void doCooldown() {
@@ -160,6 +183,11 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 				.color(NamedTextColor.DARK_PURPLE)
 				.decoration(TextDecoration.ITALIC, false)
 		);
+		lore.add(
+			Component.text("Protects nearby allies when raised.")
+				.color(NamedTextColor.DARK_PURPLE)
+				.decoration(TextDecoration.ITALIC, false)
+		);
 
 		return lore;
 	}
@@ -170,7 +198,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 	}
 
 	public static class Events extends LevelItem.Events<TankShield, TankShieldLevels> {
-		private BukkitTask rechargeTask;
+		private BukkitTask tankRoutine;
 		public Events(Game game) {
 			super(game, 40);
 		}
@@ -179,7 +207,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		protected void onItemStart() {
 			super.onItemStart();
 
-			rechargeTask = new BukkitRunnable() {
+			tankRoutine = new BukkitRunnable() {
 				@Override
 				public void run() {
 					Player[] tankPlayers = getGame().getGroup().getOnlinePlayers().stream()
@@ -189,33 +217,54 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 					for (Player player : tankPlayers) {
 						PlayerInventory inventory = player.getInventory();
 						for (TankShield shield : TankShield.findAllIn(inventory, (ItemStack stack) -> TankShield.fromItemStack(stack, game))) {
-							ItemStack stack = shield.getStack();
-							ItemMeta meta = stack.getItemMeta();
-							if (! (meta instanceof Damageable damageable)) continue;
-
 							TankShieldLevels level = shield.getLvlObject();
-							int regen = (int) Math.ceil(level.durabilityPerDamage() * 0.5);
+							shield.restore(level.getRegen());
 
-							int currentDamage = damageable.getDamage();
-							damageable.setDamage(Math.max(currentDamage - regen, 0));
-							stack.setItemMeta(damageable);
-
+							if (player.isBlocking() && player.getCooldown(Material.SHIELD) == 0) {
+								displayProtectionRadius(player);
+							}
 						}
-
 					}
 				}
-
 			}.runTaskTimer(getPlugin(), 0, 20);
+		}
+
+		private void displayProtectionRadius(Player player) {
+			double radius = ALLY_PROTECTION_RANGE.getX();
+			int particleCount = 12;
+
+			Location playerLoc = player.getLocation();
+
+			// Draw particles in a circle on the ground
+			for (int i = 0; i < particleCount; i++) {
+				double angle = 2 * Math.PI * i / particleCount;
+				double cos = Math.cos(angle);
+				double sin = Math.sin(angle);
+				double x = playerLoc.getX();
+				double z = playerLoc.getZ();
+				double y = playerLoc.getY();
+
+				player.getWorld().spawnParticle(
+					Particle.GLOW,
+					x + radius * cos, y, z + radius * sin,
+					1, 0, 0, 0, 0.0
+				);
+				player.getWorld().spawnParticle(
+					Particle.GLOW,
+					x + radius * 0.3 * cos, y + 0.3, z + radius * 0.3 * sin,
+					1, 0, 0, 0, 0.0
+				);
+			}
 		}
 
 		@Override
 		protected void onItemStop() {
 			super.onItemStop();
 
-			if (rechargeTask != null) {
-				rechargeTask.cancel();
+			if (tankRoutine != null) {
+				tankRoutine.cancel();
 			}
-			rechargeTask = null;
+			tankRoutine = null;
 		}
 
 		@Override
@@ -236,17 +285,16 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 
 		@EventHandler
 		public void onPlayerBlockWithShield(EntityDamageByEntityEvent event) {
-			if (!(event.getEntity() instanceof Player defender)) return;
+			if (! (event.getEntity() instanceof Player defender)) return;
 
-			if (!defender.isBlocking() || defender.getCooldown(Material.SHIELD) > 0) return;
-
+			if (! defender.isBlocking() || defender.getCooldown(Material.SHIELD) > 0) return;
 
 			TankShield shield;
 
-			ItemStack mainHand = defender.getInventory().getItemInMainHand();
 			ItemStack offHand = defender.getInventory().getItemInOffHand();
 			shield = TankShield.fromItemStack(offHand, game);
 			if (shield == null) {
+				ItemStack mainHand = defender.getInventory().getItemInMainHand();
 				shield = TankShield.fromItemStack(mainHand, game);
 			}
 			if (shield == null) return;
@@ -254,9 +302,41 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 			shield.hit(event.getDamage());
 		}
 
+		@EventHandler(priority = EventPriority.HIGH)
+		public void onAllyDamageNearShield(EntityDamageByEntityEvent event) {
+			Entity victim = event.getEntity();
+
+			if (event.isCancelled()) return;
+
+			Iterable<Entity> nearbyTanks = victim.getNearbyEntities(
+				ALLY_PROTECTION_RANGE.getX(),
+				ALLY_PROTECTION_RANGE.getY(),
+				ALLY_PROTECTION_RANGE.getZ()
+			);
+
+			for (Entity tankEntity : nearbyTanks) {
+				if (! (tankEntity instanceof Player tankPlayer)) continue;
+
+				if (! game.getTeamController().areEntitiesAllies(victim, tankPlayer)) continue;
+				if (! tankPlayer.isBlocking() || tankPlayer.getCooldown(Material.SHIELD) > 0) continue;
+
+				ItemStack mainHand = tankPlayer.getInventory().getItemInMainHand();
+				ItemStack offHand = tankPlayer.getInventory().getItemInOffHand();
+				TankShield shield = TankShield.fromItemStack(offHand, game);
+				if (shield == null) {
+					shield = TankShield.fromItemStack(mainHand, game);
+				}
+				if (shield == null) continue;
+
+				event.setCancelled(true);
+				shield.hit(event.getDamage());
+				tankEntity.playEffect(EntityEffect.SHIELD_BLOCK);
+				return;
+			}
+		}
+
 		@EventHandler(priority = EventPriority.HIGHEST)
 		public void onShieldDamage(PlayerItemDamageEvent event) {
-			Player player = event.getPlayer();
 			ItemStack item = event.getItem();
 
 			TankShield shield = TankShield.fromItemStack(item, game);
