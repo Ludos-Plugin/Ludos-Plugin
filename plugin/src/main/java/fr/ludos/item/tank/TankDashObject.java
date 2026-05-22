@@ -33,6 +33,7 @@ public class TankDashObject extends SpecialItem {
 	private static final String ID = "tank_dasher";
 
 	private static final double DASH_POWER = 1.1;
+	private static final double UNDERWATER_DASH_POWER = 0.55;
 	private static final int DASH_DURATION_TICKS = 12;
 	private static final double COLLISION_RADIUS = 1.5;
 	private static final double COLLISION_DAMAGE = 4.0;
@@ -89,26 +90,28 @@ public class TankDashObject extends SpecialItem {
 					player.getWorld().playSound(player.getLocation(), Sound.ENTITY_HORSE_GALLOP, 1.0f, 1.0f);
 				}
 
-				Vector direction;
 				if (player.isInWater()) {
-					direction = player.getLocation().getDirection();
+					player.setVelocity(
+						player.getLocation().getDirection()
+						.multiply(UNDERWATER_DASH_POWER)
+					);
 				}
 				else {
 					double yaw_rad = Math.toRadians(player.getLocation().getYaw());
-					direction = new Vector(
+					Vector velocity = new Vector(
 							-Math.sin(yaw_rad),
 							0,
 							Math.cos(yaw_rad)
 						)
-						.normalize();
+						.normalize().multiply(DASH_POWER);
+					player.setVelocity(
+						player.getVelocity()
+							.setX(0)
+							.setZ(0)
+							.add(velocity)
+					);
 				}
 
-				player.setVelocity(
-					player.getVelocity()
-						.setX(0)
-						.setZ(0)
-						.add(direction.multiply(DASH_POWER))
-				);
 				player.spawnParticle(
 					Particle.FIREWORKS_SPARK,
 					player.getLocation().add(0, 1.25, 0),
