@@ -2,10 +2,9 @@ package fr.ludos.game;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import fr.ludos.role.Role;
+import net.kyori.adventure.text.Component;
 
 public abstract class GameProcessBase implements GameProcess {
 	private boolean started = false;
@@ -15,34 +14,29 @@ public abstract class GameProcessBase implements GameProcess {
 
 	protected abstract JavaPlugin getPlugin();
 
-	public final void start() {
+	public void start() {
 		if (started) return;
+
 		started = true;
 
 		onInit();
 
 		Bukkit.getPluginManager().registerEvents(this, getPlugin());
 
-		try {
-			onStart();
-		} catch (Exception e) {
-			getPlugin().getLogger().severe("Error while starting game process: " + e.getMessage());
-			e.printStackTrace();
-			stop();
-		}
+		onStart();
 	}
 	protected void onInit() { }
 	protected void onStart() { }
 
-	public final void stop() {
+	public void stop() {
 		if (! started) return;
 		started = false;
 
-		onDeinit();
+		onStop();
 
 		HandlerList.unregisterAll(this);
 
-		onStop();
+		onDeinit();
 	}
 	protected void onDeinit() { }
 	protected void onStop() { }

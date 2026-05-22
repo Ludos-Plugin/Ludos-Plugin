@@ -11,6 +11,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -27,6 +28,8 @@ import fr.ludos.game.Game;
 
 public class AssassinBoots extends SpecialItem {
 	public static final String ID = "assassin_boots";
+
+	// private final static Map<UUID, AssassinBoots> cachedItems = new HashMap<>();
 
 	public static @Nullable AssassinBoots fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
@@ -46,7 +49,7 @@ public class AssassinBoots extends SpecialItem {
 
 	public static AssassinBoots createItem(Player owner, Game game) {
 		AssassinBoots boots = new AssassinBoots(new ItemStack(Material.IRON_BOOTS), owner, game);
-		boots.initializeItem();
+		UUID itemId = boots.initializeItem();
 
 		// cachedItems.put(itemId, boots);
 
@@ -78,8 +81,6 @@ public class AssassinBoots extends SpecialItem {
 	}
 
 
-
-
 	public static class Events extends SpecialItem.Events<AssassinBoots> {
 		public Events(Game game) {
 			super(game);
@@ -88,10 +89,10 @@ public class AssassinBoots extends SpecialItem {
 		@EventHandler
 		public void onPlayerMove(PlayerMoveEvent event) {
 			Player player = event.getPlayer();
-			if (! Role.isPlayerRole(player, AssassinRole.id)) return;
+			if (! isPlayerValid(player)) return;
 
 			ItemStack bootsStack = player.getInventory().getBoots();
-			if (getItem(bootsStack, game) == null) return;
+			if (getItem(bootsStack) == null) return;
 
 			// Vitesse constante
 			player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 2, 1, true, false));
@@ -100,35 +101,31 @@ public class AssassinBoots extends SpecialItem {
 		@EventHandler
 		public void onFallDamage(EntityDamageEvent event) {
 			if (! (event.getEntity() instanceof Player player)) return;
-			if (! Role.isPlayerRole(player, AssassinRole.id)) return;
+			if (! isPlayerValid(player)) return;
+
 			if (event.getCause() != EntityDamageEvent.DamageCause.FALL) return;
 
 			ItemStack bootsStack = player.getInventory().getBoots();
-			if (getItem(bootsStack, game) == null) return;
+			if (getItem(bootsStack) == null) return;
 
-			double fallDistance = player.getFallDistance();
-			if (fallDistance <= 4) {
+			if (event.getDamage() <= 2) {
 				event.setCancelled(true);
-			} else {
-				double reducedDistance = fallDistance - 4;
-				double damage = Math.max(0, reducedDistance - 3.0) * 0.5;
-				event.setDamage(damage);
 			}
 		}
 
 		@Override
 		@Nullable
-		protected AssassinBoots getItem(ItemStack stack, Game game) {
+		public AssassinBoots getItem(ItemStack stack) {
 			return AssassinBoots.fromItemStack(stack, game);
 		}
 
 		@Override
-		protected AssassinBoots createItem(Player owner, Game game) {
+		public AssassinBoots createItem(Player owner) {
 			return AssassinBoots.createItem(owner, game);
 		}
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, AssassinRole.id);
 		}
 	}

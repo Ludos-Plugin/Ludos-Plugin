@@ -1,17 +1,15 @@
 package fr.ludos.item.huntsman;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityShootBowEvent;
@@ -85,9 +83,8 @@ public class HuntsmanBow extends SpecialItem {
 
 		@EventHandler
 		public void onShootArrow(EntityShootBowEvent event) {
-			if ( ! (event.getEntity() instanceof Player) ) {
-				return;
-			}
+			if ( ! (event.getEntity() instanceof Player player) ) return;
+			if (! isPlayerValid(player)) return;
 
 			Arrow arrowProjectile = (Arrow) event.getProjectile();
 			arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
@@ -100,15 +97,15 @@ public class HuntsmanBow extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected HuntsmanBow getItem(ItemStack stack, Game game) {
+		public HuntsmanBow getItem(ItemStack stack) {
 			return HuntsmanBow.fromItemStack(stack, game);
 		}
 		@Override
-		protected HuntsmanBow createItem(Player owner, Game game) {
+		public HuntsmanBow createItem(Player owner) {
 			return HuntsmanBow.createItem(owner, game);
 		}
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, HuntsmanRole.id);
 		}
 	}

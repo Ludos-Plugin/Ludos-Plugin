@@ -1,10 +1,12 @@
-package fr.ludos.game.arena.monster.arena;
+package fr.ludos.monster.arena;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -19,8 +21,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.WitherSkeleton;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -28,12 +28,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import fr.ludos.game.arena.ArenaGame;
+import fr.ludos.Utility;
+import fr.ludos.game.Game;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
+public class GoldenKnightBoss extends RaidMonsterBoss<WitherSkeleton> {
 
 	private enum CombatProfile {
 		DODGEABLE(95, 72, 125, 6.0, 4.5, 2.5, 3.5, 1.45, 90, 13, 4, 2, 0.62, 18.0, 0.70, 5, 36),
@@ -120,7 +121,7 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 		abstract boolean perform(GoldenKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile);
 	}
 
-	private static final String BOS_NAME = "The Golden Knight";
+	private static final String BOSS_NAME = "The Golden Knight";
 
 	private static final double MAX_HEALTH = 460.0;
 	private static final int NO_HIT_TICKS_FOR_ATTRACTION = 120;
@@ -147,17 +148,17 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 
 	private final List<ArmorStand> activeOrbs = new ArrayList<>();
 
-	@org.jetbrains.annotations.Nullable
+	@Nullable
 	private Location lastStuckCheckLocation;
 
-	@org.jetbrains.annotations.Nullable
+	@Nullable
 	private BukkitTask orbitTask;
 
-	public GoldenKnightBoss(ArenaGame game) {
+	public GoldenKnightBoss(Game game) {
 		this(game, Element.EARTH);
 	}
 
-	public GoldenKnightBoss(ArenaGame game, Element element) {
+	public GoldenKnightBoss(Game game, Element element) {
 		super("golden_knight", game, element, 3);
 	}
 
@@ -169,7 +170,7 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 
 		WitherSkeleton b = (WitherSkeleton) w.spawnEntity(location, EntityType.WITHER_SKELETON);
 
-		b.customName(Component.text(BOS_NAME).color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
+		b.customName(Component.text(BOSS_NAME).color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
 
 		b.setCustomNameVisible(true);
 		b.setRemoveWhenFarAway(false);
@@ -206,10 +207,10 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 		b.getEquipment().setLeggings(new ItemStack(Material.GOLDEN_LEGGINGS));
 		b.getEquipment().setBoots(new ItemStack(Material.GOLDEN_BOOTS));
 
-		b.getEquipment().setHelmetDropChance(0.0f);
-		b.getEquipment().setChestplateDropChance(0.0f);
-		b.getEquipment().setLeggingsDropChance(0.0f);
-		b.getEquipment().setBootsDropChance(0.0f);
+		b.getEquipment().setHelmetDropChance(0.2f);
+		b.getEquipment().setChestplateDropChance(0.2f);
+		b.getEquipment().setLeggingsDropChance(0.2f);
+		b.getEquipment().setBootsDropChance(0.2f);
 
 		b.setCanPickupItems(false); b.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, false, false));
 
@@ -441,7 +442,7 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 			false, true, true
 		));
 
-		erodeArmorDurability(focusTarget, profile == CombatProfile.INFERNAL ? 2 : 1);
+		// erodeArmorDurability(focusTarget, profile == CombatProfile.INFERNAL ? 2 : 1);
 
 		for (int i = 0; i < 2; i++) {
 			Location burstLoc = targetLoc.clone().add(
@@ -461,44 +462,44 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 		world.playSound(targetLoc, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 0.9f, 0.65f);
 	}
 
-	private void erodeArmorDurability(Player player, int steps) {
-		PlayerInventory inventory = player.getInventory();
-		ItemStack[] armorContents = inventory.getArmorContents();
+	// private void erodeArmorDurability(Player player, int steps) {
+	// 	PlayerInventory inventory = player.getInventory();
+	// 	ItemStack[] armorContents = inventory.getArmorContents();
 
-		if (armorContents == null) return;
+	// 	if (armorContents == null) return;
 
-		var damageableSlots = new ArrayList<Integer>();
-		for (int slotIdx = 0; slotIdx < armorContents.length; slotIdx++) {
-			ItemStack armorPiece = armorContents[slotIdx];
+	// 	var damageableSlots = new ArrayList<Integer>();
+	// 	for (int slotIdx = 0; slotIdx < armorContents.length; slotIdx++) {
+	// 		ItemStack armorPiece = armorContents[slotIdx];
 
-			if (armorPiece != null && !armorPiece.getType().isAir()) {
-				ItemMeta meta = armorPiece.getItemMeta();
-				if (meta instanceof Damageable) {
-					damageableSlots.add(slotIdx);
-				}
-			}
-		}
+	// 		if (armorPiece != null && !armorPiece.getType().isAir()) {
+	// 			ItemMeta meta = armorPiece.getItemMeta();
+	// 			if (meta instanceof Damageable) {
+	// 				damageableSlots.add(slotIdx);
+	// 			}
+	// 		}
+	// 	}
 
-		if (damageableSlots.isEmpty()) return;
+	// 	if (damageableSlots.isEmpty()) return;
 
-		for (int damageStep = 0; damageStep < steps; damageStep++) {
-			int selectedSlot = damageableSlots.get(ThreadLocalRandom.current().nextInt(damageableSlots.size()));
-			ItemStack selectedArmor = armorContents[selectedSlot];
+	// 	for (int damageStep = 0; damageStep < steps; damageStep++) {
+	// 		int selectedSlot = damageableSlots.get(ThreadLocalRandom.current().nextInt(damageableSlots.size()));
+	// 		ItemStack selectedArmor = armorContents[selectedSlot];
 
-			if (selectedArmor == null || selectedArmor.getType().isAir()) continue;
+	// 		if (selectedArmor == null || selectedArmor.getType().isAir()) continue;
 
-			ItemMeta armorMeta = selectedArmor.getItemMeta();
-			if (!(armorMeta instanceof Damageable damageable)) continue;
+	// 		ItemMeta armorMeta = selectedArmor.getItemMeta();
+	// 		if (!(armorMeta instanceof Damageable damageable)) continue;
 
-			int maxDurability = selectedArmor.getType().getMaxDurability();
-			if (maxDurability <= 1) continue;
+	// 		int maxDurability = selectedArmor.getType().getMaxDurability();
+	// 		if (maxDurability <= 1) continue;
 
-			int damageAmount = ThreadLocalRandom.current().nextInt(1, 3);
-			damageable.setDamage(Math.min(maxDurability - 1, damageable.getDamage() + damageAmount));
-			selectedArmor.setItemMeta(armorMeta);
-		}
-		inventory.setArmorContents(armorContents);
-	}
+	// 		int damageAmount = ThreadLocalRandom.current().nextInt(1, 3);
+	// 		damageable.setDamage(Math.min(maxDurability - 1, damageable.getDamage() + damageAmount));
+	// 		selectedArmor.setItemMeta(armorMeta);
+	// 	}
+	// 	inventory.setArmorContents(armorContents);
+	// }
 
 	private void dashPattern(WitherSkeleton boss, Player focusTarget, CombatProfile profile) {
 		Location startLoc = boss.getLocation();
@@ -596,14 +597,14 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 		world.playSound(center, Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 0.65f);
 		world.spawnParticle(Particle.BLOCK_CRACK, center, 80, 3.5, 0.2, 3.5, Material.DEEPSLATE.createBlockData());
 
-		getArenaTargets(world, center, 196).forEach(player -> {
+		getArenaTargets(world, center, 4).forEach(player -> {
 			double distanceSquared = player.getLocation().distanceSquared(center);
 			if (distanceSquared > MELEE_DIST_SQ) {
 				Vector knockback = player.getLocation().toVector().subtract(center.toVector());
 				if (knockback.lengthSquared() < 0.0001) {
 					knockback = new Vector(0.1, 0.0, 0.1);
 				}
-				player.setVelocity(knockback.normalize().multiply(1.25).setY(0.75));
+				player.setVelocity(knockback.normalize().multiply(0.5).setY(0.25));
 			}
 
 			dealBossDamage(boss, player, profile.earthShatterDamage);
@@ -724,7 +725,7 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 
 		Player pullTarget = focusTarget;
 		if (pullTarget == null) {
-			pullTarget = getGame().pickRandomArenaPlayer();
+			pullTarget = getGame().getTeamController().pickRandomPlayer();
 		}
 
 		if (pullTarget != null) {
@@ -733,7 +734,7 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 				0,
 				ThreadLocalRandom.current().nextDouble(-1.6, 1.6)
 			);
-			getGame().moveToHighestGround(reposition);
+			Utility.snapToHighestY(reposition);
 
 			if (reposition.distanceSquared(currentLocation) < 4.0) {
 				reposition.add(
@@ -741,7 +742,7 @@ public class GoldenKnightBoss extends ArenaMonsterBoss<WitherSkeleton> {
 					0,
 					ThreadLocalRandom.current().nextDouble(-3.5, 3.5)
 				);
-				getGame().moveToHighestGround(reposition);
+				Utility.snapToHighestY(reposition);
 			}
 
 			boss.teleport(reposition);

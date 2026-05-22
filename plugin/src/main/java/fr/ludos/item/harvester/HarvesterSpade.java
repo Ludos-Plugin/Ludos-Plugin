@@ -1,8 +1,5 @@
 package fr.ludos.item.harvester;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,14 +8,13 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
@@ -144,7 +140,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 		BlockFace face = targetBlock.getFace(adjacentBlock);
 		World world = targetBlock.getWorld();
 
-		Collection<List<Block>> digBlocks;
+		List<List<Block>> digBlocks;
 		if (face == BlockFace.UP || face == BlockFace.DOWN) {
 			digBlocks = Utility.getAllBlockRows(
 				targetBlock, face,
@@ -174,7 +170,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 			@Override
 			public void run() {
-				List<Block> blockColumn = ((List<Block>) digBlocks.toArray()[current]);
+				List<Block> blockColumn = digBlocks.get(current);
 				for (Block block : blockColumn) {
 					if (! ItemUtilities.isBreakable(block)) continue;
 					world.playEffect(block.getLocation(), org.bukkit.Effect.STEP_SOUND, block.getType());
@@ -204,7 +200,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 			@Override
 			public void run() {
-				List<BlockState> blockColumn = ((List<BlockState>) blocks.toArray()[current]);
+				List<BlockState> blockColumn = blocks.get(current);
 				for (BlockState state : blockColumn) {
 					Location location = state.getLocation();
 					Block block = location.getBlock();
@@ -254,7 +250,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 			ItemStack mainItem = event.getItem();
 
-			HarvesterSpade spade = getItem(mainItem, game);
+			HarvesterSpade spade = getItem(mainItem);
 			if (spade == null) {
 				return;
 			}
@@ -267,7 +263,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 			Player player = event.getPlayer();
 			ItemStack mainHandItem = player.getInventory().getItemInMainHand();
 
-			HarvesterSpade spade = getItem(mainHandItem, game);
+			HarvesterSpade spade = getItem(mainHandItem);
 			if (spade == null) return;
 
 			HarvesterRole.awardBreak(event.getPlayer(), event.getBlock(), spade.getGame());
@@ -275,15 +271,15 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 		@Override
 		@Nullable
-		protected HarvesterSpade getItem(ItemStack stack, Game game) {
+		public HarvesterSpade getItem(ItemStack stack) {
 			return HarvesterSpade.fromItemStack(stack, game);
 		}
 		@Override
-		protected HarvesterSpade createItem(Player owner, LevelState level, Game game) {
+		public HarvesterSpade createItem(Player owner, LevelState level) {
 			return HarvesterSpade.createItem(owner, level, game);
 		}
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, HarvesterRole.id);
 		}
 	}

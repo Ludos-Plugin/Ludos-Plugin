@@ -6,5 +6,7 @@ public interface LevelItemInterface extends SpecialItemInterface {
 	public LevelState getLevelState();
 
 	public int getLvl();
+	public void addLvl(int lvl);
 	public double getXp();
+	public void addXp(double xp);
 }

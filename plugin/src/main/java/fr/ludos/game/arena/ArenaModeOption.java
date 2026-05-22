@@ -7,22 +7,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public enum ArenaModeOption {
-	duel("duel", "Duel", "1v1 rounds"),
-	multi("multi", "Multi", "team rounds"),
-	waves("waves", "Waves", "co-op survival waves");
+	duel("Duel", "1v1 rounds"),
+	multi("Multi", "team rounds");
 
-	private final String id;
 	private final String displayName;
 	private final String description;
 
-	ArenaModeOption(String id, String displayName, String description) {
-		this.id = id;
+	ArenaModeOption(String displayName, String description) {
 		this.displayName = displayName;
 		this.description = description;
-	}
-
-	public String getId() {
-		return id;
 	}
 
 	public String getDisplayName() {
@@ -33,20 +26,12 @@ public enum ArenaModeOption {
 		return description;
 	}
 
-	public boolean isWaves() {
-		return this == waves;
-	}
-
-	public boolean isDuel() {
-		return this == duel;
-	}
-
 	public static Optional<ArenaModeOption> resolve(String value) {
 		if (value == null || value.isBlank()) return Optional.empty();
 
 		String normalized = value.trim().toLowerCase(Locale.ROOT);
 		return Arrays.stream(ArenaModeOption.values())
-			.filter(option -> option.id.equalsIgnoreCase(normalized) || option.name().equalsIgnoreCase(normalized))
+			.filter(option -> option.name().equalsIgnoreCase(normalized) || option.name().equalsIgnoreCase(normalized))
 			.findFirst();
 	}
 
@@ -54,11 +39,6 @@ public enum ArenaModeOption {
 		return resolve(value).orElse(fallback);
 	}
 
-	public static List<String> getOptions() {
-		return Arrays.stream(ArenaModeOption.values())
-			.map(ArenaModeOption::getId)
-			.collect(Collectors.toList());
-	}
 
 	public static String getUsage() {
 		StringBuilder sb = new StringBuilder();
@@ -66,11 +46,15 @@ public enum ArenaModeOption {
 		sb.append("<");
 		sb.append(
 			Arrays.stream(ArenaModeOption.values())
-				.map(ArenaModeOption::name)
-				.collect(Collectors.joining(" | "))
+			.map(ArenaModeOption::name)
+			.collect(Collectors.joining(" | "))
 		);
 		sb.append(">");
 
 		return sb.toString();
 	}
+
+	public static final List<String> options = Arrays.stream(ArenaModeOption.values())
+		.map(Enum::name)
+		.collect(Collectors.toList());
 }

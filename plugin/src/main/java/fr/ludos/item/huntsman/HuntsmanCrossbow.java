@@ -1,15 +1,13 @@
 package fr.ludos.item.huntsman;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
@@ -33,7 +31,6 @@ import fr.ludos.game.Game;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.MultiLevelBranchItem;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.item.harvester.HarvesterPick;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
@@ -97,7 +94,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		lore.add(getCycleBranchAnnotation("key.use"));
+		lore.add(getCycleBranchAnnotation("key.attack"));
 		return lore;
 	}
 
@@ -119,11 +116,12 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 		@EventHandler
 		public void onShootArrow(EntityShootBowEvent event) {
-			if (! (event.getEntity() instanceof HumanEntity player)) return;
+			if (! (event.getEntity() instanceof Player player)) return;
+			if (! isPlayerValid(player)) return;
 
 			if (player.hasCooldown(Material.CROSSBOW)) return;
 
-			HuntsmanCrossbow crossbow = getItem(event.getBow(), game);
+			HuntsmanCrossbow crossbow = getItem(event.getBow());
 			if (crossbow == null) return;
 
 			Arrow arrowProjectile = (Arrow) event.getProjectile();
@@ -149,7 +147,9 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 			ProjectileSource source = arrowProjectile.getShooter();
 			if (! (source instanceof Player player)) return;
 
-			HuntsmanCrossbow crossbow = HuntsmanCrossbow.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
+			if (! isPlayerValid(player)) return;
+
+			HuntsmanCrossbow crossbow = HuntsmanCrossbow.findIn(player.getInventory(), this::getItem);
 			if (crossbow == null) return;
 
 
@@ -173,12 +173,13 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 		@EventHandler
 		public void onPlayerInteract(PlayerInteractEvent event) {
+			Player player = event.getPlayer();
+			if (! isPlayerValid(player)) return;
+
 			Action action = event.getAction();
 			if (! action.isLeftClick()) return;
 
-			Player player = event.getPlayer();
-
-			HuntsmanCrossbow crossbow = getItem(player.getInventory().getItemInMainHand(), game);
+			HuntsmanCrossbow crossbow = getItem(player.getInventory().getItemInMainHand());
 			if (crossbow == null) return;
 
 			if (! crossbow.refreshUseCooldown()) return;
@@ -196,15 +197,15 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 		@Override
 		@Nullable
-		protected HuntsmanCrossbow getItem(ItemStack stack, Game game) {
+		public HuntsmanCrossbow getItem(ItemStack stack) {
 			return HuntsmanCrossbow.fromItemStack(stack, game);
 		}
 		@Override
-		protected HuntsmanCrossbow createItem(Player owner, LevelItem.LevelState[] levels, Game game) {
+		public HuntsmanCrossbow createItem(Player owner, LevelItem.LevelState[] levels) {
 			return HuntsmanCrossbow.createItem(owner, levels, game);
 		}
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, HuntsmanRole.id);
 		}
 	}

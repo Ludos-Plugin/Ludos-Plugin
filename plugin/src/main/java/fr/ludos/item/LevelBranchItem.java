@@ -1,8 +1,6 @@
 package fr.ludos.item;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -16,7 +14,7 @@ import fr.ludos.game.Game;
 import net.kyori.adventure.text.Component;
 
 
-public abstract class LevelBranchItem<TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends LevelItem<TLevel> implements BranchItemInterface<TBranch>, LevelItemInterface {
+public abstract class LevelBranchItem<TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends LevelItem<TLevel> implements BranchItemInterface<TBranch> {
 	private TBranch branch;
 	public TBranch getBranch() {
 		return branch;
@@ -82,21 +80,21 @@ public abstract class LevelBranchItem<TBranch extends Enum<TBranch> & BranchItem
 		}
 
 		protected abstract TBranch[] getBranches();
-		protected abstract T createItem(Player owner, LevelState level, Game game);
+		public abstract T createItem(Player owner, LevelState level);
 
 		@Override
-		protected final T createItem(Player owner, Game game) {
+		public final T createItem(Player owner) {
 			if (!deadPlayerLevels.containsKey(owner)) {
-				return createItem(owner, new LevelState(), game);
+				return createItem(owner, new LevelState());
 			}
 
 			LevelState deadLevels = deadPlayerLevels.get(owner);
-			return createItem(owner, deadLevels, game);
+			return createItem(owner, deadLevels);
 		}
 
 		@EventHandler
 		public void onSwitchItem(PlayerItemHeldEvent event) {
-			BranchItem.onSwitchItem(event, (stack) -> getItem(stack, game));
+			BranchItem.onSwitchItem(event, this::getItem);
 		}
 	}
 }

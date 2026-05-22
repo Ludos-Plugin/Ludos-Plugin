@@ -8,34 +8,30 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.scheduler.BukkitRunnable;
-
-import fr.ludos.Ludos;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import fr.ludos.game.Game;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.role.Role;
 import fr.ludos.role.AssassinRole;
-import fr.ludos.game.Game;
-import fr.ludos.game.Game;
-import fr.ludos.game.manhunt.ManhuntGame;
+import fr.ludos.role.Role;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class TeleportScroll extends SpecialItem {
 	public static final String ID = "teleport_scroll";
 
+	// private final static Map<UUID, TeleportScroll> cachedItems = new HashMap<>();
 
 	public static @Nullable TeleportScroll fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
@@ -55,7 +51,7 @@ public class TeleportScroll extends SpecialItem {
 
 	public static TeleportScroll createItem(Player owner, Game game) {
 		TeleportScroll scroll = new TeleportScroll(new ItemStack(Material.PAPER), owner, game);
-		scroll.initializeItem();
+		UUID itemId = scroll.initializeItem();
 
 		// cachedItems.put(itemId, scroll);
 
@@ -81,31 +77,47 @@ public class TeleportScroll extends SpecialItem {
 	public List<Component> getLore(){
 		return new ArrayList<>(Arrays.asList(
 			Component.text("Téléporte-toi aléatoirement"),
-			Component.text("Cooldown : 5 secondes")
+			Component.text("Perd 2 coeurs max à l'utilisation"),
+			Component.text("Cooldown : 30 secondes")
 		));
 	}
 
 	public static class Events extends SpecialItem.Events<TeleportScroll> {
-		private static final int COOLDOWN = 20 * 5; // 5 secondes
+		private static final int COOLDOWN = 20 * 30; // 30 secondes
 		private static final int MAX_ATTEMPTS = 100;
 		private static final int INVULNERABILITY_DURATION = 20; // 1 seconde
+		private static final String HEALTH_MODIFIER_NAME = "teleport_scroll_health_reduction";
 		private final Random random = new Random();
 
 		public Events(Game game) {
 			super(game);
 		}
 
+		@Override
+		protected void onItemStop() {
+			for (Player player : Role.getPlayersOfRole(AssassinRole.id)) {
+				var healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+				if (healthAttr == null) continue;
+				new ArrayList<>(healthAttr.getModifiers()).stream()
+					.filter(m -> HEALTH_MODIFIER_NAME.equals(m.getName()))
+					.forEach(healthAttr::removeModifier);
+				if (player.getHealth() > healthAttr.getValue()) {
+					player.setHealth(healthAttr.getValue());
+				}
+			}
+		}
+
 		@EventHandler
 		public void onScrollUse(PlayerInteractEvent event) {
+			Player player = event.getPlayer();
+			if (! isPlayerValid(player)) return;
+
 			if (!event.getAction().isRightClick()) return;
 
-			Player player = event.getPlayer();
-			if (! Role.isPlayerRole(player, AssassinRole.id)) return;
-
 			ItemStack itemInHand = player.getInventory().getItemInMainHand();
-			if (getItem(itemInHand, game) == null) return;
+			if (getItem(itemInHand) == null) return;
 
-			if (player.getCooldown(Material.ENDER_PEARL) > 0) return;
+			if (player.getCooldown(Material.PAPER) > 0) return;
 
 			event.setCancelled(true);
 
@@ -113,6 +125,20 @@ public class TeleportScroll extends SpecialItem {
 
 			if (randomLocation != null) {
 				player.teleport(randomLocation);
+
+				// Réduction permanente de 2 coeurs max (4 HP)
+				var healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+				if (healthAttr != null && healthAttr.getValue() > 4) {
+					healthAttr.addModifier(new AttributeModifier(
+						UUID.randomUUID(),
+						HEALTH_MODIFIER_NAME,
+						-4.0,
+						AttributeModifier.Operation.ADD_NUMBER
+					));
+					if (player.getHealth() > healthAttr.getValue()) {
+						player.setHealth(healthAttr.getValue());
+					}
+				}
 
 				// Annuler les dégâts pendant 1 seconde
 				player.setInvulnerable(true);
@@ -123,7 +149,7 @@ public class TeleportScroll extends SpecialItem {
 					}
 				}.runTaskLater(game.getPlugin(), INVULNERABILITY_DURATION);
 
-				player.setCooldown(Material.ENDER_PEARL, COOLDOWN);
+				player.setCooldown(Material.PAPER, COOLDOWN);
 			}
 		}
 
@@ -149,8 +175,7 @@ public class TeleportScroll extends SpecialItem {
 					continue;
 				}
 
-				Location safeLocation = new Location(world, x + 0.5, highestY + 1.5, z + 0.5);
-				return safeLocation;
+				return new Location(world, x + 0.5, highestY + 1.5, z + 0.5);
 			}
 
 			return null;
@@ -158,17 +183,17 @@ public class TeleportScroll extends SpecialItem {
 
 		@Override
 		@Nullable
-		protected TeleportScroll getItem(ItemStack stack, Game game) {
+		public TeleportScroll getItem(ItemStack stack) {
 			return TeleportScroll.fromItemStack(stack, game);
 		}
 
 		@Override
-		protected TeleportScroll createItem(Player owner, Game game) {
+		public TeleportScroll createItem(Player owner) {
 			return TeleportScroll.createItem(owner, game);
 		}
 
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, AssassinRole.id);
 		}
 	}

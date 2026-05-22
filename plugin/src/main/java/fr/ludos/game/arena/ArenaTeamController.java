@@ -9,37 +9,88 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import fr.ludos.game.GameJoinOption;
-import fr.ludos.game.Game;
-import fr.ludos.game.GameTeamController;
+import fr.ludos.Utility;
+import fr.ludos.game.teamController.GameTeamController;
+import fr.ludos.item.SpecialItem;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 public final class ArenaTeamController extends GameTeamController {
 	private static final int PRIMARY_TEAM_INDEX = 0;
 	private static final int SECONDARY_TEAM_INDEX = 1;
 
-	private final Set<Player> selectedPrimaryTeam;
-	private final Set<Player> selectedSecondaryTeam;
+	private final Set<Player> selectedPrimary;
+	private final Set<Player> selectedSecondary;
 	private final List<Team> combatTeams = new ArrayList<>();
 
 	private Team spectatorTeam;
 
-	public ArenaTeamController(ArenaGame game, Set<Player> selectedPrimaryPlayers, Set<Player> selectedSecondaryPlayers, GameJoinOption joinOption) {
-		super(game, joinOption);
 
-		this.selectedPrimaryTeam = new HashSet<>(selectedPrimaryPlayers);
-		this.selectedSecondaryTeam = new HashSet<>(selectedSecondaryPlayers);
+	@Nullable
+	private static Player pickPlayer(Set<Player> candidates, @Nullable Player excluded) {
+		List<Player> filtered = candidates.stream()
+			.filter(Player::isOnline)
+			.filter(p -> excluded == null || !p.equals(excluded))
+			.collect(Collectors.toList());
+		if (filtered.isEmpty()) return null;
+		return filtered.get(new java.util.Random().nextInt(filtered.size()));
+	}
+
+	public ArenaTeamController(ArenaGame game, ArenaModeOption mode, @Nullable Set<OfflinePlayer> selectedPrimaryPlayers, @Nullable Set<OfflinePlayer> selectedSecondaryPlayers) {
+		super(game);
+
+		Set<Player> online = new HashSet<>(game.getGroup().getOnlinePlayers());
+		if (online.size() < 2) {
+			throw new IllegalArgumentException("At least 2 online players are required for Arena : " + online.size());
+		}
+
+		Set<Player> configuredPrimary;
+		Set<Player> configuredSecondary;
+		if (selectedPrimaryPlayers == null && selectedSecondaryPlayers == null) {
+			List<? extends Collection<Player>> split = Utility.split(online, 2);
+			configuredPrimary = split.get(0).stream().collect(Collectors.toSet());
+			configuredSecondary = split.get(1).stream().collect(Collectors.toSet());
+		}
+		else {
+			configuredPrimary = Utility.getOnline(selectedPrimaryPlayers).collect(Collectors.toCollection(HashSet::new));
+			configuredSecondary = Utility.getOnline(selectedSecondaryPlayers).collect(Collectors.toCollection(HashSet::new));
+
+			if (selectedPrimaryPlayers == null) {
+				configuredPrimary = new HashSet<>(online);
+				configuredPrimary.removeAll(configuredSecondary);
+			} else {
+				configuredSecondary = new HashSet<>(online);
+				configuredSecondary.removeAll(configuredPrimary);
+			}
+
+			configuredSecondary.removeAll(configuredPrimary);
+		}
+
+		if (configuredPrimary.isEmpty() || configuredSecondary.isEmpty()) {
+			throw new IllegalStateException("Cannot start Arena game with only one team");
+		}
+
+		if (mode == ArenaModeOption.duel) {
+			Player p1 = pickPlayer(configuredPrimary, null);
+			Player p2 = pickPlayer(configuredSecondary, p1);
+			if (p1 == null || p2 == null) throw new IllegalArgumentException("Could not resolve duel players");
+
+			this.selectedPrimary = Set.of(p1);
+			this.selectedSecondary = Set.of(p2);
+		} else {
+			this.selectedPrimary = configuredPrimary;
+			this.selectedSecondary = configuredSecondary;
+		}
 	}
 
 	@Override
@@ -53,11 +104,14 @@ public final class ArenaTeamController extends GameTeamController {
 		combatTeams.add(primaryTeam);
 		combatTeams.add(secondaryTeam);
 
-		for (Player player : selectedPrimaryTeam) {
-			moveToCombatTeam(player, PRIMARY_TEAM_INDEX);
-		}
-		for (Player player : selectedSecondaryTeam) {
-			moveToCombatTeam(player, SECONDARY_TEAM_INDEX);
+		for (Player player : getGame().getGroup().getOnlinePlayers()) {
+			if (selectedPrimary.contains(player)) {
+				moveToTeam(player, primaryTeam);
+			} else if (selectedSecondary.contains(player)) {
+				moveToTeam(player, secondaryTeam);
+			} else {
+				moveToTeam(player, spectatorTeam);
+			}
 		}
 	}
 
@@ -73,6 +127,14 @@ public final class ArenaTeamController extends GameTeamController {
 		}
 		combatTeams.clear();
 		spectatorTeam = null;
+	}
+
+	@Override
+	public Collection<Team> getTeams() {
+		HashSet<Team> teams = new HashSet<>(combatTeams);
+		teams.add(spectatorTeam);
+
+		return teams;
 	}
 
 	private Team createOrGetTeam(Scoreboard scoreboard, String name, NamedTextColor color, boolean friendlyFire) {
@@ -91,39 +153,31 @@ public final class ArenaTeamController extends GameTeamController {
 	}
 
 	@Nullable
-	private Team getCombatTeam(int index) {
+	public Team getCombatTeam(int index) {
 		if (index < 0 || index >= combatTeams.size()) return null;
 		return combatTeams.get(index);
 	}
 
-	public Set<Player> getCombatPlayers(int index) {
-		Team team = getCombatTeam(index);
-		if (team == null) return new HashSet<>();
-		return extractPlayersFromTeam(team);
+	public Team getSpectatorTeam() {
+		return this.spectatorTeam;
 	}
 
-	public Set<Player> getAliveCombatPlayers(int index) {
-		return getCombatPlayers(index).stream()
-			.filter(Player::isOnline)
-			.filter(p -> p.getGameMode() == GameMode.SURVIVAL)
-			.filter(p -> !p.isDead())
-			.collect(Collectors.toSet());
+	// public void moveToCombatTeam(OfflinePlayer player, int index) {
+	// 	moveToTeam(player, getCombatTeam(index));
+	// }
+
+	public void joinSpectator(OfflinePlayer player) {
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer == null) return;
+
+		moveToTeam(onlinePlayer, spectatorTeam);
+
+		Location center = getGame().getWorldController().getAreaController().getCenter();
+		onlinePlayer.teleport(center);
+		onlinePlayer.setGameMode(GameMode.SPECTATOR);
 	}
 
-	public void moveToCombatTeam(Player player, int index) {
-		moveToTeam(player, getCombatTeam(index));
-	}
-
-	public void joinSpectator(Player player) {
-		moveToTeam(player, spectatorTeam);
-		if (player == null) return;
-
-		Location center = getGame().getGameAreaController().getCenter();
-		player.teleport(center);
-		player.setGameMode(GameMode.SPECTATOR);
-	}
-
-	private void moveToTeam(Player player, Team destination) {
+	private void moveToTeam(OfflinePlayer player, Team destination) {
 		if (player == null || destination == null) return;
 
 		String name = player.getName();
@@ -132,59 +186,70 @@ public final class ArenaTeamController extends GameTeamController {
 		}
 		spectatorTeam.removeEntry(name);
 		destination.addEntry(name);
+
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer == null) return;
+
+		onlinePlayer.setScoreboard(getGame().getScoreboard());
+	}
+
+	public void joinAnyPlayer(Player player, @Nullable Location location) {
 		player.setScoreboard(getGame().getScoreboard());
-	}
 
-	@Override
-	public Collection<Team> getTeams() {
-		return List.copyOf(combatTeams);
-	}
+		Utility.resetPlayer(player);
+		player.setGameMode(GameMode.SURVIVAL);
 
-	@Override
-	public Collection<LivingEntity> getEntities() {
-		Set<LivingEntity> entities = new HashSet<>();
-		for (Team team : combatTeams) {
-			Team t = team;
-			if (t != null) entities.addAll(extractPlayersFromTeam(t));
+		player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 3, 0, true, false, false));
+
+		if (location != null) {
+			player.teleport(location);
+			player.setBedSpawnLocation(location, true);
 		}
-		return entities;
 	}
 
 	@Override
-	protected void joinPlayer(Player player) {
+	protected void joinPlayer(OfflinePlayer player) {
 		if (player == null) return;
 
 		if (getPlayers().contains(player)) return;
 
-		if (((ArenaGame)getGame()).isWaveMode()) {
-			moveToCombatTeam(player, PRIMARY_TEAM_INDEX);
-			return;
-		}
+		Team primaryTeam = getCombatTeam(PRIMARY_TEAM_INDEX);
+		Team secondaryTeam = getCombatTeam(SECONDARY_TEAM_INDEX);
+		Set<Player> primaryTeamPlayers = getTeamOnlinePlayers(primaryTeam);
+		Set<Player> secondaryTeamPlayers = getTeamOnlinePlayers(secondaryTeam);
 
-		if (getCombatPlayers(PRIMARY_TEAM_INDEX).size() <= getCombatPlayers(SECONDARY_TEAM_INDEX).size()) {
-			moveToCombatTeam(player, PRIMARY_TEAM_INDEX);
+		if (primaryTeamPlayers.size() <= secondaryTeamPlayers.size()) {
+			moveToTeam(player, primaryTeam);
 		} else {
-			moveToCombatTeam(player, SECONDARY_TEAM_INDEX);
+			moveToTeam(player, secondaryTeam);
 		}
 	}
 
 	@Override
-	protected void discardPlayer(Player player) {
+	protected void discardPlayer(OfflinePlayer player) {
 		joinSpectator(player);
 	}
 
+	@Override
+	public void removePlayer(OfflinePlayer player) {
+		combatTeams.forEach(team -> team.removeEntry(player.getName()));
+		spectatorTeam.removeEntry(player.getName());
+
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer != null) {
+			SpecialItem.Events.removeFromPlayerInventory(getGame(), onlinePlayer);
+			onlinePlayer.teleport(getGame().getWorldController().getReturnLocation());
+		}
+	}
+
+
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
+		if (getGame().getWorldController().getLobbyController().isStarted()) return;
+
 		Player player = event.getEntity();
 		if (!getPlayers().contains(player)) return;
 
-		event.setKeepInventory(true);
-		event.getDrops().clear();
-		event.setDroppedExp(0);
-
-		Bukkit.getScheduler().runTask(getPlugin(), () -> {
-			player.setGameMode(GameMode.SPECTATOR);
-			player.setHealth(Math.max(1.0, player.getHealth()));
-		});
+		Utility.onDeathSpectate(event, getPlugin());
 	}
 }

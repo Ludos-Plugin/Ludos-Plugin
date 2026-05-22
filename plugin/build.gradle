@@ -1,6 +1,8 @@
+import io.papermc.paperweight.userdev.ReobfArtifactConfiguration
+
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'io.papermc.paperweight.userdev' version '2.0.0-beta.21' // Check for the latest version
 }
 
 java {
@@ -22,28 +24,24 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'net.kyori:adventure-api:4.20.0'
     implementation 'net.kyori:adventure-api:4.20.0'
-    implementation("net.kyori:adventure-text-minimessage:4.25.0")
+    implementation 'net.kyori:adventure-text-minimessage:4.25.0'
 
-    compileOnly 'org.apache.commons:commons-lang3:3.12.0'
-    compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
-    compileOnly 'io.papermc.paper:paper-api:1.19-R0.1-SNAPSHOT'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
 
-    compileOnly 'net.dmulloy2:ProtocolLib:5.4.0'
+    paperweight.paperDevBundle('1.19-R0.1-SNAPSHOT')
 }
 
-// shadowJar {
-//     // relocate 'net.kyori.adventure', 'fr.ludos.adventure'
-//     minimize()
-// }
+paperweight {
+    reobfArtifactConfiguration = ReobfArtifactConfiguration.getREOBF_PRODUCTION()
+}
 
-// build.dependsOn shadowJar
-// shadowJar {
-//     archiveBaseName.set('LudosPlugin')
-//     archiveClassifier.set('') // Removes "-all" from the name
-//     archiveVersion.set('1.0.0')
-// }
+tasks.assemble {
+    dependsOn(reobfJar)
+}
+tasks.reobfJar {
+    outputJar.set(layout.buildDirectory.file("output/LudosPlugin-${project.version}.jar"))
+}
 
 sourceSets {
     main {
@@ -52,7 +50,7 @@ sourceSets {
 }
 
 tasks.withType(Jar).configureEach {
-    destinationDirectory = layout.buildDirectory.dir("output")
+    destinationDirectory = layout.buildDirectory.dir("output-dev")
 }
 
 compileJava.options.encoding = 'UTF-8'

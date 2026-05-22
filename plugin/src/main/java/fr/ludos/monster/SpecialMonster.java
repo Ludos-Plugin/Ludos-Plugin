@@ -1,4 +1,4 @@
-package fr.ludos.game.arena.monster;
+package fr.ludos.monster;
 
 import java.util.UUID;
 
@@ -10,11 +10,11 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitTask;
 
-import fr.ludos.game.arena.ArenaGame;
+import fr.ludos.game.Game;
 
 public abstract class SpecialMonster<TEntity extends LivingEntity> {
 	private final String typeId;
-	private final ArenaGame game;
+	private final Game game;
 	private final UUID id;
 
 	@Nullable
@@ -23,7 +23,7 @@ public abstract class SpecialMonster<TEntity extends LivingEntity> {
 	@Nullable
 	private BukkitTask tickTask;
 
-	protected SpecialMonster(String typeId, ArenaGame game) {
+	protected SpecialMonster(String typeId, Game game) {
 		this.typeId = typeId;
 		this.game = game;
 		this.id = UUID.randomUUID();
@@ -33,7 +33,7 @@ public abstract class SpecialMonster<TEntity extends LivingEntity> {
 		return typeId;
 	}
 
-	public ArenaGame getGame() {
+	public Game getGame() {
 		return game;
 	}
 
@@ -47,7 +47,9 @@ public abstract class SpecialMonster<TEntity extends LivingEntity> {
 	}
 
 	public boolean isAlive() {
-		return entity != null && entity.isValid() && !entity.isDead();
+		TEntity entity = this.entity;
+		if (entity == null) return false;
+		return entity.isValid() && ! entity.isDead();
 	}
 
 	public final void spawn(Location location) {

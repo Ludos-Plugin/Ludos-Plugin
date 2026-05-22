@@ -7,13 +7,9 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.logging.Level;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,14 +24,13 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
-import fr.ludos.item.BranchItem.Branch;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends SpecialItem {
+public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends SpecialItem implements LevelItemInterface {
 	public static final String LEVEL = "level";
 	public static final NamespacedKey levelKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), LEVEL);
 
@@ -238,10 +233,10 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 
 		state.setLevel(level, getMaxLevelIndex());
 	}
-	public final void addLvl() {
+	public final void addLvl(int level) {
 		LevelItem.LevelState state = getLevelState();
 
-		state.addLvl(getMaxLevelIndex());
+		state.addLvl(level, getMaxLevelIndex());
 	}
 
 	public final void setXp(double value) {
@@ -258,8 +253,7 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 	@Override
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
-
-		LevelState state = getLevelState();
+		lore.add(getLevelLoreField(this));
 		lore.add(getXpLoreField(this));
 
 		return lore;
@@ -332,9 +326,9 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 			return level;
 		}
 		private boolean setLevelNoEvent(int level, int maxLevel) {
-			if (level < 0 || (maxLevel >= 0 && level > maxLevel)) return false;
+			if (level < 0) return false;
 			int oldLevel = this.level;
-			this.level = level;
+			this.level = Math.min(level, maxLevel);
 			notifyLevelUp(oldLevel);
 			return true;
 		}
@@ -346,10 +340,16 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 			return false;
 		}
 		private boolean addLevelNoEvent(int maxLevel) {
-			return setLevelNoEvent(level + 1, maxLevel);
+			return addLevelNoEvent(1, maxLevel);
+		}
+		private boolean addLevelNoEvent(int toAdd, int maxLevel) {
+			return setLevelNoEvent(level + toAdd, maxLevel);
 		}
 		public boolean addLvl(int maxLevel) {
-			if (addLevelNoEvent(maxLevel)) {
+			return addLvl(1, maxLevel);
+		}
+		public boolean addLvl(int toAdd, int maxLevel) {
+			if (addLevelNoEvent(toAdd, maxLevel)) {
 				notifyXpChange();
 				return true;
 			}
@@ -405,14 +405,14 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		}
 
 
-		protected abstract T createItem(Player owner, LevelState level, Game game);
+		public abstract T createItem(Player owner, LevelState level);
 
 		@EventHandler
 		public void onPlayerDeath(PlayerDeathEvent event) {
 			Player player = event.getEntity();
-			if (! canPlayerHaveItem(player)) return;
+			if (! isPlayerValid(player)) return;
 
-			T specialItem = SpecialItem.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
+			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
 			if ( specialItem == null ) {
 				return;
 			}
@@ -421,13 +421,13 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 		}
 
 		@Override
-		protected T createItem(Player owner, Game game) {
+		public T createItem(Player owner) {
 			if (!deadPlayerLevels.containsKey(owner)) {
-				return createItem(owner, new LevelState(), game);
+				return createItem(owner, new LevelState());
 			}
 
 			LevelState deadLevels = deadPlayerLevels.get(owner);
-			return createItem(owner, deadLevels, game);
+			return createItem(owner, deadLevels);
 		}
 	}
 }

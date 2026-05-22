@@ -7,12 +7,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.book.BookUtility;
@@ -20,13 +22,19 @@ import fr.ludos.command.ludos.LudosCommand;
 import fr.ludos.game.Game;
 import fr.ludos.game.arena.ArenaGame;
 import fr.ludos.game.manhunt.ManhuntGame;
+import fr.ludos.game.raid.RaidGame;
+import fr.ludos.group.Group;
+import fr.ludos.group.GroupEvents;
 import fr.ludos.item.texture.TextureListener;
 import fr.ludos.item.texture.TextureManager;
+import fr.ludos.packets.player.PlayerPackets;
+import fr.ludos.packets.player.PlayerPacketsFactory;
 import fr.ludos.role.AssassinRole;
+import fr.ludos.role.BerserkerRole;
 import fr.ludos.role.HarvesterRole;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
-import fr.ludos.role.TrapperRole;
+import fr.ludos.role.TankRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -38,6 +46,8 @@ public class Ludos extends JavaPlugin implements Listener {
 	public static final String namespace = "ludos";
 	private TextureManager textureManager;
 
+	public final PlayerPackets playerPackets = PlayerPacketsFactory.createHandler();
+
 	public Ludos() { }
 
 	public TextureManager getTextureManager() {
@@ -47,19 +57,23 @@ public class Ludos extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		Role.loadConfigRoles(this);
+		Group.loadConfigGroups(this);
 
 		Game.registerGame(new ManhuntGame.Builder(this));
 		Game.registerGame(new ArenaGame.Builder(this));
+		Game.registerGame(new RaidGame.Builder(this));
 
 		Role.registerRole(new HuntsmanRole.Builder(this));
 		Role.registerRole(new HarvesterRole.Builder(this));
-		Role.registerRole(new TrapperRole.Builder(this));
+		Role.registerRole(new TankRole.Builder(this));
 		Role.registerRole(new AssassinRole.Builder(this));
+		Role.registerRole(new BerserkerRole.Builder(this));
 
 		textureManager = new TextureManager(this);
 		getServer().getPluginManager().registerEvents(new TextureListener(this), this);
 
-		PluginCommand cmd = getCommand("ludos");
+		String commandLabel = "ludos";
+		PluginCommand cmd = getCommand(commandLabel);
 		LudosCommand ludosCommand = new LudosCommand();
 		cmd.setExecutor(ludosCommand);
 		cmd.setTabCompleter(ludosCommand);
@@ -71,12 +85,16 @@ public class Ludos extends JavaPlugin implements Listener {
 		}
 
 		Bukkit.getPluginManager().registerEvents(this, this);
+
+		Bukkit.getPluginManager().registerEvents(new GroupEvents(), this);
 	}
 
 	@Override
 	public void onDisable() {
-		Game.stopCurrentGame();
-		HandlerList.unregisterAll((Listener) this);
+		for (Game game : Game.getActiveGames()) {
+			game.stop();
+		}
+		HandlerList.unregisterAll((Plugin) this);
 	}
 
 	public static ItemStack createGuidebook() {
@@ -149,7 +167,7 @@ public class Ludos extends JavaPlugin implements Listener {
 		return book;
 	}
 
-	@org.bukkit.event.EventHandler
+	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player currentPlayer = event.getPlayer();
 
