@@ -89,20 +89,25 @@ public class TankDashObject extends SpecialItem {
 					player.getWorld().playSound(player.getLocation(), Sound.ENTITY_HORSE_GALLOP, 1.0f, 1.0f);
 				}
 
-				double yaw_rad = Math.toRadians(player.getLocation().getYaw());
-				Vector vel = new Vector(
-						-Math.sin(yaw_rad),
-						0,
-						Math.cos(yaw_rad)
-					)
-					.normalize()
-					.multiply(DASH_POWER);
+				Vector direction;
+				if (player.isInWater()) {
+					direction = player.getLocation().getDirection();
+				}
+				else {
+					double yaw_rad = Math.toRadians(player.getLocation().getYaw());
+					direction = new Vector(
+							-Math.sin(yaw_rad),
+							0,
+							Math.cos(yaw_rad)
+						)
+						.normalize();
+				}
 
 				player.setVelocity(
 					player.getVelocity()
 						.setX(0)
 						.setZ(0)
-						.add(vel)
+						.add(direction.multiply(DASH_POWER))
 				);
 				player.spawnParticle(
 					Particle.FIREWORKS_SPARK,
