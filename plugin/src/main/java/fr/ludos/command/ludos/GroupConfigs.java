@@ -21,7 +21,7 @@ import fr.ludos.group.GroupJoinOption;
 import fr.ludos.group.GroupRightsOption;
 
 public enum GroupConfigs implements ConfigSubcommand {
-	member_authorization() {
+	member_authorisation() {
 		@Override
 		public String getDescription() {
 			return "Defines what rights this group's members have.";
@@ -36,12 +36,12 @@ public enum GroupConfigs implements ConfigSubcommand {
 			}
 
 			String givenRights = args[0];
-			GroupRightsOption joinOption = Arrays.stream(GroupRightsOption.values()).filter(o -> o.name().equals(givenRights)).findFirst().orElse(null);
-			if (joinOption == null) return false;
+			GroupRightsOption authOption = Arrays.stream(GroupRightsOption.values()).filter(o -> o.name().equals(givenRights)).findFirst().orElse(null);
+			if (authOption == null) return false;
 
-			setGroupRightsOption(config, joinOption);
+			setGroupRightsOption(config, authOption);
 
-			sender.sendMessage("Group Join Option set to " + joinOption.name()); // TODO: Translate
+			sender.sendMessage("Members Authorisation Option set to " + authOption.name()); // TODO: Translate
 			return true;
 		}
 
