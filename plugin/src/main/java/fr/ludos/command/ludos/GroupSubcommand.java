@@ -22,6 +22,7 @@ import fr.ludos.command.Subcommand;
 import fr.ludos.command.SubcommandManager;
 import fr.ludos.game.Game;
 import fr.ludos.group.Group;
+import fr.ludos.group.GroupRightsOption;
 import fr.ludos.group.Group.JoinMethod;
 import fr.ludos.group.Group.JoinResult;
 
@@ -33,12 +34,12 @@ public enum GroupSubcommand implements Subcommand {
 		}
 		@Override
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			if (!(sender instanceof Player leader)) {
+			if (!(sender instanceof Player player)) {
 				sender.sendMessage("Only players can create groups.");
 				return true;
 			}
 
-			Group group = Group.createGroup(leader, null);
+			Group group = Group.createGroup(player, null);
 
 			Set<Player> members = CommandUtility.getPlayersFromArgs(args, 0, sender);
 			for (Player member : members) {
@@ -70,18 +71,19 @@ public enum GroupSubcommand implements Subcommand {
 		}
 		@Override
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			if (!(sender instanceof Player leader)) {
+			if (!(sender instanceof Player player)) {
 				sender.sendMessage("Only players can disband groups.");
 				return true;
 			}
 
-			Group group = Group.getGroupOfPlayer(leader);
+			Group group = Group.getGroupOfPlayer(player);
 			if (group == null) {
 				sender.sendMessage("You are not in a group.");
 				return true;
 			}
 
-			if (!group.isLeader(leader)) {
+			boolean membersCanManage = GroupConfigs.getGroupRightsOption(group.getConfig()).canManage();
+			if (! group.isLeader(player) && ! membersCanManage) {
 				sender.sendMessage("Only the group leader can disband the group.");
 				return true;
 			}
@@ -132,6 +134,12 @@ public enum GroupSubcommand implements Subcommand {
 
 			if (targets.isEmpty()) {
 				sender.sendMessage("No valid player names provided.");
+				return true;
+			}
+
+			boolean membersCanInvite = GroupConfigs.getGroupRightsOption(group.getConfig()).canInvite();
+			if (! group.isLeader(player) && ! membersCanInvite) {
+				sender.sendMessage("Only the group leader can invite new members.");
 				return true;
 			}
 
@@ -284,19 +292,20 @@ public enum GroupSubcommand implements Subcommand {
 		}
 		@Override
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			if (!(sender instanceof Player leader)) {
+			if (!(sender instanceof Player player)) {
 				sender.sendMessage("Only players can kick members from groups.");
 				return true;
 			}
 			if (args.length < 1) return false;
 
-			Group group = Group.getGroupOfPlayer(leader);
+			Group group = Group.getGroupOfPlayer(player);
 			if (group == null) {
 				sender.sendMessage("You are not in a group.");
 				return true;
 			}
 
-			if (!group.isLeader(leader)) {
+			boolean membersCanManage = GroupConfigs.getGroupRightsOption(group.getConfig()).canManage();
+			if (! group.isLeader(player) && ! membersCanManage) {
 				sender.sendMessage("Only the group leader can kick members.");
 				return true;
 			}
@@ -307,7 +316,7 @@ public enum GroupSubcommand implements Subcommand {
 
 				if (group.isMember(target)) {
 					group.removePlayer(target, true);
-					leader.sendMessage("Kicked " + targetName + " from the group.");
+					player.sendMessage("Kicked " + targetName + " from the group.");
 				} else {
 					sender.sendMessage(targetName + " is not a member of your group.");
 				}
@@ -321,12 +330,12 @@ public enum GroupSubcommand implements Subcommand {
 		}
 		@Override
 		public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			if (!(sender instanceof Player leader)) return null;
+			if (!(sender instanceof Player player)) return null;
 
-			Group group = Group.getGroupOfPlayer(leader);
+			Group group = Group.getGroupOfPlayer(player);
 			if (group == null) return null;
 
-			if (!group.isLeader(leader)) return null;
+			if (! group.isLeader(player)) return null;
 
 			return group.getMembers().stream()
 				.map(OfflinePlayer::getName)
@@ -350,23 +359,33 @@ public enum GroupSubcommand implements Subcommand {
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 			if (args.length < 1) return false;
 
-			if (!(sender instanceof Player leader)) {
-				sender.sendMessage("Only players can configure games for groups.");
+			if (!(sender instanceof Player player)) {
+				sender.sendMessage("Only players can configure groups.");
 				return true;
 			}
 
-			Group group = Group.getGroupOfPlayer(leader);
+			Group group = Group.getGroupOfPlayer(player);
 			if (group == null) {
 				sender.sendMessage("You are not in a group.");
 				return true;
 			}
 
-			if (!group.isLeader(leader)) {
-				sender.sendMessage("Only the group leader can configure games.");
+			GroupRightsOption opt = GroupConfigs.getGroupRightsOption(group.getConfig());
+			boolean membersCanConfig = opt.canConfig();
+			if (! group.isLeader(player) && ! membersCanConfig) {
+				sender.sendMessage("Only the group leader can configure the group. " + opt);
 				return true;
 			}
 
-			return configCommand.onCommand(sender, command, label, group.getConfig(), args);
+			boolean res = configCommand.onCommand(sender, command, label, group.getConfig(), args);
+
+			if (res) {
+				Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
+				Group.saveConfigGroup(plugin, group);
+				plugin.saveConfig();
+			}
+
+			return res;
 		}
 		@Override
 		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {

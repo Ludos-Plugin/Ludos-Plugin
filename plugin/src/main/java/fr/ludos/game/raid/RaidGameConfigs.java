@@ -15,13 +15,18 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
 import fr.ludos.command.CommandUtility;
+import fr.ludos.command.ConfigSubcommand;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaOption;
 import fr.ludos.game.arena.ArenaGame;
 
-public enum RaidGameConfigs {
-	team1 (() -> "[all | <player1> <player2> ...]") {
+public enum RaidGameConfigs implements ConfigSubcommand {
+	players {
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+		public String getDescription() {
+			return "Which players will participate in the Raid.";
+		}
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			if (args.length == 0) {
 				Set<String> names = getPlayerNames(config);
 				sender.sendMessage(names.isEmpty() ? "Auto" : String.join(" ", names));
@@ -30,23 +35,32 @@ public enum RaidGameConfigs {
 
 			if (allOption.equalsIgnoreCase(args[0])) {
 				setPlayerNames(config, null);
-				sender.sendMessage("Players reset to auto");
+				sender.sendMessage("Players reset to " + allOption);
 				return true;
 			}
+
 			setPlayerNames(config, new HashSet<>(Arrays.asList(args)));
 			sender.sendMessage("Players set to " + String.join(" ", args));
 			return true;
 		}
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			List<String> values = CommandUtility.getOnlinePlayerNames();
 			values.add(allOption);
 			return values;
 		}
-	},
-	rounds(() -> "<number>") {
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+		public String getUsage() {
+			return "[" + allOption + " | <player1> <player2> ...]";
+		}
+	},
+	rounds {
+		@Override
+		public String getDescription() {
+			return "How many rounds a Raid will last.";
+		}
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			if (args.length == 0) {
 				sender.sendMessage(Integer.toString(getWaves(config)));
 				return true;
@@ -60,13 +74,21 @@ public enum RaidGameConfigs {
 			return true;
 		}
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			return null;
 		}
-	},
-	area(WorldBorderAreaOption::getUsage) {
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+		public String getUsage() {
+			return "<number>";
+		}
+	},
+	area {
+		@Override
+		public String getDescription() {
+			return "The size of the Raid game area.";
+		}
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			if (args.length == 0) {
 				sender.sendMessage(getArea(config).name());
 				return true;
@@ -78,9 +100,13 @@ public enum RaidGameConfigs {
 			return true;
 		}
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			if (args.length == 1) return WorldBorderAreaOption.options;
 			return null;
+		}
+		@Override
+		public String getUsage() {
+			return WorldBorderAreaOption.getUsage();
 		}
 	};
 
@@ -89,23 +115,16 @@ public enum RaidGameConfigs {
 
 	public static final String wavesKey = "waves";
 	public static final String wavesPath = ArenaGame.ID + '.' + wavesKey;
+
 	public static final String areaKey = "area";
 	public static final String areaPath = ArenaGame.ID + '.' + areaKey;
 
 	private static final String allOption = "all";
 
-	private final java.util.function.Supplier<String> usageSupplier;
-
-	RaidGameConfigs(java.util.function.Supplier<String> usageSupplier) {
-		this.usageSupplier = usageSupplier;
+	@Override
+	public boolean requireOp() {
+		return false;
 	}
-
-	public String getUsage() {
-		return usageSupplier.get();
-	}
-
-	public abstract boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args);
-	public abstract List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args);
 
 	@Nullable
 	public static Set<OfflinePlayer> getChosenPlayers(ConfigurationSection config) {

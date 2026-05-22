@@ -1,6 +1,7 @@
 package fr.ludos.game.lobbyController;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,6 +28,12 @@ public enum LobbyWaitPlayersOption {
 	};
 
 	public abstract Set<OfflinePlayer> getPlayers(Group group);
+
+	public static List<String> getOptions() {
+		return Arrays.stream(LobbyWaitPlayersOption.values())
+			.map(LobbyWaitPlayersOption::toString)
+			.collect(Collectors.toList());
+	}
 
 	public static String getUsage() {
 		StringBuilder sb = new StringBuilder();

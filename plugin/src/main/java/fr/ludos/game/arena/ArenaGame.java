@@ -1,24 +1,19 @@
 package fr.ludos.game.arena;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.Ludos;
+import fr.ludos.command.ConfigSubcommandManager;
 import fr.ludos.command.ludos.GroupConfigs;
 import fr.ludos.game.Game;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaController;
@@ -148,31 +143,10 @@ public class ArenaGame extends Game {
 			return Component.text("Round-based PvP arena with team battles.");
 		}
 
+		private final ConfigSubcommandManager<ArenaGameConfigs> configsSubcommand = new ConfigSubcommandManager<>(ArenaGameConfigs.values());
 		@Override
-		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
-			StringBuilder usage = new StringBuilder("/" + label + " game " + getId() + " config <config> [value]");
-			for (ArenaGameConfigs config : ArenaGameConfigs.values()) {
-				usage.append("\n  ").append(config.name()).append(" ").append(config.getUsage());
-			}
-			return usage.toString();
-		}
-
-		@Override
-		public boolean executeGameConfig(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
-			if (args.length == 0) return false;
-			ArenaGameConfigs option = Arrays.stream(ArenaGameConfigs.values()).filter(o -> o.name().equalsIgnoreCase(args[0])).findFirst().orElse(null);
-			if (option == null) return false;
-			return option.handleConfigsCommand(sender, command, label, config, Arrays.copyOfRange(args, 1, args.length));
-		}
-
-		@Override
-		public List<String> gameConfigTabComplete(CommandSender sender, Command command, String label, String[] args) {
-			if (args.length <= 1) {
-				return Arrays.stream(ArenaGameConfigs.values()).map(ArenaGameConfigs::name).collect(Collectors.toList());
-			}
-			if (!EnumUtils.isValidEnumIgnoreCase(ArenaGameConfigs.class, args[0])) return null;
-			ArenaGameConfigs option = EnumUtils.getEnumIgnoreCase(ArenaGameConfigs.class, args[0]);
-			return option.handleConfigsTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+		protected ConfigSubcommandManager<?> getConfigsSubcommand() {
+			return configsSubcommand;
 		}
 
 		public WorldCreator createWorldCreator() {

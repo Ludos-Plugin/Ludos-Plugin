@@ -18,8 +18,46 @@ import fr.ludos.game.lobbyController.LobbyStartDelayOption;
 import fr.ludos.game.lobbyController.LobbyWaitPlayersOption;
 import fr.ludos.game.teamController.GameJoinOption;
 import fr.ludos.group.GroupJoinOption;
+import fr.ludos.group.GroupRightsOption;
 
 public enum GroupConfigs implements ConfigSubcommand {
+	member_authorization() {
+		@Override
+		public String getDescription() {
+			return "Defines what rights this group's members have.";
+		}
+
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+			if ( args.length == 0 ) {
+				// Field is left empty, send the current config
+				sender.sendMessage( getGroupRightsOption(config).name() );
+				return true;
+			}
+
+			String givenRights = args[0];
+			GroupRightsOption joinOption = Arrays.stream(GroupRightsOption.values()).filter(o -> o.name().equals(givenRights)).findFirst().orElse(null);
+			if (joinOption == null) return false;
+
+			setGroupRightsOption(config, joinOption);
+
+			sender.sendMessage("Group Join Option set to " + joinOption.name()); // TODO: Translate
+			return true;
+		}
+
+		@Override
+		public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			// Options are : none, game, config
+			if (args.length == 1)
+				return GroupRightsOption.getOptions();
+			return null;
+		}
+
+		@Override
+		public String getUsage() {
+			return GroupRightsOption.getUsage();
+		}
+	},
 	group_join() {
 		@Override
 		public String getDescription() {
@@ -48,7 +86,7 @@ public enum GroupConfigs implements ConfigSubcommand {
 		public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 			// Options are : auto, manual, none
 			if (args.length == 1)
-				return groupJoinOptions;
+				return GroupJoinOption.getOptions();
 			return null;
 		}
 
@@ -85,7 +123,7 @@ public enum GroupConfigs implements ConfigSubcommand {
 		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			// Options are : auto, manual, none
 			if (args.length == 1)
-				return gameJoinOptions;
+				return GameJoinOption.getOptions();
 			return null;
 		}
 
@@ -122,7 +160,7 @@ public enum GroupConfigs implements ConfigSubcommand {
 		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			// Options are : online, all
 			if (args.length == 1)
-				return waitPlayersOptions;
+				return LobbyWaitPlayersOption.getOptions();
 			return null;
 		}
 
@@ -164,7 +202,7 @@ public enum GroupConfigs implements ConfigSubcommand {
 		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			// Options are : short, medium, long
 			if (args.length == 1)
-				return waitDurationOptions;
+				return LobbyStartDelayOption.getOptions();
 			return null;
 		}
 
@@ -231,11 +269,14 @@ public enum GroupConfigs implements ConfigSubcommand {
 		return false;
 	}
 
-	public static final String gameJoinKey = "game_join";
-	public static final String gameJoinPath = Ludos.namespace + '.' + gameJoinKey;
+	public static final String groupRightsKey = "group_rights";
+	public static final String groupRightsPath = Ludos.namespace + '.' + groupRightsKey;
 
 	public static final String groupJoinKey = "group_join";
 	public static final String groupJoinPath = Ludos.namespace + '.' + groupJoinKey;
+
+	public static final String gameJoinKey = "game_join";
+	public static final String gameJoinPath = Ludos.namespace + '.' + gameJoinKey;
 
 	public static final String waitPlayersKey = "waitPlayers";
 	public static final String waitPlayersPath = Ludos.namespace + '.' + waitPlayersKey;
@@ -244,18 +285,16 @@ public enum GroupConfigs implements ConfigSubcommand {
 	public static final String startDelayPath = Ludos.namespace + '.' + startDelayKey;
 
 
-	public static final List<String> gameJoinOptions = Arrays.stream(GameJoinOption.values())
-		.map(v -> v.name())
-		.collect(Collectors.toList());
-	public static final List<String> groupJoinOptions = Arrays.stream(GroupJoinOption.values())
-		.map(v -> v.name())
-		.collect(Collectors.toList());
-	public static final List<String> waitPlayersOptions = Arrays.stream(LobbyWaitPlayersOption.values())
-		.map(v -> v.name())
-		.collect(Collectors.toList());
-	public static final List<String> waitDurationOptions = Arrays.stream(LobbyStartDelayOption.values())
-		.map(v -> v.name())
-		.collect(Collectors.toList());
+
+	public static GroupRightsOption getGroupRightsOption(ConfigurationSection config) {
+		String rightsString = config.getString(groupRightsPath);
+		return Arrays.stream(GroupRightsOption.values()).filter(o -> o.name().equals(rightsString)).findFirst()
+			.orElse(GroupRightsOption.invite);
+	}
+	public static void setGroupRightsOption(ConfigurationSection config, GroupRightsOption rights) {
+		String value = rights == null ? null : rights.name();
+		config.set(groupRightsPath, value);
+	}
 
 
 	public static GameJoinOption getGameJoinOption(ConfigurationSection config) {

@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.Ludos;
 import fr.ludos.Utility;
 import fr.ludos.book.BookUtility;
+import fr.ludos.command.ConfigSubcommandManager;
 import fr.ludos.game.teamController.GameTeamController;
 import fr.ludos.game.worldController.GameWorldController;
 import fr.ludos.group.Group;
@@ -312,10 +313,17 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
+		protected abstract ConfigSubcommandManager<?> getConfigsSubcommand();
 
-		public abstract boolean executeGameConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, ConfigurationSection config, @NotNull String[] args);
-		public abstract List<String> gameConfigTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args);
-		public abstract String getGameConfigUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label);
+		public boolean executeGameConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, ConfigurationSection config, @NotNull String[] args) {
+			return getConfigsSubcommand().onCommand(sender, command, label, config, args);
+		}
+		public List<String> gameConfigTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+			return getConfigsSubcommand().onTabComplete(sender, command, label, args);
+		}
+		public String getGameConfigUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
+			return getConfigsSubcommand().getUsage();
+		}
 
 
 		public abstract Game build(Group group);

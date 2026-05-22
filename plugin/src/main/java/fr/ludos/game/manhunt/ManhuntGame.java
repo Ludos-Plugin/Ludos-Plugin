@@ -32,6 +32,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.Ludos;
+import fr.ludos.command.ConfigSubcommandManager;
 import fr.ludos.command.ludos.GroupConfigs;
 import fr.ludos.game.Game;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaController;
@@ -258,45 +259,10 @@ public class ManhuntGame extends Game {
 			);
 		}
 
+		private final ConfigSubcommandManager<ManhuntGameConfigs> configsSubcommand = new ConfigSubcommandManager<>(ManhuntGameConfigs.values());
 		@Override
-		public boolean executeGameConfig(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
-			if (args.length == 0) {
-				return false;
-			}
-
-			String arg = args[0];
-			ManhuntGameConfigs option = Arrays.stream(ManhuntGameConfigs.values()).filter(o -> o.name().equals(arg)).findFirst().orElse(null);
-			if (option == null) return false;
-
-			return option.onCommand(sender, command, label + " " + option.toString(), config, Arrays.copyOfRange(args, 1, args.length));
-		}
-
-		@Override
-		public List<String> gameConfigTabComplete(CommandSender sender, Command command, String label, String[] args) {
-			if (args.length <= 1) {
-				return Arrays.stream(ManhuntGameConfigs.values())
-					.map(ManhuntGameConfigs::name)
-					.collect(Collectors.toList());
-			}
-
-			String arg = args[0];
-			if ( ! EnumUtils.isValidEnum(ManhuntGameConfigs.class, arg) ) {
-				return null;
-			}
-			ManhuntGameConfigs option = ManhuntGameConfigs.valueOf( arg );
-
-			return option.onTabComplete(sender, command, label + " " + option.toString(), Arrays.copyOfRange(args, 1, args.length));
-		}
-
-		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
-			StringBuilder usage = new StringBuilder("/" + label + " <config> [value]");
-
-			for (ManhuntGameConfigs option : ManhuntGameConfigs.values()) {
-				usage.append("\n  ")
-					.append(option.getUsage());
-			}
-
-			return usage.toString();
+		protected ConfigSubcommandManager<?> getConfigsSubcommand() {
+			return configsSubcommand;
 		}
 
 

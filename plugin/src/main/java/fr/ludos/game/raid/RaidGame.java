@@ -12,6 +12,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import fr.ludos.Ludos;
+import fr.ludos.command.ConfigSubcommandManager;
 import fr.ludos.command.ludos.GroupConfigs;
 import fr.ludos.game.Game;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaController;
@@ -130,31 +131,10 @@ public class RaidGame extends Game {
 			return Component.text("Co-op survival waves with monster bosses.");
 		}
 
+		private final ConfigSubcommandManager<RaidGameConfigs> configsSubcommand = new ConfigSubcommandManager<>(RaidGameConfigs.values());
 		@Override
-		public String getGameConfigUsage(CommandSender sender, Command command, String label) {
-			StringBuilder usage = new StringBuilder("/" + label + " game " + getId() + " config <config> [value]");
-			for (RaidGameConfigs config : RaidGameConfigs.values()) {
-				usage.append("\n  ").append(config.name()).append(" ").append(config.getUsage());
-			}
-			return usage.toString();
-		}
-
-		@Override
-		public boolean executeGameConfig(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
-			if (args.length == 0) return false;
-			RaidGameConfigs option = Arrays.stream(RaidGameConfigs.values()).filter(o -> o.name().equalsIgnoreCase(args[0])).findFirst().orElse(null);
-			if (option == null) return false;
-			return option.handleConfigsCommand(sender, command, label, config, Arrays.copyOfRange(args, 1, args.length));
-		}
-
-		@Override
-		public List<String> gameConfigTabComplete(CommandSender sender, Command command, String label, String[] args) {
-			if (args.length <= 1) {
-				return Arrays.stream(RaidGameConfigs.values()).map(RaidGameConfigs::name).collect(Collectors.toList());
-			}
-			if (!EnumUtils.isValidEnumIgnoreCase(RaidGameConfigs.class, args[0])) return null;
-			RaidGameConfigs option = EnumUtils.getEnumIgnoreCase(RaidGameConfigs.class, args[0]);
-			return option.handleConfigsTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+		protected ConfigSubcommandManager<?> getConfigsSubcommand() {
+			return configsSubcommand;
 		}
 
 		@Override
