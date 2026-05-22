@@ -1,30 +1,20 @@
 package fr.ludos.item.harvester;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.lang3.tuple.Pair;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
@@ -33,7 +23,6 @@ import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.LevelBranchItem;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.item.huntsman.HuntsmanArrow;
 import fr.ludos.role.HarvesterRole;
 import fr.ludos.role.Role;
 import net.kyori.adventure.text.Component;
@@ -162,7 +151,7 @@ public class HarvesterPick extends LevelBranchItem<HarvesterPickBranches, Harves
 			if (! action.isRightClick()) return;
 
 			Player player = event.getPlayer();
-			HarvesterPick pickaxe = getItem(player.getInventory().getItemInMainHand(), game);
+			HarvesterPick pickaxe = getItem(player.getInventory().getItemInMainHand());
 			if (pickaxe == null) return;
 
 			if (! pickaxe.refreshUseCooldown()) return;
@@ -176,7 +165,7 @@ public class HarvesterPick extends LevelBranchItem<HarvesterPickBranches, Harves
 			Player player = event.getPlayer();
 			ItemStack mainHandItem = player.getInventory().getItemInMainHand();
 
-			HarvesterPick pick = getItem(mainHandItem, game);
+			HarvesterPick pick = getItem(mainHandItem);
 			if (pick == null) return;
 
 			pick.getBranch().onBreakBlock(pick, event);
@@ -184,15 +173,15 @@ public class HarvesterPick extends LevelBranchItem<HarvesterPickBranches, Harves
 
 		@Override
 		@Nullable
-		protected HarvesterPick getItem(ItemStack stack, Game game) {
+		public HarvesterPick getItem(ItemStack stack) {
 			return HarvesterPick.fromItemStack(stack, game);
 		}
 		@Override
-		protected HarvesterPick createItem(Player owner, LevelState level, Game game) {
+		public HarvesterPick createItem(Player owner, LevelState level) {
 			return HarvesterPick.createItem(owner, level, game);
 		}
 		@Override
-		protected Boolean canPlayerHaveItem(HumanEntity owner) {
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return Role.isPlayerRole(owner, HarvesterRole.id);
 		}
 

@@ -12,12 +12,11 @@ import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -38,7 +37,6 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
-import fr.ludos.game.GameProcessBase;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -111,10 +109,14 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	public static Component getActionAnnotation(final @NotNull String keybind, Component action) {
 		return Component.text("Press ")
 				.color(NamedTextColor.GRAY)
-			.append(Component.keybind(keybind)
-				.color(NamedTextColor.YELLOW))
-			.append(Component.text(" to ")
-				.color(NamedTextColor.GRAY))
+			.append(
+				Component.keybind(keybind)
+					.color(NamedTextColor.YELLOW)
+			)
+			.append(
+				Component.text(" to ")
+					.color(NamedTextColor.GRAY)
+			)
 			.append(action)
 			.decoration(TextDecoration.ITALIC, false);
 	}
@@ -259,10 +261,19 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		return constructor.apply(player);
 	}
 
+	public static <T extends SpecialItem, TData> Component buildDataLore(String label, TData data) {
+		return
+			Component.text(label + ": ")
+				.color(NamedTextColor.GRAY)
+				.append(
+					Component.text(data.toString())
+						.color(NamedTextColor.YELLOW)
+				)
+			.decoration(TextDecoration.ITALIC, false);
+	}
+
 
 	public static abstract class Events<T extends SpecialItem> extends GameEvents {
-		private boolean isStarted = false;
-
 		private final boolean canDrop;
 		@Nullable
 		private final Integer slot;
@@ -287,7 +298,9 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		}
 		@Override
 		protected final void onStart() {
-			updateAllInventories();
+			refreshAllPlayerInventories();
+
+			game.getActiveItems().add(this);
 
 			onItemStart();
 		}
@@ -304,6 +317,8 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		protected final void onStop() {
 			removeFromAllInventories();
 
+			game.getActiveItems().remove(this);
+
 			onItemStop();
 		}
 
@@ -312,41 +327,106 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 
 		@Nullable
-		protected abstract T getItem(ItemStack stack, Game game);
-		protected abstract T createItem(Player owner, Game game);
+		public abstract T getItem(ItemStack stack);
+		public abstract T createItem(Player owner);
 
-		protected abstract Boolean canPlayerHaveItem(HumanEntity owner);
+		public final Boolean isPlayerValid(OfflinePlayer player) {
+			if (! game.getGroup().isPlayer(player)) return false;
+			return isPlayerValidInternal(player);
+		}
+		protected Boolean isPlayerValidInternal(OfflinePlayer player) {
+			return true;
+		}
 
 
-		protected void removeFromAllInventories() {
-			for (Player player : Bukkit.getOnlinePlayers()) {
-				PlayerInventory inventory = player.getInventory();
-				List<T> items = SpecialItem.findAllIn(inventory, (ItemStack stack) -> getItem(stack, game));
-				for(T item : items) {
-					inventory.remove(item.getStack());
-					if (inventory.getItemInOffHand().equals(item.getStack())) {
-						inventory.setItemInOffHand(null);
-					}
+		public void refreshPlayerInventory(Player player) {
+			if (! game.getGroup().isPlayer(player)) return;
+			if (! isPlayerValid(player)) return;
+
+			PlayerInventory inventory = player.getInventory();
+			if (T.containedIn(inventory, this::getItem)) return;
+
+			T item = createItem(player);
+			if (item == null) return;
+
+			int index = (slot == null) ? -1 : slot.intValue();
+
+			if (index == -1 || inventory.getItem(index) != null) {
+				inventory.addItem(item.getStack());
+			} else {
+				inventory.setItem(index, item.getStack());
+			}
+		}
+
+		public void refreshAllPlayerInventories() {
+			for (Player player : getGame().getGroup().getOnlinePlayers()) {
+				refreshPlayerInventory(player);
+			}
+		}
+
+		public void removeFromPLayerInventory(Player player) {
+			PlayerInventory inventory = player.getInventory();
+			for(T item : SpecialItem.findAllIn(inventory, this::getItem)) {
+				inventory.remove(item.getStack());
+
+				if (inventory.getItemInOffHand().equals(item.getStack())) {
+					inventory.setItemInOffHand(null);
+				}
+				else if (inventory.getHelmet() != null && inventory.getHelmet().equals(item.getStack())) {
+					inventory.setHelmet(null);
+				}
+				else if (inventory.getChestplate() != null && inventory.getChestplate().equals(item.getStack())) {
+					inventory.setChestplate(null);
+				}
+				else if (inventory.getLeggings() != null && inventory.getLeggings().equals(item.getStack())) {
+					inventory.setLeggings(null);
+				}
+				else if (inventory.getBoots() != null && inventory.getBoots().equals(item.getStack())) {
+					inventory.setBoots(null);
 				}
 			}
 		}
 
-		protected void updateAllInventories() {
-			for (Player player : game.getGameTeamController().getPlayers()) {
-				if (canPlayerHaveItem(player)) {
-					updateItemInInventory(player);
-				}
+		public void removeFromAllInventories() {
+			for (Player player : getGame().getGroup().getOnlinePlayers()) {
+				removeFromPLayerInventory(player);
 			}
 		}
+
+		public static void refreshPlayerInventory(Game game, Player player) {
+			for (SpecialItem.Events<?> itemEvents : game.getActiveItems()) {
+				itemEvents.refreshPlayerInventory(player);
+			}
+		}
+		public static void refreshAllPlayerInventories(Game game) {
+			for (SpecialItem.Events<?> itemEvents : game.getActiveItems()) {
+				itemEvents.refreshAllPlayerInventories();
+			}
+		}
+
+		public static void removeFromPlayerInventory(Game game, Player player) {
+			for (SpecialItem.Events<?> itemEvents : game.getActiveItems()) {
+				itemEvents.removeFromPLayerInventory(player);
+			}
+		}
+
+		public static void removeFromAllPlayerInventories(Game game) {
+			for (SpecialItem.Events<?> itemEvents : game.getActiveItems()) {
+				itemEvents.removeFromAllInventories();
+			}
+		}
+
 
 		@EventHandler
 		public void onPlayerDropItem(PlayerDropItemEvent event) {
 			if (canDrop) return;
-			if (! canPlayerHaveItem(event.getPlayer())) return;
+			Player player = event.getPlayer();
+			if (! game.getGroup().isPlayer(player)) return;
+			if (! isPlayerValid(player)) return;
 
 			ItemStack item = event.getItemDrop().getItemStack();
 
-			if (getItem(item, game) != null) {
+			if (getItem(item) != null) {
 				event.setCancelled(true);
 			}
 		}
@@ -354,14 +434,18 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		@EventHandler
 		public void onInventoryClickItem(InventoryClickEvent event) {
 			if (canDrop) return;
-			if (! canPlayerHaveItem(event.getWhoClicked())) return;
+			HumanEntity entity = event.getWhoClicked();
+			Player player = Bukkit.getPlayer(entity.getUniqueId());
+			if (player == null) return;
+			if (! game.getGroup().isPlayer(player)) return;
+			if (! isPlayerValid(player)) return;
 
 			ItemStack item = event.getCursor();
 			if (item.getType().isAir()) {
 				item = event.getCurrentItem();
 			}
 
-			if (getItem(item, game) == null) return;
+			if (getItem(item) == null) return;
 
 			InventoryType invType = event.getInventory().getType();
 
@@ -379,7 +463,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 			if (canDrop) return;
 			ItemStack item = event.getEntity().getItemStack();
 
-			if (getItem(item, game) == null) return;
+			if (getItem(item) == null) return;
 
 			event.setCancelled(true);
 		}
@@ -387,31 +471,12 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 		@EventHandler
 		public void onPlayerJoin(PlayerJoinEvent event) {
-			updateItemInInventory(event.getPlayer());
+			refreshPlayerInventory(event.getPlayer());
 		}
 
 		@EventHandler
 		public void onPlayerRespawn(PlayerRespawnEvent event)  {
-			updateItemInInventory(event.getPlayer());
-		}
-
-
-		public void updateItemInInventory(Player player) {
-			if (! canPlayerHaveItem(player)) return;
-
-			PlayerInventory inventory = player.getInventory();
-			if (T.containedIn(inventory, (ItemStack stack) -> getItem(stack, game))) return;
-
-			T item = createItem(player, game);
-			if (item == null) return;
-
-			int index = (slot == null) ? -1 : slot.intValue();
-
-			if (index == -1 || inventory.getItem(index) != null) {
-				inventory.addItem(item.getStack());
-			} else {
-				inventory.setItem(index, item.getStack());
-			}
+			refreshPlayerInventory(event.getPlayer());
 		}
 	}
 }

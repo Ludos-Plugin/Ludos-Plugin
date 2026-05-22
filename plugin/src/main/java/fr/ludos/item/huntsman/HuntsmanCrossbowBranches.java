@@ -1,11 +1,7 @@
 package fr.ludos.item.huntsman;
 
-import java.util.List;
 import java.util.Random;
 
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;

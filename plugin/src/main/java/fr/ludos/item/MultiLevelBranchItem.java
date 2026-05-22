@@ -5,12 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -19,14 +16,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.game.Game;
-import fr.ludos.item.LevelItem.LevelState;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 
 
 public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & MultiLevelBranchItem.Branch<TBranch>> extends BranchItem<TBranch> implements LevelItemInterface {
@@ -116,10 +108,10 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 
 		state.setLevel(level, getMaxBranchIndex());
 	}
-	public void addLvl() {
+	public void addLvl(int level) {
 		LevelItem.LevelState state = getLevelState();
 
-		state.addLvl(getMaxBranchIndex());
+		state.addLvl(level, getMaxBranchIndex());
 	}
 
 	public double getXp() {
@@ -182,9 +174,9 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 		@EventHandler
 		public void onPlayerDeath(PlayerDeathEvent event) {
 			Player player = event.getEntity();
-			if (! canPlayerHaveItem(player)) return;
+			if (! isPlayerValid(player)) return;
 
-			T specialItem = SpecialItem.findIn(player.getInventory(), (ItemStack stack) -> getItem(stack, game));
+			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
 			if ( specialItem == null ) return;
 
 			deadPlayerLevels.put(player,
@@ -202,10 +194,11 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 		}
 
 		protected abstract TBranch[] getBranches();
-		protected abstract T createItem(Player owner, LevelItem.LevelState[] levels, Game game);
+
+		public abstract T createItem(Player owner, LevelItem.LevelState[] levels);
 
 		@Override
-		protected final T createItem(Player owner, Game game) {
+		public final T createItem(Player owner) {
 			LevelItem.LevelState[] levels;
 			if (owner != null && deadPlayerLevels != null && deadPlayerLevels.containsKey(owner)) {
 				levels = deadPlayerLevels.get(owner);
@@ -214,12 +207,12 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 				levels = new LevelItem.LevelState[getBranches().length];
 			}
 
-			return createItem(owner, levels, game);
+			return createItem(owner, levels);
 		}
 
 		@EventHandler
 		public void onSwitchItem(PlayerItemHeldEvent event) {
-			BranchItem.onSwitchItem(event, (stack) -> getItem(stack, game));
+			BranchItem.onSwitchItem(event, this::getItem);
 		}
 	}
 }

@@ -28,7 +28,7 @@ public enum RoleSubcommand implements Subcommand {
 				return true;
 			}
 
-			Role.Builder getRole = Role.getRole(getTarget);
+			Role.Builder getRole = Role.getPlayerRole(getTarget);
 			sender.sendMessage(getRole == null ? noRoleLabel : getRole.getId());
 			return true;
 		}
@@ -39,8 +39,12 @@ public enum RoleSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " role get [player]";
+		public String getUsage() {
+			return "[player]";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	},
 	set() {
@@ -84,8 +88,12 @@ public enum RoleSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " role set <role_id> [player]";
+		public String getUsage() {
+			return "<role_id> [player]";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	},
 	config() {
@@ -118,11 +126,15 @@ public enum RoleSubcommand implements Subcommand {
 			return configRole.roleConfigTabComplete(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " role config <" +
+		public String getUsage() {
+			return "<" +
 				Role.getRegistered().keySet().stream().sorted()
 					.collect(Collectors.joining(" | "))
 				+ "> [option]";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	},
 	guidebook() {
@@ -156,11 +168,15 @@ public enum RoleSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " role guidebook <" +
+		public String getUsage() {
+			return "<" +
 				Role.getRegistered().keySet().stream().sorted()
 					.collect(Collectors.joining(" | "))
 				+ "> [player]";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	},
 	reset() {
@@ -182,8 +198,12 @@ public enum RoleSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return "/" + label + " role reset [player]";
+		public String getUsage() {
+			return "[player]";
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	},
 	help() {
@@ -194,7 +214,7 @@ public enum RoleSubcommand implements Subcommand {
 		@Override
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 			if (args.length < 1) {
-				sender.sendMessage(getUsage(sender, command, label));
+				sender.sendMessage(getUsage());
 				return true;
 			}
 
@@ -205,7 +225,7 @@ public enum RoleSubcommand implements Subcommand {
 				.findFirst().orElse(null);
 			if (option == null) return false;
 
-			sender.sendMessage(option.getUsage(sender, command, label));
+			sender.sendMessage(option.getUsage());
 			return true;
 		}
 		@Override
@@ -219,9 +239,8 @@ public enum RoleSubcommand implements Subcommand {
 			return null;
 		}
 		@Override
-		public String getUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			StringBuilder usage = new StringBuilder("/" + label + " role ");
-
+		public String getUsage() {
+			StringBuilder usage = new StringBuilder();
 			usage.append('<');
 			usage.append(
 				Arrays.stream(RoleSubcommand.values())
@@ -245,6 +264,10 @@ public enum RoleSubcommand implements Subcommand {
 			usage.append("[option]");
 
 			return usage.toString();
+		}
+		@Override
+		public boolean requireOp() {
+			return false;
 		}
 	};
 

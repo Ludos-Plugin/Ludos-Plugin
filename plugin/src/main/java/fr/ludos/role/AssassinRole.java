@@ -5,28 +5,27 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.HumanEntity;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.Ludos;
-import fr.ludos.item.SpecialItem;
-import fr.ludos.item.assassin.AssassinDagger;
-import fr.ludos.item.assassin.AssassinBoots;
-import fr.ludos.item.assassin.TeleportScroll;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
+import fr.ludos.item.assassin.AssassinBoots;
+import fr.ludos.item.assassin.AssassinDagger;
+import fr.ludos.item.assassin.TeleportScroll;
+import fr.ludos.item.assassin.trap.AssassinSnareDevice;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 
 public class AssassinRole extends Role {
@@ -47,11 +46,15 @@ public class AssassinRole extends Role {
 	protected void onRoleStart() {
 		stealthTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), () -> {
 			long now = System.currentTimeMillis();
-			for (Player player : Role.getPlayersOfRole(AssassinRole.id)) {
+			List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
+				.filter((player) -> Role.isPlayerRole(player, id))
+				.collect(Collectors.toUnmodifiableList());
+			for (Player player : players) {
 				if (!player.isOnline()) continue;
 				long last = lastMoveTime.getOrDefault(player.getUniqueId(), now);
 				if (now - last >= STATIONARY_DURATION_MS && !player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
 					player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, INVISIBILITY_DURATION, 0, false, false));
+					player.setArrowsStuck(0);
 				}
 			}
 		}, 0L, 20L);
@@ -74,6 +77,7 @@ public class AssassinRole extends Role {
 					put("dagger", new AssassinDagger.Events(game));
 					put("boots", new AssassinBoots.Events(game));
 					put("teleport_scroll", new TeleportScroll.Events(game));
+					put("snare", new AssassinSnareDevice.Events(game));
 				}};
 		}
 	}
@@ -105,6 +109,11 @@ public class AssassinRole extends Role {
 		event.setDamage(event.getDamage() * 2.5);
 	}
 
+	@Override
+	protected Boolean isPlayerValidInternal(OfflinePlayer player) {
+		return Role.isPlayerRole(player, id);
+	}
+
 
 	public static class Builder extends Role.Builder {
 
@@ -131,15 +140,6 @@ public class AssassinRole extends Role {
 		@Override
 		public TextComponent getDescription() {
 			return Component.text("Se camoufle pour surprendre ses ennemis et les éliminer");
-		}
-
-		@Override
-		public List<ItemStack> createArenaLoadout(Player player, Game game) {
-			return List.of(
-				AssassinDagger.createItem(player, game).getStack(),
-				AssassinBoots.createItem(player, game).getStack(),
-				TeleportScroll.createItem(player, game).getStack()
-			);
 		}
 	}
 }

@@ -1,15 +1,14 @@
 package fr.ludos.role;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.EnumMap;
-import java.util.Collections;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import org.bukkit.ChatColor;
@@ -38,7 +37,6 @@ import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
 import fr.ludos.item.Categories;
 import fr.ludos.item.LevelItem;
-import fr.ludos.item.SpecialItem;
 import fr.ludos.item.harvester.HarvesterPick;
 import fr.ludos.item.harvester.HarvesterScythe;
 import fr.ludos.item.harvester.HarvesterSpade;
@@ -144,7 +142,7 @@ public class HarvesterRole extends Role {
 		if (!Categories.isChestplate(chestplate)) return;
 		if (!isExplosiveChestplate(chestplate)) return;
 
-		List<Player> enemies = getGame().getGameTeamController().getEnemyPlayers(harvester).stream()
+		List<Player> enemies = getGame().getTeamController().getEnemyOnlinePlayers(harvester).stream()
 			.filter(enemy -> enemy.getWorld().equals(harvester.getWorld()))
 			.filter(enemy -> enemy.getLocation().distanceSquared(harvester.getLocation()) <= EXPLOSIVE_RADIUS_SQUARED)
 			.collect(Collectors.toList());
@@ -180,8 +178,8 @@ public class HarvesterRole extends Role {
 
 		double oreXp = getOreReward(block);
 		if (oreXp == 0) return;
-		for (var test : levelItemGetters) {
-			LevelItem.findAllIn(inventory, (itemStack) -> test.apply(itemStack, game)).forEach(item -> item.addXp(oreXp));
+		for (var itemType : levelItemGetters) {
+			LevelItem.findAllIn(inventory, (itemStack) -> itemType.apply(itemStack, game)).forEach(item -> item.addXp(oreXp));
 		}
 	}
 
@@ -358,6 +356,11 @@ public class HarvesterRole extends Role {
 			return id;
 		}
 
+		@Override
+		public EnumSet<RoleFlag> getRoleFlags() {
+			return EnumSet.of(RoleFlag.SUPPORT);
+		}
+
 		public Builder(Ludos plugin) {
 			super(plugin);
 		}
@@ -375,20 +378,6 @@ public class HarvesterRole extends Role {
 		@Override
 		public TextComponent getDescription() {
 			return Component.text("");
-		}
-
-		@Override
-		public List<ItemStack> createArenaLoadout(Player player, Game game) {
-			return List.of(
-				HarvesterPick.createItem(player, maxLevelState(fr.ludos.item.harvester.HarvesterPickLevels.values()), game).getStack(),
-				HarvesterScythe.createItem(player, maxLevelState(fr.ludos.item.harvester.HarvesterScytheLevels.values()), game).getStack(),
-				HarvesterSpade.createItem(player, maxLevelState(fr.ludos.item.harvester.HarvesterSpadeLevels.values()), game).getStack()
-			);
-		}
-
-		@Override
-		public void onArenaLoadoutApplied(Player player, Game game) {
-			setExplosiveChestplateMode(player.getInventory().getChestplate(), true);
 		}
 	}
 }

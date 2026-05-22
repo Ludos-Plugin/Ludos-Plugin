@@ -1,7 +1,9 @@
 package fr.ludos.command;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
@@ -23,6 +25,16 @@ public class CommandUtility {
 		}
 
 		return target;
+	}
+
+	public static Set<Player> getPlayersFromArgs(String[] args, int startIndex, CommandSender sender) {
+		Set<Player> targets = args.length > startIndex
+				? Bukkit.getOnlinePlayers().stream()
+					.filter(p -> p.getName().equalsIgnoreCase(args[startIndex]))
+					.collect(Collectors.toSet())
+				: Set.of();
+
+		return targets;
 	}
 
 	public static List<String> getOnlinePlayerNames() {

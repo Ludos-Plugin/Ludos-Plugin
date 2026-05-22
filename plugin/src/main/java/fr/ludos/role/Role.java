@@ -1,20 +1,23 @@
 package fr.ludos.role;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -28,7 +31,6 @@ import fr.ludos.game.Game;
 import fr.ludos.game.GameEvents;
 import fr.ludos.game.GameProcessBase;
 import fr.ludos.item.LevelItem;
-import fr.ludos.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -42,8 +44,6 @@ import net.kyori.adventure.text.format.TextDecoration;
  */
 public abstract class Role extends GameProcessBase {
 	private static final String rolesKey = "playerRoles";
-
-	private boolean started = false;
 
 	public static Map<String, Builder> getRegistered() {
 		return registered;
@@ -126,12 +126,18 @@ public abstract class Role extends GameProcessBase {
 	protected abstract LinkedHashMap<String, GameEvents> createGameEvents(Builder builder, Game game);
 
 	public static void loadConfigRoles(Ludos plugin) {
-		ConfigurationSection rolesSection = plugin.getConfig().getConfigurationSection(rolesKey);
-		if (rolesSection != null) {
-			playerRoles = rolesSection.getKeys(false).stream()
-				.filter(Objects::nonNull)
-				.collect(Collectors.toMap((s) -> s, (s) -> plugin.getConfig().getString(rolesKey + '.' + s)));
+		ConfigurationSection configSection = plugin.getConfig();
+		if (! configSection.isConfigurationSection(rolesKey)) {
+			configSection.createSection(rolesKey);
 		}
+		ConfigurationSection rolesSection = configSection.getConfigurationSection(rolesKey);
+		if (rolesSection == null) {
+			return;
+		}
+
+		playerRoles = rolesSection.getKeys(false).stream()
+			.filter(Objects::nonNull)
+			.collect(Collectors.toMap((s) -> s, (s) -> plugin.getConfig().getString(rolesKey + '.' + s)));
 	}
 
 	public static void registerRole(Builder constructor) {
@@ -147,8 +153,13 @@ public abstract class Role extends GameProcessBase {
 	}
 
 	@Nullable
-	public static Builder getRole(HumanEntity player) {
-		return registered.getOrDefault(playerRoles.getOrDefault(player.getName(), ""), null);
+	public static String getPlayerRoleId(OfflinePlayer player) {
+		return playerRoles.getOrDefault(player.getName(), "");
+	}
+
+	@Nullable
+	public static Builder getPlayerRole(OfflinePlayer player) {
+		return registered.getOrDefault(getPlayerRoleId(player), null);
 	}
 
 	@Nullable
@@ -156,12 +167,16 @@ public abstract class Role extends GameProcessBase {
 		return registered.getOrDefault(roleId, null);
 	}
 
-	public static boolean isPlayerRole(HumanEntity player, String role) {
-		Builder currentRole = getRole(player);
+	public static boolean isPlayerRole(OfflinePlayer player, String role) {
+		Builder currentRole = getPlayerRole(player);
 		return (currentRole != null && currentRole.getId().equals(role));
 	}
 
-	public static void setRole(HumanEntity player, String roleId) {
+	public static Predicate<OfflinePlayer> ofRole(String id) {
+		return (OfflinePlayer p) -> getPlayerRoleId(p) == id;
+	}
+
+	public static void setRole(OfflinePlayer player, String roleId) {
 		if ( playerRoles.containsKey(player.getName()) && playerRoles.get(player.getName()).equalsIgnoreCase(roleId) ) return;
 
 		Role.Builder role = getRegistered().get(roleId);
@@ -192,6 +207,14 @@ public abstract class Role extends GameProcessBase {
 	}
 
 
+	public final Boolean isPlayerValid(OfflinePlayer player) {
+		if (! game.getGroup().isPlayer(player)) return false;
+		return isPlayerValidInternal(player);
+	}
+	protected Boolean isPlayerValidInternal(OfflinePlayer player) {
+		return true;
+	}
+
 	/**
 	 * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
 	 * It contains configuration for the Role itself.
@@ -201,6 +224,9 @@ public abstract class Role extends GameProcessBase {
 		public final JavaPlugin getPlugin() { return plugin; }
 
 		public abstract String getId();
+		public EnumSet<RoleFlag> getRoleFlags() {
+			return EnumSet.noneOf(RoleFlag.class);
+		}
 
 		public abstract TextComponent getDisplayName();
 		public abstract TextComponent getDescription();
@@ -252,9 +278,6 @@ public abstract class Role extends GameProcessBase {
 
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
-		public List<ItemStack> createArenaLoadout(Player player, Game game) { return List.of(); }
-
-		public void onArenaLoadoutApplied(Player player, Game game) { }
 
 		protected final <TLevel extends Enum<TLevel>> LevelItem.LevelState maxLevelState(TLevel[] levels) {
 			int maxLevel = Math.max(0, levels.length - 1);
