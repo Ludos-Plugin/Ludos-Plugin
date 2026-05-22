@@ -215,7 +215,8 @@ public final class RaidWaveController extends WaveController {
 		Set<Player> alivePlayers = game.getTeamController().getAlivePlayers();
 		if (alivePlayers.isEmpty()) {
 			Bukkit.broadcast(Component.text("Raid failed: all players are down").color(NamedTextColor.RED));
-			stop();
+
+			scheduleReturn();
 			return;
 		}
 

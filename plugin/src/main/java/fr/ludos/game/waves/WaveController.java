@@ -81,6 +81,15 @@ public abstract class WaveController extends GameProcessBase {
 		return Component.text("Waves completed!").color(NamedTextColor.GOLD);
 	}
 
+	public void scheduleReturn() {
+		if (scheduled) return;
+
+		scheduled = true;
+		long delay = 20 * 5;
+
+		Bukkit.getScheduler().runTaskLater(getPlugin(), this::stop, delay);
+	}
+
 	public void scheduleNextWave() {
 		if (scheduled) return;
 
