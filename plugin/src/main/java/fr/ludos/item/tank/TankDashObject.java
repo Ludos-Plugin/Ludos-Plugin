@@ -36,7 +36,7 @@ public class TankDashObject extends SpecialItem {
 	private static final double DASH_POWER = 1.1;
 	private static final double UNDERWATER_DASH_POWER = 0.55;
 	private static final int DASH_DURATION_TICKS = 12;
-	private static final double COLLISION_RADIUS = 1.5;
+	private static final Vector COLLISION_RANGE = new Vector(1.5, 1.0, 1.5);
 	private static final double COLLISION_DAMAGE = 4.0;
 	private static final double COLLISION_KNOCKBACK = 1.2;
 	private static final int COOLDOWN_DURATION = 15 * 20;
@@ -121,7 +121,7 @@ public class TankDashObject extends SpecialItem {
 					0
 				);
 
-				Stream<Entity> targetsStream = player.getNearbyEntities(COLLISION_RADIUS, COLLISION_RADIUS, COLLISION_RADIUS).stream()
+				Stream<Entity> targetsStream = player.getNearbyEntities(COLLISION_RANGE.getX(), COLLISION_RANGE.getY(), COLLISION_RANGE.getZ()).stream()
 					.filter(getGame().getTeamController().isEntityEnemyOf((OfflinePlayer) player));
 				Iterable<Entity> targets = () -> targetsStream.iterator();
 
