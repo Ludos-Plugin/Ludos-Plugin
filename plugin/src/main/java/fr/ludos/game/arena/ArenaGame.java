@@ -18,6 +18,8 @@ import fr.ludos.command.ludos.GroupConfigs;
 import fr.ludos.game.Game;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaController;
 import fr.ludos.game.lobbyController.structure.StructureLobbyController;
+import fr.ludos.game.waves.WaveController;
+import fr.ludos.game.waves.WaveGame;
 import fr.ludos.game.worldController.GameWorldController;
 import fr.ludos.game.worldController.SingleWorldController;
 import fr.ludos.group.Group;
@@ -28,7 +30,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.util.TriState;
 
-public class ArenaGame extends Game {
+public class ArenaGame extends WaveGame {
 	public static final String ID = "arena";
 
 	private final Builder builder;
@@ -48,7 +50,11 @@ public class ArenaGame extends Game {
 		return teamController;
 	}
 
-	private final ArenaWaveController wavesController;
+	private final ArenaWaveController waveController;
+	@Override
+	public WaveController getWaveController() {
+		return this.waveController;
+	}
 
 
 	protected ArenaGame(Builder builder, Group group) {
@@ -60,7 +66,7 @@ public class ArenaGame extends Game {
 		Location returnLocation = GameWorldController.pickInitialLocation(group);
 
 
-		this.wavesController = new ArenaWaveController(
+		this.waveController = new ArenaWaveController(
 			this,
 			ArenaGameConfigs.getRounds(config)
 		);
@@ -74,7 +80,7 @@ public class ArenaGame extends Game {
 				new LobbyStructure.Builder(),
 				() -> {
 					if (isStarted()) {
-						wavesController.startWave();
+						waveController.startWave();
 					} else {
 						start();
 					}
@@ -99,21 +105,6 @@ public class ArenaGame extends Game {
 		super.onGameSetup();
 
 		getWorldController().transferToNewWorld(builder.createWorldCreator());
-	}
-
-	@Override
-	protected void onGameStart() {
-		super.onGameStart();
-
-		wavesController.start();
-		wavesController.startWave();
-	}
-
-	@Override
-	protected void onGameStop() {
-		super.onGameStop();
-
-		wavesController.stop();
 	}
 
 	@Override

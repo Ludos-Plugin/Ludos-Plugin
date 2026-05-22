@@ -27,6 +27,7 @@ public class WorldBorderAreaController extends GameAreaController {
 
 	@Override
 	protected void onStart() {
+		super.onStart();
 		gameLocation = getGame().getWorldController().getWorld().getSpawnLocation();
 		setBorder(gameLocation, getAreaDiameter(), 3);
 	}

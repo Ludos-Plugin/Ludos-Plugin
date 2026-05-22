@@ -131,25 +131,5 @@ public class ManhuntCompass extends SpecialItem {
 			if (! (game instanceof ManhuntGame manhunt)) return false;
 			return manhunt.getTeamController().hunterTeam.hasEntry(owner.getName());
 		}
-
-		// @EventHandler
-		// public void handlePlayerDeath(PlayerDeathEvent event) {
-		//     Player player = event.getEntity();
-		//     ItemStack compass = ManhuntCompass.getPersistentCompass(player);
-
-		//     if (compass != null) {
-		//         player.sendMessage(ChatColor.RED + "Votre Boussole Persistante a été détruite car vous êtes mort.");
-		//         ManhuntCompass.removePersistentCompass(player);
-		//     }
-		// }
-
-		// @EventHandler
-		// public void handlePlayerRespawn(PlayerRespawnEvent event) {
-		//     Player player = event.getPlayer();
-
-		//     if (ManhuntCompass.hasPersistentCompass(player)) {
-		//         player.sendMessage(ChatColor.GREEN + "Vous avez récupéré votre Boussole Persistante après la résurrection!");
-		//     }
-		// }
 	}
 }

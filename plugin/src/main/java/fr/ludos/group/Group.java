@@ -511,7 +511,7 @@ public final class Group implements ConfigurationSerializable {
 		for (Map.Entry<String, Object> groupEntry : groupsSection.getValues(false).entrySet()) {
 			if (groupEntry.getValue() instanceof MemorySection groupData) {
 				try {
-					Group group = Group.deserialize(groupData.getValues(true));
+					Group.deserialize(groupData.getValues(true));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

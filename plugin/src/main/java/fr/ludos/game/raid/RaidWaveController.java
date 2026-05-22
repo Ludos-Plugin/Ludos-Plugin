@@ -173,8 +173,8 @@ public final class RaidWaveController extends WaveController {
 	@Override
 	protected void onStop() {
 		super.onStop();
-		getGame().stop();
 
+		getGame().stop();
 		despawnAllEnemies();
 	}
 

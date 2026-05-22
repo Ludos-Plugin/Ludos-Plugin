@@ -105,6 +105,8 @@ public class BerserkerRageBrew extends SpecialItem {
 
 		@Override
 		protected void onItemStop() {
+			super.onItemStop();
+
 			cooldowns.clear();
 			for (Player player : Bukkit.getOnlinePlayers()) {
 				role.setRage(player, false);

@@ -98,6 +98,8 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches>
 
 		@Override
 		protected void onItemStart() {
+			super.onItemStart();
+
 			trapTask = new BukkitRunnable() {
 				@Override
 				public void run() {
@@ -135,6 +137,8 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches>
 
 		@Override
 		protected void onItemStop() {
+			super.onItemStop();
+
 			traps.clear();
 
 			if (trapTask != null) {

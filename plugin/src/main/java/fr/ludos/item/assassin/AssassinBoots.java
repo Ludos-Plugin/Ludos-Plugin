@@ -7,12 +7,8 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -21,10 +17,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import fr.ludos.item.SpecialItem;
-import fr.ludos.role.Role;
-import fr.ludos.role.AssassinRole;
 import fr.ludos.game.Game;
+import fr.ludos.item.SpecialItem;
+import fr.ludos.role.AssassinRole;
+import fr.ludos.role.Role;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class AssassinBoots extends SpecialItem {
 	public static final String ID = "assassin_boots";

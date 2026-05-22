@@ -95,6 +95,7 @@ public final class ArenaTeamController extends GameTeamController {
 
 	@Override
 	protected void onStart() {
+		super.onStart();
 		Scoreboard scoreboard = getGame().getScoreboard();
 
 		Team primaryTeam = createOrGetTeam(scoreboard, "ArenaTeam1", NamedTextColor.BLUE, false);
@@ -117,6 +118,7 @@ public final class ArenaTeamController extends GameTeamController {
 
 	@Override
 	protected void onStop() {
+		super.onStop();
 		if (spectatorTeam != null) {
 			spectatorTeam.unregister();
 		}

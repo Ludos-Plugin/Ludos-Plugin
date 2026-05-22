@@ -11,6 +11,6 @@ services:
       EULA: "TRUE"
       TYPE: "PAPER"
       VERSION: "1.19"
-      MEMORY: "6144M"
+      MAX_MEMORY: "6144M"
     volumes:
       - ./data:/data

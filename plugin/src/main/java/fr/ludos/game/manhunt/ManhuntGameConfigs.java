@@ -164,7 +164,6 @@ public enum ManhuntGameConfigs implements ConfigSubcommand {
 	public static final String revealKey = "reveal";
 	public static final String revealPath = ManhuntGame.ID + '.' + revealKey;
 
-	private static final String allOption = "all";
 	private static final String randomOption = "random";
 
 	public static final List<String> areaOptions = Arrays.stream(WorldBorderAreaOption.values())

@@ -294,10 +294,12 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 		@Override
 		protected final void onInit() {
+			super.onInit();
 			onItemInit();
 		}
 		@Override
 		protected final void onStart() {
+			super.onStart();
 			refreshAllPlayerInventories();
 
 			game.getActiveItems().add(this);
@@ -311,10 +313,12 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 		@Override
 		protected final void onDeinit() {
+			super.onDeinit();
 			onItemDeinit();
 		}
 		@Override
 		protected final void onStop() {
+			super.onStop();
 			removeFromAllInventories();
 
 			game.getActiveItems().remove(this);

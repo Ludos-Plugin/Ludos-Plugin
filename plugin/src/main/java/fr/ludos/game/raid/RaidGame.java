@@ -1,13 +1,6 @@
 package fr.ludos.game.raid;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
@@ -18,6 +11,8 @@ import fr.ludos.game.Game;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaController;
 import fr.ludos.game.arena.ArenaGameConfigs;
 import fr.ludos.game.lobbyController.structure.StructureLobbyController;
+import fr.ludos.game.waves.WaveController;
+import fr.ludos.game.waves.WaveGame;
 import fr.ludos.game.worldController.GameWorldController;
 import fr.ludos.game.worldController.MultiWorldController;
 import fr.ludos.group.Group;
@@ -27,7 +22,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-public class RaidGame extends Game {
+public class RaidGame extends WaveGame {
 	public static final String ID = "raid";
 
 	private final MultiWorldController worldController;
@@ -42,7 +37,11 @@ public class RaidGame extends Game {
 		return teamController;
 	}
 
-	private final RaidWaveController wavesController;
+	private final RaidWaveController waveController;
+	@Override
+	public WaveController getWaveController() {
+		return this.waveController;
+	}
 
 	protected RaidGame(Builder builder, Group group) {
 		super(builder, group);
@@ -51,7 +50,7 @@ public class RaidGame extends Game {
 
 		Location returnLocation = GameWorldController.pickInitialLocation(group);
 
-		this.wavesController = new RaidWaveController(
+		this.waveController = new RaidWaveController(
 			this,
 			RaidGameConfigs.getWaves(config)
 		);
@@ -65,7 +64,7 @@ public class RaidGame extends Game {
 				new LobbyStructure.Builder(),
 				() -> {
 					if (isStarted()) {
-						wavesController.startWave();
+						waveController.startWave();
 					} else {
 						start();
 					}
@@ -87,22 +86,7 @@ public class RaidGame extends Game {
 	protected void onGameSetup() {
 		super.onGameSetup();
 
-		getWorldController().transferToNewWorld(wavesController.getCurrentWaveTheme().getWorldCreator());
-	}
-
-	@Override
-	protected void onGameStart() {
-		super.onGameStart();
-
-		wavesController.start();
-		wavesController.startWave();
-	}
-
-	@Override
-	protected void onGameStop() {
-		super.onGameStop();
-
-		wavesController.stop();
+		getWorldController().transferToNewWorld(waveController.getCurrentWaveTheme().getWorldCreator());
 	}
 
 	@Override

@@ -1,13 +1,10 @@
 package fr.ludos.item.tank;
 
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
@@ -24,8 +21,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.game.Game;
-import fr.ludos.item.SpecialItem;
 import fr.ludos.item.LevelItem;
+import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
 import fr.ludos.role.TankRole;
 import net.kyori.adventure.text.Component;
@@ -180,6 +177,8 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 
 		@Override
 		protected void onItemStart() {
+			super.onItemStart();
+
 			rechargeTask = new BukkitRunnable() {
 				@Override
 				public void run() {
@@ -208,6 +207,8 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 
 		@Override
 		protected void onItemStop() {
+			super.onItemStop();
+
 			if (rechargeTask != null) {
 				rechargeTask.cancel();
 			}

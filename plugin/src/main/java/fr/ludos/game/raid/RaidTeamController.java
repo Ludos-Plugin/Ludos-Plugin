@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -54,6 +53,8 @@ public final class RaidTeamController extends GameTeamController {
 
 	@Override
 	protected void onStart() {
+		super.onStart();
+
 		Scoreboard scoreboard = getGame().getScoreboard();
 
 		playersTeam = createOrGetTeam(scoreboard, "ArenaTeam", NamedTextColor.BLUE, false);
@@ -71,6 +72,8 @@ public final class RaidTeamController extends GameTeamController {
 
 	@Override
 	protected void onStop() {
+		super.onStop();
+
 		if (playersTeam != null) {
 			playersTeam.unregister();
 		}

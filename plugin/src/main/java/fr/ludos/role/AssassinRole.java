@@ -44,6 +44,8 @@ public class AssassinRole extends Role {
 
 	@Override
 	protected void onRoleStart() {
+		super.onRoleStart();
+
 		stealthTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), () -> {
 			long now = System.currentTimeMillis();
 			List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
@@ -62,6 +64,8 @@ public class AssassinRole extends Role {
 
 	@Override
 	protected void onRoleStop() {
+		super.onRoleStop();
+
 		if (stealthTask != null) {
 			stealthTask.cancel();
 			stealthTask = null;
