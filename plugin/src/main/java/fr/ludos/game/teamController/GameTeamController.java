@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -135,31 +136,44 @@ public abstract class GameTeamController extends TwoStepGameProcessBase {
 
 		return entity1Team != null && entity1Team.equals(entity2Team);
 	}
-	public boolean areAllies(LivingEntity entity1, LivingEntity entity2) {
+	public boolean areEntitiesAllies(Entity entity1, Entity entity2) {
 		return areAllies(entity1.getName(), entity2.getName());
 	}
-	public boolean areAllies(OfflinePlayer player1, OfflinePlayer player2) {
+	public boolean arePlayersAllies(OfflinePlayer player1, OfflinePlayer player2) {
 		return areAllies(player1.getName(), player2.getName());
 	}
 
-	public Set<LivingEntity> getEnemies(Player player) {
-		return getLivingEntitiesStream()
-			.filter(other -> ! areAllies(player, other))
-			.collect(Collectors.toSet());
+	public Predicate<OfflinePlayer> isPlayerAllyOf(Entity entity) {
+		return (p) -> areAllies(p.getName(), entity.getName());
 	}
-	public Set<OfflinePlayer> getEnemyPlayers(Player player) {
-		return getPlayersStream()
-			.filter(other -> ! areAllies(player, other))
-			.collect(Collectors.toSet());
+	public Predicate<OfflinePlayer> isPlayerEnemyOf(Entity entity) {
+		return Predicate.not(isPlayerAllyOf(entity));
 	}
-	public Set<Player> getEnemyOnlinePlayers(Player player) {
-		return getOnlinePlayersStream()
-			.filter(other -> ! areAllies((OfflinePlayer)player, other))
-			.collect(Collectors.toSet());
+
+	public Predicate<Entity> isEntityAllyOf(Entity entity) {
+		return (p) -> areAllies(p.getName(), entity.getName());
+	}
+	public Predicate<Entity> isEntityEnemyOf(Entity entity) {
+		return Predicate.not(isEntityAllyOf(entity));
+	}
+
+	public Predicate<OfflinePlayer> isPlayerAllyOf(OfflinePlayer player) {
+		return (p) -> arePlayersAllies(p, player);
+	}
+	public Predicate<OfflinePlayer> isPlayerEnemyOf(OfflinePlayer player) {
+		return Predicate.not(isPlayerAllyOf(player));
+	}
+
+	public Predicate<Entity> isEntityAllyOf(OfflinePlayer player) {
+		return (p) -> areAllies(p.getName(), player.getName());
+	}
+	public Predicate<Entity> isEntityEnemyOf(OfflinePlayer player) {
+		return Predicate.not(isEntityAllyOf(player));
 	}
 
 	public final Player pickRandomPlayer() {
 		List<Player> players = getAlivePlayersStream().toList();
+		if (players.isEmpty()) return null;
 		return players.get(game.random.nextInt(players.size()));
 	}
 

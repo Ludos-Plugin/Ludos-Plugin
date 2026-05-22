@@ -1,9 +1,9 @@
 package fr.ludos.item.assassin.trap;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -23,6 +23,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
 import fr.ludos.game.Game;
 import fr.ludos.item.BranchItem;
@@ -108,7 +109,6 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches>
 
 					for (var playerTrapEntries : traps.entrySet()) {
 						Player player = playerTrapEntries.getKey();
-						Set<LivingEntity> targets = game.getTeamController().getEnemies(player);
 
 						for (var branchTrapEntries : playerTrapEntries.getValue().entrySet()) {
 							AssassinSnareDeviceBranches branch = branchTrapEntries.getKey();
@@ -119,6 +119,8 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches>
 							}
 
 							for (AssassinTrap trap : branchTraps) {
+								Vector range = trap.getRange();
+								Collection<LivingEntity> targets = trap.getLocation().getNearbyLivingEntities(range.getX(), range.getY(), range.getZ());
 								for (LivingEntity target : targets) {
 									if (target.isDead()) continue;
 									if (target instanceof Player playerTarget && (playerTarget.getGameMode() == GameMode.SPECTATOR || playerTarget.getGameMode() == GameMode.CREATIVE)) continue;

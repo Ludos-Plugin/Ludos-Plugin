@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -416,14 +417,8 @@ public class Utility {
 			.filter(Objects::nonNull);
 	}
 
-	public static Stream<Player> getAlive(@Nullable Collection<Player> players) {
-		if (players == null) return Stream.of();
-		return getAlive(players.stream());
-	}
-	public static Stream<Player> getAlive(Stream<Player> players) {
-		return players
-			.filter(p -> p.getGameMode() == GameMode.SURVIVAL && ! p.isDead());
-	}
+
+	public final static Predicate<Player> isAlive = (p) -> (p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE) && ! p.isDead();
 
 	public static Stream<Entity> getTeamEntities(Team team) {
 		return team.getEntries().stream()
@@ -444,6 +439,6 @@ public class Utility {
 		return getOnline(getTeamPlayers(team));
 	}
 	public static Stream<Player> getTeamAlivePlayers(Team team) {
-		return getAlive(getTeamOnlinePlayers(team));
+		return getTeamOnlinePlayers(team).filter(isAlive);
 	}
 }

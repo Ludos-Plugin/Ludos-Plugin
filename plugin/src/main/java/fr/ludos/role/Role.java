@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -58,10 +59,10 @@ public abstract class Role extends GameProcessBase {
 	}
 
 
-	public static Map<String, String> getPlayerRoles() {
+	public static Map<UUID, String> getPlayerRoles() {
 		return playerRoles;
 	}
-	private static Map<String, String> playerRoles = new HashMap<String, String>();
+	private static Map<UUID, String> playerRoles = new HashMap<UUID, String>();
 
 
 	private final Game game;
@@ -146,7 +147,15 @@ public abstract class Role extends GameProcessBase {
 
 		playerRoles = rolesSection.getKeys(false).stream()
 			.filter(Objects::nonNull)
-			.collect(Collectors.toMap((s) -> s, (s) -> plugin.getConfig().getString(rolesKey + '.' + s)));
+			.collect(Collectors.toMap(
+				(s) -> UUID.fromString(s),
+				(s) -> {
+					String path = rolesKey + '.' + UUID.fromString(s);
+					String val = plugin.getConfig().getString(path);
+					plugin.getLogger().info("Path : " + path + " | Val : " + val);
+					return val;
+				}
+			));
 	}
 
 	public static void registerRole(Builder constructor) {
@@ -156,14 +165,14 @@ public abstract class Role extends GameProcessBase {
 	public static List<Player> getPlayersOfRole(String roleId) {
 		return Role.getPlayerRoles().entrySet().stream()
 			.filter(entry -> (entry.getValue().equals(roleId)))
-			.map(entry -> Bukkit.getPlayerExact(entry.getKey()))
+			.map(entry -> Bukkit.getPlayer(entry.getKey()))
 			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
 	}
 
 	@Nullable
 	public static String getPlayerRoleId(OfflinePlayer player) {
-		return playerRoles.getOrDefault(player.getName(), "");
+		return playerRoles.getOrDefault(player.getUniqueId(), "");
 	}
 
 	@Nullable
@@ -176,42 +185,46 @@ public abstract class Role extends GameProcessBase {
 		return registered.getOrDefault(roleId, null);
 	}
 
-	public static boolean isPlayerRole(OfflinePlayer player, String role) {
-		Builder currentRole = getPlayerRole(player);
-		return (currentRole != null && currentRole.getId().equals(role));
+	public static boolean isPlayerRole(OfflinePlayer player, String roleId) {
+		String playerRoleId = getPlayerRoleId(player);
+		if (roleId == playerRoleId) return true;
+		else if (roleId == null || playerRoleId == null) return false;
+		return roleId.equalsIgnoreCase(playerRoleId);
 	}
 
 	public static Predicate<OfflinePlayer> ofRole(String id) {
-		return (OfflinePlayer p) -> getPlayerRoleId(p) == id;
+		return (OfflinePlayer p) -> isPlayerRole(p, id);
 	}
 
 	public static void setRole(OfflinePlayer player, String roleId) {
-		if ( playerRoles.containsKey(player.getName()) && playerRoles.get(player.getName()).equalsIgnoreCase(roleId) ) return;
+		UUID playerUUID = player.getUniqueId();
+		if ( playerRoles.containsKey(playerUUID) && playerRoles.get(playerUUID).equalsIgnoreCase(roleId) ) return;
 
 		Role.Builder role = getRegistered().get(roleId);
 		if (role == null) return;
 
-		playerRoles.put(player.getName(), roleId);
+		playerRoles.put(playerUUID, roleId);
 
 		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 
-		plugin.getConfig().set(rolesKey + '.' + player.getName(), roleId);
+		plugin.getConfig().set(rolesKey + '.' + playerUUID, roleId);
 		plugin.saveConfig();
 
 	}
 
 	public static void removeRole(Player player) {
-		if ( ! playerRoles.containsKey(player.getName()) ) return;
+		UUID playerUUID = player.getUniqueId();
+		if ( ! playerRoles.containsKey(playerUUID) ) return;
 
-		Role.Builder role = getRegistered().get(playerRoles.get(player.getName()));
+		Role.Builder role = getRegistered().get(playerRoles.get(playerUUID));
 		if (role == null) return;
 
-		playerRoles.remove(player.getName());
+		playerRoles.remove(playerUUID);
 		player.sendMessage("You now have no role");
 
 		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 
-		plugin.getConfig().set(rolesKey + '.' + player.getName(), null);
+		plugin.getConfig().set(rolesKey + '.' + playerUUID, null);
 		plugin.saveConfig();
 	}
 
