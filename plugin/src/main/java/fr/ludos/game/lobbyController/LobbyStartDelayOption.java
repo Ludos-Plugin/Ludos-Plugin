@@ -1,6 +1,7 @@
 package fr.ludos.game.lobbyController;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public enum LobbyStartDelayOption {
@@ -15,6 +16,13 @@ public enum LobbyStartDelayOption {
 
 	private LobbyStartDelayOption(int duration) {
 		this.duration = duration;
+	}
+
+
+	public static List<String> getOptions() {
+		return Arrays.stream(LobbyStartDelayOption.values())
+			.map(LobbyStartDelayOption::toString)
+			.collect(Collectors.toList());
 	}
 
 	public static String getUsage() {

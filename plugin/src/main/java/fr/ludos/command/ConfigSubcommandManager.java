@@ -12,7 +12,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-public final class ConfigSubcommandManager<T extends Enum<T> & ConfigExecutor & TabCompleter & CommandUsageProvider> implements ConfigExecutor, TabCompleter, CommandUsageProvider  {
+public final class ConfigSubcommandManager<T extends Enum<T> & ConfigExecutor & TabCompleter & CommandUsageProvider> implements ConfigExecutor, TabCompleter, CommandUsageProvider {
 	private final Function<CommandSender, Stream<T>> valuesFunc;
 	private final List<T> values;
 	public Stream<T> getValues() {
@@ -29,6 +29,7 @@ public final class ConfigSubcommandManager<T extends Enum<T> & ConfigExecutor & 
 
 		return null;
 	}
+
 	public ConfigSubcommandManager(Function<CommandSender, Stream<T>> valuesFunc) {
 		this.values = null;
 		this.valuesFunc = valuesFunc;
@@ -52,12 +53,7 @@ public final class ConfigSubcommandManager<T extends Enum<T> & ConfigExecutor & 
 			.orElse(null);
 		if (option == null) return false;
 
-		if (! config.isConfigurationSection(arg)) {
-			config.createSection(arg);
-		}
-		ConfigurationSection gamesSection = config.getConfigurationSection(arg);
-
-		return option.onCommand(sender, command, label, gamesSection, Arrays.copyOfRange(args, 1, args.length));
+		return option.onCommand(sender, command, label, config, Arrays.copyOfRange(args, 1, args.length));
 	}
 
 	@Override

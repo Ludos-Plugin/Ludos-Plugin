@@ -16,32 +16,53 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
 import fr.ludos.command.CommandUtility;
+import fr.ludos.command.ConfigSubcommand;
 import fr.ludos.game.areaController.worldborder.WorldBorderAreaOption;
 
-public enum ArenaGameConfigs {
-	team1 (() -> "[all | <player1> <player2> ...]") {
+public enum ArenaGameConfigs implements ConfigSubcommand {
+	team1 {
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+		public String getDescription() {
+			return "Which players will be part of team 1.";
+		}
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			return handleTeamCommand(sender, config, args, 0);
 		}
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			return teamTabComplete();
 		}
-	},
-	team2 (() -> "[all | <player1> <player2> ...]") {
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+		public String getUsage() {
+			return "[" + autoOption + " | <player1> <player2> ...]";
+		}
+	},
+	team2 {
+		@Override
+		public String getDescription() {
+			return "Which players will be part of team 2.";
+		}
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			return handleTeamCommand(sender, config, args, 1);
 		}
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			return teamTabComplete();
 		}
-	},
-	mode (ArenaModeOption::getUsage) {
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+		public String getUsage() {
+			return "[" + autoOption + " | <player1> <player2> ...]";
+		}
+	},
+	mode {
+		@Override
+		public String getDescription() {
+			return "The kind of Arena game to play.";
+		}
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			if (args.length == 0) {
 				sender.sendMessage(getMode(config).name());
 				return true;
@@ -53,14 +74,22 @@ public enum ArenaGameConfigs {
 			return true;
 		}
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			if (args.length == 1) return modeOptions;
 			return null;
 		}
-	},
-	rounds (() -> "<number>") {
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+		public String getUsage() {
+			return ArenaModeOption.getUsage();
+		}
+	},
+	rounds {
+		@Override
+		public String getDescription() {
+			return "How many rounds an Arena game will last.";
+		}
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			if (args.length == 0) {
 				sender.sendMessage(Integer.toString(getRounds(config)));
 				return true;
@@ -74,13 +103,21 @@ public enum ArenaGameConfigs {
 			return true;
 		}
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			return null;
 		}
-	},
-	area (WorldBorderAreaOption::getUsage) {
 		@Override
-		public boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
+		public String getUsage() {
+			return "<number>";
+		}
+	},
+	area {
+		@Override
+		public String getDescription() {
+			return "The size of the Arena.";
+		}
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args) {
 			if (args.length == 0) {
 				sender.sendMessage(getArea(config).name());
 				return true;
@@ -92,23 +129,23 @@ public enum ArenaGameConfigs {
 			return true;
 		}
 		@Override
-		public List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			if (args.length == 1) return areaOptions;
 			return null;
 		}
+		@Override
+		public String getUsage() {
+			return WorldBorderAreaOption.getUsage();
+		}
 	};
 
-	private final Supplier<String> usageGetter;
-	public String getUsage() {
-		return usageGetter.get();
+	@Override
+	public boolean requireOp() {
+		return false;
 	}
 
-	private ArenaGameConfigs(Supplier<String> usageGetter) {
-		this.usageGetter = usageGetter;
-	}
-
-	public abstract boolean handleConfigsCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args);
-	public abstract List<String> handleConfigsTabComplete(CommandSender sender, Command command, String label, String[] args);
+	public abstract boolean onCommand(CommandSender sender, Command command, String label, ConfigurationSection config, String[] args);
+	public abstract List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args);
 
 
 	public static final String team1Key = "team1";
@@ -122,7 +159,7 @@ public enum ArenaGameConfigs {
 	public static final String areaKey = "area";
 	public static final String areaPath = ArenaGame.ID + '.' + areaKey;
 
-	private static final String allOption = "all";
+	private static final String autoOption = "auto";
 
 	public static final List<String> modeOptions = ArenaModeOption.options;
 	public static final List<String> areaOptions = WorldBorderAreaOption.options;
@@ -177,9 +214,9 @@ public enum ArenaGameConfigs {
 			sender.sendMessage(names.isEmpty() ? "Auto" : String.join(" ", names));
 			return true;
 		}
-		if (allOption.equalsIgnoreCase(args[0])) {
+		if (autoOption.equalsIgnoreCase(args[0])) {
 			setTeamNames(config, index, null);
-			sender.sendMessage("Arena team" + (index + 1) + " reset to auto");
+			sender.sendMessage("Arena team" + (index + 1) + " reset to " + autoOption);
 			return true;
 		}
 		setTeamNames(config, index, new HashSet<>(Arrays.asList(args)));
@@ -189,7 +226,7 @@ public enum ArenaGameConfigs {
 
 	private static List<String> teamTabComplete() {
 		List<String> values = CommandUtility.getOnlinePlayerNames();
-		values.add(allOption);
+		values.add(autoOption);
 		return values;
 	}
 }

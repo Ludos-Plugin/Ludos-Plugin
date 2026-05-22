@@ -9,8 +9,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.Ludos;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.Subcommand;
 import fr.ludos.command.SubcommandManager;
@@ -27,7 +29,7 @@ public enum GameSubcommand implements Subcommand {
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 			if (args.length < 1) return false;
 
-			if (!(sender instanceof Player leader)) {
+			if (!(sender instanceof Player player)) {
 				sender.sendMessage("Only players can start games.");
 				return true;
 			}
@@ -38,14 +40,15 @@ public enum GameSubcommand implements Subcommand {
 				return false;
 			}
 
-			Group group = Group.getGroupOfPlayer(leader);
+			Group group = Group.getGroupOfPlayer(player);
 			if (group == null) {
 				sender.sendMessage("You are not in a group.");
 				return true;
 			}
 
-			if (!group.isLeader(leader)) {
-				sender.sendMessage("Only the group leader can start a game.");
+			boolean membersCanRunGames = GroupConfigs.getGroupRightsOption(group.getConfig()).canRunGames();
+			if (! group.isLeader(player) && ! membersCanRunGames) {
+				sender.sendMessage("Only the group leader can start games.");
 				return true;
 			}
 
@@ -77,18 +80,19 @@ public enum GameSubcommand implements Subcommand {
 		}
 		@Override
 		public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			if (!(sender instanceof Player leader)) {
+			if (!(sender instanceof Player player)) {
 				sender.sendMessage("Only players can stop games.");
 				return true;
 			}
 
-			Group group = Group.getGroupOfPlayer(leader);
+			Group group = Group.getGroupOfPlayer(player);
 			if (group == null) {
 				sender.sendMessage("You are not in a group.");
 				return true;
 			}
 
-			if (!group.isLeader(leader)) {
+			boolean membersCanRunGames = GroupConfigs.getGroupRightsOption(group.getConfig()).canRunGames();
+			if (! group.isLeader(player) && ! membersCanRunGames) {
 				sender.sendMessage("Only the group leader can stop the game.");
 				return true;
 			}
@@ -134,6 +138,12 @@ public enum GameSubcommand implements Subcommand {
 				return true;
 			}
 
+			boolean membersCanConfig = GroupConfigs.getGroupRightsOption(group.getConfig()).canConfig();
+			if (! group.isLeader(player) && ! membersCanConfig) {
+				sender.sendMessage("Only the group leader can configure the group.");
+				return true;
+			}
+
 			String configGameId = args[0].toLowerCase();
 			Game.Builder configGame = Game.getRegistered().get(configGameId);
 			if (configGame == null) {
@@ -147,7 +157,15 @@ public enum GameSubcommand implements Subcommand {
 			}
 			ConfigurationSection gamesSection = configSection.getConfigurationSection(Game.namespace);
 
-			return configGame.executeGameConfig(sender, command, label, gamesSection, Arrays.copyOfRange(args, 1, args.length));
+			boolean res = configGame.executeGameConfig(sender, command, label, gamesSection, Arrays.copyOfRange(args, 1, args.length));
+
+			if (res) {
+				Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
+				Group.saveConfigGroup(plugin, group);
+				plugin.saveConfig();
+			}
+
+			return res;
 		}
 		@Override
 		public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
