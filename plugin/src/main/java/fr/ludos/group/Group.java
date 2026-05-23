@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -517,5 +519,11 @@ public final class Group implements ConfigurationSerializable {
 				}
 			}
 		}
+	}
+
+	public Location pickReturnLocation() {
+		Optional<Player> any = getOnlinePlayers().stream().filter(Player::isOnline).findFirst();
+		if (any.isPresent()) return any.get().getLocation();
+		return Bukkit.getWorlds().get(0).getSpawnLocation();
 	}
 }

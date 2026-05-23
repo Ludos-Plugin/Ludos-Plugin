@@ -1,22 +1,26 @@
 package fr.ludos.game.raid;
 
+import java.util.Random;
+import java.util.UUID;
+
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World.Environment;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.Ludos;
+import fr.ludos.area.WorldBorderArea;
 import fr.ludos.command.ConfigSubcommandManager;
-import fr.ludos.command.ludos.GroupConfigs;
 import fr.ludos.game.Game;
-import fr.ludos.game.areaController.worldborder.WorldBorderAreaController;
-import fr.ludos.game.arena.ArenaGameConfigs;
-import fr.ludos.game.lobbyController.structure.StructureLobbyController;
 import fr.ludos.game.waves.WaveController;
 import fr.ludos.game.waves.WaveGame;
-import fr.ludos.game.worldController.GameWorldController;
-import fr.ludos.game.worldController.MultiWorldController;
 import fr.ludos.group.Group;
-import fr.ludos.structure.LobbyStructure;
+import fr.ludos.lobby.Lobby;
+import fr.ludos.world.WorldManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -25,10 +29,15 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class RaidGame extends WaveGame {
 	public static final String ID = "raid";
 
-	private final MultiWorldController worldController;
+	private final Builder builder;
+	public final Builder getBuilder() {
+		return this.builder;
+	}
+
+	private final WorldManager worldManager;
 	@Override
-	public MultiWorldController getWorldController() {
-		return worldController;
+	public WorldManager getWorldManager() {
+		return worldManager;
 	}
 
 	private final RaidTeamController teamController;
@@ -43,51 +52,38 @@ public class RaidGame extends WaveGame {
 		return this.waveController;
 	}
 
+
 	protected RaidGame(Builder builder, Group group) {
 		super(builder, group);
+		this.builder = builder;
 
 		ConfigurationSection config = group.getConfig();
 
-		Location returnLocation = GameWorldController.pickInitialLocation(group);
+		Location returnLocation = group.pickReturnLocation();
+
 
 		this.waveController = new RaidWaveController(
 			this,
 			RaidGameConfigs.getWaves(config)
 		);
 
-		this.worldController = new MultiWorldController(
-			this,
-			new StructureLobbyController(
-				this,
-				true,
-				GroupConfigs.getWaitPlayersOption(config),
-				GroupConfigs.getWaitDurationOption(config).getDuration(),
-				new LobbyStructure.Builder(),
-				() -> {
-					if (isStarted()) {
-						waveController.startWave();
-					} else {
-						start();
-					}
-				}
-			),
-			new WorldBorderAreaController(
-				this,
-				ArenaGameConfigs.getArea(config)
-			),
-			returnLocation
-		);
+		this.worldManager = WorldManager.within(getPlugin(), returnLocation)
+			.of(builder.createWorldCreator())
+			.withLobby(
+				Lobby.within(getPlugin())
+					.waitFor(group)
+					.then(this::start)
+			)
+			.inArea(
+				WorldBorderArea.within(getPlugin())
+					.ofSize(RaidGameConfigs.getArea(config))
+			)
+			.build();
+
 		this.teamController = new RaidTeamController(
 			this,
 			RaidGameConfigs.getChosenPlayers(config)
 		);
-	}
-
-	@Override
-	protected void onGameSetup() {
-		super.onGameSetup();
-
-		getWorldController().transferToNewWorld(waveController.getCurrentWaveTheme().getWorldCreator());
 	}
 
 	@Override
@@ -120,6 +116,16 @@ public class RaidGame extends WaveGame {
 		@Override
 		protected ConfigSubcommandManager<?> getConfigsSubcommand() {
 			return configsSubcommand;
+		}
+
+		public WorldCreator createWorldCreator() {
+			String worldName = "raid_" + UUID.randomUUID();
+			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), worldName))
+				.environment(Environment.NORMAL)
+				.type(WorldType.NORMAL)
+				.generateStructures(true)
+				.seed(new Random().nextLong());
+			return wc;
 		}
 
 		@Override

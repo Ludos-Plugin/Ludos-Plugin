@@ -23,11 +23,11 @@ import org.bukkit.scoreboard.Team;
 
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
-import fr.ludos.game.TwoStepGameProcessBase;
+import fr.ludos.game.GameProcessBase;
 
 
 
-public abstract class GameTeamController extends TwoStepGameProcessBase {
+public abstract class GameTeamController extends GameProcessBase {
 	private final Game game;
 	public final Game getGame() {
 		return game;

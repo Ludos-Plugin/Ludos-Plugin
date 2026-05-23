@@ -42,8 +42,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
-import net.kyori.adventure.text.Component;
-
 public class Utility {
 	private static final Random random = new Random();
 
@@ -140,7 +138,7 @@ public class Utility {
 		while (location.getBlock().isLiquid() && retries >= 0);
 
 		if (retries == 0) {
-			Bukkit.getServer().broadcast(Component.text("Could not find valid play area"));
+			Bukkit.getLogger().warning("Could not find valid play area");
 			return fallback.clone();
 		}
 

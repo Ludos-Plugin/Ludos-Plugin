@@ -157,7 +157,7 @@ public final class RaidTeamController extends GameTeamController {
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer != null) {
 			SpecialItem.Events.removeFromPlayerInventory(getGame(), onlinePlayer);
-			onlinePlayer.teleport(getGame().getWorldController().getReturnLocation());
+			onlinePlayer.teleport(getGame().getWorldManager().getReturnLocation());
 		}
 	}
 

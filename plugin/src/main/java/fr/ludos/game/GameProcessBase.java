@@ -39,6 +39,11 @@ public abstract class GameProcessBase implements GameProcess {
 	protected void onDeinit() { }
 	protected void onStop() { }
 
+	public void restart() {
+		stop();
+		start();
+	}
+
 	public boolean isClear() {
 		return ! isStarted();
 	}

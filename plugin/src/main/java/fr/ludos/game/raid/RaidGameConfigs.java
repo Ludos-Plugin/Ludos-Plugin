@@ -14,9 +14,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
+import fr.ludos.area.WorldBorderAreaOption;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.ConfigSubcommand;
-import fr.ludos.game.areaController.worldborder.WorldBorderAreaOption;
 import fr.ludos.game.arena.ArenaGame;
 
 public enum RaidGameConfigs implements ConfigSubcommand {

@@ -35,6 +35,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.Utility;
+import fr.ludos.game.teamController.GameTeamController;
 import fr.ludos.game.waves.DefaultWaveLoadout;
 import fr.ludos.game.waves.WaveController;
 import fr.ludos.generator.OceanChunkGenerator;
@@ -150,13 +151,13 @@ public final class RaidWaveController extends WaveController {
 	private final RaidGame game;
 
 	public WaveTheme getCurrentWaveTheme() {
-		// int waveIndex = getCurrentWave();
-		// if (waveIndex == 0) {
-			return WaveTheme.WATER;
-		// }
+		int waveIndex = getCurrentWave();
+		if (waveIndex == 0) {
+			return WaveTheme.EARTH;
+		}
 
-		// int idx = Math.floorMod(waveIndex - 2, 3);
-		// return idx == 0 ? WaveTheme.EARTH : idx == 1 ? WaveTheme.WATER : WaveTheme.FIRE;
+		int idx = Math.floorMod(waveIndex - 2, 3);
+		return idx == 0 ? WaveTheme.EARTH : idx == 1 ? WaveTheme.WATER : WaveTheme.FIRE;
 	}
 
 	private final Set<Monster> aliveWaveMonsters = new HashSet<>();
@@ -169,6 +170,18 @@ public final class RaidWaveController extends WaveController {
 	protected RaidWaveController(RaidGame game, int maxWaves) {
 		super(game, maxWaves, new DefaultWaveLoadout(game));
 		this.game = game;
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+
+		game.getWorldManager()
+			.mutateLobby(lobby -> lobby
+				.showOnStart(Component.text("Wave starting"))
+				.thenDont(getGame()::start)
+				.then(this::startWave)
+			);
 	}
 
 	@Override
@@ -186,12 +199,17 @@ public final class RaidWaveController extends WaveController {
 			player.setGameMode(GameMode.SURVIVAL);
 		}
 
-		game.getWorldController().transferToNewWorld(getCurrentWaveTheme().getWorldCreator());
+		GameTeamController teamController = getGame().getTeamController();
+		teamController.stop();
+		game.getWorldManager().transfer((builder) -> builder
+			.of(getCurrentWaveTheme().getWorldCreator())
+		);
+		teamController.start();
 	}
 
 	@Override
 	public void startWave() {
-		Location spawn = Utility.snapToHighestY(getGame().getWorldController().getWorld().getSpawnLocation(), true);
+		Location spawn = Utility.snapToHighestY(getGame().getWorldManager().getWorld().getSpawnLocation(), true);
 		for (Player player : getGame().getTeamController().getOnlinePlayers()) {
 			player.teleport(spawn);
 
@@ -249,7 +267,7 @@ public final class RaidWaveController extends WaveController {
 
 		int pointsBudget = computeWavePointsBudget();
 		List<WaveUnit> roster = composeWaveRoster(pointsBudget, getCurrentWaveTheme());
-		Location center = getGame().getWorldController().getWorld().getSpawnLocation();
+		Location center = getGame().getWorldManager().getWorld().getSpawnLocation();
 
 		for (WaveUnit unit : roster) {
 			Location spawn = Utility.snapToHighestY(center.clone().add(
@@ -272,7 +290,7 @@ public final class RaidWaveController extends WaveController {
 	}
 
 	private void spawnBossWave() {
-		Location center = getGame().getWorldController().getWorld().getSpawnLocation();
+		Location center = getGame().getWorldManager().getWorld().getSpawnLocation();
 
 		WaveTheme currentTheme = getCurrentWaveTheme();
 
