@@ -159,12 +159,12 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 	public static abstract class Events<T extends MultiLevelBranchItem<TBranch>, TBranch extends Enum<TBranch> & Branch<TBranch>> extends BranchItem.Events<T, TBranch> {
 		private Map<Player, LevelItem.LevelState[]> deadPlayerLevels;
 
-		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
+		protected Events(Game game, @Nullable ItemSlot slot, boolean canDrop) {
 			super(game, slot, canDrop);
 
 			this.deadPlayerLevels = new HashMap<>();
 		}
-		public Events(Game game, @Nullable Integer slot) {
+		public Events(Game game, @Nullable ItemSlot slot) {
 			this(game, slot, false);
 		}
 		public Events(Game game) {

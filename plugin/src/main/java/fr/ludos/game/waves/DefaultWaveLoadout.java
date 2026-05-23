@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import fr.ludos.game.Game;
+import fr.ludos.item.ItemSlot;
 import fr.ludos.item.SpecialItem;
 
 public class DefaultWaveLoadout extends WaveLoadoutService {
@@ -17,17 +18,21 @@ public class DefaultWaveLoadout extends WaveLoadoutService {
 	@Override
 	protected void applyBaseKit(Player player)  {
 		PlayerInventory inventory = player.getInventory();
-		inventory.clear();
 
 		ItemStack sword = enchantedItem(Material.DIAMOND_SWORD, Enchantment.DAMAGE_ALL, 3);
-		inventory.setItem(0, sword);
+		ItemSlot.setItemInInventory(ItemSlot.HOTBAR_1, sword, inventory);
 
 		ItemStack helmet = enchantedItem(Material.DIAMOND_HELMET, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
-		ItemStack chestplate = enchantedItem(Material.DIAMOND_CHESTPLATE, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
-		ItemStack leggings = enchantedItem(Material.DIAMOND_LEGGINGS, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
-		ItemStack boots = enchantedItem(Material.DIAMOND_BOOTS, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
+		ItemSlot.setItemInInventory(ItemSlot.HELMET, helmet, inventory);
 
-		inventory.setArmorContents(new ItemStack[] { boots, leggings, chestplate, helmet });
+		ItemStack chestplate = enchantedItem(Material.DIAMOND_CHESTPLATE, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
+		ItemSlot.setItemInInventory(ItemSlot.CHESTPLATE, chestplate, inventory);
+
+		ItemStack leggings = enchantedItem(Material.DIAMOND_LEGGINGS, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
+		ItemSlot.setItemInInventory(ItemSlot.LEGGINGS, leggings, inventory);
+
+		ItemStack boots = enchantedItem(Material.DIAMOND_BOOTS, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
+		ItemSlot.setItemInInventory(ItemSlot.BOOTS, boots, inventory);
 
 		SpecialItem.Events.refreshPlayerInventory(getGame(), player);
 	}

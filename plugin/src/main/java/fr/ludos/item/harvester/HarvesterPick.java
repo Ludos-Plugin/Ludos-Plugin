@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
 import fr.ludos.item.BranchItem;
+import fr.ludos.item.ItemSlot;
 import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.LevelBranchItem;
 import fr.ludos.item.LevelItem;
@@ -142,7 +143,7 @@ public class HarvesterPick extends LevelBranchItem<HarvesterPickBranches, Harves
 
 	public static class Events extends LevelBranchItem.Events<HarvesterPick, HarvesterPickBranches, HarvesterPickLevels> {
 		public Events(Game game) {
-			super(game, 1);
+			super(game, ItemSlot.HOTBAR_2);
 		}
 
 		@EventHandler

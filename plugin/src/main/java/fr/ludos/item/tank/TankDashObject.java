@@ -24,6 +24,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import fr.ludos.game.Game;
+import fr.ludos.item.ItemSlot;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
 import fr.ludos.role.TankRole;
@@ -172,7 +173,7 @@ public class TankDashObject extends SpecialItem {
 	public static class Events extends SpecialItem.Events<TankDashObject> {
 
 		public Events(Game game) {
-			super(game, 2, false);
+			super(game, ItemSlot.HOTBAR_3, false);
 		}
 
 		@Override

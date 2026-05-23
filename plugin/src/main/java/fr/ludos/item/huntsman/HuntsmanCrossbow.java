@@ -27,6 +27,7 @@ import org.bukkit.projectiles.ProjectileSource;
 
 import fr.ludos.Ludos;
 import fr.ludos.game.Game;
+import fr.ludos.item.ItemSlot;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.MultiLevelBranchItem;
 import fr.ludos.item.SpecialItem;
@@ -109,7 +110,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 
 		public Events(Game game) {
-			super(game, 1);
+			super(game, ItemSlot.HOTBAR_2);
 		}
 
 

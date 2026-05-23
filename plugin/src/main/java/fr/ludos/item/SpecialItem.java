@@ -276,15 +276,15 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	public static abstract class Events<T extends SpecialItem> extends GameEvents {
 		private final boolean canDrop;
 		@Nullable
-		private final Integer slot;
+		private final ItemSlot slot;
 
-		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
+		protected Events(Game game, @Nullable ItemSlot slot, boolean canDrop) {
 			super(game);
 
 			this.canDrop = canDrop;
 			this.slot = slot;
 		}
-		protected Events(Game game, @Nullable Integer slot) {
+		protected Events(Game game, @Nullable ItemSlot slot) {
 			this(game, slot, false);
 		}
 		protected Events(Game game) {
@@ -353,13 +353,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 			T item = createItem(player);
 			if (item == null) return;
 
-			int index = (slot == null) ? -1 : slot.intValue();
-
-			if (index == -1 || inventory.getItem(index) != null) {
-				inventory.addItem(item.getStack());
-			} else {
-				inventory.setItem(index, item.getStack());
-			}
+			ItemSlot.setItemInInventory(slot, item.getStack(), inventory);
 		}
 
 		public void refreshAllPlayerInventories() {
