@@ -16,6 +16,7 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.game.Game;
+import fr.ludos.item.ItemSlot;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
@@ -78,7 +79,7 @@ public class HuntsmanBow extends SpecialItem {
 	public static class Events extends SpecialItem.Events<HuntsmanBow> {
 
 		public Events(Game game) {
-			super(game, 0);
+			super(game, ItemSlot.HOTBAR_1);
 		}
 
 		@EventHandler

@@ -27,6 +27,7 @@ import org.bukkit.util.Vector;
 
 import fr.ludos.game.Game;
 import fr.ludos.item.BranchItem;
+import fr.ludos.item.ItemSlot;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.role.AssassinRole;
 import fr.ludos.role.Role;
@@ -94,7 +95,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDeviceBranches>
 		public final Map<Player, Map<AssassinSnareDeviceBranches, ArrayList<AssassinTrap>>> traps = new HashMap<>();
 
 		public Events(Game game) {
-			super(game, 1);
+			super(game, ItemSlot.HOTBAR_2);
 		}
 
 		@Override

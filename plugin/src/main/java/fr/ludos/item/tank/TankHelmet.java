@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.game.Game;
+import fr.ludos.item.ItemSlot;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
 import fr.ludos.role.TankRole;
@@ -74,7 +75,7 @@ public class TankHelmet extends SpecialItem {
 	public static class Events extends SpecialItem.Events<TankHelmet> {
 
 		public Events(Game game) {
-			super(game, 39 , false);
+			super(game, ItemSlot.HELMET , false);
 		}
 
 		@Override

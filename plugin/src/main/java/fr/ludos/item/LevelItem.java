@@ -394,10 +394,10 @@ public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TL
 	public static abstract class Events<T extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & Level<TLevel>> extends SpecialItem.Events<T> {
 		protected final Map<Player, LevelItem.LevelState> deadPlayerLevels = new HashMap<>();
 
-		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
+		protected Events(Game game, @Nullable ItemSlot slot, boolean canDrop) {
 			super(game, slot, canDrop);
 		}
-		protected Events(Game game, @Nullable Integer slot) {
+		protected Events(Game game, @Nullable ItemSlot slot) {
 			this(game, slot, false);
 		}
 		protected Events(Game game) {

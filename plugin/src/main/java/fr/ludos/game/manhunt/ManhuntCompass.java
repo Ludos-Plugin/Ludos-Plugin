@@ -14,6 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
 
 import fr.ludos.game.Game;
+import fr.ludos.item.ItemSlot;
 import fr.ludos.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -112,7 +113,7 @@ public class ManhuntCompass extends SpecialItem {
 	public static class Events extends SpecialItem.Events<ManhuntCompass> {
 
 		public Events(Game game) {
-			super(game, 8);
+			super(game, ItemSlot.HOTBAR_9);
 		}
 
 		@Override

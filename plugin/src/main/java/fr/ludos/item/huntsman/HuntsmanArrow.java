@@ -17,6 +17,7 @@ import org.bukkit.inventory.meta.CrossbowMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import fr.ludos.game.Game;
+import fr.ludos.item.ItemSlot;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.role.HuntsmanRole;
 import fr.ludos.role.Role;
@@ -80,7 +81,7 @@ public class HuntsmanArrow extends SpecialItem {
 		private final int reloadTime;
 
 		public Events(Game game, Integer arrowMagazineSize, int reloadTime) {
-			super(game, 35);
+			super(game, ItemSlot.BOT_9);
 			this.arrowMagazineSize = arrowMagazineSize;
 			this.reloadTime = reloadTime;
 		}

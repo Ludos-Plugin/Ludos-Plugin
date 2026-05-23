@@ -26,6 +26,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import fr.ludos.game.Game;
+import fr.ludos.item.ItemSlot;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
@@ -200,7 +201,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 	public static class Events extends LevelItem.Events<TankShield, TankShieldLevels> {
 		private BukkitTask tankRoutine;
 		public Events(Game game) {
-			super(game, 40);
+			super(game, ItemSlot.OFFHAND);
 		}
 
 		@Override

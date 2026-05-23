@@ -200,10 +200,10 @@ public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Bran
 	}
 
 	public static abstract class Events<T extends BranchItem<TBranch>, TBranch extends Enum<TBranch> & Branch<TBranch>> extends SpecialItem.Events<T> {
-		protected Events(Game game, @Nullable Integer slot, boolean canDrop) {
+		protected Events(Game game, @Nullable ItemSlot slot, boolean canDrop) {
 			super(game, slot, canDrop);
 		}
-		protected Events(Game game, @Nullable Integer slot) {
+		protected Events(Game game, @Nullable ItemSlot slot) {
 			this(game, slot, false);
 		}
 		protected Events(Game game) {

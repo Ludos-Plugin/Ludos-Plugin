@@ -25,6 +25,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
+import fr.ludos.item.ItemSlot;
 import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
@@ -228,7 +229,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 	public static class Events extends LevelItem.Events<HarvesterSpade, HarvesterSpadeLevels> {
 
 		public Events(Game game) {
-			super(game, 2);
+			super(game, ItemSlot.HOTBAR_3);
 		}
 
 

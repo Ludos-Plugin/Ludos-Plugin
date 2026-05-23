@@ -28,6 +28,7 @@ import org.bukkit.util.Vector;
 
 import fr.ludos.Utility;
 import fr.ludos.game.Game;
+import fr.ludos.item.ItemSlot;
 import fr.ludos.item.ItemUtilities;
 import fr.ludos.item.LevelItem;
 import fr.ludos.item.SpecialItem;
@@ -177,7 +178,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 
 	public static class Events extends LevelItem.Events<HarvesterScythe, HarvesterScytheLevels> {
 		public Events(Game game) {
-			super(game, 0);
+			super(game, ItemSlot.HOTBAR_1);
 		}
 
 		@Override
