@@ -71,4 +71,9 @@ public abstract class TwoStepGameProcessBase implements TwoStepGameProcess {
 		onSetdown();
 	}
 	protected void onSetdown() { }
+
+	public void restart() {
+		stop();
+		start();
+	}
 }

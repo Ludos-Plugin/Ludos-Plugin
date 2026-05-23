@@ -14,9 +14,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
+import fr.ludos.area.WorldBorderAreaOption;
 import fr.ludos.command.CommandUtility;
 import fr.ludos.command.ConfigSubcommand;
-import fr.ludos.game.areaController.worldborder.WorldBorderAreaOption;
 
 public enum ArenaGameConfigs implements ConfigSubcommand {
 	team1 {

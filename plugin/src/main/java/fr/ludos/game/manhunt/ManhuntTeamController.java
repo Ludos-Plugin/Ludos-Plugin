@@ -24,8 +24,8 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import fr.ludos.Utility;
+import fr.ludos.area.Area;
 import fr.ludos.command.ludos.GroupConfigs;
-import fr.ludos.game.areaController.GameAreaController;
 import fr.ludos.game.teamController.GameTeamController;
 import fr.ludos.item.SpecialItem;
 import net.kyori.adventure.text.Component;
@@ -69,11 +69,8 @@ public final class ManhuntTeamController extends GameTeamController {
 		finalPlayers.remove(prey);
 
 		this.selectedPrey = prey;
-	}
 
-	@Override
-	protected void onSetup() {
-		super.onSetup();
+
 		Scoreboard scoreboard = getGame().getScoreboard();
 
 		hunterTeam = scoreboard.getTeam("Hunters");
@@ -117,8 +114,8 @@ public final class ManhuntTeamController extends GameTeamController {
 	}
 
 	@Override
-	protected void onSetdown() {
-		super.onSetdown();
+	protected void onStop() {
+		super.onStop();
 
 		if (preyTeam != null) {
 			preyTeam.unregister();
@@ -163,7 +160,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
-		if (getGame().getWorldController().getLobbyController().isStarted()) return;
+		if (getGame().getWorldManager().isLobbyStarted()) return;
 
 		Player player = event.getPlayer();
 		if (! getGame().getGroup().isPlayer(player)) return;
@@ -211,7 +208,10 @@ public final class ManhuntTeamController extends GameTeamController {
 	}
 
 	public void joinPrey(OfflinePlayer player) {
-		Location gameLocation = getGame().getWorldController().getAreaController().pickRandom(0.0, 0.2);
+		Area area = getGame().getWorldManager().getArea();
+		Location gameLocation = area != null
+			? area.pickRandom(0.0, 0.2)
+			: getGame().getWorldManager().getWorld().getSpawnLocation();
 
 		preyTeam.addEntry(player.getName());
 
@@ -242,16 +242,18 @@ public final class ManhuntTeamController extends GameTeamController {
 		if (hunterTeam.hasPlayer(player) || preyTeam.hasPlayer(player)) return;
 
 		Set<Player> hunters = getTeamOnlinePlayers(hunterTeam);
-		GameAreaController areaController = getGame().getWorldController().getAreaController();
+		Area area = getGame().getWorldManager().getArea();
 
 		Location hunterLocation;
-		if (!hunters.isEmpty()) {
-			Player teammate = hunters.iterator().next();
-			Location teammateLocation = teammate.getLocation();
-			hunterLocation = areaController.constrain(Utility.getGroundedLocationAround(teammateLocation, 2, 10, teammateLocation));
-		} else {
-			hunterLocation = areaController.pickRandom(0.3, 0.7);
-		}
+		if (area != null) {
+			if (!hunters.isEmpty()) {
+				Player teammate = hunters.iterator().next();
+				Location teammateLocation = teammate.getLocation();
+				hunterLocation = area.constrain(Utility.getGroundedLocationAround(teammateLocation, 2, 10, teammateLocation));
+			} else {
+				hunterLocation = area.pickRandom(0.3, 0.7);
+			}
+		} else hunterLocation = getGame().getWorldManager().getWorld().getSpawnLocation();
 
 		hunterTeam.addEntry(player.getName());
 
@@ -278,7 +280,10 @@ public final class ManhuntTeamController extends GameTeamController {
 	public void joinSpectator(OfflinePlayer player) {
 		if (hunterTeam.hasPlayer(player) || preyTeam.hasPlayer(player)) return;
 
-		Location gameLocation = getGame().getWorldController().getAreaController().pickRandom(0.0, 1.0);
+		Area area = getGame().getWorldManager().getArea();
+		Location gameLocation = area != null
+			? area.pickRandom(0.0, 1.0)
+			: getGame().getWorldManager().getWorld().getSpawnLocation();
 
 		spectatorTeam.addEntry(player.getName());
 
@@ -315,7 +320,7 @@ public final class ManhuntTeamController extends GameTeamController {
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer != null) {
 			SpecialItem.Events.removeFromPlayerInventory(getGame(), onlinePlayer);
-			onlinePlayer.teleport(getGame().getWorldController().getReturnLocation());
+			onlinePlayer.teleport(getGame().getWorldManager().getReturnLocation());
 		}
 	}
 

@@ -1,6 +1,7 @@
 package fr.ludos.structure;
 
 import org.bukkit.Location;
+import org.bukkit.util.BoundingBox;
 
 public abstract class Structure {
 	protected final Location location;
@@ -13,6 +14,8 @@ public abstract class Structure {
 	}
 
 	public abstract Location getEntranceLocation();
+	public abstract boolean contains(BoundingBox bb);
+	public abstract boolean contains(Location location);
 	abstract public void destroy();
 
 	public abstract static class Builder {

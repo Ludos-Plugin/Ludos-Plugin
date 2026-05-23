@@ -1,4 +1,4 @@
-package fr.ludos.game.lobbyController;
+package fr.ludos.lobby;
 
 import java.util.Arrays;
 import java.util.List;

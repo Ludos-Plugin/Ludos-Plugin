@@ -21,6 +21,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import fr.ludos.Utility;
+import fr.ludos.area.Area;
 import fr.ludos.game.teamController.GameTeamController;
 import fr.ludos.item.SpecialItem;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -174,7 +175,10 @@ public final class ArenaTeamController extends GameTeamController {
 
 		moveToTeam(onlinePlayer, spectatorTeam);
 
-		Location center = getGame().getWorldController().getAreaController().getCenter();
+		Area area = getGame().getWorldManager().getArea();
+		Location center = area != null
+			? area.getCenter()
+			: getGame().getWorldManager().getWorld().getSpawnLocation();
 		onlinePlayer.teleport(center);
 		onlinePlayer.setGameMode(GameMode.SPECTATOR);
 	}
@@ -240,14 +244,14 @@ public final class ArenaTeamController extends GameTeamController {
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer != null) {
 			SpecialItem.Events.removeFromPlayerInventory(getGame(), onlinePlayer);
-			onlinePlayer.teleport(getGame().getWorldController().getReturnLocation());
+			onlinePlayer.teleport(getGame().getWorldManager().getReturnLocation());
 		}
 	}
 
 
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
-		if (getGame().getWorldController().getLobbyController().isStarted()) return;
+		if (getGame().getWorldManager().isLobbyStarted()) return;
 
 		Player player = event.getEntity();
 		if (!getPlayers().contains(player)) return;

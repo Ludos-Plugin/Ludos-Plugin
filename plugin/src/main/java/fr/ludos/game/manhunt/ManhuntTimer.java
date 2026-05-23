@@ -137,6 +137,7 @@ public class ManhuntTimer extends GameProcessBase {
 	}
 
 	public void resume() {
+		if (isRunning) return;
 		isRunning = true;
 
 		task = new BukkitRunnable() {
@@ -148,8 +149,7 @@ public class ManhuntTimer extends GameProcessBase {
 	}
 
 	public void pause() {
-		if (! isStarted() || ! isRunning) return;
-
+		if (! isRunning) return;
 		isRunning = false;
 
 		if (task != null) {

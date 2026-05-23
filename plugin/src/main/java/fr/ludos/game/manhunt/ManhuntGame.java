@@ -1,5 +1,6 @@
 package fr.ludos.game.manhunt;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -26,14 +27,14 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.Ludos;
+import fr.ludos.area.WorldBorderArea;
+import fr.ludos.area.WorldBorderAreaOption;
 import fr.ludos.command.ConfigSubcommandManager;
 import fr.ludos.command.ludos.GroupConfigs;
 import fr.ludos.game.Game;
-import fr.ludos.game.areaController.worldborder.WorldBorderAreaController;
-import fr.ludos.game.lobbyController.structure.StructureLobbyController;
-import fr.ludos.game.worldController.SingleWorldController;
 import fr.ludos.group.Group;
-import fr.ludos.structure.LobbyStructure;
+import fr.ludos.lobby.Lobby;
+import fr.ludos.world.WorldManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -48,10 +49,10 @@ public class ManhuntGame extends Game {
 		return this.builder;
 	}
 
-	private final SingleWorldController worldController;
+	private final WorldManager worldManager;
 	@Override
-	public SingleWorldController getWorldController() {
-		return this.worldController;
+	public WorldManager getWorldManager() {
+		return this.worldManager;
 	}
 
 	private final ManhuntTeamController teamController;
@@ -70,7 +71,7 @@ public class ManhuntGame extends Game {
 
 
 	protected ManhuntGame(Builder builder, Group group) {
-		super(builder, group);
+		super(builder, group, Bukkit.getServer().getScoreboardManager().getNewScoreboard());
 		this.builder = builder;
 
 		ConfigurationSection config = group.getConfig();
@@ -88,22 +89,19 @@ public class ManhuntGame extends Game {
 			returnLocation = leader.getLocation();
 		}
 
-		this.worldController = new SingleWorldController(
-			this,
-			new StructureLobbyController(
-				this,
-				false,
-				GroupConfigs.getWaitPlayersOption(config),
-				GroupConfigs.getWaitDurationOption(config).getDuration(),
-				new LobbyStructure.Builder(),
-				this::start
-			),
-			new WorldBorderAreaController(
-				this,
-				ManhuntGameConfigs.getArea(config)
-			),
-			returnLocation
-		);
+		WorldBorderAreaOption opt = ManhuntGameConfigs.getArea(config);
+		this.worldManager = WorldManager.within(getPlugin(), returnLocation)
+			.of(builder.createWorldCreator())
+			.withLobby(Lobby.within(getPlugin())
+				.waitFor(group)
+				.wait(Duration.ofSeconds(GroupConfigs.getWaitDurationOption(config).getDuration()))
+				.then(this::start)
+			)
+			.inArea(
+				WorldBorderArea.within(getPlugin())
+					.ofSize(opt)
+			)
+			.build();
 		this.teamController = new ManhuntTeamController(
 			this,
 			ManhuntGameConfigs.getChosenPlayers(config),
@@ -115,17 +113,10 @@ public class ManhuntGame extends Game {
 	}
 
 	@Override
-	protected void onGameSetup() {
-		super.onGameSetup();
-
-		getWorldController().transferToNewWorld(builder.createWorldCreator());
-	}
-
-	@Override
 	protected void onGameStart() {
 		super.onGameStart();
 
-		World world = worldController.getWorld();
+		World world = worldManager.getWorld();
 		world.setTime(1000);
 
 		compassEvents.start();

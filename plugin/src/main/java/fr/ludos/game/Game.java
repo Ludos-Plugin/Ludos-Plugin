@@ -33,15 +33,16 @@ import fr.ludos.Utility;
 import fr.ludos.book.BookUtility;
 import fr.ludos.command.ConfigSubcommandManager;
 import fr.ludos.game.teamController.GameTeamController;
-import fr.ludos.game.worldController.GameWorldController;
 import fr.ludos.group.Group;
 import fr.ludos.item.SpecialItem;
 import fr.ludos.role.Role;
+import fr.ludos.world.WorldManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.minecraft.world.scores.Score;
 
 
 public abstract class Game extends TwoStepGameProcessBase {
@@ -104,17 +105,18 @@ public abstract class Game extends TwoStepGameProcessBase {
 		return this.scoreboard;
 	}
 
-	public abstract GameWorldController getWorldController();
+	public abstract WorldManager getWorldManager();
 	public abstract GameTeamController getTeamController();
 
 	@Override
 	public boolean isClear() {
-		return super.isClear() && getWorldController().isClear() && getTeamController().isClear();
+		return super.isClear() && getWorldManager().isClear() && getTeamController().isClear();
 	}
 
-	protected Game(Builder builder, Group group) {
+	protected Game(Builder builder, Group group, Scoreboard scoreboard) {
 		this.builder = builder;
 		this.group = group;
+		this.scoreboard = Bukkit.getServer().getScoreboardManager().getNewScoreboard();
 	}
 
 	public static boolean startGame(String id, Group group) {
@@ -190,13 +192,10 @@ public abstract class Game extends TwoStepGameProcessBase {
 			oldGame.stop();
 		}
 
-		this.scoreboard = Bukkit.getServer().getScoreboardManager().getNewScoreboard();
-
 		group.setGame(this);
 		activeGames.add(this);
 
-		getWorldController().start();
-		getTeamController().setup();
+		getWorldManager().start();
 
 		onGameSetup();
 	}
@@ -209,6 +208,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 	@Override
 	protected final void onStart() {
 		super.onStart();
+
 		getTeamController().start();
 
 		getGroup().addJoinGroupListener(this::onJoinGroup);
@@ -247,9 +247,10 @@ public abstract class Game extends TwoStepGameProcessBase {
 	@Override
 	protected final void onSetdown() {
 		super.onSetdown();
-		getWorldController().stop();
 
 		onGameSetdown();
+
+		getWorldManager().stop();
 
 		scoreboard = null;
 

@@ -11,9 +11,10 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import fr.ludos.Utility;
-import fr.ludos.game.areaController.GameAreaController;
+import fr.ludos.area.Area;
 import fr.ludos.game.waves.DefaultWaveLoadout;
 import fr.ludos.game.waves.WaveController;
+import fr.ludos.lobby.Lobby;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
@@ -27,6 +28,19 @@ public final class ArenaWaveController extends WaveController {
 	protected ArenaWaveController(ArenaGame game, int maxRounds) {
 		super(game, maxRounds, new DefaultWaveLoadout(game));
 		this.game = game;
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+
+		game.getWorldManager()
+			.mutateLobby(lobby -> lobby
+				.wait(Duration.ofSeconds(3))
+				.showOnStart(Component.text("Round starting"))
+				.thenDont(getGame()::start)
+				.then(this::startWave)
+			);
 	}
 
 	@Override
@@ -55,12 +69,13 @@ public final class ArenaWaveController extends WaveController {
 
 	@Override
 	protected void nextWave() {
-		for (Player player : getGame().getTeamController().getOnlinePlayers()) {
-			Utility.resetPlayer(player);
-			player.setGameMode(GameMode.SURVIVAL);
+		Lobby lobby = game.getWorldManager().getLobby();
+		if (lobby == null) {
+			stop();
+			return;
 		}
 
-		game.getWorldController().getLobbyController().start();
+		lobby.restart();
 	}
 
 	@Override
@@ -101,10 +116,15 @@ public final class ArenaWaveController extends WaveController {
 	}
 
 	private void teleportTeamsToRoundSpawns() {
-		GameAreaController areaController = game.getWorldController().getAreaController();
-		Location center = areaController.getCenter();
+		Area area = game.getWorldManager().getArea();
+		Location center = area != null
+			? area.getCenter()
+			: game.getWorldManager().getWorld().getSpawnLocation();
 
-		Location primarySpawn = areaController.pickRandom(0.30, 0.35);
+		Location primarySpawn = area != null
+			? area.pickRandom(0.30, 0.35)
+			: game.getWorldManager().getWorld().getSpawnLocation()
+				.add(40, 0, 20);
 		Location secondarySpawn = center.clone().subtract(primarySpawn.clone().subtract(center));
 		Utility.snapToHighestY(primarySpawn);
 		Utility.snapToHighestY(secondarySpawn);

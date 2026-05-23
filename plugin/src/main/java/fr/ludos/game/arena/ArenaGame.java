@@ -1,5 +1,6 @@
 package fr.ludos.game.arena;
 
+import java.time.Duration;
 import java.util.Random;
 import java.util.UUID;
 
@@ -13,17 +14,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.Ludos;
+import fr.ludos.area.WorldBorderArea;
 import fr.ludos.command.ConfigSubcommandManager;
 import fr.ludos.command.ludos.GroupConfigs;
 import fr.ludos.game.Game;
-import fr.ludos.game.areaController.worldborder.WorldBorderAreaController;
-import fr.ludos.game.lobbyController.structure.StructureLobbyController;
+import fr.ludos.game.raid.RaidGameConfigs;
 import fr.ludos.game.waves.WaveController;
 import fr.ludos.game.waves.WaveGame;
-import fr.ludos.game.worldController.GameWorldController;
-import fr.ludos.game.worldController.SingleWorldController;
 import fr.ludos.group.Group;
-import fr.ludos.structure.LobbyStructure;
+import fr.ludos.lobby.Lobby;
+import fr.ludos.lobby.Lobby.ClearMode;
+import fr.ludos.world.WorldManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -38,10 +39,10 @@ public class ArenaGame extends WaveGame {
 		return this.builder;
 	}
 
-	private final SingleWorldController worldController;
+	private final WorldManager worldManager;
 	@Override
-	public SingleWorldController getWorldController() {
-		return worldController;
+	public WorldManager getWorldManager() {
+		return worldManager;
 	}
 
 	private final ArenaTeamController teamController;
@@ -63,7 +64,7 @@ public class ArenaGame extends WaveGame {
 
 		ConfigurationSection config = group.getConfig();
 
-		Location returnLocation = GameWorldController.pickInitialLocation(group);
+		Location returnLocation = group.pickReturnLocation();
 
 
 		this.waveController = new ArenaWaveController(
@@ -71,28 +72,20 @@ public class ArenaGame extends WaveGame {
 			ArenaGameConfigs.getRounds(config)
 		);
 
-		this.worldController = new SingleWorldController(
-			this,
-			new StructureLobbyController(
-				this,
-				false,
-				GroupConfigs.getWaitPlayersOption(config),
-				GroupConfigs.getWaitDurationOption(config).getDuration(),
-				new LobbyStructure.Builder(),
-				() -> {
-					if (isStarted()) {
-						waveController.startWave();
-					} else {
-						start();
-					}
-				}
-			),
-			new WorldBorderAreaController(
-				this,
-				ArenaGameConfigs.getArea(config)
-			),
-			returnLocation
-		);
+		this.worldManager = WorldManager.within(getPlugin(), returnLocation)
+			.of(builder.createWorldCreator())
+			.withLobby(
+				Lobby.within(getPlugin())
+					.waitFor(group)
+					.clear(ClearMode.ALL)
+					.wait(Duration.ofSeconds(GroupConfigs.getWaitDurationOption(config).getDuration()))
+					.then(this::start)
+			)
+			.inArea(
+				WorldBorderArea.within(getPlugin())
+					.ofSize(RaidGameConfigs.getArea(config))
+			)
+			.build();
 		this.teamController = new ArenaTeamController(
 			this,
 			ArenaGameConfigs.getMode(config),
@@ -104,8 +97,6 @@ public class ArenaGame extends WaveGame {
 	@Override
 	protected void onGameSetup() {
 		super.onGameSetup();
-
-		getWorldController().transferToNewWorld(builder.createWorldCreator());
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package fr.ludos.game.waves;
 
+import org.bukkit.Bukkit;
+
 import fr.ludos.game.Game;
 import fr.ludos.group.Group;
 
@@ -12,7 +14,7 @@ public abstract class WaveGame extends Game {
 	}
 
 	protected WaveGame(Builder builder, Group group) {
-		super(builder, group);
+		super(builder, group, Bukkit.getServer().getScoreboardManager().getNewScoreboard());
 	}
 
 

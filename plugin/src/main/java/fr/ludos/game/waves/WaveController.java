@@ -11,6 +11,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.game.GameProcessBase;
 import fr.ludos.item.SpecialItem;
+import fr.ludos.lobby.Lobby;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -54,15 +55,15 @@ public abstract class WaveController extends GameProcessBase {
 
 	@EventHandler
 	public void _onPlayerQuit(PlayerQuitEvent event) {
-		if (game.getWorldController().getLobbyController().isStarted()) return;
+		if (game.getWorldManager().isLobbyStarted()) return;
 		if (! game.getTeamController().contains(event.getPlayer())) return;
 		Bukkit.getScheduler().runTask(getPlugin(), this::evaluateWaveState);
 	}
 
 	@EventHandler
 	public void _onEntityDeath(EntityDeathEvent event) {
-		if (game.getWorldController().getLobbyController().isStarted()) return;
-		if (event.getEntity().getWorld() != game.getWorldController().getWorld()) return;
+		if (game.getWorldManager().isLobbyStarted()) return;
+		if (event.getEntity().getWorld() != game.getWorldManager().getWorld()) return;
 		Bukkit.getScheduler().runTask(getPlugin(), this::evaluateWaveState);
 	}
 

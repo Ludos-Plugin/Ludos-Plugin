@@ -14,11 +14,11 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.Ludos;
 import fr.ludos.command.ConfigSubcommand;
 import fr.ludos.game.Game;
-import fr.ludos.game.lobbyController.LobbyStartDelayOption;
-import fr.ludos.game.lobbyController.LobbyWaitPlayersOption;
 import fr.ludos.game.teamController.GameJoinOption;
 import fr.ludos.group.GroupJoinOption;
 import fr.ludos.group.GroupRightsOption;
+import fr.ludos.lobby.LobbyStartDelayOption;
+import fr.ludos.lobby.LobbyWaitPlayersOption;
 
 public enum GroupConfigs implements ConfigSubcommand {
 	member_authorisation() {

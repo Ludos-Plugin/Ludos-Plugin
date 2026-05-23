@@ -152,7 +152,7 @@ public abstract class Role extends GameProcessBase {
 				(s) -> {
 					String path = rolesKey + '.' + UUID.fromString(s);
 					String val = plugin.getConfig().getString(path);
-					plugin.getLogger().info("Path : " + path + " | Val : " + val);
+					plugin.getLogger().info("Loaded Role of Player UUID : " + path + " | Role ID : " + val);
 					return val;
 				}
 			));
