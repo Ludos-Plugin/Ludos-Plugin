@@ -300,6 +300,9 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 			}
 			if (shield == null) return;
 
+			event.setCancelled(true);
+			defender.playEffect(EntityEffect.SHIELD_BLOCK);
+
 			shield.hit(event.getDamage());
 		}
 
