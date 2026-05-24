@@ -136,7 +136,7 @@ public final class Lobby extends GameProcessBase {
 				}
 
 
-				Set<Player> waitingPlayers = Utility.getOnline(players.stream())
+				Set<Player> waitingPlayers = Utility.getOnline(allPlayers.stream())
 					.filter(player -> player.getWorld().equals(builder.location.getWorld()) )
 					.collect(Collectors.toSet());
 
