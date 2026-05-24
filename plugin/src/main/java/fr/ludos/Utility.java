@@ -45,8 +45,8 @@ import org.bukkit.util.Vector;
 public class Utility {
 	private static final Random random = new Random();
 
-	public static Location getGroundedLocationAround(Location searchOrigin, int min, int max, Location fallback) {
-		return getGroundedLocationAround(searchOrigin, min, max, fallback, 0);
+	public static Location getLocationAround(Location searchOrigin, int min, int max, Location fallback) {
+		return getLocationAround(searchOrigin, min, max, fallback, 0);
 	}
 
 	public static HashSet<Biome> allBiomes = new HashSet<Biome>(){{
@@ -123,15 +123,14 @@ public class Utility {
 
 		if (biomeLocation == null) return fallback.clone();
 
-		return getGroundedLocationAround(biomeLocation, min, max, fallback, retries);
+		return getLocationAround(biomeLocation, min, max, fallback, retries);
 	}
 
-	public static Location getGroundedLocationAround(Location searchOrigin, int min, int max, Location fallback, int retries) {
+	public static Location getLocationAround(Location searchOrigin, int min, int max, Location fallback, int retries) {
 		Location location = searchOrigin.clone();
 		do {
 			location.setX(searchOrigin.getBlockX() + random.nextInt(min, max + 1) * (random.nextBoolean() ? 1 : -1) + 0.5);
 			location.setZ(searchOrigin.getBlockZ() + random.nextInt(min, max + 1) * (random.nextBoolean() ? 1 : -1) + 0.5);
-			location.setY(location.getWorld().getHighestBlockYAt(location));
 
 			retries--;
 		}
@@ -142,7 +141,6 @@ public class Utility {
 			return fallback.clone();
 		}
 
-		location.setY(location.getY() + 1);
 		return location;
 	}
 

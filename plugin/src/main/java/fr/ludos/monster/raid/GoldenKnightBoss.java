@@ -1,4 +1,4 @@
-package fr.ludos.monster.arena;
+package fr.ludos.monster.raid;
 
 import java.util.ArrayList;
 import java.util.List;

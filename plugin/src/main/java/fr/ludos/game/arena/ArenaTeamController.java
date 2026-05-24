@@ -115,6 +115,40 @@ public final class ArenaTeamController extends GameTeamController {
 				moveToTeam(player, spectatorTeam);
 			}
 		}
+
+		// Area area = game.getWorldManager().getArea();
+		// Location center = area != null
+		// 	? area.getCenter()
+		// 	: game.getWorldManager().getWorld().getSpawnLocation();
+
+		// Location primarySpawn = area != null
+		// 	? area.pickRandom(0.30, 0.35)
+		// 	: game.getWorldManager().getWorld().getSpawnLocation()
+		// 		.add(40, 0, 20);
+		// Location secondarySpawn = center.clone().subtract(primarySpawn.clone().subtract(center));
+		// Utility.snapToHighestY(primarySpawn);
+		// Utility.snapToHighestY(secondarySpawn);
+
+		// Vector primaryLookDirection = secondarySpawn.toVector().subtract(primarySpawn.toVector()).normalize();
+		// primarySpawn.setDirection(primaryLookDirection);
+
+		// Vector secondaryLookDirection = primarySpawn.toVector().subtract(secondarySpawn.toVector()).normalize();
+		// secondarySpawn.setDirection(secondaryLookDirection);
+
+		// ArenaTeamController teamController = game.getTeamController();
+
+		// PotionEffect glowEffect = new PotionEffect(PotionEffectType.GLOWING, 10 * 20, 0, true, false);
+		// for (Player player : Utility.getTeamAlivePlayers(teamController.getCombatTeam(0)).toList()) {
+		// 	player.teleport(primarySpawn);
+		// 	player.addPotionEffect(glowEffect);
+		// }
+		// for (Player player : Utility.getTeamAlivePlayers(teamController.getCombatTeam(1)).toList()) {
+		// 	player.teleport(secondarySpawn);
+		// 	player.addPotionEffect(glowEffect);
+		// }
+		// for (Player player : Utility.getTeamOnlinePlayers(teamController.getSpectatorTeam()).toList()) {
+		// 	player.teleport(center);
+		// }
 	}
 
 	@Override
@@ -123,13 +157,14 @@ public final class ArenaTeamController extends GameTeamController {
 		if (spectatorTeam != null) {
 			spectatorTeam.unregister();
 		}
+		spectatorTeam = null;
+
 		for (Team team : combatTeams) {
 			if (team != null) {
 				team.unregister();
 			}
 		}
 		combatTeams.clear();
-		spectatorTeam = null;
 	}
 
 	@Override
@@ -186,15 +221,38 @@ public final class ArenaTeamController extends GameTeamController {
 	private void moveToTeam(OfflinePlayer player, Team destination) {
 		if (player == null || destination == null) return;
 
+		Location teammateLocation = getLocationAroundTeammate(
+			destination,
+			(area) -> {
+				if (destination == spectatorTeam) return area.getCenter();
+
+				int size = combatTeams.size();
+				int index = combatTeams.indexOf(destination);
+				if (size == 0 || index == -1) return area.getCenter();
+
+				Team enemyTeam = getCombatTeam(index % size);
+				Player enemyPlayer = pickPlayer(getTeamAlivePlayers(enemyTeam), null);
+				if (enemyPlayer == null) return area.getCenter();
+
+				return area.constrain(
+					Utility.getLocationAround(enemyPlayer.getLocation(), index, index, area.getCenter())
+				);
+			}
+		);
+		teammateLocation = Utility.snapToHighestY(teammateLocation, true);
+
 		String name = player.getName();
 		for (Team team : combatTeams) {
 			team.removeEntry(name);
 		}
 		spectatorTeam.removeEntry(name);
+
 		destination.addEntry(name);
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;
+
+		onlinePlayer.teleport(teammateLocation, true);
 
 		onlinePlayer.setScoreboard(getGame().getScoreboard());
 	}
@@ -224,10 +282,15 @@ public final class ArenaTeamController extends GameTeamController {
 		Set<Player> primaryTeamPlayers = getTeamOnlinePlayers(primaryTeam);
 		Set<Player> secondaryTeamPlayers = getTeamOnlinePlayers(secondaryTeam);
 
-		if (primaryTeamPlayers.size() <= secondaryTeamPlayers.size()) {
+		int primarySize = primaryTeamPlayers.size();
+		int secondarySize = secondaryTeamPlayers.size();
+
+		if (primarySize < secondarySize) {
 			moveToTeam(player, primaryTeam);
-		} else {
+		} else if (primarySize > secondarySize) {
 			moveToTeam(player, secondaryTeam);
+		} else {
+			moveToTeam(player, getGame().random.nextFloat() < 0.5 ? primaryTeam : secondaryTeam);
 		}
 	}
 

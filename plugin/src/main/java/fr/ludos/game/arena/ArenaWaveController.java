@@ -12,6 +12,7 @@ import org.bukkit.util.Vector;
 
 import fr.ludos.Utility;
 import fr.ludos.area.Area;
+import fr.ludos.game.teamController.GameTeamController;
 import fr.ludos.game.waves.DefaultWaveLoadout;
 import fr.ludos.game.waves.WaveController;
 import fr.ludos.lobby.Lobby;
@@ -75,21 +76,17 @@ public final class ArenaWaveController extends WaveController {
 			return;
 		}
 
+		GameTeamController teamController = getGame().getTeamController();
+		teamController.stop();
 		lobby.restart();
+		teamController.start();
 	}
 
 	@Override
 	public void startWave() {
+		getGame().getTeamController().start();
+
 		Bukkit.broadcast(Component.text("Round " + getCurrentWaveNumber() + " starts!").color(NamedTextColor.GREEN));
-
-		for (Player player : getGame().getTeamController().getOnlinePlayers()) {
-			Utility.resetPlayer(player);
-			player.setGameMode(GameMode.SURVIVAL);
-
-			applyLoadout(player);
-		}
-
-		teleportTeamsToRoundSpawns();
 	}
 
 	@Override
@@ -113,41 +110,5 @@ public final class ArenaWaveController extends WaveController {
 		}
 
 		scheduleNextWave();
-	}
-
-	private void teleportTeamsToRoundSpawns() {
-		Area area = game.getWorldManager().getArea();
-		Location center = area != null
-			? area.getCenter()
-			: game.getWorldManager().getWorld().getSpawnLocation();
-
-		Location primarySpawn = area != null
-			? area.pickRandom(0.30, 0.35)
-			: game.getWorldManager().getWorld().getSpawnLocation()
-				.add(40, 0, 20);
-		Location secondarySpawn = center.clone().subtract(primarySpawn.clone().subtract(center));
-		Utility.snapToHighestY(primarySpawn);
-		Utility.snapToHighestY(secondarySpawn);
-
-		Vector primaryLookDirection = secondarySpawn.toVector().subtract(primarySpawn.toVector()).normalize();
-		primarySpawn.setDirection(primaryLookDirection);
-
-		Vector secondaryLookDirection = primarySpawn.toVector().subtract(secondarySpawn.toVector()).normalize();
-		secondarySpawn.setDirection(secondaryLookDirection);
-
-		ArenaTeamController teamController = game.getTeamController();
-
-		PotionEffect glowEffect = new PotionEffect(PotionEffectType.GLOWING, 10 * 20, 0, true, false);
-		for (Player player : Utility.getTeamAlivePlayers(teamController.getCombatTeam(0)).toList()) {
-			player.teleport(primarySpawn);
-			player.addPotionEffect(glowEffect);
-		}
-		for (Player player : Utility.getTeamAlivePlayers(teamController.getCombatTeam(1)).toList()) {
-			player.teleport(secondarySpawn);
-			player.addPotionEffect(glowEffect);
-		}
-		for (Player player : Utility.getTeamOnlinePlayers(teamController.getSpectatorTeam()).toList()) {
-			player.teleport(center);
-		}
 	}
 }

@@ -5,7 +5,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -13,6 +15,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -22,6 +25,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import fr.ludos.Utility;
+import fr.ludos.area.Area;
 import fr.ludos.game.Game;
 import fr.ludos.game.GameProcessBase;
 
@@ -175,6 +179,37 @@ public abstract class GameTeamController extends GameProcessBase {
 		List<Player> players = getAlivePlayersStream().toList();
 		if (players.isEmpty()) return null;
 		return players.get(game.random.nextInt(players.size()));
+	}
+
+	public final Location getLocationAroundTeammate(Team team) {
+		return getLocationAroundTeammate(
+			team,
+			(area) -> area.pickRandom(0.3, 0.7)
+		);
+	}
+	public final Location getLocationAroundTeammate(Team team, Function<Area, Location> noPlayerFallback) {
+		return getLocationAroundTeammate(
+			team,
+			noPlayerFallback,
+			() -> getGame().getWorldManager().getWorld().getSpawnLocation()
+		);
+	}
+	public final Location getLocationAroundTeammate(Team team, Function<Area, Location> noPlayerFallback, Supplier<Location> noAreaFallback) {
+		Set<Player> players = getTeamAlivePlayers(team);
+		Area area = getGame().getWorldManager().getArea();
+
+		if (! players.isEmpty()) {
+			Player teammate = players.iterator().next();
+			Location teammateLocation = teammate.getLocation();
+			Location aroundLocation = Utility.getLocationAround(teammateLocation, 2, 10, teammateLocation);
+			return area != null
+				? area.constrain(aroundLocation)
+				: aroundLocation;
+		} else {
+			return area != null
+				? noPlayerFallback.apply(area)
+				: noAreaFallback.get();
+		}
 	}
 
 	public final void addPlayer(OfflinePlayer player) {

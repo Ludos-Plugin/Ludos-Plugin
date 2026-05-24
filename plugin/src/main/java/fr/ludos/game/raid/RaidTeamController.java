@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,6 +18,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import fr.ludos.Utility;
+import fr.ludos.area.Area;
 import fr.ludos.game.teamController.GameTeamController;
 import fr.ludos.item.SpecialItem;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -98,6 +100,8 @@ public final class RaidTeamController extends GameTeamController {
 	private void moveToTeam(OfflinePlayer player, Team team) {
 		if (player == null || team == null) return;
 
+		Location teammateLocation = Utility.snapToHighestY(getLocationAroundTeammate(team), true);
+
 		String name = player.getName();
 		playersTeam.removeEntry(name);
 		spectatorsTeam.removeEntry(name);
@@ -105,6 +109,8 @@ public final class RaidTeamController extends GameTeamController {
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;
+
+		onlinePlayer.teleport(teammateLocation);
 
 		onlinePlayer.setScoreboard(getGame().getScoreboard());
 	}
@@ -129,6 +135,8 @@ public final class RaidTeamController extends GameTeamController {
 
 		joinAnyPlayer(onlinePlayer);
 		onlinePlayer.setGameMode(GameMode.SURVIVAL);
+
+		SpecialItem.Events.refreshPlayerInventory(getGame(), onlinePlayer);
 	}
 
 	public void joinSpectator(OfflinePlayer player) {

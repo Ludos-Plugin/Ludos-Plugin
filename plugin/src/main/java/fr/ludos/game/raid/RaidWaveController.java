@@ -41,8 +41,9 @@ import fr.ludos.game.waves.WaveController;
 import fr.ludos.generator.OceanChunkGenerator;
 import fr.ludos.item.Categories;
 import fr.ludos.item.SpecialItem;
-import fr.ludos.monster.arena.GoldenKnightBoss;
-import fr.ludos.monster.arena.RaidMonsterBoss;
+import fr.ludos.lobby.Lobby.ClearMode;
+import fr.ludos.monster.raid.GoldenKnightBoss;
+import fr.ludos.monster.raid.RaidMonsterBoss;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -176,8 +177,13 @@ public final class RaidWaveController extends WaveController {
 	protected void onStart() {
 		super.onStart();
 
+		for (Player player : getGame().getTeamController().getOnlinePlayers()) {
+			applyLoadout(player);
+		}
+
 		game.getWorldManager()
 			.mutateLobby(lobby -> lobby
+				.clear(ClearMode.STATE)
 				.showOnStart(Component.text("Wave starting"))
 				.thenDont(getGame()::start)
 				.then(this::startWave)
@@ -204,24 +210,11 @@ public final class RaidWaveController extends WaveController {
 		game.getWorldManager().transfer((builder) -> builder
 			.of(getCurrentWaveTheme().getWorldCreator())
 		);
-		teamController.start();
 	}
 
 	@Override
 	public void startWave() {
-		Location spawn = Utility.snapToHighestY(getGame().getWorldManager().getWorld().getSpawnLocation(), true);
-		for (Player player : getGame().getTeamController().getOnlinePlayers()) {
-			player.teleport(spawn);
-
-			Utility.resetPlayerState(player);
-			player.setGameMode(GameMode.SURVIVAL);
-
-			if (getCurrentWave() == 0) {
-				applyLoadout(player);
-			} else {
-				SpecialItem.Events.refreshPlayerInventory(getGame(), player);
-			}
-		}
+		getGame().getTeamController().start();
 
 		applyThemePlayerEffects();
 

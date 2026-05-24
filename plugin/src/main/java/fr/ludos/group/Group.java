@@ -339,13 +339,11 @@ public final class Group implements ConfigurationSerializable {
 			if (electNewLeader()) {
 				members.remove(player);
 				playerGroupMap.remove(player);
-				notifyLeaveGroup(player);
 			}
 			else {
 				disband();
 				playerLeftMessage = Component.text("You have left the group. Since you were the leader and there are no more members, the group has been disbanded.");
 			}
-
 		} else {
 			members.remove(player);
 			playerGroupMap.remove(player);
@@ -356,6 +354,8 @@ public final class Group implements ConfigurationSerializable {
 				playerLeftMessage = Component.text("You have been kicked from " + leader.getName() + "'s group.");
 			}
 		}
+
+		notifyLeaveGroup(player);
 
 
 		Player onlinePlayer = player.getPlayer();
