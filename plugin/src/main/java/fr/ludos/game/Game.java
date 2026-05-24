@@ -149,6 +149,11 @@ public abstract class Game extends TwoStepGameProcessBase {
 		}
 	}
 	private void onLeaveGroup(OfflinePlayer player) {
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer != null) {
+			getWorldManager().evacuatePlayer(onlinePlayer);
+		}
+
 		if (isStarted()) {
 			getTeamController().removePlayer(player);
 		}
@@ -183,6 +188,25 @@ public abstract class Game extends TwoStepGameProcessBase {
 		activeItems.clear();
 	}
 
+	private static final String SCHEDULE_END_GAME_TEXT = "Game finished, returning in %s seconds...";
+	public void scheduleEndGame(int seconds) {
+		scheduleEndGame(seconds, null);
+	}
+	public void scheduleEndGame(int seconds, @Nullable String text) {
+		Component message = Component.text(
+			String.format(
+				text != null ? text : SCHEDULE_END_GAME_TEXT,
+				seconds
+			)
+		).color(NamedTextColor.YELLOW);
+		for (Player player : getGroup().getOnlinePlayers()) {
+			player.sendMessage(message);
+		}
+		Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
+			stop();
+		}, seconds * 20);
+	}
+
 
 	@Override
 	protected final void onSetup() {
@@ -196,6 +220,9 @@ public abstract class Game extends TwoStepGameProcessBase {
 		activeGames.add(this);
 
 		getWorldManager().start();
+
+		getGroup().addJoinGroupListener(this::onJoinGroup);
+		getGroup().addLeaveGroupListener(this::onLeaveGroup);
 
 		onGameSetup();
 	}
@@ -211,9 +238,6 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 		getTeamController().start();
 
-		getGroup().addJoinGroupListener(this::onJoinGroup);
-		getGroup().addLeaveGroupListener(this::onLeaveGroup);
-
 		activateRoles();
 
 		onGameStart();
@@ -228,14 +252,6 @@ public abstract class Game extends TwoStepGameProcessBase {
 		deactivateRoles();
 		deactivateItems();
 
-		for (Player player : getTeamController().getOnlinePlayers()) {
-			Utility.resetPlayer(player);
-			player.setGameMode(GameMode.SURVIVAL);
-		}
-
-		getGroup().removeJoinGroupListener(this::onJoinGroup);
-		getGroup().removeLeaveGroupListener(this::onLeaveGroup);
-
 		getTeamController().stop();
 	}
 
@@ -249,6 +265,9 @@ public abstract class Game extends TwoStepGameProcessBase {
 		super.onSetdown();
 
 		onGameSetdown();
+
+		getGroup().removeJoinGroupListener(this::onJoinGroup);
+		getGroup().removeLeaveGroupListener(this::onLeaveGroup);
 
 		getWorldManager().stop();
 

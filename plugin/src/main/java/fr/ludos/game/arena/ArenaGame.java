@@ -72,17 +72,17 @@ public class ArenaGame extends WaveGame {
 			ArenaGameConfigs.getRounds(config)
 		);
 
-		this.worldManager = WorldManager.within(getPlugin(), returnLocation)
+		this.worldManager = WorldManager.within(this, returnLocation)
 			.of(builder.createWorldCreator())
 			.withLobby(
-				Lobby.within(getPlugin())
+				Lobby.within(this)
 					.waitFor(group)
 					.clear(ClearMode.ALL)
 					.wait(Duration.ofSeconds(GroupConfigs.getWaitDurationOption(config).getDuration()))
 					.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(getPlugin())
+				WorldBorderArea.within(this)
 					.ofSize(RaidGameConfigs.getArea(config))
 			)
 			.build();

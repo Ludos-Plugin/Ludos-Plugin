@@ -174,17 +174,14 @@ public final class ManhuntTeamController extends GameTeamController {
 			return;
 		}
 
+		Utility.onDeathSpectate(event, getPlugin());
+
 		Bukkit.getServer().broadcast(Component.text("Prey " + player.getName() + " Slain!")); // TODO: Translate
 		preyTeam.removeEntry(player.getName());
 
 		if (preyTeam.getSize() == 0) {
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					Bukkit.getServer().sendMessage(Component.text("All Prey Dead! End of Game!")); // TODO: Translate
-					getGame().stop();
-				}
-			}.runTaskLater(getPlugin(), 0);
+			Bukkit.getServer().sendMessage(Component.text("All Prey Dead! End of Game!")); // TODO: Translate
+			getGame().scheduleEndGame(5);
 		}
 	}
 
@@ -210,7 +207,7 @@ public final class ManhuntTeamController extends GameTeamController {
 	public void joinPrey(OfflinePlayer player) {
 		Area area = getGame().getWorldManager().getArea();
 		Location gameLocation = area != null
-			? area.pickRandom(0.0, 0.2)
+			? Utility.snapToHighestY(area.pickRandom(0.0, 0.2), true)
 			: getGame().getWorldManager().getWorld().getSpawnLocation();
 
 		preyTeam.addEntry(player.getName());
@@ -241,19 +238,7 @@ public final class ManhuntTeamController extends GameTeamController {
 	public void joinHunter(OfflinePlayer player) {
 		if (hunterTeam.hasPlayer(player) || preyTeam.hasPlayer(player)) return;
 
-		Set<Player> hunters = getTeamOnlinePlayers(hunterTeam);
-		Area area = getGame().getWorldManager().getArea();
-
-		Location hunterLocation;
-		if (area != null) {
-			if (!hunters.isEmpty()) {
-				Player teammate = hunters.iterator().next();
-				Location teammateLocation = teammate.getLocation();
-				hunterLocation = area.constrain(Utility.getGroundedLocationAround(teammateLocation, 2, 10, teammateLocation));
-			} else {
-				hunterLocation = area.pickRandom(0.3, 0.7);
-			}
-		} else hunterLocation = getGame().getWorldManager().getWorld().getSpawnLocation();
+		Location hunterLocation = Utility.snapToHighestY(getLocationAroundTeammate(hunterTeam), true);
 
 		hunterTeam.addEntry(player.getName());
 
@@ -282,7 +267,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 		Area area = getGame().getWorldManager().getArea();
 		Location gameLocation = area != null
-			? area.pickRandom(0.0, 1.0)
+			? Utility.snapToHighestY(area.pickRandom(0.0, 1.0), true)
 			: getGame().getWorldManager().getWorld().getSpawnLocation();
 
 		spectatorTeam.addEntry(player.getName());
@@ -319,7 +304,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer != null) {
-			SpecialItem.Events.removeFromPlayerInventory(getGame(), onlinePlayer);
+			Utility.resetPlayer(onlinePlayer);
 			onlinePlayer.teleport(getGame().getWorldManager().getReturnLocation());
 		}
 	}

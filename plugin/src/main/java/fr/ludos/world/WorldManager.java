@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang.NullArgumentException;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
@@ -21,15 +22,19 @@ import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.Utility;
 import fr.ludos.area.Area;
+import fr.ludos.game.Game;
 import fr.ludos.game.GameProcessBase;
 import fr.ludos.lobby.Lobby;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.util.TriState;
 
 public final class WorldManager extends GameProcessBase {
 	private final Builder builder;
 	@Override
 	protected JavaPlugin getPlugin() {
-		return this.builder.plugin;
+		return this.builder.game.getPlugin();
 	}
 
 	private Map<Integer, BukkitTask> flushTasks = new HashMap<>();
@@ -89,8 +94,8 @@ public final class WorldManager extends GameProcessBase {
 			: null;
 	}
 
-	public static Builder within(JavaPlugin plugin, Location returnLocation) {
-		return new Builder(plugin, returnLocation);
+	public static Builder within(Game game, Location returnLocation) {
+		return new Builder(game, returnLocation);
 	}
 
 	public boolean transfer(Consumer<Builder> config) {
@@ -118,6 +123,14 @@ public final class WorldManager extends GameProcessBase {
 	}
 
 	private void startProcesses() {
+		for (Player player : builder.game.getGroup().getOnlinePlayers()) {
+			player.sendMessage(
+				Component.text("Loading world...")
+					.color(NamedTextColor.YELLOW)
+					.decorate(TextDecoration.BOLD)
+			);
+		}
+
 		if (builder.world != null) {
 			this.world = builder.world;
 		} else if (builder.worldCreator != null) {
@@ -166,13 +179,8 @@ public final class WorldManager extends GameProcessBase {
 		if (evacuate) {
 			List<Player> playersInWorld = world.getPlayers();
 
-			if (playersInWorld.size() > 0) {
-				for (Player player : playersInWorld) {
-					if (player.isDead()) {
-						player.spigot().respawn();
-					}
-					player.teleport(returnLocation);
-				}
+			for (Player player : playersInWorld) {
+				evacuatePlayer(player);
 			}
 		}
 
@@ -190,6 +198,16 @@ public final class WorldManager extends GameProcessBase {
 		}
 
 		return unloaded;
+	}
+	public void evacuatePlayer(Player player) {
+		if (! player.getWorld().equals(world)) return;
+
+		if (player.isDead()) {
+			player.spigot().respawn();
+		}
+		player.teleport(returnLocation);
+		Utility.resetPlayer(player);
+		player.setGameMode(GameMode.SURVIVAL);
 	}
 
 	public TriState scheduleFlushWorld(boolean evacuate) {
@@ -228,11 +246,11 @@ public final class WorldManager extends GameProcessBase {
 
 
 	public static final class Builder {
-		private final JavaPlugin plugin;
+		private final Game game;
 		private Location returnLocation;
 
-		public Builder(JavaPlugin plugin, Location returnLocation) {
-			this.plugin = Objects.requireNonNull(plugin);
+		public Builder(Game game, Location returnLocation) {
+			this.game = Objects.requireNonNull(game);
 			this.returnLocation = Objects.requireNonNull(returnLocation);
 		}
 

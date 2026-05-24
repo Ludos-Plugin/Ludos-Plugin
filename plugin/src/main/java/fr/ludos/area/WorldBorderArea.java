@@ -1,11 +1,11 @@
 package fr.ludos.area;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.WorldBorder;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.Utility;
+import fr.ludos.game.Game;
 
 public class WorldBorderArea extends Area {
 	private final Builder builder;
@@ -16,7 +16,7 @@ public class WorldBorderArea extends Area {
 
 	@Override
 	protected JavaPlugin getPlugin() {
-		return this.builder.plugin;
+		return this.builder.game.getPlugin();
 	}
 
 	private Location initialCenter;
@@ -30,8 +30,8 @@ public class WorldBorderArea extends Area {
 		this.builder = builder;
 	}
 
-	public static Builder within(JavaPlugin plugin) {
-		return new Builder(plugin);
+	public static Builder within(Game game) {
+		return new Builder(game);
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class WorldBorderArea extends Area {
 	public Location pickRandom(double startFactor, double endFactor) {
 		Location center = currentCenter;
 		double radius = currentSize / 2;
-		return Utility.getGroundedLocationAround(center, (int)(radius * startFactor), (int)(radius * endFactor), center);
+		return Utility.getLocationAround(center, (int)(radius * startFactor), (int)(radius * endFactor), center);
 	}
 	@Override
 	public Location constrain(Location location) {
@@ -108,10 +108,10 @@ public class WorldBorderArea extends Area {
 	}
 
 	public static class Builder extends Area.Builder<WorldBorderArea> {
-		private final JavaPlugin plugin;
+		private final Game game;
 
-		public Builder(JavaPlugin plugin) {
-			this.plugin = plugin;
+		public Builder(Game game) {
+			this.game = game;
 		}
 
 		private Integer radius = null;

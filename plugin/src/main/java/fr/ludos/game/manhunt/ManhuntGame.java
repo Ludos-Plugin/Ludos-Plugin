@@ -34,6 +34,7 @@ import fr.ludos.command.ludos.GroupConfigs;
 import fr.ludos.game.Game;
 import fr.ludos.group.Group;
 import fr.ludos.lobby.Lobby;
+import fr.ludos.lobby.Lobby.ClearMode;
 import fr.ludos.world.WorldManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -90,15 +91,16 @@ public class ManhuntGame extends Game {
 		}
 
 		WorldBorderAreaOption opt = ManhuntGameConfigs.getArea(config);
-		this.worldManager = WorldManager.within(getPlugin(), returnLocation)
+		this.worldManager = WorldManager.within(this, returnLocation)
 			.of(builder.createWorldCreator())
-			.withLobby(Lobby.within(getPlugin())
+			.withLobby(Lobby.within(this)
+				.clear(ClearMode.ALL)
 				.waitFor(group)
 				.wait(Duration.ofSeconds(GroupConfigs.getWaitDurationOption(config).getDuration()))
 				.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(getPlugin())
+				WorldBorderArea.within(this)
 					.ofSize(opt)
 			)
 			.build();

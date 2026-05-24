@@ -20,6 +20,7 @@ import fr.ludos.game.waves.WaveController;
 import fr.ludos.game.waves.WaveGame;
 import fr.ludos.group.Group;
 import fr.ludos.lobby.Lobby;
+import fr.ludos.lobby.Lobby.ClearMode;
 import fr.ludos.world.WorldManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -67,15 +68,16 @@ public class RaidGame extends WaveGame {
 			RaidGameConfigs.getWaves(config)
 		);
 
-		this.worldManager = WorldManager.within(getPlugin(), returnLocation)
+		this.worldManager = WorldManager.within(this, returnLocation)
 			.of(builder.createWorldCreator())
 			.withLobby(
-				Lobby.within(getPlugin())
+				Lobby.within(this)
+					.clear(ClearMode.ALL)
 					.waitFor(group)
 					.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(getPlugin())
+				WorldBorderArea.within(this)
 					.ofSize(RaidGameConfigs.getArea(config))
 			)
 			.build();

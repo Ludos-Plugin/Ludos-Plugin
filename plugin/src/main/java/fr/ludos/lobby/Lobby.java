@@ -29,6 +29,7 @@ import com.google.common.base.Predicate;
 
 import fr.ludos.Utility;
 import fr.ludos.command.ludos.GroupConfigs;
+import fr.ludos.game.Game;
 import fr.ludos.game.GameProcessBase;
 import fr.ludos.group.Group;
 import fr.ludos.structure.Structure;
@@ -59,7 +60,7 @@ public final class Lobby extends GameProcessBase {
 	private final Builder builder;
 	@Override
 	protected JavaPlugin getPlugin() {
-		return this.builder.plugin;
+		return this.builder.game.getPlugin();
 	}
 
 	private Structure structure;
@@ -77,8 +78,8 @@ public final class Lobby extends GameProcessBase {
 		this.builder = builder;
 	}
 
-	public static Builder within(JavaPlugin plugin) {
-		return new Builder(plugin);
+	public static Builder within(Game game) {
+		return new Builder(game);
 	}
 
 	public Lobby mutate(Consumer<Builder> config) {
@@ -98,13 +99,14 @@ public final class Lobby extends GameProcessBase {
 		super.onStart();
 
 		structure = builder.getStructureBuilder().build(builder.location);
-		players = builder.getPlayers();
 
 		Lobby lobby = this;
 		joinLobbyTask = new BukkitRunnable() {
 			@Override
 			public void run() {
-				Set<OfflinePlayer> allPlayersToTeleport = players.stream()
+				Set<OfflinePlayer> allPlayers = builder.getPlayers();
+
+				Set<OfflinePlayer> allPlayersToTeleport = allPlayers.stream()
 					.filter(player ->
 						!player.isOnline() ||
 						!player.getPlayer().getWorld().equals(builder.location.getWorld()) ||
@@ -113,6 +115,7 @@ public final class Lobby extends GameProcessBase {
 					.collect(Collectors.toSet());
 
 				if (builder.canStart(lobby) && allPlayersToTeleport.isEmpty()) {
+					players = allPlayers;
 					startGameTask = startOnTimer(
 						builder.getStartingText(),
 						(int) builder.getWaitDuration().toSeconds(),
@@ -231,10 +234,10 @@ public final class Lobby extends GameProcessBase {
 	}
 
 	public static final class Builder {
-		private final JavaPlugin plugin;
+		private final Game game;
 
-		public Builder(JavaPlugin plugin) {
-			this.plugin = plugin;
+		public Builder(Game game) {
+			this.game = game;
 		}
 
 		private Location location;
