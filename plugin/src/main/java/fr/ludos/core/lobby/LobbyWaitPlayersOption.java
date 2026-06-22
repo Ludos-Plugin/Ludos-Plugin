@@ -1,0 +1,48 @@
+package fr.ludos.core.lobby;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.bukkit.OfflinePlayer;
+
+import fr.ludos.core.Utility;
+import fr.ludos.core.group.Group;
+
+public enum LobbyWaitPlayersOption {
+	online () {
+		@Override
+		public final Set<OfflinePlayer> getPlayers(Group group) {
+			return Utility.getOnline(group.getPlayers().stream())
+				.collect(Collectors.toSet());
+		}
+	}, all () {
+		@Override
+		public final Set<OfflinePlayer> getPlayers(Group group) {
+			return group.getPlayers().stream()
+				.collect(Collectors.toSet());
+		}
+	};
+
+	public abstract Set<OfflinePlayer> getPlayers(Group group);
+
+	public static List<String> getOptions() {
+		return Arrays.stream(LobbyWaitPlayersOption.values())
+			.map(LobbyWaitPlayersOption::toString)
+			.collect(Collectors.toList());
+	}
+
+	public static String getUsage() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("<");
+		sb.append(
+			Arrays.stream(LobbyWaitPlayersOption.values()).map(LobbyWaitPlayersOption::toString)
+				.collect(Collectors.joining( " | "))
+		);
+		sb.append(">");
+
+		return sb.toString();
+	}
+}

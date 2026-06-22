@@ -1,0 +1,150 @@
+package fr.ludos.roles.harvester;
+
+import java.util.EnumSet;
+import java.util.LinkedHashMap;
+import java.util.Set;
+import java.util.function.BiFunction;
+
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+
+import fr.ludos.core.Ludos;
+import fr.ludos.core.game.Game;
+import fr.ludos.core.game.GameEvents;
+import fr.ludos.core.item.LevelItem;
+import fr.ludos.core.role.Role;
+import fr.ludos.core.role.RoleFlag;
+import fr.ludos.roles.harvester.items.HarvesterPick;
+import fr.ludos.roles.harvester.items.HarvesterScythe;
+import fr.ludos.roles.harvester.items.HarvesterSpade;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+
+
+public class HarvesterRole extends Role {
+	public static final String id = "harvester";
+
+
+	public HarvesterRole(Builder builder, Game game) {
+		super(builder, game);
+	}
+
+	@Override
+	protected void onRoleStart() {
+		super.onRoleStart();
+		// harvesters = Role.getPlayersOfRole(id);
+
+		// passiveResourcesTask = new BukkitRunnable() {    // FIXME: Quentin, quand cette tâche s'éxecute pour la première fois, elle remplace la pelle dans l'inventaire
+		// 	@Override									    // Le seul moyen de faire réapparaître la pelle est de déco reco
+		// 	public void run() {
+		// 		giveRandomOreToPlayers();
+		// 	}
+		// }.runTaskTimer(Main.getInstance(), 0, 20 * 600 * 1);
+	}
+
+	@Override
+	protected void onRoleStop() {
+		super.onRoleStop();
+		// passiveResourcesTask.cancel();
+		// passiveResourcesTask = null;
+	}
+
+	@Override
+	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
+		switch (builder.getId()) {
+			default:
+				return new LinkedHashMap<>() {{
+					put("scythe", new HarvesterScythe.Events(game));
+					put("pick", new HarvesterPick.Events(game));
+					put("spade", new HarvesterSpade.Events(game));
+				}};
+		}
+	}
+
+
+	private static final Set<BiFunction<ItemStack, Game, LevelItem<?>>> levelItemGetters = Set.of(
+		HarvesterScythe::fromItemStack,
+		HarvesterPick::fromItemStack,
+		HarvesterSpade::fromItemStack
+	);
+	public static void awardBreak(Player player, Block block, Game game) {
+		if (player == null || block == null) return;
+		if (!Role.isPlayerRole(player, id)) return;
+
+		Inventory inventory = player.getInventory();
+		if (inventory == null) return;
+
+		double oreXp = getOreReward(block);
+		if (oreXp == 0) return;
+		for (var itemType : levelItemGetters) {
+			LevelItem.findAllIn(inventory, (itemStack) -> itemType.apply(itemStack, game)).forEach(item -> item.addXp(oreXp));
+		}
+	}
+
+
+	public static double getOreReward(Block ore) {
+		Material material = ore.getType();
+		switch (material) {
+			case ANCIENT_DEBRIS:
+				return 60;
+			case EMERALD_ORE:
+				return 50;
+			case DIAMOND_ORE:
+				return 45;
+			case GOLD_ORE:
+				return 40;
+			case REDSTONE_ORE:
+				return 35;
+			case LAPIS_ORE:
+				return 30;
+			case NETHER_QUARTZ_ORE:
+				return 25;
+			case IRON_ORE:
+				return 20;
+			case OBSIDIAN:
+				return 15;
+			case COAL_ORE:
+				return 10;
+			case COPPER_ORE:
+				return 5;
+			default:
+				return material.getHardness();
+		}
+	}
+
+
+	public static class Builder extends Role.Builder {
+
+		@Override
+		public String getId() {
+			return id;
+		}
+
+		@Override
+		public EnumSet<RoleFlag> getRoleFlags() {
+			return EnumSet.of(RoleFlag.SUPPORT);
+		}
+
+		public Builder(Ludos plugin) {
+			super(plugin);
+		}
+
+		@Override
+		public Role build(Game game){
+			return new HarvesterRole(this, game);
+		}
+
+		@Override
+		public TextComponent getDisplayName() {
+			return Component.text("Harvester");
+		}
+
+		@Override
+		public TextComponent getDescription() {
+			return Component.text("");
+		}
+	}
+}

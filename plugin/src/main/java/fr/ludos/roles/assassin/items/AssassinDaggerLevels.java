@@ -1,0 +1,57 @@
+package fr.ludos.roles.assassin.items;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.bukkit.enchantments.Enchantment;
+
+import fr.ludos.core.item.LevelItem;
+import fr.ludos.core.item.SpecialItem;
+
+
+public enum AssassinDaggerLevels implements LevelItem.Level<AssassinDaggerLevels> {
+    BASE    (10, Collections.emptyMap(),                                  false),
+    SHARP1  (20, new HashMap<>() {{ put(Enchantment.DAMAGE_ALL, 1); }},   false),
+    POISONED(30, new HashMap<>() {{ put(Enchantment.DAMAGE_ALL, 1); }},   true),
+    SHARP2  (0,  new HashMap<>() {{ put(Enchantment.DAMAGE_ALL, 2); }},   true);
+
+    private final double xpThreshold;
+    private final Map<Enchantment, Integer> enchantments;
+    private final boolean appliesPoison;
+
+    AssassinDaggerLevels(double xpThreshold, Map<Enchantment, Integer> enchantments, boolean appliesPoison) {
+        this.xpThreshold = xpThreshold;
+        this.enchantments = enchantments;
+        this.appliesPoison = appliesPoison;
+    }
+
+    @Override
+    public double getXpThreshold() { return xpThreshold; }
+
+    public Map<Enchantment, Integer> getEnchantments() { return enchantments; }
+
+    public boolean appliesPoison() { return appliesPoison; }
+
+    @Override
+    public void onSetLevel(SpecialItem item) {
+        item.getStack().removeEnchantment(Enchantment.DAMAGE_ALL);
+        item.getStack().addEnchantments(enchantments);
+    }
+
+    @Override
+    public void onUnsetLevel(SpecialItem item) {
+        item.getStack().removeEnchantment(Enchantment.DAMAGE_ALL);
+    }
+
+    @Override
+    public void onEquip(SpecialItem item) { }
+
+    @Override
+    public void onUnequip(SpecialItem item) { }
+
+    @Override
+    public Class<AssassinDaggerLevels> getLevelClass() {
+        return AssassinDaggerLevels.class;
+    }
+}
