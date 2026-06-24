@@ -1,4 +1,4 @@
-package fr.ludos.core.item;
+package fr.ludos.core.persistence;
 
 import java.util.Arrays;
 

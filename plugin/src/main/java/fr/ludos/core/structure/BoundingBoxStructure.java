@@ -1,9 +1,7 @@
-package fr.ludos.core.lobby;
+package fr.ludos.core.structure;
 
 import org.bukkit.Location;
 import org.bukkit.util.BoundingBox;
-
-import fr.ludos.core.structure.Structure;
 
 public abstract class BoundingBoxStructure extends Structure {
 

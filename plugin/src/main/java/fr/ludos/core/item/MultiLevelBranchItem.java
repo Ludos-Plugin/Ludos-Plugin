@@ -18,6 +18,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import fr.ludos.core.game.Game;
+import fr.ludos.core.persistence.DoubleArrayPersistentDataType;
 import net.kyori.adventure.text.Component;
 
 

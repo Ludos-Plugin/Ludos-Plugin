@@ -9,6 +9,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
+import fr.ludos.core.structure.BoundingBoxStructure;
 import fr.ludos.core.structure.Structure;
 
 public class LobbyStructure extends BoundingBoxStructure {
