@@ -13,7 +13,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
@@ -25,7 +24,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>> extends SpecialItem implements BranchItemInterface<TBranch> {
 	public static final String BRANCH_KEY = "branch";
-	public static final NamespacedKey branchKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), BRANCH_KEY);
+	public static final NamespacedKey branchKey = new NamespacedKey(Ludos.namespace, BRANCH_KEY);
 
 
 	protected TBranch branch;

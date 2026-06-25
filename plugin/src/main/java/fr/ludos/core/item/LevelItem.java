@@ -19,7 +19,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
@@ -32,10 +31,10 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public abstract class LevelItem<TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends SpecialItem implements LevelItemInterface {
 	public static final String LEVEL = "level";
-	public static final NamespacedKey levelKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), LEVEL);
+	public static final NamespacedKey levelKey = new NamespacedKey(Ludos.namespace, LEVEL);
 
 	public static final String XP = "xp";
-	public static final NamespacedKey xpKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), XP);
+	public static final NamespacedKey xpKey = new NamespacedKey(Ludos.namespace, XP);
 
 	public static final String MAX_LVL_LABEL = "MAX";
 

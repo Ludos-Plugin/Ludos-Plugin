@@ -11,7 +11,6 @@ import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
@@ -134,7 +133,7 @@ public class ArenaGame extends WaveGame {
 
 		public WorldCreator createWorldCreator() {
 			String worldName = "arena_" + UUID.randomUUID();
-			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), worldName))
+			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.namespace, worldName))
 				.environment(Environment.NORMAL)
 				.type(WorldType.NORMAL)
 				.generateStructures(true)

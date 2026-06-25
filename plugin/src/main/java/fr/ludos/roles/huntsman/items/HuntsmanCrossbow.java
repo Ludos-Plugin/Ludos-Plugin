@@ -22,7 +22,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.projectiles.ProjectileSource;
 
 import fr.ludos.core.Ludos;
@@ -101,10 +100,10 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 	public static class Events extends MultiLevelBranchItem.Events<HuntsmanCrossbow, HuntsmanCrossbowBranches> {
 		public static final String ARROW_TYPE = "arrow_type";
-		public final NamespacedKey arrowTypeKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ARROW_TYPE);
+		public final NamespacedKey arrowTypeKey = new NamespacedKey(Ludos.namespace, ARROW_TYPE);
 
 		public static final String ARROW_LEVEL = "arrow_level";
-		public final NamespacedKey arrowLevelKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ARROW_LEVEL);
+		public final NamespacedKey arrowLevelKey = new NamespacedKey(Ludos.namespace, ARROW_LEVEL);
 
 		// private BukkitTask saturationTask;
 
