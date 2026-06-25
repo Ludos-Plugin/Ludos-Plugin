@@ -1,0 +1,75 @@
+package fr.ludos.core.command.ludos.game;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+import fr.ludos.core.command.Subcommand;
+import fr.ludos.core.command.ludos.group.GroupConfigs;
+import fr.ludos.core.game.Game;
+import fr.ludos.core.group.Group;
+
+public class GameStart implements Subcommand {
+	private final static String id = "start";
+
+	@Override
+	public String id() {
+		return id;
+	}
+
+	@Override
+	public String getDescription() {
+		return "As a group leader, start a game.";
+	}
+	@Override
+	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+		if (args.length < 1) return false;
+
+		if (!(sender instanceof Player player)) {
+			sender.sendMessage("Only players can start games.");
+			return true;
+		}
+
+		String startGameId = args[0].toLowerCase();
+		if ( !Game.getRegistered().containsKey(startGameId) ) {
+			sender.sendMessage("Game not found: " + startGameId);
+			return false;
+		}
+
+		Group group = Group.getGroupOfPlayer(player);
+		if (group == null) {
+			sender.sendMessage("You are not in a group.");
+			return true;
+		}
+
+		boolean membersCanRunGames = GroupConfigs.getGroupRightsOption(group.getConfig()).canRunGames();
+		if (! group.isLeader(player) && ! membersCanRunGames) {
+			sender.sendMessage("Only the group leader can start games.");
+			return true;
+		}
+
+		Game.startGame(startGameId, group);
+		return true;
+	}
+	@Override
+	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+		if (args.length == 1)
+			return Game.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+		return null;
+	}
+	@Override
+	public String getUsage() {
+		return "<" +
+			Game.getRegistered().keySet().stream().sorted()
+				.collect(Collectors.joining(" | "))
+			+ ">";
+	}
+	@Override
+	public boolean requireOp() {
+		return false;
+	}
+}

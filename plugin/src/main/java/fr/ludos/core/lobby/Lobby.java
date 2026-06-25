@@ -28,7 +28,7 @@ import org.bukkit.scheduler.BukkitTask;
 import com.google.common.base.Predicate;
 
 import fr.ludos.core.Utility;
-import fr.ludos.core.command.ludos.GroupConfigs;
+import fr.ludos.core.command.ludos.group.GroupConfigs;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameProcessBase;
 import fr.ludos.core.group.Group;

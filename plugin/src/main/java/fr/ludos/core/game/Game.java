@@ -113,7 +113,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 	protected Game(Builder builder, Group group, Scoreboard scoreboard) {
 		this.builder = builder;
 		this.group = group;
-		this.scoreboard = Bukkit.getServer().getScoreboardManager().getNewScoreboard();
+		this.scoreboard = group.getPlugin().getServer().getScoreboardManager().getNewScoreboard();
 	}
 
 	public static boolean startGame(String id, Group group) {

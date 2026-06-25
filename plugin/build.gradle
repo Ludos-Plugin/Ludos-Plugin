@@ -2,40 +2,55 @@ import io.papermc.paperweight.userdev.ReobfArtifactConfiguration
 
 plugins {
     id 'java'
-    id 'io.papermc.paperweight.userdev' version '2.0.0-beta.21' // Check for the latest version
+    id 'io.papermc.paperweight.userdev' version '2.0.0-beta.21'
 }
 
 java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 group = 'fr.ludos'
 version = '0.0.0'
 
-tasks.register('printVersion') {
-    doLast {
-        println project.version
-    }
-}
-
 repositories {
     mavenCentral()
     mavenLocal()
-    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
-    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url 'https://repo.papermc.io/repository/maven-public/' }
-    maven { url 'https://repo.dmulloy2.net/repository/public/' }
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://repo.codemc.io/repository/maven-public/' }
 }
 
 dependencies {
-    implementation 'net.kyori:adventure-api:4.20.0'
-    implementation 'net.kyori:adventure-text-minimessage:4.25.0'
-
+    // --- PRODUCTION ---
+    paperweight.paperDevBundle("1.19-R0.1-SNAPSHOT")
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
 
-    paperweight.paperDevBundle('1.19-R0.1-SNAPSHOT')
+    // --- TESTS ---
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.0'
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+
+    testImplementation 'com.github.seeseemelk:MockBukkit-v1.19:3.1.0'
+}
+
+paperweight {
+    addServerDependencyTo = [configurations.compileOnly] as Set
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showStandardStreams true
+        showExceptions true
+        showStackTraces true
+    }
 }
 
 paperweight {
@@ -52,6 +67,14 @@ tasks.reobfJar {
 sourceSets {
     main {
         output.dir("build/classes/java/main")
+    }
+    test {
+        java {
+            srcDirs = ['src/test/java']
+        }
+        resources {
+            srcDirs = ['src/test/resources']
+        }
     }
 }
 

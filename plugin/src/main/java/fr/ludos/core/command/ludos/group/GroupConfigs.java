@@ -1,4 +1,4 @@
-package fr.ludos.core.command.ludos;
+package fr.ludos.core.command.ludos.group;
 
 import java.util.Arrays;
 import java.util.List;

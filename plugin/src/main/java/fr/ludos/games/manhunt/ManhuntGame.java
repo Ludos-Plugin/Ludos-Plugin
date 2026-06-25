@@ -30,7 +30,7 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
 import fr.ludos.core.area.WorldBorderAreaOption;
 import fr.ludos.core.command.ConfigSubcommandManager;
-import fr.ludos.core.command.ludos.GroupConfigs;
+import fr.ludos.core.command.ludos.group.GroupConfigs;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;

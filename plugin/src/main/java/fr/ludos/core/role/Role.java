@@ -196,7 +196,7 @@ public abstract class Role extends GameProcessBase {
 		return (OfflinePlayer p) -> isPlayerRole(p, id);
 	}
 
-	public static void setRole(OfflinePlayer player, String roleId) {
+	public static void setRole(OfflinePlayer player, String roleId, Ludos plugin) {
 		UUID playerUUID = player.getUniqueId();
 		if ( playerRoles.containsKey(playerUUID) && playerRoles.get(playerUUID).equalsIgnoreCase(roleId) ) return;
 
@@ -205,14 +205,11 @@ public abstract class Role extends GameProcessBase {
 
 		playerRoles.put(playerUUID, roleId);
 
-		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
-
 		plugin.getConfig().set(rolesKey + '.' + playerUUID, roleId);
 		plugin.saveConfig();
-
 	}
 
-	public static void removeRole(Player player) {
+	public static void removeRole(Player player, Ludos plugin) {
 		UUID playerUUID = player.getUniqueId();
 		if ( ! playerRoles.containsKey(playerUUID) ) return;
 
@@ -221,8 +218,6 @@ public abstract class Role extends GameProcessBase {
 
 		playerRoles.remove(playerUUID);
 		player.sendMessage("You now have no role");
-
-		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 
 		plugin.getConfig().set(rolesKey + '.' + playerUUID, null);
 		plugin.saveConfig();

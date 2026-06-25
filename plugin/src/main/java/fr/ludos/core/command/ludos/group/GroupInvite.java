@@ -1,0 +1,112 @@
+package fr.ludos.core.command.ludos.group;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+import fr.ludos.core.Ludos;
+import fr.ludos.core.command.CommandUtility;
+import fr.ludos.core.command.Subcommand;
+import fr.ludos.core.group.Group;
+import fr.ludos.core.group.Group.JoinMethod;
+
+public class GroupInvite implements Subcommand {
+	private final static String id = "invite";
+
+	private final Ludos plugin;
+	public GroupInvite(Ludos plugin) {
+		this.plugin = plugin;
+	}
+
+	@Override
+	public String id() {
+		return id;
+	}
+
+	@Override
+	public String getDescription() {
+		return "Invite a player to your group.";
+	}
+	@Override
+	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+		if (args.length < 1) return false;
+
+		if (!(sender instanceof Player player)) {
+			sender.sendMessage("Only players can invite others to groups.");
+			return true;
+		}
+
+		Group group = Group.getGroupOfPlayer(player);
+		if (group == null) {
+			sender.sendMessage("You are not in a group.");
+			return true;
+		}
+
+		Set<Player> targets = CommandUtility.getPlayersFromArgs(args, 0, sender).stream()
+			.filter(p -> ! group.isPlayer(p))
+			.collect(Collectors.toSet());
+
+		if (targets.isEmpty()) {
+			sender.sendMessage("No valid player names provided.");
+			return true;
+		}
+
+		boolean membersCanInvite = GroupConfigs.getGroupRightsOption(group.getConfig()).canInvite();
+		if (! group.isLeader(player) && ! membersCanInvite) {
+			sender.sendMessage("Only the group leader can invite new members.");
+			return true;
+		}
+
+		boolean hasJoined = false;
+		for (Player target : targets) {
+			switch (group.requestPlayerJoin(target, JoinMethod.Invite)) {
+				case Succeeded:
+					hasJoined = true;
+				case Failed:
+					targets.remove(target);
+					break;
+				default:
+					break;
+			}
+		}
+		if (hasJoined) {
+			plugin.saveConfig();
+		}
+
+		if (targets.size() > 0) {
+			player.sendMessage("Invited " + targets.stream().map(Player::getName).collect(Collectors.joining(", ")) + " to the group.");
+		}
+
+		return true;
+	}
+	@Override
+	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+		if (! (sender instanceof Player player)) return null;
+
+		Group group = Group.getGroupOfPlayer(player);
+		if (group == null) return null;
+
+		HashSet<Player> onlines = plugin.getServer().getOnlinePlayers()
+			.stream()
+			.collect(Collectors.toCollection(HashSet::new));
+		onlines.removeAll(group.getPlayers());
+
+		return onlines.stream()
+			.map(Player::getName)
+			.toList();
+	}
+	@Override
+	public String getUsage() {
+		return "[player1] [player2] ...";
+	}
+	@Override
+	public boolean requireOp() {
+		return false;
+	}
+}

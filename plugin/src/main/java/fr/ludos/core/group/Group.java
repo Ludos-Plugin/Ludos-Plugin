@@ -36,7 +36,6 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 public final class Group implements ConfigurationSerializable {
-
 	public enum JoinMethod {
 		Join,
 		Invite
@@ -63,6 +62,16 @@ public final class Group implements ConfigurationSerializable {
 		return playerGroupMap.get(Objects.requireNonNull(player, "Player cannot be null"));
 	}
 
+	private final Ludos plugin;
+	public Ludos getPlugin() {
+		return plugin;
+	}
+
+	private ConfigurationSection config;
+	public ConfigurationSection getConfig() {
+		return config;
+	}
+
 	private OfflinePlayer leader;
 	public final OfflinePlayer getLeader() {
 		return leader;
@@ -82,11 +91,6 @@ public final class Group implements ConfigurationSerializable {
 	private Map<OfflinePlayer, JoinMethod> joinRequests = new HashMap<>();
 	public Map<OfflinePlayer, JoinMethod> getJoinRequests() {
 		return this.joinRequests;
-	}
-
-	private ConfigurationSection config;
-	public ConfigurationSection getConfig() {
-		return config;
 	}
 
 	private @Nullable Game game;
@@ -124,9 +128,10 @@ public final class Group implements ConfigurationSerializable {
 	}
 
 
-	private Group(@NotNull OfflinePlayer leader, @NotNull Collection<OfflinePlayer> members, @Nullable ConfigurationSection config) {
+	private Group(@NotNull OfflinePlayer leader, @NotNull Collection<OfflinePlayer> members, Ludos plugin, @Nullable ConfigurationSection config) {
 		this.leader = leader;
 		this.members = new HashSet<>(members);
+		this.plugin = plugin;
 		this.config = config == null ? new MemoryConfiguration() : config;
 	}
 
@@ -188,7 +193,7 @@ public final class Group implements ConfigurationSerializable {
 		groups.remove(group);
 	}
 
-	public final static Group createGroup(@NotNull OfflinePlayer leader, @Nullable Set<OfflinePlayer> members) {
+	public final static Group createGroup(@NotNull OfflinePlayer leader, @Nullable Set<OfflinePlayer> members, Ludos plugin) {
 		if (leader == null) {
 			throw new IllegalArgumentException("Leader cannot be null");
 		}
@@ -199,11 +204,10 @@ public final class Group implements ConfigurationSerializable {
 		}
 
 
-		Group group = new Group(leader, members == null ? Collections.emptySet() : members, null);
+		Group group = new Group(leader, members == null ? Collections.emptySet() : members, plugin, null);
 		initializeGroup(group);
 
-		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
-		Group.saveConfigGroup(plugin, group);
+		group.saveConfigGroup();
 
 
 		Component creationMessage = Component.text("You have created a new group.");
@@ -226,8 +230,7 @@ public final class Group implements ConfigurationSerializable {
 	public final void disband() {
 		deinitializeGroup(this);
 
-		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
-		Group.removeConfigGroup(plugin, this);
+		removeConfigGroup();
 
 
 		Component disbandMessage = Component.text("Your group has been disbanded.");
@@ -251,13 +254,12 @@ public final class Group implements ConfigurationSerializable {
 		Set<Player> onlineMembers = getOnlineMembers();
 		if (onlineMembers.isEmpty()) return false;
 
-		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
-		Group.removeConfigGroup(plugin, this);
+		removeConfigGroup();
 
 		Player newLeader = onlineMembers.iterator().next();
 		this.leader = newLeader;
 		members.remove(newLeader);
-		Group.saveConfigGroup(plugin, this);
+		saveConfigGroup();
 
 		Component promotionMessage = Component.text("You have been promoted to group leader.");
 		newLeader.sendMessage(promotionMessage);
@@ -272,14 +274,13 @@ public final class Group implements ConfigurationSerializable {
 
 	public final boolean demoteLeader() {
 		OfflinePlayer oldLeader = getLeader();
-		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 
 		Component demoteMessage = null;
 		if (electNewLeader()) {
 			members.add(oldLeader);
 			demoteMessage = Component.text(leader.getName() + " has been promoted to leader.");
 
-			Group.saveConfigGroup(plugin, this);
+			saveConfigGroup();
 		}
 
 		plugin.saveConfig();
@@ -321,8 +322,7 @@ public final class Group implements ConfigurationSerializable {
 			onlinePlayer.sendMessage(targetMessage);
 		}
 
-		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
-		Group.saveConfigGroup(plugin, this);
+		saveConfigGroup();
 
 		notifyJoinGroup(player);
 	}
@@ -333,7 +333,6 @@ public final class Group implements ConfigurationSerializable {
 		if (kick && wasLeader) return;
 
 		Component playerLeftMessage = null;
-		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
 
 		if (wasLeader) {
 			if (electNewLeader()) {
@@ -348,7 +347,7 @@ public final class Group implements ConfigurationSerializable {
 			members.remove(player);
 			playerGroupMap.remove(player);
 
-			Group.saveConfigGroup(plugin, this);
+			saveConfigGroup();
 
 			if (kick) {
 				playerLeftMessage = Component.text("You have been kicked from " + leader.getName() + "'s group.");
@@ -443,7 +442,7 @@ public final class Group implements ConfigurationSerializable {
 		return serialized;
 	}
 
-	public static @NotNull Group deserialize(@NotNull Map<String, Object> data) {
+	public static @NotNull Group deserialize(@NotNull Map<String, Object> data, Ludos plugin) {
 		Object leaderRaw = data.get("leader");
 		if (!(leaderRaw instanceof String leaderName)) {
 			throw new IllegalArgumentException("Invalid leader UUID in group data");
@@ -464,32 +463,32 @@ public final class Group implements ConfigurationSerializable {
 		Object configRaw = data.get("config");
 		MemorySection configSection = configRaw instanceof MemorySection section ? section : null;
 
-		Group newGroup = new Group(leader, members, configSection);
+		Group newGroup = new Group(leader, members, plugin, configSection);
 		initializeGroup(newGroup);
 
 		return newGroup;
 	}
 
 
-	public static void removeConfigGroup(Ludos plugin, Group group) {
+	public final void removeConfigGroup() {
 		FileConfiguration pluginConfig = plugin.getConfig();
 
 		pluginConfig.set(
-			groupsKey + "." + group.leader.getUniqueId().toString(),
+			groupsKey + "." + leader.getUniqueId().toString(),
 			null
 		);
 	}
 
-	public static void saveConfigGroup(Ludos plugin, Group group) {
+	public final void saveConfigGroup() {
 		FileConfiguration pluginConfig = plugin.getConfig();
 
 		pluginConfig.set(
-			groupsKey + "." + group.leader.getUniqueId().toString(),
-			group.serialize()
+			groupsKey + "." + leader.getUniqueId().toString(),
+			serialize()
 		);
 	}
 
-	public static void saveConfigGroups(Ludos plugin) {
+	public static void saveConfigGroups(JavaPlugin plugin) {
 		FileConfiguration pluginConfig = plugin.getConfig();
 		ConfigurationSection groupsSection = pluginConfig.createSection(groupsKey);
 		for (Group group : groups) {
@@ -513,7 +512,7 @@ public final class Group implements ConfigurationSerializable {
 		for (Map.Entry<String, Object> groupEntry : groupsSection.getValues(false).entrySet()) {
 			if (groupEntry.getValue() instanceof MemorySection groupData) {
 				try {
-					Group.deserialize(groupData.getValues(true));
+					Group.deserialize(groupData.getValues(true), plugin);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
