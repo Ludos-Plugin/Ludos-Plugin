@@ -28,7 +28,6 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.ItemUtilities;
 import fr.ludos.core.item.LevelItem;
-import fr.ludos.core.item.LevelItem.LevelState;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.harvester.HarvesterRole;

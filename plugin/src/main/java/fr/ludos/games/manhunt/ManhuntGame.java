@@ -242,16 +242,26 @@ public class ManhuntGame extends Game {
 		}
 		@Override
 		public TextComponent getDescription() {
-			return Component.text("A game of hide and seek.\n" +
-				"As the Prey, survive for as long as possible, while the Hunters try to find you.\n" +
-				"The Hunters possess a Compass that will update regularly to point at the Prey's position."
-			);
+			return Component.text("Get Hunted down by your friends, or hunt one of them down with the others.\n\n" +
+				"As the ").append(getPreyText()).append(Component.text(", survive as long as possible, while the ").append(getHunterText(true)).append(Component.text(" try to find you.\n\n" +
+				"The ").append(getHunterText(true)).append(Component.text(" possess a Compass that will update regularly to point at the ").append(getPreyText()).append(Component.text("'s position."
+			)))));
 		}
 
 		private final ConfigSubcommandManager<ManhuntGameConfigs> configsSubcommand = new ConfigSubcommandManager<>(ManhuntGameConfigs.values());
 		@Override
 		protected ConfigSubcommandManager<?> getConfigsSubcommand() {
 			return configsSubcommand;
+		}
+
+		public static Component getHunterText() {
+			return getHunterText(false);
+		}
+		public static Component getHunterText(boolean plural) {
+			return Component.text(plural ? "Hunters" : "Hunter").color(NamedTextColor.RED);
+		}
+		public static Component getPreyText() {
+			return Component.text("Prey").color(NamedTextColor.BLUE);
 		}
 
 

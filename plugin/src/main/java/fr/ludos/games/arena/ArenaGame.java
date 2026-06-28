@@ -118,12 +118,15 @@ public class ArenaGame extends WaveGame {
 
 		@Override
 		public TextComponent getDisplayName() {
-			return Component.text("Arena").color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, true);
+			return Component.text("Arena")
+				.color(NamedTextColor.DARK_GRAY);
 		}
 
 		@Override
 		public TextComponent getDescription() {
-			return Component.text("Round-based PvP arena with team battles.");
+			return Component.text("Fight against each other.\n\n" +
+				"Play through multiple rounds of Combat, as one team against another, or in a duel."
+			);
 		}
 
 		private final ConfigSubcommandManager<ArenaGameConfigs> configsSubcommand = new ConfigSubcommandManager<>(ArenaGameConfigs.values());

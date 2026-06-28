@@ -106,12 +106,15 @@ public class RaidGame extends WaveGame {
 
 		@Override
 		public TextComponent getDisplayName() {
-			return Component.text("Raid").color(NamedTextColor.YELLOW).decoration(TextDecoration.BOLD, true);
+			return Component.text("Raid")
+				.color(NamedTextColor.GOLD);
 		}
 
 		@Override
 		public TextComponent getDescription() {
-			return Component.text("Co-op survival waves with monster bosses.");
+			return Component.text("Fight against hordes of Enemies with your friends.\n\n" +
+				"Every few waves, you will have to defeat an especially ferocious enemy..."
+			);
 		}
 
 		private final ConfigSubcommandManager<RaidGameConfigs> configsSubcommand = new ConfigSubcommandManager<>(RaidGameConfigs.values());

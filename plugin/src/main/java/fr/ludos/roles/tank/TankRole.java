@@ -20,6 +20,7 @@ import fr.ludos.roles.tank.items.TankHelmet;
 import fr.ludos.roles.tank.items.TankShield;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 public class TankRole extends Role {
 	public static final String id = "tank";
@@ -115,12 +116,15 @@ public class TankRole extends Role {
 
 		@Override
 		public TextComponent getDisplayName() {
-			return Component.text("Tank");
+			return Component.text("Tank")
+				.color(NamedTextColor.GOLD);
 		}
 
 		@Override
 		public TextComponent getDescription() {
-			return Component.text("");
+			return Component.text("Guard against threats of all kinds, as the Tank.\n" +
+				"With his shield in hand, the Tank protects himself and his allies against any and all attacks."
+			);
 		}
 	}
 }

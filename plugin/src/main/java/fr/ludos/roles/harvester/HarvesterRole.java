@@ -22,6 +22,7 @@ import fr.ludos.roles.harvester.items.HarvesterScythe;
 import fr.ludos.roles.harvester.items.HarvesterSpade;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 
 public class HarvesterRole extends Role {
@@ -139,12 +140,15 @@ public class HarvesterRole extends Role {
 
 		@Override
 		public TextComponent getDisplayName() {
-			return Component.text("Harvester");
+			return Component.text("Harvester")
+				.color(NamedTextColor.GREEN);
 		}
 
 		@Override
 		public TextComponent getDescription() {
-			return Component.text("");
+			return Component.text("The Harvester seeks the riches of the earth,\n" +
+				"using various tools to scrape his way through obstacles and escape his enemies."
+			);
 		}
 	}
 }

@@ -20,6 +20,7 @@ import fr.ludos.roles.huntsman.items.HuntsmanBow;
 import fr.ludos.roles.huntsman.items.HuntsmanCrossbow;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 
 public class HuntsmanRole extends Role {
@@ -84,12 +85,15 @@ public class HuntsmanRole extends Role {
 
 		@Override
 		public TextComponent getDisplayName() {
-			return Component.text("Huntsman");
+			return Component.text("Huntsman")
+				.color(NamedTextColor.DARK_PURPLE);
 		}
 
 		@Override
 		public TextComponent getDescription() {
-			return Component.text("");
+			return Component.text("Most agile at range, the Huntsman's vision is keen.\n" +
+				"Able to Shoot down his targets, wielding a Bow and special Crossbow."
+			);
 		}
 	}
 }

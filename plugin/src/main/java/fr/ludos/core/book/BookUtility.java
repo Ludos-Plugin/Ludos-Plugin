@@ -2,7 +2,6 @@ package fr.ludos.core.book;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import net.kyori.adventure.text.Component;
@@ -12,8 +11,188 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.internal.parser.node.TagNode;
 import net.kyori.adventure.text.minimessage.internal.parser.node.TagPart;
 import net.kyori.adventure.text.minimessage.internal.parser.node.TextNode;
+import net.kyori.adventure.text.minimessage.internal.parser.node.ValueNode;
 import net.kyori.adventure.text.minimessage.tree.Node;
 import net.kyori.adventure.text.minimessage.tree.Node.Root;
+
+
+final class PageTruncator {
+	private final MiniMessage mm = MiniMessage.miniMessage();
+
+	protected final int maxLineWidth;
+	protected int currentLineWidth = 0;
+	protected final StringBuilder currentLine = new StringBuilder();
+	protected final ArrayList<String> lineParts = new ArrayList<>();
+
+	private final int maxLineCount;
+	private int currentPageHeight = 0;
+	private TextComponent.Builder currentPage = Component.text();
+	protected final ArrayList<TextComponent> pages = new ArrayList<>();
+
+	protected PageTruncator(int maxLineWidth, int maxLineCount) {
+		this.maxLineWidth = maxLineWidth;
+		this.maxLineCount = maxLineCount;
+	}
+
+	public static TextComponent[] truncate(TextComponent text) {
+		return truncate(text, BookUtility.MC_BOOK_LINE_WIDTH, BookUtility.MC_BOOK_LINE_COUNT);
+	}
+	public static TextComponent[] truncate(TextComponent text, int maxLineWidth, int maxLineCount) {
+		PageTruncator trunc = new PageTruncator(maxLineWidth, maxLineCount);
+		return trunc.process(text);
+	}
+
+	public TextComponent[] process(TextComponent component) {
+		Root tree = mm.deserializeToTree(mm.serialize(component));
+
+		truncateNode(tree, false, false);
+		if (currentLineWidth > 0) {
+			flushCurrentLine();
+		}
+		if (lineParts.size() > 0) {
+			endCurrentLine();
+		}
+		if (currentPageHeight > 0) {
+			flushCurrentPage();
+		}
+
+		return pages.toArray(new TextComponent[pages.size()]);
+	}
+
+	private void truncateNode(Node node, boolean isInsideTag, boolean isBold) {
+		if (node instanceof ValueNode text) {
+			truncateValueNode(text, isInsideTag, isBold);
+		}
+		else if (node instanceof TagNode tag) {
+			truncateTagNode(tag, isInsideTag, isBold);
+		}
+		else {
+			for (Node child : node.children()) {
+				truncateNode(child, isInsideTag, isBold);
+			}
+		}
+	}
+
+	private void truncateValueNode(ValueNode node, boolean isInsideTag, boolean isBold) {
+		final String value = node.value();
+
+		int wordStart = 0;
+		int wordEnd = -1;
+
+		for (int i = 0; i < value.length(); i++) {
+			final char character = value.charAt(i);
+			final String word;
+
+			switch (character) {
+				case ' ':
+					if (wordEnd >= wordStart) {
+						word = value.substring(wordStart, wordEnd + 1);
+						appendWord(word, isBold);
+					}
+
+					final int charPixelWidth = BookUtility.getPixelWidth(character, isBold);
+					if (currentLineWidth + charPixelWidth >= maxLineWidth) {
+						flushCurrentLine();
+					} else {
+						currentLine.append(character);
+						currentLineWidth += charPixelWidth + 1;
+					}
+
+					wordStart = i + 1;
+
+					break;
+				case '\n':
+					if (wordEnd >= wordStart) {
+						word = value.substring(wordStart, wordEnd + 1);
+						appendWord(word, isBold);
+					}
+
+					flushCurrentLine();
+					if (!isInsideTag) {
+						endCurrentLine();
+					}
+
+					wordStart = i + 1;
+
+					break;
+				default:
+					wordEnd = i;
+					break;
+			}
+		}
+
+		if (wordEnd >= wordStart) {
+			final String word = value.substring(wordStart, wordEnd + 1);
+			appendWord(word, isBold);
+		}
+	}
+
+	private void truncateTagNode(TagNode tagNode, boolean isInsideTag, boolean isBold) {
+		final String tagName = tagNode.name();
+
+		if (tagName.equals("newline") || tagName.equals("br")) {
+			flushCurrentLine();
+			return;
+		}
+		isBold = BookUtility.isTagNodeBold(tagNode, isBold);
+
+		currentLine.append('<').append(tagName);
+
+		final int partsSize = tagNode.parts().size();
+		for (int i = 1; i < partsSize; i++) {
+			final TagPart part = tagNode.parts().get(i);
+			currentLine.append(':');
+			currentLine.append('\'').append(part.value()).append('\'');
+		}
+		currentLine.append('>');
+
+		for (Node child : tagNode.children()) {
+			truncateNode(child, true, isBold);
+		}
+
+		currentLine.append("</").append(tagName).append('>');
+	}
+
+	private void flushCurrentPage() {
+		pages.add(currentPage.build());
+		currentPage = Component.text();
+		currentPageHeight = 0;
+	}
+
+	private void flushCurrentLine() {
+		appendLinePart(currentLine.toString());
+		currentLine.setLength(0);
+		currentLineWidth = 0;
+	}
+	private void endCurrentLine() {
+		StringBuilder sb = new StringBuilder();
+		for (String lp : lineParts) {
+			sb.append(lp).append('\n');
+		}
+		currentPage.append(mm.deserialize(sb.toString()));
+		currentPageHeight += lineParts.size();
+		lineParts.clear();
+	}
+
+	private void appendLinePart(String line) {
+		if (currentPageHeight > 0 && currentPageHeight + lineParts.size() + 1 > maxLineCount) {
+			flushCurrentPage();
+		}
+
+		lineParts.add(line);
+	}
+
+	private void appendWord(String word, boolean isBold) {
+		final int wordPixelWidth = BookUtility.getPixelWidth(word, isBold);
+
+		if (currentLineWidth > 0 && currentLineWidth + wordPixelWidth >= maxLineWidth) {
+			flushCurrentLine();
+		}
+
+		currentLine.append(word);
+		currentLineWidth += wordPixelWidth + 1;
+	}
+}
 
 public class BookUtility {
 	public static final int MC_CHAR_WIDTH_DEFAULT = 5; // Default width for unknown characters
@@ -92,9 +271,9 @@ public class BookUtility {
 			return Component.text(' ').decoration(TextDecoration.BOLD, totalSpaceWidths > 0.5);
 		}
 
-		int totalSpacesCount = (int) totalSpaceWidths;
+		int totalSpacesCount = (int) Math.floor(totalSpaceWidths);
 		int boldSpacesCount = (int) ((totalSpaceWidths - totalSpacesCount) * spaceWidth);
-		int normalSpacesCount = totalSpacesCount - boldSpacesCount;
+		int normalSpacesCount = Math.max(totalSpacesCount - boldSpacesCount, 0);
 
 		StringBuilder spaces = new StringBuilder(normalSpacesCount);
 		for (int i = 0; i < normalSpacesCount; i++) {
@@ -123,60 +302,61 @@ public class BookUtility {
 		return getPixelWidth(s, false);
 	}
 	public static final int getPixelWidth(String s, boolean bold) {
-		int width = 0;
+		int pixelWidth = 0;
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
-			int charWidth = getPixelWidth(c, bold);
-			width += charWidth + 1; // +1 for spacing
+
+			pixelWidth += getPixelWidth(c, bold) + 1;
 		}
-		return width > 0 ? width - 1 : 0; // Remove last spacing
+		return pixelWidth > 0 ? pixelWidth - 1 : 0; // Remove last spacing
 	}
 
-	private static int getTagNodePixelWidth(TagNode tagNode, boolean bold) {
+	public static boolean isTagNodeBold(TagNode tagNode, boolean isBold) {
 		if (tagNode.name().equals("bold") || tagNode.name().equals("b")) {
-			bold = tagNode.parts().size() == 1 || Boolean.parseBoolean(tagNode.parts().get(1).value());
+			return tagNode.parts().size() == 1 || Boolean.parseBoolean(tagNode.parts().get(1).value());
 		}
 		else if (tagNode.name().equals("!bold") || tagNode.name().equals("!b")) {
-			bold = false;
+			return false;
 		}
 		else if (tagNode.name().equals("reset")) {
-			bold = false;
+			return false;
 		}
-
-		int pixelWidth = 0;
-
-		for (Node child : tagNode.children()) {
-			pixelWidth += getNodePixelWidth(child, bold);
-		}
-
-		return pixelWidth;
+		return isBold;
 	}
 
-	private static int getNodePixelWidth(Node node, boolean bold) {
+	private static int getTagChildrenPixelWidth(Node node, boolean isBold) {
+		int pixelWidth = 0;
+		for (Node child : node.children()) {
+			pixelWidth += getNodePixelWidth(child, isBold) + 1;
+		}
+		return pixelWidth > 0 ? pixelWidth - 1 : 0; // Remove last spacing
+	}
+	private static int getTagNodePixelWidth(TagNode tagNode, boolean isBold) {
+		isBold = isTagNodeBold(tagNode, isBold);
+
+		return getTagChildrenPixelWidth(tagNode, isBold);
+	}
+	private static int getNodePixelWidth(Node node, boolean isBold) {
 		if (node instanceof TextNode text) {
-			return getPixelWidth(text.value(), bold);
+			return getPixelWidth(text.value(), isBold);
 		}
 		else if (node instanceof TagNode tag) {
-			return getTagNodePixelWidth(tag, bold);
+			return getTagNodePixelWidth(tag, isBold);
 		}
 		else {
-			int pixelWidth = 0;
-			for (Node child : node.children()) {
-				pixelWidth += getNodePixelWidth(child, bold);
-			}
-			return pixelWidth;
+			return getTagChildrenPixelWidth(node, isBold);
 		}
 	}
 
 	public static int getPixelWidth(TextComponent component) {
 		return getPixelWidth(component, false);
 	}
-	public static int getPixelWidth(TextComponent component, boolean parentBold) {
+	public static int getPixelWidth(TextComponent component, boolean isBold) {
 		MiniMessage mm = MiniMessage.miniMessage();
 
 		Root tree = mm.deserializeToTree(mm.serialize(component));
 
-		return getNodePixelWidth(tree, parentBold);
+		return getNodePixelWidth(tree, isBold);
 	}
 
 	public static TextComponent spaceBookLine(TextComponent leftComponent, TextComponent rightComponent) {
@@ -229,7 +409,7 @@ public class BookUtility {
 		int textWidth = getPixelWidth(component);
 		if (textWidth >= lineWidth) return component;
 
-		double totalPadding = (lineWidth - textWidth - 1) / 2;
+		double totalPadding = (lineWidth - textWidth - 1) / 2 - 1;
 
 		return Component.text()
 			.append(createPaddingSpaces(totalPadding))
@@ -238,129 +418,10 @@ public class BookUtility {
 			.build();
 	}
 
-	private static int truncateTextNode(StringBuilder builder, List<String> lines, TextNode textNode, int currentLineLength, int maxLineLength) {
-		String text = textNode.value();
-
-		String[] textLines = text.split("\n");
-
-		for (int i = 0; i < textLines.length; i++) {
-			String line = textLines[i];
-
-			String[] words = line.split(" ");
-
-			if (words.length == 0) {
-				builder.append(line);
-				currentLineLength += getPixelWidth(line);
-				continue;
-			}
-
-			boolean firstWord = true;
-			for (String word : words) {
-				int wordLength = getPixelWidth(word);
-				if (!firstWord) {
-					wordLength += MC_SPACE_CHAR_WIDTH + 1;
-				}
-
-				if (currentLineLength + wordLength <= maxLineLength) {
-					if (!firstWord) {
-						builder.append(' ');
-						currentLineLength += MC_SPACE_CHAR_WIDTH + 1;
-					}
-					else {
-						firstWord = false;
-					}
-				} else {
-					if (builder.length() > 0) {
-						lines.add(builder.toString());
-						builder.setLength(0);
-						currentLineLength = 0;
-					}
-				}
-
-				builder.append(word);
-				currentLineLength += wordLength;
-			}
-
-			if (i < textLines.length - 1) {
-				lines.add(builder.toString());
-				builder.setLength(0);
-				currentLineLength = 0;
-			}
-		}
-
-		return currentLineLength;
-	}
-
-	private static int truncateTagNode(StringBuilder builder, List<String> lines, TagNode tagNode, int currentLineLength, int maxLineLength) {
-		if (tagNode.name().equals("newline") || tagNode.name().equals("br")) {
-			lines.add(builder.toString());
-			builder.setLength(0);
-			return 0;
-		}
-
-		builder.append('<').append(tagNode.name());
-
-		final int partsSize = tagNode.parts().size();
-		for (int i = 1; i < partsSize; i++) {
-			final TagPart part = tagNode.parts().get(i);
-			builder.append(':');
-			builder.append('\'').append(part.value()).append('\'');
-		}
-		builder.append('>');
-
-		for (Node child : tagNode.children()) {
-			currentLineLength = truncateNode(builder, lines, child, currentLineLength, maxLineLength);
-		}
-
-		builder.append("</").append(tagNode.name()).append('>');
-		return currentLineLength;
-	}
-
-	private static int truncateNode(StringBuilder builder, List<String> lines, Node node, int currentLineLength, int maxLineLength) {
-		if (node instanceof TextNode text) {
-			return truncateTextNode(builder, lines, text, currentLineLength, maxLineLength);
-		}
-		else if (node instanceof TagNode tag) {
-			return truncateTagNode(builder, lines, tag, currentLineLength, maxLineLength);
-		}
-		else {
-			for (Node child : node.children()) {
-				currentLineLength = truncateNode(builder, lines, child, currentLineLength, maxLineLength);
-			}
-			return currentLineLength;
-		}
-	}
-
 	public static TextComponent[] truncatePage(TextComponent component) {
 		return truncatePage(component, MC_BOOK_LINE_WIDTH, MC_BOOK_LINE_COUNT);
 	}
 	public static TextComponent[] truncatePage(TextComponent component, int lineWidth, int lineCount) {
-		MiniMessage mm = MiniMessage.miniMessage();
-
-		Root tree = mm.deserializeToTree(mm.serialize(component));
-
-		StringBuilder builder = new StringBuilder();
-		List<String> finalLines = new ArrayList<>();
-
-		truncateNode(builder, finalLines, tree, 0, lineWidth);
-
-		List<TextComponent> pages = new ArrayList<>();
-		TextComponent.Builder pageBuilder = Component.text();
-		int currentLineCount = 0;
-		for (String line : finalLines) {
-			if (currentLineCount > lineCount) {
-				pages.add(pageBuilder.build());
-				pageBuilder = Component.text();
-				currentLineCount = 0;
-			}
-			pageBuilder.append(mm.deserialize(line)).append(Component.text("\n"));
-			currentLineCount++;
-		}
-
-		if (currentLineCount > 0) {
-			pages.add(pageBuilder.build());
-		}
-
-		return pages.toArray(new TextComponent[0]);
+		return PageTruncator.truncate(component, lineWidth, lineCount);
 	}
 }

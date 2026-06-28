@@ -310,7 +310,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 						BookUtility.alignRightBookLine(
 							Component.text("Start")
 								.color(NamedTextColor.DARK_GREEN)
-								.decorate(TextDecoration.BOLD)
+								// .decorate(TextDecoration.BOLD)
 								.decorate(TextDecoration.UNDERLINED)
 								.clickEvent(
 									ClickEvent.runCommand(String.format("/ludos:ludos game start %s", getId()))

@@ -33,7 +33,6 @@ import fr.ludos.roles.berserker.items.BerserkerRageBrew;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class BerserkerRole extends Role {
@@ -214,14 +213,14 @@ public class BerserkerRole extends Role {
 		@Override
 		public TextComponent getDisplayName() {
 			return Component.text("Berserker")
-				.color(NamedTextColor.DARK_RED);
+				.color(NamedTextColor.RED);
 		}
 
 		@Override
 		public TextComponent getDescription() {
-			return Component.text("Double haches et potion de rage (vampirisme, vitesse, force). Prenez des dégâts pour monter de niveau (Lv.1: 20 | Lv.2: 45 | Lv.3: 80 | Lv.4: 130 | Lv.5: 190) et améliorer vos haches.")
-				.color(NamedTextColor.GRAY)
-				.decoration(TextDecoration.ITALIC, false);
+			return Component.text("Armed with his two Axes, the Berserker strives in the frenzy of Battle.\n" +
+				"The rage brewing within brings him strength."
+			);
 		}
 
 		@Override

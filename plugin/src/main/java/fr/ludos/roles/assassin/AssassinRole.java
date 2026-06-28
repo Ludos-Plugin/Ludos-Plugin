@@ -27,6 +27,7 @@ import fr.ludos.roles.assassin.items.TeleportScroll;
 import fr.ludos.roles.assassin.items.trap.AssassinSnareDevice;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 
 public class AssassinRole extends Role {
@@ -139,12 +140,15 @@ public class AssassinRole extends Role {
 
 		@Override
 		public TextComponent getDisplayName() {
-			return Component.text("Assassin");
+			return Component.text("Assassin")
+				.color(NamedTextColor.DARK_BLUE);
 		}
 
 		@Override
 		public TextComponent getDescription() {
-			return Component.text("Se camoufle pour surprendre ses ennemis et les éliminer");
+			return Component.text("Hidden and concealed, the Assassin prowls, stalking for its next Target.\n" +
+				"He uses trickery and traps to weaken his enemies."
+			);
 		}
 	}
 }

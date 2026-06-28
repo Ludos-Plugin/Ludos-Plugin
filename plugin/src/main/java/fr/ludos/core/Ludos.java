@@ -1,7 +1,9 @@
 package fr.ludos.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -100,6 +102,112 @@ public class Ludos extends JavaPlugin implements Listener {
 	}
 
 	public static ItemStack createGuidebook() {
+		final int gameHeaderPageIdx = 2;
+
+		final List<Game.Builder> gameBuilders = Game.getGameBuilders();
+		final int gameHeaderPageCount = ((2 + gameBuilders.size() * 2) + BookUtility.MC_BOOK_LINE_COUNT - 1) / BookUtility.MC_BOOK_LINE_COUNT;
+
+		int gamePageOffset = 0;
+
+		ArrayList<TextComponent> gamePages = new ArrayList<>();
+
+		TextComponent.Builder gameHeaderPageBuilder = Component.text()
+			.append(
+				BookUtility.centerBookLine(
+					Component.text("Games")
+						.color(NamedTextColor.BLUE)
+						.decoration(TextDecoration.BOLD, true)
+				)
+			)
+			.append(Component.text("\n"));
+		for (Game.Builder builder : gameBuilders) {
+			final int gamePageIdx = gameHeaderPageIdx + gameHeaderPageCount + gamePageOffset;
+			gameHeaderPageBuilder
+				.append(
+					BookUtility.spaceBookLine(
+						builder.getDisplayName().append(Component.text(" :")),
+						Component.text("Page " + gamePageIdx)
+							.decoration(TextDecoration.UNDERLINED, true)
+							.clickEvent(ClickEvent.changePage(gamePageIdx))
+					)
+				);
+			final TextComponent[] pages = builder.buildPages();
+			for (TextComponent textComponent : pages) {
+				gamePages.add(textComponent);
+				gamePageOffset += 1;
+			}
+		}
+		TextComponent[] gameHeaderPages = BookUtility.truncatePage(gameHeaderPageBuilder.build());
+
+
+
+		final int roleHeaderPageIdx = gameHeaderPageIdx + gameHeaderPageCount + gamePageOffset;
+
+		final List<Role.Builder> roleBuilders = Role.getRoleBuilders();
+		final int roleHeaderPageCount = ((2 + roleBuilders.size() * 2) + BookUtility.MC_BOOK_LINE_COUNT - 1) / BookUtility.MC_BOOK_LINE_COUNT;
+
+		int rolePageOffset = 0;
+
+		ArrayList<TextComponent> rolePages = new ArrayList<>();
+
+		TextComponent.Builder roleHeaderPageBuilder = Component.text()
+			.append(
+				BookUtility.centerBookLine(
+					Component.text("Roles")
+						.color(NamedTextColor.RED)
+						.decoration(TextDecoration.BOLD, true)
+				)
+			)
+			.append(Component.text("\n"));
+		for (Role.Builder builder : roleBuilders) {
+			final int rolePageIdx = roleHeaderPageIdx + roleHeaderPageCount + rolePageOffset;
+			roleHeaderPageBuilder
+				.append(
+					BookUtility.spaceBookLine(
+						builder.getDisplayName().append(Component.text(" :")),
+						Component.text("Page " + rolePageIdx)
+							.decoration(TextDecoration.UNDERLINED, true)
+							.clickEvent(ClickEvent.changePage(rolePageIdx))
+					)
+				);
+			final TextComponent[] pages = builder.buildPages();
+			for (TextComponent textComponent : pages) {
+				rolePages.add(textComponent);
+				rolePageOffset += 1;
+			}
+		}
+		TextComponent[] roleHeaderPages = BookUtility.truncatePage(roleHeaderPageBuilder.build());
+
+
+		TextComponent headerPage = Component.text()
+			.append(
+				BookUtility.centerBookLine(
+					Component.text("Ludos Guidebook")
+						.color(NamedTextColor.DARK_GREEN)
+						.decoration(TextDecoration.BOLD, true)
+				)
+			)
+			.append(Component.text("\n"))
+			.append(
+				BookUtility.spaceBookLine(
+					Component.text("Games").color(NamedTextColor.BLUE).append(Component.text(" :")),
+					Component.text("Page " + gameHeaderPageIdx)
+						.decoration(TextDecoration.UNDERLINED, true)
+						.clickEvent(ClickEvent.changePage(gameHeaderPageIdx))
+				)
+			)
+			.append(Component.text('\n'))
+			.append(
+				BookUtility.spaceBookLine(
+					Component.text("Roles").color(NamedTextColor.RED).append(Component.text(" :")),
+					Component.text("Page " + roleHeaderPageIdx)
+						.decoration(TextDecoration.UNDERLINED, true)
+						.clickEvent(ClickEvent.changePage(roleHeaderPageIdx))
+				)
+			)
+			.build();
+
+
 		ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
 		BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
 
@@ -110,55 +218,16 @@ public class Ludos extends JavaPlugin implements Listener {
 		);
 		meta.author(Component.text("Ludos"));
 
-		List<TextComponent> gamePages = new ArrayList<>();
-		for (Game.Builder builder : Game.getGameBuilders()) {
-			for (TextComponent page : builder.buildPages()) {
-				gamePages.add(page);
-			}
-		}
-
-		List<TextComponent> rolePages = new ArrayList<>();
-		for (Role.Builder builder : Role.getRoleBuilders()) {
-			for (TextComponent page : builder.buildPages()) {
-				rolePages.add(page);
-			}
-		}
-
-		int gamePage = 2;
-		int rolePage = gamePage + gamePages.size();
-
-		TextComponent headerPage = Component.text()
-			.append(
-				BookUtility.centerBookLine(
-					Component.text("Ludos Guidebook")
-						.color(NamedTextColor.DARK_GREEN)
-						.decoration(TextDecoration.BOLD, true)
-				)
-			)
-			.append(Component.text("\n\n\n"))
-			.append(
-				BookUtility.spaceBookLine(
-					Component.text("Games :"),
-					Component.text("Page " + gamePage)
-						.color(NamedTextColor.BLUE)
-						.decoration(TextDecoration.UNDERLINED, true)
-						.clickEvent(ClickEvent.changePage(gamePage))
-				)
-			)
-			.append(Component.text('\n'))
-			.append(
-				BookUtility.spaceBookLine(
-					Component.text("Roles :"),
-					Component.text("Page " + rolePage)
-						.color(NamedTextColor.RED)
-						.decoration(TextDecoration.UNDERLINED, true)
-						.clickEvent(ClickEvent.changePage(rolePage))
-				)
-			)
-			.build();
-
 		meta.addPage(headerPage);
+
+		for (TextComponent page : gameHeaderPages) {
+			meta.addPage(page);
+		}
 		for (TextComponent page : gamePages) {
+			meta.addPage(page);
+		}
+
+		for (TextComponent page : roleHeaderPages) {
 			meta.addPage(page);
 		}
 		for (TextComponent page : rolePages) {

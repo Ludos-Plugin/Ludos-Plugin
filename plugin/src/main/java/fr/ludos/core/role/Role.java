@@ -261,14 +261,14 @@ public abstract class Role extends GameProcessBase {
 						BookUtility.spaceBookLine(
 							Component.text("Reset")
 								.color(NamedTextColor.DARK_RED)
-								.decorate(TextDecoration.BOLD)
+								// .decorate(TextDecoration.BOLD)
 								.decorate(TextDecoration.UNDERLINED)
 								.clickEvent(
 									ClickEvent.runCommand("/ludos:ludos role reset")
 								),
 							Component.text("Pick")
 								.color(NamedTextColor.DARK_GREEN)
-								.decorate(TextDecoration.BOLD)
+								// .decorate(TextDecoration.BOLD)
 								.decorate(TextDecoration.UNDERLINED)
 								.clickEvent(
 									ClickEvent.runCommand(String.format("/ludos:ludos role set %s", getId()))
