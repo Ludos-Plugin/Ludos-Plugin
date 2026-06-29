@@ -9,7 +9,7 @@ import fr.ludos.core.command.SubcommandHandler;
 
 public final class RoleSubcommand extends SubcommandHandler {
 	public RoleSubcommand(Ludos plugin) {
-		super("role", "Manage Ludos Groups", false, getSubcommands(plugin));
+		super("role", "Manage Ludos Roles", false, getSubcommands(plugin));
 	}
 
 	private static final ArrayList<Subcommand> getSubcommands(Ludos plugin) {
