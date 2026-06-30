@@ -31,10 +31,16 @@ public class RoleGuidebook implements Subcommand {
 
 		String guidebookRoleId = args[0].toLowerCase();
 		Role.Builder guidebookRole = Role.getRoleById(guidebookRoleId);
-		if (guidebookRole == null) return false;
+		if (guidebookRole == null) {
+			sender.sendMessage("Invalid Role");
+			return true;
+		}
 
 		Player player = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
-		if (player == null) return false;
+		if (player == null) {
+			sender.sendMessage("Player not found");
+			return true;
+		}
 
 		ItemStack book = guidebookRole.createGuidebook();
 		player.getInventory().addItem(book);

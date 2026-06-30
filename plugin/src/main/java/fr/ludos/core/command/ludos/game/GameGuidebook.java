@@ -33,11 +33,14 @@ public class GameGuidebook implements Subcommand {
 		Game.Builder guidebookGame = Game.getRegistered().get(guidebookGameId);
 		if (guidebookGame == null) {
 			sender.sendMessage("Game not found: " + guidebookGameId);
-			return false;
+			return true;
 		}
 
 		Player player = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
-		if (player == null) return false;
+		if (player == null) {
+			sender.sendMessage("Player not found");
+			return true;
+		}
 
 		ItemStack book = guidebookGame.createGuidebook();
 		player.getInventory().addItem(book);

@@ -57,7 +57,7 @@ public class GameConfig implements Subcommand {
 		Game.Builder configGame = Game.getRegistered().get(configGameId);
 		if (configGame == null) {
 			sender.sendMessage("Game not found: " + configGameId);
-			return false;
+			return true;
 		}
 
 		ConfigurationSection configSection = group.getConfig();

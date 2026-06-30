@@ -31,7 +31,7 @@ public class RoleConfig implements Subcommand {
 		Role.Builder configRole = Role.getRoleById(configRoleId);
 		if (configRole == null) {
 			sender.sendMessage("Role not found: " + configRoleId);
-			return false;
+			return true;
 		}
 
 		return configRole.executeRoleConfig(sender, command, label, Arrays.copyOfRange(args, 1, args.length));

@@ -37,7 +37,7 @@ public class GameStart implements Subcommand {
 		String startGameId = args[0].toLowerCase();
 		if ( !Game.getRegistered().containsKey(startGameId) ) {
 			sender.sendMessage("Game not found: " + startGameId);
-			return false;
+			return true;
 		}
 
 		Group group = Group.getGroupOfPlayer(player);

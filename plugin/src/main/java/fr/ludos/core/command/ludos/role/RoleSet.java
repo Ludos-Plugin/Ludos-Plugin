@@ -38,13 +38,13 @@ public class RoleSet implements Subcommand {
 		Role.Builder setRole = Role.getRoleById(roleId);
 		if (setRole == null) {
 			sender.sendMessage("Role not found: " + roleId);
-			return false;
+			return true;
 		}
 
 		Player setTarget = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
 		if (setTarget == null) {
 			sender.sendMessage("Player not found.");
-			return false;
+			return true;
 		}
 
 		Role.setRole(setTarget, roleId, plugin);

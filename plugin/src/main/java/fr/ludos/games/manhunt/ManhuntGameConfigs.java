@@ -124,7 +124,10 @@ public enum ManhuntGameConfigs implements ConfigSubcommand {
 
 			String givenReveal = args[0];
 			ManhuntRevealOptions revealOption = Arrays.stream(ManhuntRevealOptions.values()).filter(o -> o.name().equals(givenReveal)).findFirst().orElse(null);
-			if (revealOption == null) return false;
+			if (revealOption == null) {
+				sender.sendMessage("Invalid option");
+				return true;
+			}
 
 			setReveal(config, revealOption);
 

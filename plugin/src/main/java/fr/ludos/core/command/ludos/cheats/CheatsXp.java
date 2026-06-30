@@ -31,7 +31,10 @@ public class CheatsXp implements Subcommand {
 		if (args.length != 1) return false;
 
 		Integer amount = CheatsSubcommand.parsePositiveInt(args[0]);
-		if (amount == null) return false;
+		if (amount == null) {
+			sender.sendMessage("Invalid number");
+			return true;
+		}
 
 		if (! (sender instanceof Player player)) {
 			sender.sendMessage("Only players can use cheats.");

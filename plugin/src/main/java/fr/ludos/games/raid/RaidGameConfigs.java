@@ -68,7 +68,8 @@ public enum RaidGameConfigs implements ConfigSubcommand {
 			try {
 				setWaves(config, Integer.parseInt(args[0]));
 			} catch (NumberFormatException e) {
-				return false;
+				sender.sendMessage("Invalid number");
+				return true;
 			}
 			sender.sendMessage("Raid waves set to " + getWaves(config));
 			return true;
@@ -94,7 +95,10 @@ public enum RaidGameConfigs implements ConfigSubcommand {
 				return true;
 			}
 			WorldBorderAreaOption value = Arrays.stream(WorldBorderAreaOption.values()).filter(o -> o.name().equalsIgnoreCase(args[0])).findFirst().orElse(null);
-			if (value == null) return false;
+			if (value == null) {
+				sender.sendMessage("Area invalid");
+				return true;
+			}
 			setArea(config, value);
 			sender.sendMessage("Raid area set to " + value.name());
 			return true;
