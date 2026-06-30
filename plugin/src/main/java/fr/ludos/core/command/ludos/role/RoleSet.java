@@ -3,6 +3,7 @@ package fr.ludos.core.command.ludos.role;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -41,18 +42,37 @@ public class RoleSet implements Subcommand {
 			return true;
 		}
 
-		Player setTarget = CommandUtility.getPlayerFromArgsOrSender(args, 1, sender);
-		if (setTarget == null) {
-			sender.sendMessage("Player not found.");
-			return true;
+		switch (args.length) {
+			case 1:
+				if (! (sender instanceof Player player)) {
+					sender.sendMessage("Only players can have roles");
+					return true;
+				}
+
+				Role.setRole(player, roleId, plugin);
+				break;
+			case 2:
+				OfflinePlayer target = CommandUtility.getOfflinePlayerFromArg(args, 1, sender);
+				if (target == null) {
+					sender.sendMessage("Player not found.");
+					return true;
+				}
+
+				if (Role.isAuthorizedToEditRole(sender, target, plugin)) {
+					sender.sendMessage(
+						sender == target ?
+						"Your role is now " + roleId :
+						"The role of Player " + target.getName() + " is now " + roleId
+					);
+					Role.setRole(target, roleId, plugin);
+				} else {
+					sender.sendMessage("You are not authorized to reset this player's role");
+				}
+				return true;
+			default:
+				return false;
 		}
 
-		Role.setRole(setTarget, roleId, plugin);
-		if (setTarget != sender) {
-			sender.sendMessage("The role of Player " + setTarget.getName() + " is now " + roleId);
-		} else {
-			sender.sendMessage("Your role is now " + roleId);
-		}
 		return true;
 	}
 	@Override

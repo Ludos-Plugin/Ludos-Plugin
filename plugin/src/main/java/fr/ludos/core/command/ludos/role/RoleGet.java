@@ -2,9 +2,9 @@ package fr.ludos.core.command.ludos.role;
 
 import java.util.List;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.command.CommandUtility;
@@ -13,7 +13,6 @@ import fr.ludos.core.role.Role;
 
 public class RoleGet implements Subcommand {
 	private final static String id = "get";
-	private static final String noRoleLabel = "none";
 
 	@Override
 	public String id() {
@@ -26,14 +25,14 @@ public class RoleGet implements Subcommand {
 	}
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		Player getTarget = CommandUtility.getPlayerFromArgsOrSender(args, 0, sender);
+		OfflinePlayer getTarget = CommandUtility.getOfflinePlayerFromArgsOrSender(args, 0, sender);
 		if (getTarget == null) {
-			sender.sendMessage(noRoleLabel); // TODO: Translate
+			sender.sendMessage(Role.noneLabel); // TODO: Translate
 			return true;
 		}
 
 		Role.Builder getRole = Role.getPlayerRole(getTarget);
-		sender.sendMessage(getRole == null ? noRoleLabel : getRole.getId());
+		sender.sendMessage(getRole == null ? Role.noneLabel : getRole.getId());
 		return true;
 	}
 	@Override
