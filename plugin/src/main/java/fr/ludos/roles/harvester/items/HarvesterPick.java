@@ -19,11 +19,14 @@ import org.bukkit.inventory.ItemStack;
 import fr.ludos.core.Utility;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.BranchItem;
+import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.ItemUtilities;
-import fr.ludos.core.item.LevelBranchItem;
-import fr.ludos.core.item.LevelItem;
-import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelBranchItem;
+import fr.ludos.core.item.level.LevelItemInterface;
+import fr.ludos.core.item.level.LevelState;
+import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.harvester.HarvesterRole;
 import net.kyori.adventure.text.Component;
@@ -38,27 +41,27 @@ public class HarvesterPick extends LevelBranchItem<HarvesterPickBranches, Harves
 
 
 	public static HarvesterPick fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// HarvesterPick cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
-		Integer branchIndex = BranchItem.branchFromItemStack(stack, game);
+		String branchIndex = BranchItemInterface.branchFromItemStack(stack, game);
 		if (branchIndex == null) return null;
-		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
-		if (levelState == null) return null;
+		LevelValue levelValue = LevelItemInterface.levelFromItemStack(stack, game);
+		if (levelValue == null) return null;
 
-		HarvesterPick harvesterPick = new HarvesterPick(stack, owner, HarvesterPickBranches.values()[branchIndex], levelState, game);
+		HarvesterPick harvesterPick = new HarvesterPick(stack, owner, HarvesterPickBranches.values()[branchIndex], levelValue, game);
 		// cachedItems.put(itemId, harvesterPick);
 
 		return harvesterPick;
 	}
 
 	public static HarvesterPick createItem(Player owner, LevelState level, Game game) {
-		HarvesterPickLevels lvl = HarvesterPickLevels.values()[level.getLevel()];
+		HarvesterPickLevels lvl = HarvesterPickLevels.values()[level.value()];
 		HarvesterPick harvesterPick = new HarvesterPick(new ItemStack(lvl.getMaterial()), owner, HarvesterPickBranches.Pickaxe, level, game);
 		UUID itemId = harvesterPick.initializeItem();
 

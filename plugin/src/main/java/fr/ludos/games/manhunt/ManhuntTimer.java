@@ -161,7 +161,7 @@ public class ManhuntTimer extends GameProcessBase {
 
 
 	private void addSecond() {
-		totalSeconds += 1;
+		totalSeconds++;
 
 		long hours = totalSeconds / 3600;
 		long minutes = totalSeconds % 3600 / 60;

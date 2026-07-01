@@ -134,7 +134,7 @@ public class Ludos extends JavaPlugin implements Listener {
 			final TextComponent[] pages = builder.buildPages();
 			for (TextComponent textComponent : pages) {
 				gamePages.add(textComponent);
-				gamePageOffset += 1;
+				gamePageOffset++;
 			}
 		}
 		TextComponent[] gameHeaderPages = BookUtility.truncatePage(gameHeaderPageBuilder.build());
@@ -173,7 +173,7 @@ public class Ludos extends JavaPlugin implements Listener {
 			final TextComponent[] pages = builder.buildPages();
 			for (TextComponent textComponent : pages) {
 				rolePages.add(textComponent);
-				rolePageOffset += 1;
+				rolePageOffset++;
 			}
 		}
 		TextComponent[] roleHeaderPages = BookUtility.truncatePage(roleHeaderPageBuilder.build());

@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
-import fr.ludos.core.item.LevelItem;
+import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.role.RoleFlag;
 import fr.ludos.roles.harvester.items.HarvesterPick;

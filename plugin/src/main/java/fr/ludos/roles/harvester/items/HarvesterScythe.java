@@ -30,8 +30,10 @@ import fr.ludos.core.Utility;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.ItemUtilities;
-import fr.ludos.core.item.LevelItem;
-import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelItem;
+import fr.ludos.core.item.level.LevelItemInterface;
+import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.harvester.HarvesterRole;
 import net.kyori.adventure.text.Component;
@@ -50,25 +52,25 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 
 
 	public static HarvesterScythe fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// HarvesterScythe cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
-		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
-		if (levelState == null) return null;
+		LevelValue levelValue = LevelItemInterface.levelFromItemStack(stack, game);
+		if (levelValue == null) return null;
 
-		HarvesterScythe harvesterScythe = new HarvesterScythe(stack, owner, levelState, game);
+		HarvesterScythe harvesterScythe = new HarvesterScythe(stack, owner, levelValue, game);
 		// cachedItems.put(itemId, harvesterScythe);
 
 		return harvesterScythe;
 	}
 
-	public static HarvesterScythe createItem(Player owner, LevelState level, Game game) {
-		HarvesterScytheLevels lvl = HarvesterScytheLevels.values()[level.getLevel()];
+	public static HarvesterScythe createItem(Player owner, LevelValue level, Game game) {
+		HarvesterScytheLevels lvl = HarvesterScytheLevels.values()[level.level()];
 		HarvesterScythe harvesterScythe = new HarvesterScythe(new ItemStack(lvl.getMaterial()), owner, level, game);
 		UUID itemId = harvesterScythe.initializeItem();
 
@@ -77,12 +79,12 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 		return harvesterScythe;
 	}
 
-	protected HarvesterScythe(ItemStack stack, Player owner, LevelState level, Game game) {
+	protected HarvesterScythe(ItemStack stack, Player owner, LevelValue level, Game game) {
 		super(HarvesterScytheLevels.class, stack, owner, level, game);
 	}
 
 	@Override
-	protected String getTypeId() {
+	public String getTypeId() {
 		return ID;
 	}
 
@@ -99,7 +101,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 		lore.add(Component.text("Ability: Build a wall of earth")
 			.decoration(TextDecoration.ITALIC, false)
 			.color(NamedTextColor.GRAY));
-		lore.add(getActionAnnotation("key.use", Component.text("Build Wall")));
+		lore.add(SpecialItemInterface.getActionAnnotation("key.use", Component.text("Build Wall")));
 		return lore;
 	}
 
@@ -182,7 +184,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 		}
 
 		@Override
-		public HarvesterScythe createItem(Player owner, LevelState level) {
+		public HarvesterScythe createItem(Player owner, LevelValue level) {
 			return HarvesterScythe.createItem(owner, level, game);
 		}
 

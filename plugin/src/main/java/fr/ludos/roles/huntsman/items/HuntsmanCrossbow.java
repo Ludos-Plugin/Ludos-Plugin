@@ -1,7 +1,10 @@
 package fr.ludos.roles.huntsman.items;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -27,10 +30,11 @@ import org.bukkit.projectiles.ProjectileSource;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.ItemSlot;
-import fr.ludos.core.item.LevelItem;
 import fr.ludos.core.item.MultiLevelBranchItem;
-import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
@@ -44,26 +48,26 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 
 	public static HuntsmanCrossbow fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// HuntsmanCrossbow cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
-		Integer branchIndex = MultiLevelBranchItem.branchFromItemStack(stack, game);
-		if (branchIndex == null) return null;
-		LevelItem.LevelState[] levels = MultiLevelBranchItem.levelsFromItemStack(stack, ID, game);
+		String branchId = BranchItemInterface.branchFromItemStack(stack, game);
+		if (branchId == null) return null;
+		Map<String, LevelValue> levels = MultiLevelBranchItem.levelsFromItemStack(stack, ID, game);
 		if (levels == null) return null;
 
-		HuntsmanCrossbow crossbow = new HuntsmanCrossbow(stack, owner, HuntsmanCrossbowBranches.values()[branchIndex], levels, game);
+		HuntsmanCrossbow crossbow = new HuntsmanCrossbow(stack, owner, levels, game);
 		// cachedItems.put(itemId, crossbow);
 
 		return crossbow;
 	}
-	public static HuntsmanCrossbow createItem(Player owner, LevelItem.LevelState[] levels, Game game) {
-		HuntsmanCrossbow crossbow = new HuntsmanCrossbow(new ItemStack(Material.CROSSBOW), owner, HuntsmanCrossbowBranches.FLAME, levels, game);
+	public static HuntsmanCrossbow createItem(Player owner, Map<String, LevelValue> levels, Game game) {
+		HuntsmanCrossbow crossbow = new HuntsmanCrossbow(new ItemStack(Material.CROSSBOW), owner, levels, game);
 		UUID itemId = crossbow.initializeItem();
 
 		// cachedItems.put(itemId, crossbow);
@@ -72,8 +76,14 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 	}
 
 
-	protected HuntsmanCrossbow(ItemStack stack, Player owner, HuntsmanCrossbowBranches branch, LevelItem.LevelState[] levels, Game game) {
-		super(HuntsmanCrossbowBranches.class, stack, owner, branch, levels, game);
+	protected HuntsmanCrossbow(ItemStack stack, Player owner, HuntsmanCrossbowBranches branch, Map<String, LevelValue> levels, Game game) {
+		super(stack, owner, Arrays.stream(HuntsmanCrossbowBranches.values()).collect(Collectors.toList()), branch, levels, game);
+	}
+	protected HuntsmanCrossbow(ItemStack stack, Player owner, Map<String, LevelValue> levels, Game game) {
+		super(stack, owner, Arrays.stream(HuntsmanCrossbowBranches.values()).collect(Collectors.toList()), HuntsmanCrossbowBranches.FLAME, levels, game);
+	}
+	protected HuntsmanCrossbow(ItemStack stack, Player owner, Map<String, HuntsmanCrossbowBranches> branches, HuntsmanCrossbowBranches branch, Map<String, LevelValue> levels, Game game) {
+		super(stack, owner, branches, branch, levels, game);
 	}
 
 
@@ -94,7 +104,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		lore.add(getCycleBranchAnnotation("key.attack"));
+		lore.add(BranchItemInterface.getCycleBranchAnnotation("key.attack"));
 		return lore;
 	}
 
@@ -127,7 +137,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 			Arrow arrowProjectile = (Arrow) event.getProjectile();
 			HuntsmanCrossbowBranches branch = crossbow.getBranch();
 			PersistentDataContainer container = arrowProjectile.getPersistentDataContainer();
-			int level = crossbow.getLevelState().getLevel();
+			int level = crossbow.levelState().level();
 
 			arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
 			arrowProjectile.setGravity(false);
@@ -201,7 +211,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 			return HuntsmanCrossbow.fromItemStack(stack, game);
 		}
 		@Override
-		public HuntsmanCrossbow createItem(Player owner, LevelItem.LevelState[] levels) {
+		public HuntsmanCrossbow createItem(Player owner, Map<String, LevelValue> levels) {
 			return HuntsmanCrossbow.createItem(owner, levels, game);
 		}
 		@Override

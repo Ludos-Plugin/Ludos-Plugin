@@ -27,8 +27,11 @@ import fr.ludos.core.Utility;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.ItemUtilities;
-import fr.ludos.core.item.LevelItem;
-import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelItem;
+import fr.ludos.core.item.level.LevelItemInterface;
+import fr.ludos.core.item.level.LevelState;
+import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.harvester.HarvesterRole;
 import net.kyori.adventure.text.Component;
@@ -48,25 +51,25 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 
 	public static HarvesterSpade fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// HarvesterSpade cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
-		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
-		if (levelState == null) return null;
+		LevelValue levelValue = LevelItemInterface.levelFromItemStack(stack, game);
+		if (levelValue == null) return null;
 
-		HarvesterSpade harvesterSpade = new HarvesterSpade(stack, owner, levelState, game);
+		HarvesterSpade harvesterSpade = new HarvesterSpade(stack, owner, levelValue, game);
 		// cachedItems.put(itemId, harvesterSpade);
 
 		return harvesterSpade;
 	}
 
-	public static HarvesterSpade createItem(Player owner, LevelState level, Game game) {
-		HarvesterSpadeLevels lvl = HarvesterSpadeLevels.values()[level.getLevel()];
+	public static HarvesterSpade createItem(Player owner, LevelValue level, Game game) {
+		HarvesterSpadeLevels lvl = HarvesterSpadeLevels.values()[level.level()];
 		HarvesterSpade harvesterSpade = new HarvesterSpade(new ItemStack(lvl.getMaterial()), owner, level, game);
 		UUID itemId = harvesterSpade.initializeItem();
 
@@ -75,8 +78,8 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 		return harvesterSpade;
 	}
 
-	protected HarvesterSpade(ItemStack stack, Player owner, LevelState level, Game game) {
-		super(HarvesterSpadeLevels.class, stack, owner, level, game);
+	protected HarvesterSpade(ItemStack stack, Player owner, LevelValue level, Game game) {
+		super(stack, owner, level, game);
 	}
 
 
@@ -99,7 +102,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 		lore.add(Component.text("Ability: Dig a tunnel, use again to revert it")
 			.decoration(TextDecoration.ITALIC, false)
 			.color(NamedTextColor.GRAY));
-		lore.add(getActionAnnotation("key.use", Component.text("Tunnel")));
+		lore.add(SpecialItemInterface.getActionAnnotation("key.use", Component.text("Tunnel")));
 
 		return lore;
 	}
@@ -276,7 +279,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 			return HarvesterSpade.fromItemStack(stack, game);
 		}
 		@Override
-		public HarvesterSpade createItem(Player owner, LevelState level) {
+		public HarvesterSpade createItem(Player owner, LevelValue level) {
 			return HarvesterSpade.createItem(owner, level, game);
 		}
 		@Override

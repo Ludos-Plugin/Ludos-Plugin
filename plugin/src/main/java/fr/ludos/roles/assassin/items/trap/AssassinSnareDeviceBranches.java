@@ -9,15 +9,14 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
-import fr.ludos.core.item.BranchItem;
-import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
 import io.papermc.paper.entity.LookAnchor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public enum AssassinSnareDeviceBranches implements BranchItem.Branch<AssassinSnareDeviceBranches> {
+public enum AssassinSnareDeviceBranches implements AssassinSnare {
 	REVEALING (
 		Component.text("Revealing")
 			.color(NamedTextColor.YELLOW)
@@ -124,16 +123,21 @@ public enum AssassinSnareDeviceBranches implements BranchItem.Branch<AssassinSna
 	}
 
 	@Override
-	public void onEquip(SpecialItem item) { }
-	@Override
-	public void onUnequip(SpecialItem item) { }
+	public String id() {
+		return this.name().toLowerCase();
+	}
 
 	@Override
-	public void onSelectBranch(SpecialItem item) {
+	public void onEquip(SpecialItemInterface item) { }
+	@Override
+	public void onUnequip(SpecialItemInterface item) { }
+
+	@Override
+	public void onSelectBranch(SpecialItemInterface item) {
 		item.getStack().setType(type);
 	}
 	@Override
-	public void onDeselectBranch(SpecialItem item) { }
+	public void onDeselectBranch(SpecialItemInterface item) { }
 
 	public abstract AssassinTrap createTrap(Player owner, Block block, BlockFace face);
 }

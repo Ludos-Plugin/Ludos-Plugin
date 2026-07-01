@@ -12,8 +12,8 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.item.LevelItemInterface;
 import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.level.LevelItemInterface;
 
 public enum CheatsSubcommand implements Subcommand {
 	xp {

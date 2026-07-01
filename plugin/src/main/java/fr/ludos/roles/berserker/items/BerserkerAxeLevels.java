@@ -7,8 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
-import fr.ludos.core.item.LevelItem;
-import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelItem;
 
 public enum BerserkerAxeLevels implements LevelItem.Level<BerserkerAxeLevels> {
 	IRON(Material.IRON_AXE, Material.GOLDEN_AXE, 0, Collections.emptyMap(), 20),
@@ -47,7 +47,7 @@ public enum BerserkerAxeLevels implements LevelItem.Level<BerserkerAxeLevels> {
 	}
 
 	private final double xpThreshold;
-	public double getXpThreshold() {
+	public double xpThreshold() {
 		return xpThreshold;
 	}
 
@@ -60,17 +60,12 @@ public enum BerserkerAxeLevels implements LevelItem.Level<BerserkerAxeLevels> {
 	}
 
 	@Override
-	public Class<BerserkerAxeLevels> getLevelClass() {
-		return BerserkerAxeLevels.class;
-	}
+	public void onEquip(SpecialItemInterface item) { }
+	@Override
+	public void onUnequip(SpecialItemInterface item) { }
 
 	@Override
-	public void onEquip(SpecialItem item) { }
-	@Override
-	public void onUnequip(SpecialItem item) { }
-
-	@Override
-	public void onSetLevel(SpecialItem item) {
+	public void onSetLevel(SpecialItemInterface item) {
 		ItemStack stack = item.getStack();
 		Material material = getMaterialForVariant(((BerserkerAxe) item).getVariant());
 		stack.setType(material);
@@ -78,5 +73,5 @@ public enum BerserkerAxeLevels implements LevelItem.Level<BerserkerAxeLevels> {
 		stack.addEnchantments(enchantments);
 	}
 	@Override
-	public void onUnsetLevel(SpecialItem item) { }
+	public void onUnsetLevel(SpecialItemInterface item) { }
 }

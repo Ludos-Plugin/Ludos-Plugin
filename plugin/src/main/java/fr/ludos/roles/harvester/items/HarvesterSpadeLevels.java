@@ -8,8 +8,8 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
-import fr.ludos.core.item.LevelItem.Level;
-import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelItemInterface.Level;
 
 public enum HarvesterSpadeLevels implements Level<HarvesterSpadeLevels> {
 	WOODEN      (Material.WOODEN_SHOVEL,    25,   Collections.emptyMap()),
@@ -32,7 +32,7 @@ public enum HarvesterSpadeLevels implements Level<HarvesterSpadeLevels> {
 
 	private final double xpThreshold;
 	@Override
-	public double getXpThreshold() {
+	public double xpThreshold() {
 		return xpThreshold;
 	}
 
@@ -48,18 +48,13 @@ public enum HarvesterSpadeLevels implements Level<HarvesterSpadeLevels> {
 	}
 
 	@Override
-	public Class<HarvesterSpadeLevels> getLevelClass() {
-		return HarvesterSpadeLevels.class;
-	}
+	public void onEquip(SpecialItemInterface item) { }
 
 	@Override
-	public void onEquip(SpecialItem item) { }
+	public void onUnequip(SpecialItemInterface item) { }
 
 	@Override
-	public void onUnequip(SpecialItem item) { }
-
-	@Override
-	public void onSetLevel(SpecialItem item) {
+	public void onSetLevel(SpecialItemInterface item) {
 		ItemStack stack = item.getStack();
 		stack.setType(material);
 		stack.removeEnchantment(Enchantment.DIG_SPEED);
@@ -68,6 +63,6 @@ public enum HarvesterSpadeLevels implements Level<HarvesterSpadeLevels> {
 	}
 
 	@Override
-	public void onUnsetLevel(SpecialItem item) { }
+	public void onUnsetLevel(SpecialItemInterface item) { }
 
 }

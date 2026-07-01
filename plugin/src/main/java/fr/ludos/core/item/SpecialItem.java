@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -31,10 +30,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
 import net.kyori.adventure.text.Component;
@@ -43,16 +39,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public abstract class SpecialItem implements SpecialItemInterface {
-
-	public static final String TYPE_ID = "type_id";
-	private static final NamespacedKey typeIdKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), TYPE_ID);
-
-	public static final String ITEM_ID_KEY = "item_id";
-	private static final NamespacedKey itemIdKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ITEM_ID_KEY);
-
-	public static final String OWNER_KEY = "owner";
-	private static final NamespacedKey ownerKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), OWNER_KEY);
-
 	public static final int USAGE_COOLDOWN = 4;
 
 	private final Game game;
@@ -66,59 +52,6 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	private final Player owner;
 	public Player getOwner() {
 		return owner;
-	}
-
-	public static @Nullable UUID getSpecialItemId(ItemStack stack, String typeId, Game game) {
-		if (stack == null) return null;
-
-		ItemMeta meta = stack.getItemMeta();
-		if (meta == null) return null;
-
-		PersistentDataContainer container = meta.getPersistentDataContainer();
-
-		if (! container.has(typeIdKey, PersistentDataType.STRING) ) return null;
-		String found = container.get(typeIdKey, PersistentDataType.STRING);
-
-		if (! found.equals(typeId)) return null;
-		if (! container.has(itemIdKey, PersistentDataType.STRING) ) return null;
-
-		return UUID.fromString(
-			getPersistentData(stack, itemIdKey, PersistentDataType.STRING)
-		);
-	}
-
-	public static @Nullable Player getSpecialItemOwner(ItemStack stack, Game game) {
-		if (stack == null) return null;
-
-		ItemMeta meta = stack.getItemMeta();
-		if (meta == null) return null;
-
-
-		PersistentDataContainer container = meta.getPersistentDataContainer();
-
-		if (! container.has(ownerKey, PersistentDataType.STRING) ) return null;
-
-		Player owner = Bukkit.getPlayer(
-			UUID.fromString(
-				getPersistentData(stack, ownerKey, PersistentDataType.STRING)
-			)
-		);
-
-		return owner;
-	}
-	public static Component getActionAnnotation(final @NotNull String keybind, Component action) {
-		return Component.text("Press ")
-				.color(NamedTextColor.GRAY)
-			.append(
-				Component.keybind(keybind)
-					.color(NamedTextColor.YELLOW)
-			)
-			.append(
-				Component.text(" to ")
-					.color(NamedTextColor.GRAY)
-			)
-			.append(action)
-			.decoration(TextDecoration.ITALIC, false);
 	}
 
 	protected SpecialItem(ItemStack stack, Player owner, Game game) {
@@ -150,14 +83,6 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	}
 
 	protected void onInitialize() { }
-
-
-	public List<Component> getLore() {
-		return new ArrayList<>();
-	}
-
-	protected abstract String getTypeId();
-	protected abstract Component getName();
 
 
 	public void updateName() {
@@ -251,16 +176,6 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		return Collections.unmodifiableList(results);
 	}
 
-
-
-	protected static <T, Z> Z getPersistentData(ItemStack item, NamespacedKey key, PersistentDataType<T, Z> type) {
-		return item.getItemMeta().getPersistentDataContainer().get(key, type);
-	}
-
-	public static <T extends SpecialItem> T addSpecialItem(Player player, Function<Player, T> constructor) {
-		return constructor.apply(player);
-	}
-
 	public static <T extends SpecialItem, TData> Component buildDataLore(String label, TData data) {
 		return
 			Component.text(label + ": ")
@@ -330,8 +245,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		protected void onItemStop() { }
 
 
-		@Nullable
-		public abstract T getItem(ItemStack stack);
+		public abstract @Nullable T getItem(ItemStack stack);
 		public abstract T createItem(Player owner);
 
 		public final Boolean isPlayerValid(OfflinePlayer player) {

@@ -19,9 +19,10 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.core.game.Game;
-import fr.ludos.core.item.LevelItem;
-import fr.ludos.core.item.LevelItem.LevelState;
-import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelItem;
+import fr.ludos.core.item.level.LevelItemInterface;
+import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
@@ -34,25 +35,25 @@ public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 	// private final static Map<UUID, AssassinDagger> cachedItems = new HashMap<>();
 
 	public static @Nullable AssassinDagger fromItemStack(ItemStack stack, Game game) {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// AssassinDagger cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
-		if (levelState == null) levelState = new LevelState();
+		LevelValue level = LevelItemInterface.levelFromItemStack(stack, game);
+		if (level == null) level = new LevelValue();
 
-		AssassinDagger dagger = new AssassinDagger(stack, owner, levelState, game);
+		AssassinDagger dagger = new AssassinDagger(stack, owner, level, game);
 		// cachedItems.put(itemId, dagger);
 
 		return dagger;
 	}
 
-	public static AssassinDagger createItem(Player owner, LevelState level, Game game) {
+	public static AssassinDagger createItem(Player owner, LevelValue level, Game game) {
 		AssassinDagger dagger = new AssassinDagger(new ItemStack(Material.IRON_SWORD), owner, level, game);
 		UUID itemId = dagger.initializeItem();
 
@@ -61,8 +62,8 @@ public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 		return dagger;
 	}
 
-	public AssassinDagger(ItemStack stack, Player player, LevelState level, Game game) {
-		super(AssassinDaggerLevels.class, stack, player, level, game);
+	public AssassinDagger(ItemStack stack, Player player, LevelValue level, Game game) {
+		super(AssassinDaggerLevels.class, level, stack, player, game);
 	}
 
 	@Override
@@ -71,7 +72,7 @@ public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 	}
 
 	@Override
-	protected Component getName() {
+	public Component getName() {
 		return Component.text("Dague d'Assassin")
 			.decoration(TextDecoration.ITALIC, false);
 	}
@@ -127,7 +128,7 @@ public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 		}
 
 		@Override
-		public AssassinDagger createItem(Player owner, LevelState level) {
+		public AssassinDagger createItem(Player owner, LevelValue level) {
 			return AssassinDagger.createItem(owner, level, game);
 		}
 

@@ -1,74 +1,75 @@
 package fr.ludos.core.item;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.NamespacedKey;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 
 
-public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>> extends SpecialItem implements BranchItemInterface<TBranch> {
-	public static final String BRANCH_KEY = "branch";
-	public static final NamespacedKey branchKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), BRANCH_KEY);
-
-
+public abstract class BranchItem<TBranch extends BranchItem.Branch> extends SpecialItem implements BranchItemInterface<TBranch> {
 	protected TBranch branch;
+	@Override
 	public TBranch getBranch() {
 		return branch;
 	}
-	public void setBranch(TBranch branch) {
-		this.branch = branch;
-	}
-	private final TBranch[] branches;
-	public TBranch[] getBranches() {
-		return branches;
-	}
-	public int getMaxBranchIndex() {
-		return branches.length - 1;
-	}
 
-
-	public static @Nullable Integer branchFromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
-
-		if ( ! container.has(branchKey, PersistentDataType.INTEGER) ) return null;
-
-		return getPersistentData(stack, branchKey, PersistentDataType.INTEGER);
+	protected final Map<String, TBranch> branches;
+	private TBranch[] branchesArray;
+	@Override
+	public boolean switchBranch(TBranch branch) {
+		if (! branches.containsValue(branch)) return false;
+		BranchItemInterface.setItemBranch(this, branch);
+		return true;
 	}
-
-	public static Component getCycleBranchAnnotation(final @NotNull String keybind) {
-		return getActionAnnotation(keybind, Component.text("Switch Mode"));
+	@Override
+	public void addBranch(TBranch branch) {
+		branches.put(branch.id(), branch);
+		branchesArray = null;
 	}
-	public static <TBranch extends Enum<TBranch> & Branch<TBranch>> Component getBranchAnnotation(TBranch branch) {
-		if (branch == null) return Component.empty();
-
-		return Component.text("(")
-			.append(branch.getName())
-			.append(Component.text(")"))
-			.decoration(TextDecoration.ITALIC, false);
+	@Override
+	public boolean removeBranch(TBranch branch) {
+		boolean removed = branches.remove(branch.id(), branch);
+		if (removed) {
+			branchesArray = null;
+		}
+		return removed;
 	}
-	public static <TBranch extends Enum<TBranch> & Branch<TBranch>> Component getBranchLoreField(TBranch branch) {
-		return Component.text("Mode: ")
-				.color(NamedTextColor.GRAY)
-			.append(branch.getName()
-				.color(NamedTextColor.YELLOW))
-			.decoration(TextDecoration.ITALIC, false);
+	@Override
+	public TBranch getNextBranch() {
+		if (branchesArray == null) {
+			@SuppressWarnings("unchecked")
+			TBranch[] array = (TBranch[]) java.lang.reflect.Array.newInstance(branch.getClass(), 0);
+			branchesArray = branches.values().toArray(array);
+		}
+
+		int currentIndex = -1;
+		for (int i = 0; i < branchesArray.length; i++) {
+			if (branchesArray[i].equals(branch)) {
+				currentIndex = i;
+				break;
+			}
+		}
+		if (currentIndex == -1) {
+			currentIndex = 0;
+		}
+		int nextIndex = (currentIndex + 1) % branchesArray.length;
+
+		return branchesArray[nextIndex];
 	}
 
 	/**
@@ -78,16 +79,16 @@ public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Bran
 	 * @param item The item whose branch is being switched
 	 * @param newBranch The new branch to switch to
 	 */
-	public static <TItem extends SpecialItem & BranchItemInterface<TBranch>, TBranch extends Enum<TBranch> & Branch<TBranch>> void setItemBranch(TItem item, TBranch newBranch) {
+	public static <TItem extends SpecialItem & BranchItemInterface<TBranch>, TBranch extends Branch> void setItemBranch(TItem item, TBranch newBranch) {
 		TBranch oldBranch = item.getBranch();
 
 		ItemStack itemStack = item.getStack();
 
 		ItemMeta meta = itemStack.getItemMeta();
-		meta.getPersistentDataContainer().set(branchKey, PersistentDataType.INTEGER, newBranch.ordinal());
+		meta.getPersistentDataContainer().set(branchKey, PersistentDataType.STRING, newBranch.id());
 		itemStack.setItemMeta(meta);
 
-		item.setBranch(newBranch);
+		item.onSetBranch(newBranch);
 
 		if (oldBranch != null) {
 			oldBranch.onDeselectBranch(item);
@@ -105,7 +106,7 @@ public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Bran
 	 * @param getItem An "SpecialItem from ItemStack" function, used to get the item being switched from/to
 	 * @param getBranch A "Branch from Item" function, used to get the branch of the item being switched from/to
 	 */
-	public static <TItem extends SpecialItem & BranchItemInterface<TBranch>, TBranch extends Enum<TBranch> & BranchItem.Branch<TBranch>> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem) {
+	public static <TItem extends SpecialItem & BranchItemInterface<TBranch>, TBranch extends Branch> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem) {
 		Player player = event.getPlayer();
 
 		TItem oldItem = getItem.apply(player.getInventory().getItem(event.getPreviousSlot()));
@@ -121,15 +122,24 @@ public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Bran
 	}
 
 
-	public BranchItem(Class<TBranch> branchClass, ItemStack stack, Player owner, TBranch branch, Game game) {
+	public BranchItem(Map<String, TBranch> branches, TBranch branch, ItemStack stack, Player owner, Game game) {
 		super(stack, owner, game);
 
 		if (branch == null) {
-			throw new IllegalArgumentException("Branch cannot be null");
+			branch = branches.values().iterator().next();
 		}
 
 		this.branch = branch;
-		this.branches = branchClass.getEnumConstants();
+		this.branches = branches;
+	}
+	protected BranchItem(Collection<TBranch> branches, TBranch branch, ItemStack stack, Player owner, Game game) {
+		this(branches.stream().collect(Collectors.toMap(b -> b.id(), b -> b)), branch, stack, owner, game);
+	}
+	public BranchItem(Map<String, TBranch> branches, ItemStack stack, Player owner, Game game) {
+		this(branches, null, stack, owner, game);
+	}
+	protected BranchItem(Collection<TBranch> branches, ItemStack stack, Player owner, Game game) {
+		this(branches, null, stack, owner, game);
 	}
 
 	@Override
@@ -139,69 +149,119 @@ public abstract class BranchItem<TBranch extends Enum<TBranch> & BranchItem.Bran
 		switchBranch(branch);
 	}
 
-
-	public void cycleBranch() {
-		TBranch currentBranch = getBranch();
-		int oldBranchIndex = currentBranch.ordinal();
-		int newBranchIndex = (oldBranchIndex + 1) % branches.length;
-		TBranch newBranch = branches[newBranchIndex];
-		if (newBranch == currentBranch) return;
-
-		switchBranch(newBranch);
-
-		Player owner = getOwner();
-		owner.playSound(owner.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 0.25f, 1);
-	}
-
-	public void switchBranch(TBranch branch) {
-		setItemBranch(this, branch);
+	public void onSetBranch(TBranch branch) {
+		this.branch = branch;
 	}
 
 	protected Component getBranchAnnotation() {
 		TBranch branch = getBranch();
-		return getBranchAnnotation(branch);
+		return BranchItemInterface.getBranchAnnotation(branch);
 	}
 
 	@Override
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
-		lore.add(getBranchLoreField(getBranch()));
+		lore.add(BranchItemInterface.getBranchLoreField(getBranch()));
 
 		return lore;
 	}
 
+	public static abstract class Events<T extends BranchItem<TBranch>, TBranch extends Branch> extends SpecialItem.Events<T> implements Map<String, TBranch> {
+		private final Map<String, TBranch> branches;
 
-	public static interface Branch<T extends Enum<T> & Branch<T>> {
-		public Component getName();
-		public Component getDescription();
+		private @Nullable TBranch defaultBranch;
 
-		/**
-		 * Called when item is equipped (mainhand) while the branch is selected.
-		 * @param item The item being equipped
-		 */
-		public void onEquip(SpecialItem item);
-		/**
-		 * Called when item is unequipped (mainhand) while the branch is selected.
-		 * @param item The item being unequipped
-		 */
-		public void onUnequip(SpecialItem item);
 
-		/**
-		 * Called when the branch is deselected (another branch is selected).
-		 * @param item The item whose branch is being deselected
-		 */
-		public void onDeselectBranch(SpecialItem item);
+		public Map<String, TBranch> getBranches() {
+			return Collections.unmodifiableMap(branches);
+		}
 
-		/**
-		 * Called when the branch is selected.
-		 * @param item The item whose branch is being selected
-		 */
-		public void onSelectBranch(SpecialItem item);
-	}
+		public TBranch getDefaultBranch() {
+			if (defaultBranch == null) {
+				return branches.values().iterator().next();
+			}
+			if (! branches.containsValue(defaultBranch)) {
+				return branches.values().iterator().next();
+			}
+			return defaultBranch;
+		}
+		public void setDefaultBranch(@Nullable TBranch defaultBranch) {
+			this.defaultBranch = defaultBranch;
+		}
 
-	public static abstract class Events<T extends BranchItem<TBranch>, TBranch extends Enum<TBranch> & Branch<TBranch>> extends SpecialItem.Events<T> {
-		protected Events(Game game, @Nullable ItemSlot slot, boolean canDrop) {
+		@Override
+		public void clear() {
+			branches.clear();
+		}
+		@Override
+		public boolean containsKey(Object key) {
+			return branches.containsKey(key);
+		}
+		@Override
+		public boolean containsValue(Object value) {
+			return branches.containsValue(value);
+		}
+		@Override
+		public Set<Entry<String, TBranch>> entrySet() {
+			return branches.entrySet();
+		}
+		@Override
+		public TBranch get(Object key) {
+			return branches.get(key);
+		}
+		@Override
+		public TBranch put(String key, TBranch value) {
+			return branches.put(key, value);
+		}
+		@Override
+		public void putAll(Map<? extends String, ? extends TBranch> m) {
+			branches.putAll(m);
+		}
+		@Override
+		public TBranch remove(Object key) {
+			return branches.remove(key);
+		}
+		@Override
+		public int size() {
+			return branches.size();
+		}
+		@Override
+		public boolean isEmpty() {
+			return branches.isEmpty();
+		}
+		@Override
+		public Set<String> keySet() {
+			return branches.keySet();
+		}
+		@Override
+		public Collection<TBranch> values() {
+			return branches.values();
+		}
+
+
+		protected Events(Map<String, TBranch> branches, Game game, @Nullable ItemSlot slot, boolean canDrop) {
 			super(game, slot, canDrop);
+			this.branches = branches;
+		}
+		protected Events(Map<String, TBranch> branches, Game game, @Nullable ItemSlot slot) {
+			this(branches, game, slot, false);
+		}
+		protected Events(Map<String, TBranch> branches, Game game) {
+			this(branches, game, null, false);
+		}
+
+		protected Events(Collection<TBranch> branches, Game game, @Nullable ItemSlot slot, boolean canDrop) {
+			this(branches.stream().collect(Collectors.toMap(b -> b.id(), b -> b)), game, slot, canDrop);
+		}
+		protected Events(Collection<TBranch> branches, Game game, @Nullable ItemSlot slot) {
+			this(branches, game, slot, false);
+		}
+		protected Events(Collection<TBranch> branches, Game game) {
+			this(branches, game, null, false);
+		}
+
+		protected Events(Game game, @Nullable ItemSlot slot, boolean canDrop) {
+			this(new HashMap<>(), game, slot, canDrop);
 		}
 		protected Events(Game game, @Nullable ItemSlot slot) {
 			this(game, slot, false);

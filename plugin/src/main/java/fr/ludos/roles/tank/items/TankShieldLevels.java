@@ -2,8 +2,8 @@ package fr.ludos.roles.tank.items;
 
 import org.bukkit.Material;
 
-import fr.ludos.core.item.LevelItem.Level;
-import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelItemInterface.Level;
 
 public enum TankShieldLevels implements Level<TankShieldLevels> {
 	LEVEL_1(10, 0.25, 15),
@@ -27,11 +27,6 @@ public enum TankShieldLevels implements Level<TankShieldLevels> {
 		this.xpThreshold = xpThreshold;
 	}
 
-	@Override
-	public Class<TankShieldLevels> getLevelClass() {
-		return TankShieldLevels.class;
-	}
-
 	public int getDurability() {
 		return durability;
 	}
@@ -42,20 +37,20 @@ public enum TankShieldLevels implements Level<TankShieldLevels> {
 		return regen;
 	}
 	@Override
-	public double getXpThreshold() {
+	public double xpThreshold() {
 		return this.xpThreshold;
 	}
 
 	@Override
-	public void onEquip(SpecialItem item) { }
+	public void onEquip(SpecialItemInterface item) { }
 
 	@Override
-	public void onUnequip(SpecialItem item) { }
+	public void onUnequip(SpecialItemInterface item) { }
 
 	@Override
-	public void onSetLevel(SpecialItem item) { }
+	public void onSetLevel(SpecialItemInterface item) { }
 
 	@Override
-	public void onUnsetLevel(SpecialItem item) { }
+	public void onUnsetLevel(SpecialItemInterface item) { }
 
 }
