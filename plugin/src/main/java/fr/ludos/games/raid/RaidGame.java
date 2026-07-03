@@ -25,7 +25,6 @@ import fr.ludos.core.world.WorldManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 
 public class RaidGame extends WaveGame {
 	public static final String ID = "raid";

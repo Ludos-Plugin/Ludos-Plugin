@@ -19,7 +19,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.core.game.Game;
+import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.berserker.BerserkerRole;
 import net.kyori.adventure.text.Component;
@@ -48,13 +50,13 @@ public class BerserkerRageBrew extends SpecialItem {
 
 	@Nullable
 	public static BerserkerRageBrew getItem(ItemStack stack, Game game) {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// BerserkerRageBrew cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
 		BerserkerRageBrew brew = new BerserkerRageBrew(stack, owner, game);
@@ -99,7 +101,7 @@ public class BerserkerRageBrew extends SpecialItem {
 		private final BerserkerRole role;
 
 		public Events(Game game, BerserkerRole role) {
-			super(game);
+			super(game, new Events.Info(ItemSlot.HOTBAR_3));
 			this.role = role;
 		}
 

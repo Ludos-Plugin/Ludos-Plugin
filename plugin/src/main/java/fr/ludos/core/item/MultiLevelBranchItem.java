@@ -1,10 +1,11 @@
 package fr.ludos.core.item;
 
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -15,161 +16,173 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.game.Game;
-import fr.ludos.core.persistence.DoubleArrayPersistentDataType;
+import fr.ludos.core.item.level.LevelItem;
+import fr.ludos.core.item.level.LevelItemInterface;
+import fr.ludos.core.item.level.LevelState;
+import fr.ludos.core.item.level.LevelValue;
+import fr.ludos.core.persistence.LevelValueMapPersistentDataType;
 import net.kyori.adventure.text.Component;
 
 
-public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & MultiLevelBranchItem.Branch<TBranch>> extends BranchItem<TBranch> implements LevelItemInterface {
-	private final LevelItem.LevelState[] levelStates;
-	public List<LevelItem.LevelState> getLevelStates() {
-		return Collections.unmodifiableList(Arrays.asList(levelStates));
+public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.Branch> extends BranchItem<TBranch> implements LevelItemInterface {
+	private final Map<String, LevelState> levelStates;
+	public Map<String, LevelState> getLevelStates() {
+		return Collections.unmodifiableMap(levelStates);
+	}
+	public Map<String, LevelValue> getLevelValues() {
+		return levelStates.entrySet().stream()
+			.collect(Collectors.toMap(
+				e -> e.getKey(),
+				e -> e.getValue().value()
+			));
 	}
 
-	public static @Nullable LevelItem.LevelState[] levelsFromItemStack(ItemStack stack, String id, Game game) {
+	@Override
+	public LevelState levelState() {
+		TBranch currentBranch = getBranch();
+		return levelStates.get(currentBranch.id());
+	}
+
+	@Override
+	public void onSwitchToLevel(Integer level) {
+		getBranch().onSetLevel(level, this);
+	}
+	@Override
+	public void onSwitchOffLevel(Integer level) {
+		getBranch().onUnsetLevel(level, this);
+	}
+
+	@Override
+	public void addBranch(TBranch branch) {
+		MultiLevelBranchItem.super.addBranch(branch);
+		if ( ! levelStates.containsKey(branch.id()) ) {
+			levelStates.put(branch.id(), createLevelStateForBranch(branch, new LevelValue()));
+		}
+	}
+	@Override
+	public boolean removeBranch(TBranch branch) {
+		boolean res = MultiLevelBranchItem.super.removeBranch(branch);
+		if (res) {
+			levelStates.remove(branch.id());
+		}
+		return res;
+	}
+
+	public static @Nullable Map<String, LevelValue> levelsFromItemStack(ItemStack stack, String id, Game game) {
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 
-		if ( ! container.has(LevelItem.levelKey, PersistentDataType.INTEGER_ARRAY) ) return null;
-		if ( ! container.has(LevelItem.xpKey, DoubleArrayPersistentDataType.INSTANCE) ) return null;
+		if ( ! container.has(LevelItem.levelKey, LevelValueMapPersistentDataType.INSTANCE) ) return null;
 
-		int[] levels = container.get(LevelItem.levelKey, PersistentDataType.INTEGER_ARRAY);
-		double[] xps = container.get(LevelItem.xpKey, DoubleArrayPersistentDataType.INSTANCE);
-
-		LevelItem.LevelState[] levelStates = new LevelItem.LevelState[levels.length];
-		for (int i = 0; i < levels.length; i++) {
-			levelStates[i] = new LevelItem.LevelState(levels[i], xps[i]);
-		}
-		return levelStates;
+		return container.get(LevelItem.levelKey, LevelValueMapPersistentDataType.INSTANCE);
 	}
-	public static void saveLevelStates(SpecialItem item, LevelItem.LevelState[] levelStates) {
-		int[] levels = new int[levelStates.length];
-		double[] xps = new double[levelStates.length];
-
-		for (int i = 0; i < levelStates.length; i++) {
-			LevelItem.LevelState state = levelStates[i];
-			levels[i] = state.getLevel();
-			xps[i] = state.getXp();
-		}
-
+	public static void saveLevelStates(SpecialItem item, Map<String, LevelValue> levelValues) {
 		ItemMeta meta = item.getStack().getItemMeta();
-		meta.getPersistentDataContainer().set(LevelItem.levelKey, PersistentDataType.INTEGER_ARRAY, levels);
-		meta.getPersistentDataContainer().set(LevelItem.xpKey, DoubleArrayPersistentDataType.INSTANCE, xps);
+		PersistentDataContainer container = meta.getPersistentDataContainer();
+		container.set(LevelItem.levelKey, LevelValueMapPersistentDataType.INSTANCE, levelValues);
 		item.getStack().setItemMeta(meta);
 	}
+	public static <T extends MultiLevelBranchItem<TBranch>, TBranch extends MultiLevelBranchItem.Branch> Component getBranchXpLoreField(T item, TBranch branch) {
+		int maxLevel = branch.maxLevel();
+		LevelState level = item.levelState();
+		int levelNum = level.level();
 
-	public MultiLevelBranchItem(Class<TBranch> branchClass, ItemStack stack, Player owner, TBranch branch, LevelItem.LevelState[] levels, Game game) {
-		super(branchClass, stack, owner, branch, game);
+		boolean isMax = maxLevel >= 0 && levelNum >= maxLevel;
+		double levelThreshold = isMax ? 0 : branch.xpThreshold(levelNum);
 
-		if (levels.length != getBranches().length) {
-			throw new IllegalArgumentException("Levels array length does not match branches length");
-		}
+		return LevelItemInterface.getXpLoreField(isMax, levelThreshold, level.xp());
+	}
 
-		for (int i = 0; i < levels.length; i++) {
-			if (levels[i] == null) {
-				levels[i] = new LevelItem.LevelState();
-			}
-		}
-		this.levelStates = levels;
+	public MultiLevelBranchItem(List<TBranch> branches, Map<String, LevelValue> levels, ItemStack stack, Player owner, Game game) {
+		this(branches.stream().collect(Collectors.toMap(b -> b.id(), b -> b)), branches.get(0), levels, stack, owner, game);
+	}
+	public MultiLevelBranchItem(Map<String, TBranch> branches, Map<String, LevelValue> levels, ItemStack stack, Player owner, Game game) {
+		this(branches, branches.values().iterator().next(), levels, stack, owner, game);
+	}
+	public MultiLevelBranchItem(List<TBranch> branches, TBranch defaultBranch, Map<String, LevelValue> levels, ItemStack stack, Player owner, Game game) {
+		this(branches.stream().collect(Collectors.toMap(b -> b.id(), b -> b)), defaultBranch, levels, stack, owner, game);
+	}
+	public MultiLevelBranchItem(Map<String, TBranch> branches, TBranch defaultBranch, Map<String, LevelValue> levels, ItemStack stack, Player owner, Game game) {
+		super(branches, defaultBranch, stack, owner, game);
 
-		for (LevelItem.LevelState state : levelStates) {
-			state.addLevelUpListener( (lvlState, oldLevel) -> {
-				if (lvlState.getLevel() <= oldLevel) return;
-				getOwner().sendMessage(
-					LevelItem.getLevelUpMessage(this)
-				);
-			} );
-			state.addXpChangeListener( (lvlState) -> {
-				saveLevelStates(this, levelStates);
-				updateLore();
-			} );
-		}
+		Map<String, LevelValue> initialLevels = levels != null ? levels : new HashMap<>();
+
+		this.levelStates = branches.entrySet().stream()
+			.collect(Collectors.toMap(
+				e -> e.getKey(),
+				e -> createLevelStateForBranch(e.getValue(), initialLevels.getOrDefault(e.getKey(), new LevelValue()))
+			));
+	}
+
+	protected final LevelState createLevelStateForBranch(TBranch branch, @NotNull LevelValue level) {
+		LevelState state = new LevelState(
+			level,
+			branch::xpThreshold,
+			branch.maxLevel()
+		);
+		return LevelItemInterface.initializeLevelState(
+			this,
+			state,
+			(lvlValue, oldLevel) -> LevelItemInterface.saveLevelValues(this, getLevelValues()),
+			(lvlValue, oldXp) -> LevelItemInterface.saveLevelValues(this, getLevelValues())
+		);
 	}
 
 	@Override
 	public void onInitialize() {
 		super.onInitialize();
 
-		saveLevelStates(this, levelStates);
-	}
-
-	public LevelItem.LevelState getLevelState() {
-		TBranch currentBranch = getBranch();
-		return levelStates[currentBranch.ordinal()];
-	}
-
-	public int getLvl() {
-		LevelItem.LevelState state = getLevelState();
-
-		return state.getLevel();
-	}
-	public void setLvl(int level) {
-		LevelItem.LevelState state = getLevelState();
-
-		state.setLevel(level, getMaxBranchIndex());
-	}
-	public void addLvl(int level) {
-		LevelItem.LevelState state = getLevelState();
-
-		state.addLvl(level, getMaxBranchIndex());
-	}
-
-	public double getXp() {
-		LevelItem.LevelState state = getLevelState();
-
-		return state.getXp();
-	}
-	public void setXp(double value) {
-		LevelItem.LevelState state = getLevelState();
-
-		state.setXp(value, getMaxBranchIndex(), (level) -> getBranch().getXpThreshold(level));
-	}
-	public void addXp(double xp) {
-		LevelItem.LevelState state = getLevelState();
-
-		state.addXp(xp, getMaxBranchIndex(), (level) -> getBranch().getXpThreshold(level));
+		saveLevelStates(this, levelStates.entrySet().stream()
+			.collect(Collectors.toMap(
+				e -> e.getKey(),
+				e -> e.getValue().value()
+			))
+		);
 	}
 
 	@Override
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		lore.add(LevelItem.getBranchLevelLoreField(this));
-		lore.add(LevelItem.getBranchXpLoreField(this));
+		lore.add(LevelItemInterface.getBranchLevelLoreField(this));
+		lore.add(getBranchXpLoreField(this, getBranch()));
 
 		return lore;
 	}
 
 
-	public static interface Branch<T extends Enum<T> & Branch<T>> extends BranchItem.Branch<T> {
-		public double getXpThreshold(int level);
+	public static interface Branch extends BranchItem.Branch {
+		public int maxLevel();
+		public double xpThreshold(@NotNull Integer level);
 
 		/**
 		 * Called when the level is set on the item, including when the item is created with a non-zero level. Should be used to apply the level's effects.
 		 * @param item The item on which the level is being set
 		 */
-		public void onSetLevel(int level, SpecialItem item);
+		public void onSetLevel(int level, SpecialItemInterface item);
 		/**
 		 * Called when the level is unset on the item, including when the item is created with a non-zero level. Should be used to remove the level's effects.
 		 * @param item The item on which the level is being unset
 		 */
-		public void onUnsetLevel(int level, SpecialItem item);
+		public void onUnsetLevel(int level, SpecialItemInterface item);
 	}
 
-	public static abstract class Events<T extends MultiLevelBranchItem<TBranch>, TBranch extends Enum<TBranch> & Branch<TBranch>> extends BranchItem.Events<T, TBranch> {
-		private Map<Player, LevelItem.LevelState[]> deadPlayerLevels;
+	public static abstract class Events<T extends MultiLevelBranchItem<TBranch>, TBranch extends Branch> extends BranchItem.Events<T, TBranch> {
+		private Map<Player, Map<String, LevelValue>> deadPlayerLevels = new HashMap<>();
 
-		protected Events(Game game, @Nullable ItemSlot slot, boolean canDrop) {
-			super(game, slot, canDrop);
-
-			this.deadPlayerLevels = new HashMap<>();
+		protected Events(Map<String, TBranch> branches, @Nullable TBranch defaultBranch, Game game, Events.Info info) {
+			super(branches, defaultBranch, game, info);
 		}
-		public Events(Game game, @Nullable ItemSlot slot) {
-			this(game, slot, false);
+		protected Events(Collection<TBranch> branches, @Nullable TBranch defaultBranch, Game game, Events.Info info) {
+			this(branches.stream().collect(Collectors.toMap(b -> b.id(), b -> b)), defaultBranch, game, info);
 		}
-		public Events(Game game) {
-			this(game, null, false);
+		protected Events(Map<String, TBranch> branches, Game game, Events.Info info) {
+			this(branches, null, game, info);
+		}
+		protected Events(Collection<TBranch> branches, Game game, Events.Info info) {
+			this(branches, null, game, info);
 		}
 
 		@EventHandler
@@ -180,35 +193,14 @@ public abstract class MultiLevelBranchItem<TBranch extends Enum<TBranch> & Multi
 			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
 			if ( specialItem == null ) return;
 
-			deadPlayerLevels.put(player,
-				specialItem.getLevelStates().stream()
-					.map((LevelItem.LevelState state) -> {
-						if (state.getLevel() <= 0) {
-							return new LevelItem.LevelState(0, 0.0);
-						}
-						else {
-							return new LevelItem.LevelState(state.getLevel() -1, 0.0);
-						}
-					})
-					.toArray(LevelItem.LevelState[]::new)
-			);
+			deadPlayerLevels.put(player, specialItem.getLevelValues());
 		}
 
-		protected abstract TBranch[] getBranches();
-
-		public abstract T createItem(Player owner, LevelItem.LevelState[] levels);
+		public abstract T createItem(Player owner, Map<String, LevelValue> levels);
 
 		@Override
 		public final T createItem(Player owner) {
-			LevelItem.LevelState[] levels;
-			if (owner != null && deadPlayerLevels != null && deadPlayerLevels.containsKey(owner)) {
-				levels = deadPlayerLevels.get(owner);
-			}
-			else {
-				levels = new LevelItem.LevelState[getBranches().length];
-			}
-
-			return createItem(owner, levels);
+			return createItem(owner, deadPlayerLevels.get(owner));
 		}
 
 		@EventHandler

@@ -27,8 +27,11 @@ import org.bukkit.util.Vector;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
-import fr.ludos.core.item.LevelItem;
 import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelItem;
+import fr.ludos.core.item.level.LevelItemInterface;
+import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.tank.TankRole;
 import net.kyori.adventure.text.Component;
@@ -42,26 +45,26 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 	private static final Vector ALLY_PROTECTION_RANGE = new Vector(2.0, 2.0, 2.0);
 
 
-	public static @Nullable TankShield fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+	public static @Nullable TankShield fromItemStack(List<TankShieldLevels> levels, ItemStack stack, Game game) throws IllegalArgumentException {
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// TrapperDagger cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
-		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
-		if (levelState == null) return null;
+		LevelValue levelValue = LevelItemInterface.levelFromItemStack(stack, game);
+		if (levelValue == null) return null;
 
-		TankShield shield = new TankShield(stack, owner, levelState, game);
+		TankShield shield = new TankShield(levels, levelValue, stack, owner, game);
 		// cachedItems.put(itemId, dagger);
 
 		return shield;
 	}
 
-	public static TankShield createItem(Player owner, LevelState level, Game game) {
-		TankShield shield = new TankShield(createItemStack(), owner, level, game);
+	public static TankShield createItem(List<TankShieldLevels> levels, LevelValue level, Player owner, Game game) {
+		TankShield shield = new TankShield(levels, level, createItemStack(), owner, game);
 		shield.initializeItem();
 
 		ItemMeta meta = shield.getStack().getItemMeta();
@@ -73,8 +76,8 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		return shield;
 	}
 
-	protected TankShield(ItemStack stack, Player owner, LevelState level, Game game) {
-		super(TankShieldLevels.class, stack, owner, level, game);
+	protected TankShield(List<TankShieldLevels> levels, LevelValue level, ItemStack stack, Player owner, Game game) {
+		super(levels, level, stack, owner, game);
 	}
 
 	@Override
@@ -90,7 +93,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		ItemMeta meta = stack.getItemMeta();
 		if (! (meta instanceof Damageable damageable)) return;
 
-		TankShieldLevels level = getLvlObject(getLvl());
+		TankShieldLevels level = lvlObject(level());
 
 		int currentDamage = damageable.getDamage();
 		int maxDamage = stack.getType().getMaxDurability();
@@ -109,14 +112,13 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		stack.setItemMeta(damageable);
 
 		addXp(damage);
-		updateLore();
 	}
 	public void restore(double health) {
 		ItemStack stack = getStack();
 		ItemMeta meta = stack.getItemMeta();
 		if (! (meta instanceof Damageable damageable)) return;
 
-		TankShieldLevels level = getLvlObject(getLvl());
+		TankShieldLevels level = lvlObject(level());
 
 		int currentDamage = damageable.getDamage();
 
@@ -170,7 +172,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		TankShieldLevels level = getLvlObject();
+		TankShieldLevels level = lvlObject();
 		int durability = level.getDurability();
 
 		lore.add(
@@ -199,9 +201,15 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 	}
 
 	public static class Events extends LevelItem.Events<TankShield, TankShieldLevels> {
+		private static final List<TankShieldLevels> LEVELS = List.of(TankShieldLevels.values());
 		private BukkitTask tankRoutine;
 		public Events(Game game) {
-			super(game, ItemSlot.OFFHAND);
+			super(game, new Events.Info(ItemSlot.OFFHAND));
+		}
+
+		@Override
+		public List<TankShieldLevels> getLevels() {
+			return LEVELS;
 		}
 
 		@Override
@@ -217,8 +225,8 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 
 					for (Player player : tankPlayers) {
 						PlayerInventory inventory = player.getInventory();
-						for (TankShield shield : TankShield.findAllIn(inventory, (ItemStack stack) -> TankShield.fromItemStack(stack, game))) {
-							TankShieldLevels level = shield.getLvlObject();
+						for (TankShield shield : TankShield.findAllIn(inventory, (ItemStack stack) -> getItem(stack))) {
+							TankShieldLevels level = shield.lvlObject();
 							shield.restore(level.getRegen());
 
 							if (player.isBlocking() && player.getCooldown(Material.SHIELD) == 0) {
@@ -269,14 +277,14 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		}
 
 		@Override
-		public TankShield createItem(Player owner, LevelState level) {
-			return TankShield.createItem(owner, level, game);
+		public TankShield createItem(LevelValue level, Player owner) {
+			return TankShield.createItem(LEVELS, level, owner, game);
 		}
 
 		@Override
 		@Nullable
 		public TankShield getItem(ItemStack stack) {
-			return TankShield.fromItemStack(stack, game);
+			return TankShield.fromItemStack(LEVELS, stack, game);
 		}
 
 		@Override
@@ -293,10 +301,10 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 			TankShield shield;
 
 			ItemStack offHand = defender.getInventory().getItemInOffHand();
-			shield = TankShield.fromItemStack(offHand, game);
+			shield = getItem(offHand);
 			if (shield == null) {
 				ItemStack mainHand = defender.getInventory().getItemInMainHand();
-				shield = TankShield.fromItemStack(mainHand, game);
+				shield = getItem(mainHand);
 			}
 			if (shield == null) return;
 
@@ -326,9 +334,9 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 
 				ItemStack mainHand = tankPlayer.getInventory().getItemInMainHand();
 				ItemStack offHand = tankPlayer.getInventory().getItemInOffHand();
-				TankShield shield = TankShield.fromItemStack(offHand, game);
+				TankShield shield = getItem(offHand);
 				if (shield == null) {
-					shield = TankShield.fromItemStack(mainHand, game);
+					shield = getItem(mainHand);
 				}
 				if (shield == null) continue;
 
@@ -343,7 +351,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		public void onShieldDamage(PlayerItemDamageEvent event) {
 			ItemStack item = event.getItem();
 
-			TankShield shield = TankShield.fromItemStack(item, game);
+			TankShield shield = getItem(item);
 			if (shield == null) return;
 
 			event.setCancelled(true);

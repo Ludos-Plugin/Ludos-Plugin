@@ -23,8 +23,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
-import fr.ludos.core.item.LevelItem;
 import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelItem;
+import fr.ludos.core.item.level.LevelItemInterface;
+import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.berserker.BerserkerRole;
 import net.kyori.adventure.text.Component;
@@ -79,36 +82,36 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 
 		if (! container.has(variantKey, PersistentDataType.INTEGER) ) return null;
 
-		return Variant.fromKey(getPersistentData(stack, variantKey, PersistentDataType.INTEGER));
+		return Variant.fromKey(container.get(variantKey, PersistentDataType.INTEGER));
 	}
 
 
 	@Nullable
-	public static BerserkerAxe getItem(ItemStack stack, Game game) {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+	public static BerserkerAxe getItem(Events events, ItemStack stack, Game game) {
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// BerserkerAxe cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		LevelState levelState = LevelItem.levelFromItemStack(stack, game);
-		if (levelState == null) return null;
+		LevelValue levelValue = LevelItemInterface.levelFromItemStack(stack, game);
+		if (levelValue == null) return null;
 		Variant variant = getSpecialItemVariant(stack, game);
 		if (variant == null) return null;
 
-		BerserkerAxe axe = new BerserkerAxe(stack, owner, variant, levelState, game);
+		BerserkerAxe axe = new BerserkerAxe(events, variant, levelValue, stack, owner, game);
 		// cachedItems.put(itemId, axe);
 
 		return axe;
 	}
 
-	public static BerserkerAxe createItem(Player owner, Variant variant, LevelState level, Game game) {
-		BerserkerAxeLevels lvl = BerserkerAxeLevels.values()[level.getLevel()];
+	public static BerserkerAxe createItem(Events events, Variant variant, LevelValue level, Player owner, Game game) {
+		BerserkerAxeLevels lvl = BerserkerAxeLevels.values()[level.level()];
 		Material mat = lvl.getMaterialForVariant(variant);
-		BerserkerAxe axe = new BerserkerAxe(new ItemStack(mat), owner, variant, level, game);
+		BerserkerAxe axe = new BerserkerAxe(events, variant, level, new ItemStack(mat), owner, game);
 		UUID itemId = axe.initializeItem();
 
 		// cachedItems.put(itemId, axe);
@@ -117,8 +120,8 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 	}
 
 
-	protected BerserkerAxe(ItemStack stack, Player owner, Variant variant, LevelItem.LevelState level, Game game) throws IllegalArgumentException {
-		super(BerserkerAxeLevels.class, stack, owner, level, game);
+	protected BerserkerAxe(Events events, Variant variant, LevelValue level, ItemStack stack, Player owner, Game game) throws IllegalArgumentException {
+		super(events.getLevels(), level, stack, owner, game);
 
 		this.variant = variant;
 	}
@@ -161,7 +164,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		BerserkerAxeLevels level = getLvlObject();
+		BerserkerAxeLevels level = lvlObject();
 
 		if (variant == Variant.FIRST) {
 			// Base damage: 1 (player base) + 3 (modifier) + 0.5*sharpnessLevel = 4 + enchant
@@ -181,28 +184,28 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		return lore;
 	}
 
-	public static boolean isHoldingBerserkerAxe(Player player, Game game) {
-		return getItem(player.getInventory().getItemInMainHand(), game) != null
-			|| getItem(player.getInventory().getItemInOffHand(), game) != null;
-	}
-
 
 	public static class Events extends LevelItem.Events<BerserkerAxe, BerserkerAxeLevels> {
-
+		private static final List<BerserkerAxeLevels> LEVELS = List.of(BerserkerAxeLevels.values());
 		private final BerserkerRole role;
 
 		public Events(Game game, BerserkerRole role) {
-			super(game);
+			super(game, new Events.Info());
 			this.role = role;
+		}
+
+		@Override
+		public List<BerserkerAxeLevels> getLevels() {
+			return LEVELS;
 		}
 
 		@Override
 		public void refreshPlayerInventory(Player player) {
 			if (!isPlayerValid(player)) return;
 
-			LevelState playerLevel = deadPlayerLevels.get(player);
+			LevelValue playerLevel = deadPlayerLevels.get(player);
 			if (playerLevel == null) {
-				playerLevel = new LevelState();
+				playerLevel = new LevelValue();
 			}
 
 			List<BerserkerAxe> axes = SpecialItem.findAllIn(player.getInventory(), this::getItem);
@@ -213,18 +216,23 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 				|| (offHandAxe != null && offHandAxe.getVariant() == Variant.SECOND);
 
 			if (!hasFirst) {
-				player.getInventory().addItem(BerserkerAxe.createItem(player, Variant.FIRST, playerLevel, game).getStack());
+				player.getInventory().addItem(createItem(Variant.FIRST, playerLevel, player).getStack());
 			}
 
 			if (!hasSecond) {
 				ItemStack currentOffHand = player.getInventory().getItemInOffHand();
-				BerserkerAxe secondAxe = BerserkerAxe.createItem(player, Variant.SECOND, playerLevel, game);
+				BerserkerAxe secondAxe = createItem(Variant.SECOND, playerLevel, player);
 				if (currentOffHand == null || currentOffHand.getType().isAir()) {
 					player.getInventory().setItemInOffHand(secondAxe.getStack());
 				} else {
 					player.getInventory().addItem(secondAxe.getStack());
 				}
 			}
+		}
+
+		public boolean isHoldingBerserkerAxe(Player player) {
+			return getItem(player.getInventory().getItemInMainHand()) != null
+				|| getItem(player.getInventory().getItemInOffHand()) != null;
 		}
 
 		@EventHandler(ignoreCancelled = true)
@@ -243,12 +251,15 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		@Override
 		@Nullable
 		public BerserkerAxe getItem(ItemStack stack) {
-			return BerserkerAxe.getItem(stack, game);
+			return BerserkerAxe.getItem(this, stack, game);
 		}
 
 		@Override
-		public BerserkerAxe createItem(Player owner, LevelState level) {
-			return BerserkerAxe.createItem(owner, Variant.FIRST, level, game);
+		public BerserkerAxe createItem(LevelValue level, Player owner) {
+			return createItem(Variant.FIRST, level, owner);
+		}
+		public BerserkerAxe createItem(Variant variant, LevelValue level, Player owner) {
+			return BerserkerAxe.createItem(this, variant, level, owner, game);
 		}
 
 		@Override

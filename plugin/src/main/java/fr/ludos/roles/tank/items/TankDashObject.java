@@ -26,6 +26,7 @@ import org.bukkit.util.Vector;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.tank.TankRole;
 import net.kyori.adventure.text.Component;
@@ -47,13 +48,13 @@ public class TankDashObject extends SpecialItem {
 	}
 
 	public static @Nullable TankDashObject fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// TrapperDagger cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
 		TankDashObject dasher = new TankDashObject(stack, owner, game);
@@ -160,7 +161,7 @@ public class TankDashObject extends SpecialItem {
 	@Override
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
-		lore.add(SpecialItem.getActionAnnotation("key.use", Component.text("Charge")));
+		lore.add(SpecialItemInterface.getActionAnnotation("key.use", Component.text("Charge")));
 		return lore;
 	}
 
@@ -173,7 +174,7 @@ public class TankDashObject extends SpecialItem {
 	public static class Events extends SpecialItem.Events<TankDashObject> {
 
 		public Events(Game game) {
-			super(game, ItemSlot.HOTBAR_3, false);
+			super(game, new Events.Info(ItemSlot.HOTBAR_3));
 		}
 
 		@Override

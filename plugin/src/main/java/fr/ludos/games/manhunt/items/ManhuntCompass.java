@@ -16,6 +16,7 @@ import org.bukkit.inventory.meta.CompassMeta;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.games.manhunt.ManhuntGame;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -28,13 +29,13 @@ public class ManhuntCompass extends SpecialItem {
 
 
 	public static @Nullable ManhuntCompass fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// ManhuntCompass cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
 		ManhuntCompass compass = new ManhuntCompass(stack, owner, game);
@@ -114,7 +115,7 @@ public class ManhuntCompass extends SpecialItem {
 	public static class Events extends SpecialItem.Events<ManhuntCompass> {
 
 		public Events(Game game) {
-			super(game, ItemSlot.HOTBAR_9);
+			super(game, new Events.Info(ItemSlot.HOTBAR_9));
 		}
 
 		@Override

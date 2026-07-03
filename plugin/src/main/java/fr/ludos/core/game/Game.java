@@ -186,7 +186,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 	}
 
 	private static final String SCHEDULE_END_GAME_TEXT = "Game finished, returning in %s seconds...";
-	public void scheduleEndGame(int seconds) {
+	public final void scheduleEndGame(int seconds) {
 		scheduleEndGame(seconds, null);
 	}
 	public void scheduleEndGame(int seconds, @Nullable String text) {

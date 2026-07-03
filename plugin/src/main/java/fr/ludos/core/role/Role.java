@@ -1,5 +1,6 @@
 package fr.ludos.core.role;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -30,7 +31,6 @@ import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
 import fr.ludos.core.game.GameProcessBase;
-import fr.ludos.core.item.LevelItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -80,6 +80,9 @@ public abstract class Role extends GameProcessBase {
 	}
 
 	private final Map<String, GameEvents> gameEvents;
+	public final Map<String, GameEvents> getGameEvents() {
+		return Collections.unmodifiableMap(gameEvents);
+	}
 
 	/**
 	 * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
@@ -299,21 +302,6 @@ public abstract class Role extends GameProcessBase {
 		}
 
 		public void populateGuidebook(BookMetaBuilder builder) { }
-
-
-		protected final <TLevel extends Enum<TLevel>> LevelItem.LevelState maxLevelState(TLevel[] levels) {
-			int maxLevel = Math.max(0, levels.length - 1);
-			return new LevelItem.LevelState(maxLevel, 0.0);
-		}
-
-		protected final <TBranch extends Enum<TBranch>> LevelItem.LevelState[] maxMultiLevels(TBranch[] branches, int level) {
-			int resolvedLevel = Math.max(0, level);
-			LevelItem.LevelState[] values = new LevelItem.LevelState[branches.length];
-			for (int i = 0; i < values.length; i++) {
-				values[i] = new LevelItem.LevelState(resolvedLevel, 0.0);
-			}
-			return values;
-		}
 
 
 		public boolean executeRoleConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) { return false; }

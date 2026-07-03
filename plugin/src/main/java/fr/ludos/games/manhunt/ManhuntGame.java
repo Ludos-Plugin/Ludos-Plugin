@@ -178,6 +178,12 @@ public class ManhuntGame extends Game {
 		Bukkit.getServer().broadcast(Component.text("The Game of Manhunt ended"));
 	}
 
+	@Override
+	public void scheduleEndGame(int seconds, String text) {
+		super.scheduleEndGame(seconds, text);
+		if (timer != null) timer.stop();
+	}
+
 
 	public void revealPrey() {
 		Set<Player> preys = teamController.getTeamOnlinePlayers(teamController.preyTeam);

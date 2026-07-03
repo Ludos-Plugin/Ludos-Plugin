@@ -9,13 +9,11 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import fr.ludos.core.item.BranchItem;
-import fr.ludos.core.item.SpecialItem;
-import fr.ludos.roles.harvester.HarvesterRole;
+import fr.ludos.core.item.SpecialItemInterface;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-public enum HarvesterPickBranches implements BranchItem.Branch<HarvesterPickBranches> {
+public enum HarvesterPickBranches implements HarvesterPickBranch {
 	Pickaxe (
 		Component.text("Pickaxe").color(NamedTextColor.AQUA),
 		Component.text("Mines blocks normally.")
@@ -24,17 +22,17 @@ public enum HarvesterPickBranches implements BranchItem.Branch<HarvesterPickBran
 		public void onBreakBlock(HarvesterPick pick, BlockBreakEvent event) {
 			Block targetBlock = event.getBlock();
 
-			HarvesterRole.awardBreak(event.getPlayer(), targetBlock, pick.getGame());
+			pick.events.role.awardBreak(event.getPlayer(), targetBlock, pick.getGame());
 		}
 
 		@Override
-		public void onEquip(SpecialItem item) { }
+		public void onEquip(SpecialItemInterface item) { }
 		@Override
-		public void onUnequip(SpecialItem item) { }
+		public void onUnequip(SpecialItemInterface item) { }
 		@Override
-		public void onSelectBranch(SpecialItem item) { }
+		public void onSelectBranch(SpecialItemInterface item) { }
 		@Override
-		public void onDeselectBranch(SpecialItem item) { }
+		public void onDeselectBranch(SpecialItemInterface item) { }
 	},
 	Hammer (
 		Component.text("Hammer").color(NamedTextColor.RED),
@@ -58,23 +56,23 @@ public enum HarvesterPickBranches implements BranchItem.Branch<HarvesterPickBran
 
 
 		@Override
-		public void onEquip(SpecialItem item) {
+		public void onEquip(SpecialItemInterface item) {
 			Player owner = item.getOwner();
 			owner.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, Integer.MAX_VALUE, 0, false, false));
 		}
 		@Override
-		public void onUnequip(SpecialItem item) {
+		public void onUnequip(SpecialItemInterface item) {
 			Player owner = item.getOwner();
 			owner.removePotionEffect(PotionEffectType.SLOW_DIGGING);
 		}
 
 		@Override
-		public void onSelectBranch(SpecialItem item) {
+		public void onSelectBranch(SpecialItemInterface item) {
 			Player owner = item.getOwner();
 			owner.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, Integer.MAX_VALUE, 0, false, false));
 		}
 		@Override
-		public void onDeselectBranch(SpecialItem item) {
+		public void onDeselectBranch(SpecialItemInterface item) {
 			Player owner = item.getOwner();
 			owner.removePotionEffect(PotionEffectType.SLOW_DIGGING);
 		}
@@ -90,6 +88,11 @@ public enum HarvesterPickBranches implements BranchItem.Branch<HarvesterPickBran
 	@Override
 	public Component getDescription() {
 		return description;
+	}
+
+	@Override
+	public String id() {
+		return super.name();
 	}
 
 	public abstract void onBreakBlock(HarvesterPick pick, BlockBreakEvent event);

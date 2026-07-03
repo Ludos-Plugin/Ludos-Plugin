@@ -22,7 +22,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import fr.ludos.core.game.Game;
+import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
@@ -34,13 +36,13 @@ public class TeleportScroll extends SpecialItem {
 	// private final static Map<UUID, TeleportScroll> cachedItems = new HashMap<>();
 
 	public static @Nullable TeleportScroll fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// TeleportScroll cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
 		TeleportScroll scroll = new TeleportScroll(stack, owner, game);
@@ -68,7 +70,7 @@ public class TeleportScroll extends SpecialItem {
 	}
 
 	@Override
-	protected Component getName(){
+	public Component getName(){
 		return Component.text("Parchemin de Téléportation")
 			.decoration(TextDecoration.ITALIC, false);
 	}
@@ -90,7 +92,7 @@ public class TeleportScroll extends SpecialItem {
 		private final Random random = new Random();
 
 		public Events(Game game) {
-			super(game);
+			super(game, new Events.Info(ItemSlot.HOTBAR_3));
 		}
 
 		@Override

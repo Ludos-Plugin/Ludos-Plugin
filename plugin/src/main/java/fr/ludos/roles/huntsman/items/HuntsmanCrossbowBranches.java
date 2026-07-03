@@ -11,14 +11,13 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import fr.ludos.core.item.MultiLevelBranchItem;
-import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<HuntsmanCrossbowBranches> {
+public enum HuntsmanCrossbowBranches implements HuntsmanCrossbowBranch {
 	FLAME (
 		Component.text("Igniting")
 			.color(NamedTextColor.RED)
@@ -44,19 +43,19 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 		}
 
 		@Override
-		public void onEquip(SpecialItem item) { }
+		public void onEquip(SpecialItemInterface item) { }
 		@Override
-		public void onUnequip(SpecialItem item) { }
+		public void onUnequip(SpecialItemInterface item) { }
 
 		@Override
-		public void onDeselectBranch(SpecialItem item) { }
+		public void onDeselectBranch(SpecialItemInterface item) { }
 		@Override
-		public void onSelectBranch(SpecialItem item) { }
+		public void onSelectBranch(SpecialItemInterface item) { }
 
 		@Override
-		public void onUnsetLevel(int level, SpecialItem item) { }
+		public void onUnsetLevel(int level, SpecialItemInterface item) { }
 		@Override
-		public void onSetLevel(int level, SpecialItem item) { }
+		public void onSetLevel(int level, SpecialItemInterface item) { }
 	},
 
 
@@ -74,7 +73,7 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 
 		@Override
 		public void processLandedArrow(Arrow arrow, HumanEntity player, int level, ProjectileHitEvent event) {
-			if (level > 1 && level == getMaxLevel()) {
+			if (level > 1 && level == maxLevel()) {
 				// spawn an AEC that applies levitation as a splash
 				PotionEffect levitationEffect = PotionEffectType.LEVITATION.createEffect(10, 2);
 
@@ -103,19 +102,19 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 		}
 
 		@Override
-		public void onEquip(SpecialItem item) { }
+		public void onEquip(SpecialItemInterface item) { }
 		@Override
-		public void onUnequip(SpecialItem item) { }
+		public void onUnequip(SpecialItemInterface item) { }
 
 		@Override
-		public void onDeselectBranch(SpecialItem item) { }
+		public void onDeselectBranch(SpecialItemInterface item) { }
 		@Override
-		public void onSelectBranch(SpecialItem item) { }
+		public void onSelectBranch(SpecialItemInterface item) { }
 
 		@Override
-		public void onUnsetLevel(int level, SpecialItem item) { }
+		public void onUnsetLevel(int level, SpecialItemInterface item) { }
 		@Override
-		public void onSetLevel(int level, SpecialItem item) { }
+		public void onSetLevel(int level, SpecialItemInterface item) { }
 	},
 
 
@@ -162,19 +161,19 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 		}
 
 		@Override
-		public void onEquip(SpecialItem item) { }
+		public void onEquip(SpecialItemInterface item) { }
 		@Override
-		public void onUnequip(SpecialItem item) { }
+		public void onUnequip(SpecialItemInterface item) { }
 
 		@Override
-		public void onDeselectBranch(SpecialItem item) { }
+		public void onDeselectBranch(SpecialItemInterface item) { }
 		@Override
-		public void onSelectBranch(SpecialItem item) { }
+		public void onSelectBranch(SpecialItemInterface item) { }
 
 		@Override
-		public void onUnsetLevel(int level, SpecialItem item) { }
+		public void onUnsetLevel(int level, SpecialItemInterface item) { }
 		@Override
-		public void onSetLevel(int level, SpecialItem item) { }
+		public void onSetLevel(int level, SpecialItemInterface item) { }
 	};
 
 
@@ -190,7 +189,7 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 	}
 
 	private double xpThreshold;
-	public double getXpThreshold(int level) {
+	public double xpThreshold(Integer level) {
 		return xpThreshold;
 	}
 
@@ -217,10 +216,12 @@ public enum HuntsmanCrossbowBranches implements MultiLevelBranchItem.Branch<Hunt
 		return block;
 	}
 
-	public int getMaxLevel() {
-		return 2;
+	@Override
+	public String id() {
+		return toString();
 	}
 
-	public abstract void processShotArrow(Arrow arrow, HumanEntity player, int level, EntityShootBowEvent event);
-	public abstract void processLandedArrow(Arrow arrow, HumanEntity player, int level, ProjectileHitEvent event);
+	public int maxLevel() {
+		return 2;
+	}
 }

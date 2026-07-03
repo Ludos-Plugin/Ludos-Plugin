@@ -8,8 +8,8 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
-import fr.ludos.core.item.LevelItem;
-import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelItem;
 
 
 public enum HarvesterPickLevels implements LevelItem.Level<HarvesterPickLevels> {
@@ -35,7 +35,7 @@ public enum HarvesterPickLevels implements LevelItem.Level<HarvesterPickLevels> 
 	}
 
 	private double xpThreshold;
-	public double getXpThreshold() {
+	public double xpThreshold() {
 		return xpThreshold;
 	}
 
@@ -70,18 +70,13 @@ public enum HarvesterPickLevels implements LevelItem.Level<HarvesterPickLevels> 
 
 
 	@Override
-	public Class<HarvesterPickLevels> getLevelClass() {
-		return HarvesterPickLevels.class;
-	}
+	public void onUnequip(SpecialItemInterface item) { }
 
 	@Override
-	public void onUnequip(SpecialItem item) { }
+	public void onEquip(SpecialItemInterface item) { }
 
 	@Override
-	public void onEquip(SpecialItem item) { }
-
-	@Override
-	public void onSetLevel(SpecialItem item) {
+	public void onSwitchToLevel(SpecialItemInterface item) {
 		ItemStack stack = item.getStack();
 		stack.setType(material);
 		stack.removeEnchantment(Enchantment.DIG_SPEED);
@@ -89,5 +84,5 @@ public enum HarvesterPickLevels implements LevelItem.Level<HarvesterPickLevels> 
 		stack.addEnchantments(enchantments);
 	}
 	@Override
-	public void onUnsetLevel(SpecialItem item) { }
+	public void onSwitchOffLevel(SpecialItemInterface item) { }
 }

@@ -7,8 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
-import fr.ludos.core.item.LevelItem.Level;
-import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelItemInterface.Level;
 
 public enum HarvesterScytheLevels implements Level<HarvesterScytheLevels> {
 	WOODEN      (Material.WOODEN_HOE,    25,   new HashMap<>(){{ put(Enchantment.SWEEPING_EDGE, 2); }}),
@@ -31,7 +31,7 @@ public enum HarvesterScytheLevels implements Level<HarvesterScytheLevels> {
 
 	private final double xpThreshold;
 	@Override
-	public double getXpThreshold() {
+	public double xpThreshold() {
 		return xpThreshold;
 	}
 
@@ -47,18 +47,13 @@ public enum HarvesterScytheLevels implements Level<HarvesterScytheLevels> {
 	}
 
 	@Override
-	public Class<HarvesterScytheLevels> getLevelClass() {
-		return HarvesterScytheLevels.class;
-	}
+	public void onEquip(SpecialItemInterface item) { }
 
 	@Override
-	public void onEquip(SpecialItem item) { }
+	public void onUnequip(SpecialItemInterface item) { }
 
 	@Override
-	public void onUnequip(SpecialItem item) { }
-
-	@Override
-	public void onSetLevel(SpecialItem item) {
+	public void onSwitchToLevel(SpecialItemInterface item) {
 		ItemStack stack = item.getStack();
 		stack.setType(material);
 		stack.removeEnchantment(Enchantment.DAMAGE_ALL);
@@ -68,6 +63,6 @@ public enum HarvesterScytheLevels implements Level<HarvesterScytheLevels> {
 	}
 
 	@Override
-	public void onUnsetLevel(SpecialItem item) { }
+	public void onSwitchOffLevel(SpecialItemInterface item) { }
 
 }

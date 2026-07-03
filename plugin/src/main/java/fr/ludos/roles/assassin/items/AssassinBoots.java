@@ -18,7 +18,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.core.game.Game;
+import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
@@ -30,13 +32,13 @@ public class AssassinBoots extends SpecialItem {
 	// private final static Map<UUID, AssassinBoots> cachedItems = new HashMap<>();
 
 	public static @Nullable AssassinBoots fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// AssassinBoots cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
 		AssassinBoots boots = new AssassinBoots(stack, owner, game);
@@ -64,7 +66,7 @@ public class AssassinBoots extends SpecialItem {
 	}
 
 	@Override
-	protected Component getName(){
+	public Component getName(){
 		return Component.text("Bottes d'Assassin")
 			.decoration(TextDecoration.ITALIC, false);
 	}
@@ -81,7 +83,7 @@ public class AssassinBoots extends SpecialItem {
 
 	public static class Events extends SpecialItem.Events<AssassinBoots> {
 		public Events(Game game) {
-			super(game);
+			super(game, new Events.Info(ItemSlot.BOOTS));
 		}
 
 		@EventHandler

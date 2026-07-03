@@ -18,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
@@ -31,13 +32,13 @@ public class HuntsmanBow extends SpecialItem {
 
 
 	public static @Nullable HuntsmanBow fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItem.getSpecialItemId(stack, ID, game);
+		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
 		// HuntsmanBow cached = cachedItems.get(itemId);
 		// if (cached != null) return cached;
 
-		Player owner = SpecialItem.getSpecialItemOwner(stack, game);
+		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
 		HuntsmanBow bow = new HuntsmanBow(stack, owner, game);
@@ -79,7 +80,7 @@ public class HuntsmanBow extends SpecialItem {
 	public static class Events extends SpecialItem.Events<HuntsmanBow> {
 
 		public Events(Game game) {
-			super(game, ItemSlot.HOTBAR_1);
+			super(game, new Events.Info(ItemSlot.HOTBAR_1));
 		}
 
 		@EventHandler

@@ -2,19 +2,18 @@ package fr.ludos.roles.harvester;
 
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
-import java.util.Set;
-import java.util.function.BiFunction;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
-import fr.ludos.core.item.LevelItem;
+import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.item.level.LevelItem;
+import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.role.RoleFlag;
 import fr.ludos.roles.harvester.items.HarvesterPick;
@@ -55,23 +54,19 @@ public class HarvesterRole extends Role {
 
 	@Override
 	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
+		HarvesterRole harvesterRole = this;
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{
 					put("scythe", new HarvesterScythe.Events(game));
-					put("pick", new HarvesterPick.Events(game));
-					put("spade", new HarvesterSpade.Events(game));
+					put("pick", new HarvesterPick.Events(harvesterRole, game));
+					put("spade", new HarvesterSpade.Events(harvesterRole, game));
 				}};
 		}
 	}
 
 
-	private static final Set<BiFunction<ItemStack, Game, LevelItem<?>>> levelItemGetters = Set.of(
-		HarvesterScythe::fromItemStack,
-		HarvesterPick::fromItemStack,
-		HarvesterSpade::fromItemStack
-	);
-	public static void awardBreak(Player player, Block block, Game game) {
+	public void awardBreak(Player player, Block block, Game game) {
 		if (player == null || block == null) return;
 		if (!Role.isPlayerRole(player, id)) return;
 
@@ -80,8 +75,14 @@ public class HarvesterRole extends Role {
 
 		double oreXp = getOreReward(block);
 		if (oreXp == 0) return;
-		for (var itemType : levelItemGetters) {
-			LevelItem.findAllIn(inventory, (itemStack) -> itemType.apply(itemStack, game)).forEach(item -> item.addXp(oreXp));
+		for (var events : getGameEvents().values()) {
+			if (events instanceof SpecialItem.Events itemEvents) {
+				LevelItem.findAllIn(inventory, (itemStack) -> itemEvents.getItem(itemStack))
+					.stream()
+					.filter(o -> o instanceof LevelItemInterface)
+					.map(o -> (LevelItemInterface) o)
+					.forEach(item -> item.addXp(oreXp));
+			}
 		}
 	}
 

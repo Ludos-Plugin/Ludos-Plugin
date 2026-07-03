@@ -119,6 +119,8 @@ public class BerserkerRole extends Role {
 	@EventHandler
 	public void onOffHandAttack(PlayerInteractEvent event) {
 		if (event.getHand() != EquipmentSlot.HAND) return;
+		BerserkerAxe.Events axeEvents = (BerserkerAxe.Events) getGameEvents().get("axe");
+		if (axeEvents == null) return;
 
 		Action action = event.getAction();
 		if (!action.isRightClick()) return;
@@ -127,7 +129,7 @@ public class BerserkerRole extends Role {
 
 		Player player = event.getPlayer();
 
-		BerserkerAxe offHandAxe = BerserkerAxe.getItem(player.getInventory().getItemInOffHand(), getGame());
+		BerserkerAxe offHandAxe = axeEvents.getItem(player.getInventory().getItemInOffHand());
 		if (offHandAxe == null) return;
 
 		player.swingOffHand();
@@ -139,7 +141,7 @@ public class BerserkerRole extends Role {
 		if (player.getCooldown(offHandAxeMaterial) > 0) return;
 		player.setCooldown(offHandAxeMaterial, calculateCooldown(player));
 
-		BerserkerAxe mainHandAxe = BerserkerAxe.getItem(player.getInventory().getItemInMainHand(), getGame());
+		BerserkerAxe mainHandAxe = axeEvents.getItem(player.getInventory().getItemInMainHand());
 		if (mainHandAxe != null) {
 			Material mainHandAxeMaterial = mainHandAxe.getStack().getType();
 			player.setCooldown(mainHandAxeMaterial, calculateCooldown(player));
