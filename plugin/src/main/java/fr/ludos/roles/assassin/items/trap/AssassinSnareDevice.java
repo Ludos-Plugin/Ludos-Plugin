@@ -2,14 +2,14 @@ package fr.ludos.roles.assassin.items.trap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
@@ -26,7 +26,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import fr.ludos.core.Utility;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.item.BranchItem;
 import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.ItemSlot;
@@ -109,8 +111,8 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 			trapTask = new BukkitRunnable() {
 				@Override
 				public void run() {
-					var game = getGame();
-					if (game == null) return;
+					GameTeamController teamController = game.getTeamController();
+					if (teamController == null) return;
 
 					for (var playerTrapEntries : traps.entrySet()) {
 						Player player = playerTrapEntries.getKey();
@@ -125,11 +127,13 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 
 							for (AssassinTrap trap : branchTraps) {
 								Vector range = trap.getRange();
-								Collection<LivingEntity> targets = trap.getLocation().getNearbyLivingEntities(range.getX(), range.getY(), range.getZ());
-								for (LivingEntity target : targets) {
-									if (target.isDead()) continue;
-									if (target instanceof Player playerTarget && (playerTarget.getGameMode() == GameMode.SPECTATOR || playerTarget.getGameMode() == GameMode.CREATIVE)) continue;
+								List<LivingEntity> targets = trap.getLocation()
+									.getNearbyLivingEntities(range.getX(), range.getY(), range.getZ()).stream()
+									.filter(Utility.isEntityAlive)
+									.filter(teamController.isEntityAllyOfEntity(player))
+									.collect(Collectors.toList());
 
+								for (LivingEntity target : targets) {
 									if (trap.canTriggerEffect(target)) {
 										trap.triggerEffect(target);
 										removeTrap(player, branch, trap);
@@ -158,10 +162,10 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 			return traps.computeIfAbsent(player, k -> new HashMap<>())
 				.computeIfAbsent(branch, k -> new ArrayList<>());
 		}
-		private void addTrap(Player player, AssassinSnare branch, AssassinTrap trap) {
+		public void addTrap(Player player, AssassinSnare branch, AssassinTrap trap) {
 			getTraps(player, branch).add(trap);
 		}
-		private void removeTrap(Player player, AssassinSnare branch, AssassinTrap trap) {
+		public void removeTrap(Player player, AssassinSnare branch, AssassinTrap trap) {
 			ArrayList<AssassinTrap> playerTraps = getTraps(player, branch);
 			if (playerTraps != null) {
 				playerTraps.remove(trap);

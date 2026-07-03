@@ -147,32 +147,32 @@ public abstract class GameTeamController extends GameProcessBase {
 		return areAllies(player1.getName(), player2.getName());
 	}
 
-	public Predicate<OfflinePlayer> isPlayerAllyOf(Entity entity) {
+	public Predicate<OfflinePlayer> isPlayerAllyOfEntity(Entity entity) {
 		return (p) -> areAllies(p.getName(), entity.getName());
 	}
-	public Predicate<OfflinePlayer> isPlayerEnemyOf(Entity entity) {
-		return Predicate.not(isPlayerAllyOf(entity));
+	public Predicate<OfflinePlayer> isPlayerEnemyOfEntity(Entity entity) {
+		return Predicate.not(isPlayerAllyOfEntity(entity));
 	}
 
-	public Predicate<Entity> isEntityAllyOf(Entity entity) {
+	public Predicate<Entity> isEntityAllyOfEntity(Entity entity) {
 		return (p) -> areAllies(p.getName(), entity.getName());
 	}
-	public Predicate<Entity> isEntityEnemyOf(Entity entity) {
-		return Predicate.not(isEntityAllyOf(entity));
+	public Predicate<Entity> isEntityEnemyOfEntity(Entity entity) {
+		return Predicate.not(isEntityAllyOfEntity(entity));
 	}
 
-	public Predicate<OfflinePlayer> isPlayerAllyOf(OfflinePlayer player) {
+	public Predicate<OfflinePlayer> isPlayerAllyOfPlayer(OfflinePlayer player) {
 		return (p) -> arePlayersAllies(p, player);
 	}
-	public Predicate<OfflinePlayer> isPlayerEnemyOf(OfflinePlayer player) {
-		return Predicate.not(isPlayerAllyOf(player));
+	public Predicate<OfflinePlayer> isPlayerEnemyOfPlayer(OfflinePlayer player) {
+		return Predicate.not(isPlayerAllyOfPlayer(player));
 	}
 
-	public Predicate<Entity> isEntityAllyOf(OfflinePlayer player) {
+	public Predicate<Entity> isEntityAllyOfPlayer(OfflinePlayer player) {
 		return (p) -> areAllies(p.getName(), player.getName());
 	}
-	public Predicate<Entity> isEntityEnemyOf(OfflinePlayer player) {
-		return Predicate.not(isEntityAllyOf(player));
+	public Predicate<Entity> isEntityEnemyOfPlayer(OfflinePlayer player) {
+		return Predicate.not(isEntityAllyOfPlayer(player));
 	}
 
 	public final Player pickRandomPlayer() {

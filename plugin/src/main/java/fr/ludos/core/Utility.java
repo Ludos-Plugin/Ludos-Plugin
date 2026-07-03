@@ -32,6 +32,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ExperienceOrb;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
@@ -414,7 +415,9 @@ public class Utility {
 	}
 
 
-	public final static Predicate<Player> isAlive = (p) -> (p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE) && ! p.isDead();
+	public final static Predicate<Player> isPlayerInNormalGamemode = (p) -> p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE;
+	public final static Predicate<LivingEntity> isEntityAlive = (p) -> ! p.isDead() && (p instanceof Player player ? isPlayerInNormalGamemode.test(player) : true);
+	public final static Predicate<Player> isPlayerAlive = (p) -> isPlayerInNormalGamemode.test(p) && ! p.isDead();
 
 	public static Stream<Entity> getTeamEntities(Team team) {
 		return team.getEntries().stream()
@@ -435,6 +438,6 @@ public class Utility {
 		return getOnline(getTeamPlayers(team));
 	}
 	public static Stream<Player> getTeamAlivePlayers(Team team) {
-		return getTeamOnlinePlayers(team).filter(isAlive);
+		return getTeamOnlinePlayers(team).filter(isPlayerAlive);
 	}
 }

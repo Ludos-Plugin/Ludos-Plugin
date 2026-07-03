@@ -124,7 +124,7 @@ public class TankDashObject extends SpecialItem {
 				);
 
 				Stream<Entity> targetsStream = player.getNearbyEntities(COLLISION_RANGE.getX(), COLLISION_RANGE.getY(), COLLISION_RANGE.getZ()).stream()
-					.filter(getGame().getTeamController().isEntityEnemyOf((OfflinePlayer) player));
+					.filter(getGame().getTeamController().isEntityEnemyOfPlayer(player));
 				Iterable<Entity> targets = () -> targetsStream.iterator();
 
 				for (Entity entity : targets) {
