@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
+
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -79,9 +81,12 @@ final class PageTruncator {
 		int wordStart = 0;
 		int wordEnd = -1;
 
+		boolean shouldBreakWideWord = currentLineWidth == 0;
+
 		for (int i = 0; i < value.length(); i++) {
 			final char character = value.charAt(i);
 			final String word;
+			final int charPixelWidth;
 
 			switch (character) {
 				case ' ':
@@ -90,12 +95,14 @@ final class PageTruncator {
 						appendWord(word, isBold);
 					}
 
-					final int charPixelWidth = BookUtility.getPixelWidth(character, isBold);
-					if (currentLineWidth + charPixelWidth >= maxLineWidth) {
+					charPixelWidth = BookUtility.getPixelWidth(character, isBold);
+					if (currentLineWidth + charPixelWidth + 1 > maxLineWidth) {
 						flushCurrentLine();
+						shouldBreakWideWord = true;
 					} else {
 						currentLine.append(character);
 						currentLineWidth += charPixelWidth + 1;
+						shouldBreakWideWord = false;
 					}
 
 					wordStart = i + 1;
@@ -108,6 +115,7 @@ final class PageTruncator {
 					}
 
 					flushCurrentLine();
+					shouldBreakWideWord = true;
 					if (!isInsideTag) {
 						endCurrentLine();
 					}
@@ -116,6 +124,16 @@ final class PageTruncator {
 
 					break;
 				default:
+					if (shouldBreakWideWord && wordEnd >= wordStart) {
+						word = value.substring(wordStart, wordEnd + 1);
+						final int currentWordWidth = BookUtility.getPixelWidth(word, isBold);
+						charPixelWidth = BookUtility.getPixelWidth(character, isBold);
+						if (currentWordWidth + 1 + charPixelWidth > maxLineWidth) {
+							currentLine.append(word);
+							flushCurrentLine();
+							wordStart = i;
+						}
+					}
 					wordEnd = i;
 					break;
 			}
@@ -185,7 +203,7 @@ final class PageTruncator {
 	private void appendWord(String word, boolean isBold) {
 		final int wordPixelWidth = BookUtility.getPixelWidth(word, isBold);
 
-		if (currentLineWidth > 0 && currentLineWidth + wordPixelWidth >= maxLineWidth) {
+		if (currentLineWidth > 0 && currentLineWidth + wordPixelWidth + 1 > maxLineWidth) {
 			flushCurrentLine();
 		}
 
