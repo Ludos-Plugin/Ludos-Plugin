@@ -3,7 +3,6 @@ package fr.ludos.core;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
@@ -15,13 +14,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.command.ludos.LudosCommand;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.group.GroupEvents;
+import fr.ludos.core.group.GroupManager;
 import fr.ludos.core.item.texture.TextureListener;
 import fr.ludos.core.item.texture.TextureManager;
 import fr.ludos.core.packets.player.PlayerPackets;
@@ -44,8 +44,10 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class Ludos extends JavaPlugin implements Listener {
 
 	public static final String namespace = "ludos";
-	private TextureManager textureManager;
 
+	private final GroupManager groupManager = new GroupManager(this);
+	private final TextureManager textureManager = new TextureManager(this);
+	private final TextureListener textureListener = new TextureListener(this);
 	public final PlayerPackets playerPackets = PlayerPacketsFactory.createHandler();
 
 	public Ludos() { }
@@ -70,12 +72,9 @@ public class Ludos extends JavaPlugin implements Listener {
 		Role.registerRole(new AssassinRole.Builder(this));
 		Role.registerRole(new BerserkerRole.Builder(this));
 
-		textureManager = new TextureManager(this);
-		getServer().getPluginManager().registerEvents(new TextureListener(this), this);
-
 		String commandLabel = "ludos";
 		PluginCommand cmd = getCommand(commandLabel);
-		LudosCommand ludosCommand = new LudosCommand();
+		LudosCommand ludosCommand = new LudosCommand(this);
 		cmd.setExecutor(ludosCommand);
 		cmd.setTabCompleter(ludosCommand);
 		cmd.setUsage(ludosCommand.getUsage());
@@ -85,9 +84,10 @@ public class Ludos extends JavaPlugin implements Listener {
 			textureCmd.setExecutor(textureManager);
 		}
 
-		Bukkit.getPluginManager().registerEvents(this, this);
-
-		Bukkit.getPluginManager().registerEvents(new GroupEvents(), this);
+		PluginManager pluginManager = getServer().getPluginManager();
+		pluginManager.registerEvents(this, this);
+		pluginManager.registerEvents(groupManager, this);
+		pluginManager.registerEvents(textureListener, this);
 	}
 
 	@Override

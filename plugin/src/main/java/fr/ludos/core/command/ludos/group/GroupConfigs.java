@@ -1,4 +1,4 @@
-package fr.ludos.core.command.ludos;
+package fr.ludos.core.command.ludos.group;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +37,10 @@ public enum GroupConfigs implements ConfigSubcommand {
 
 			String givenRights = args[0];
 			GroupRightsOption authOption = Arrays.stream(GroupRightsOption.values()).filter(o -> o.name().equals(givenRights)).findFirst().orElse(null);
-			if (authOption == null) return false;
+			if (authOption == null) {
+				sender.sendMessage("Invalid option");
+				return true;
+			}
 
 			setGroupRightsOption(config, authOption);
 
@@ -74,7 +77,10 @@ public enum GroupConfigs implements ConfigSubcommand {
 
 			String givenJoin = args[0];
 			GroupJoinOption joinOption = Arrays.stream(GroupJoinOption.values()).filter(o -> o.name().equals(givenJoin)).findFirst().orElse(null);
-			if (joinOption == null) return false;
+			if (joinOption == null) {
+				sender.sendMessage("Invalid option");
+				return true;
+			}
 
 			setGroupJoinOption(config, joinOption);
 
@@ -111,7 +117,10 @@ public enum GroupConfigs implements ConfigSubcommand {
 
 			String givenJoin = args[0];
 			GameJoinOption joinOption = Arrays.stream(GameJoinOption.values()).filter(o -> o.name().equals(givenJoin)).findFirst().orElse(null);
-			if (joinOption == null) return false;
+			if (joinOption == null) {
+				sender.sendMessage("Invalid option");
+				return true;
+			}
 
 			setGameJoinOption(config, joinOption);
 
@@ -148,7 +157,10 @@ public enum GroupConfigs implements ConfigSubcommand {
 
 			String givenWaitPlayers = args[0];
 			LobbyWaitPlayersOption waitPlayersOption = Arrays.stream(LobbyWaitPlayersOption.values()).filter(o -> o.name().equals(givenWaitPlayers)).findFirst().orElse(null);
-			if (waitPlayersOption == null) return false;
+			if (waitPlayersOption == null) {
+				sender.sendMessage("Invalid option");
+				return true;
+			}
 
 			setWaitPlayersOption(config, waitPlayersOption);
 
@@ -190,7 +202,10 @@ public enum GroupConfigs implements ConfigSubcommand {
 
 			String givenWaitDuration = args[0];
 			LobbyStartDelayOption startDelayOption = Arrays.stream(LobbyStartDelayOption.values()).filter(o -> o.name().equals(givenWaitDuration)).findFirst().orElse(null);
-			if (startDelayOption == null) return false;
+			if (startDelayOption == null) {
+				sender.sendMessage("Invalid option");
+				return true;
+			}
 
 			setWaitDurationOption(config, startDelayOption);
 
@@ -229,7 +244,7 @@ public enum GroupConfigs implements ConfigSubcommand {
 			Game.Builder configGame = Game.getRegistered().get(configGameId);
 			if (configGame == null) {
 				sender.sendMessage("Game not found: " + configGameId);
-				return false;
+				return true;
 			}
 
 			if (! config.isConfigurationSection(Game.namespace)) {

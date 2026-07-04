@@ -7,7 +7,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,7 +18,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public interface BranchItemInterface<TBranch extends BranchItem.Branch> extends SpecialItemInterface {
 	public static final String BRANCH_KEY_STRING = "branch";
-	public static final NamespacedKey BRANCH_KEY = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), BRANCH_KEY_STRING);
+	public static final NamespacedKey BRANCH_KEY = new NamespacedKey(Ludos.namespace, BRANCH_KEY_STRING);
 
 	public TBranch getBranch();
 	public void onSetBranch(TBranch branch);

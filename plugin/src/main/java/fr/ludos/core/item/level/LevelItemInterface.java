@@ -11,7 +11,6 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
@@ -28,7 +27,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public interface LevelItemInterface extends SpecialItemInterface {
 	public static final String LEVEL = "level";
-	public static final NamespacedKey levelKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), LEVEL);
+	public static final NamespacedKey levelKey = new NamespacedKey(Ludos.namespace, LEVEL);
 
 	public static final String MAX_LVL_LABEL = "MAX";
 	public LevelState levelState();

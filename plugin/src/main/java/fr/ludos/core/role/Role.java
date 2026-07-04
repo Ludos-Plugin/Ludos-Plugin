@@ -23,6 +23,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
+import org.bukkit.permissions.ServerOperator;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,6 +32,7 @@ import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
 import fr.ludos.core.game.GameProcessBase;
+import fr.ludos.core.group.Group;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -43,6 +45,7 @@ import net.kyori.adventure.text.format.TextDecoration;
  * It contains events and Data.
  */
 public abstract class Role extends GameProcessBase {
+	public static final String noneLabel = "none";
 	private static final String rolesKey = "playerRoles";
 
 	public static Map<String, Builder> getRegistered() {
@@ -165,6 +168,21 @@ public abstract class Role extends GameProcessBase {
 		Role.registered.put(constructor.getId().toLowerCase(), constructor);
 	}
 
+	public static final boolean isAuthorizedToEditRole(ServerOperator operator, OfflinePlayer target, Ludos plugin) {
+		if (operator.isOp() || operator == target) {
+			return true;
+		}
+
+		if (operator instanceof Player player) {
+			final Group group = Group.getGroupOfPlayer(player);
+			if (group != null && group.isLeader(player) && group == Group.getGroupOfPlayer(target)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public static List<Player> getPlayersOfRole(String roleId) {
 		return Role.getPlayerRoles().entrySet().stream()
 			.filter(entry -> (entry.getValue().equals(roleId)))
@@ -175,7 +193,7 @@ public abstract class Role extends GameProcessBase {
 
 	@Nullable
 	public static String getPlayerRoleId(OfflinePlayer player) {
-		return playerRoles.getOrDefault(player.getUniqueId(), "");
+		return playerRoles.getOrDefault(player.getUniqueId(), null);
 	}
 
 	@Nullable
@@ -199,7 +217,7 @@ public abstract class Role extends GameProcessBase {
 		return (OfflinePlayer p) -> isPlayerRole(p, id);
 	}
 
-	public static void setRole(OfflinePlayer player, String roleId) {
+	public static void setRole(OfflinePlayer player, String roleId, Ludos plugin) {
 		UUID playerUUID = player.getUniqueId();
 		if ( playerRoles.containsKey(playerUUID) && playerRoles.get(playerUUID).equalsIgnoreCase(roleId) ) return;
 
@@ -207,15 +225,16 @@ public abstract class Role extends GameProcessBase {
 		if (role == null) return;
 
 		playerRoles.put(playerUUID, roleId);
-
-		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
+		Player online = player.getPlayer();
+		if (online != null) {
+			online.sendMessage("Your role is now " + roleId);
+		}
 
 		plugin.getConfig().set(rolesKey + '.' + playerUUID, roleId);
 		plugin.saveConfig();
-
 	}
 
-	public static void removeRole(Player player) {
+	public static void removeRole(OfflinePlayer player, Ludos plugin) {
 		UUID playerUUID = player.getUniqueId();
 		if ( ! playerRoles.containsKey(playerUUID) ) return;
 
@@ -223,9 +242,10 @@ public abstract class Role extends GameProcessBase {
 		if (role == null) return;
 
 		playerRoles.remove(playerUUID);
-		player.sendMessage("You now have no role");
-
-		Ludos plugin = JavaPlugin.getPlugin(Ludos.class);
+		Player online = player.getPlayer();
+		if (online != null) {
+			online.sendMessage("You now have no role");
+		}
 
 		plugin.getConfig().set(rolesKey + '.' + playerUUID, null);
 		plugin.saveConfig();

@@ -19,7 +19,6 @@ import org.bukkit.inventory.ItemStack;
 import fr.ludos.core.Ludos;
 
 public final class TextureManager implements CommandExecutor {
-	private static TextureManager instance;
 	private final Ludos plugin;
 	private final ResourcePackLoader loader;
 	private final List<TextureProvider> allProviders = new ArrayList<>();
@@ -28,12 +27,8 @@ public final class TextureManager implements CommandExecutor {
 		this.plugin = plugin;
 		this.loader = new ResourcePackLoader(plugin);
 
-		instance = this;
-
 		initialize();
 	}
-
-	public static TextureManager getInstance() { return instance; }
 
 	private void initialize() {
 		syncResourcePackFromPolymerSource();

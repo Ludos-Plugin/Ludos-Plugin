@@ -20,7 +20,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -30,7 +29,7 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
 import fr.ludos.core.area.WorldBorderAreaOption;
 import fr.ludos.core.command.ConfigSubcommandManager;
-import fr.ludos.core.command.ludos.GroupConfigs;
+import fr.ludos.core.command.ludos.group.GroupConfigs;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
@@ -273,7 +272,7 @@ public class ManhuntGame extends Game {
 
 		public @Nullable WorldCreator createWorldCreator() {
 			String worldName = "manhunt_" + UUID.randomUUID();
-			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), worldName))
+			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.namespace, worldName))
 				.environment(Environment.NORMAL)
 				.type(WorldType.NORMAL)
 				.generateStructures(true)

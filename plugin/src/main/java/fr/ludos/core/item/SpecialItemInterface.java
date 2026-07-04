@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,13 +22,13 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public interface SpecialItemInterface {
 	public static final String TYPE_ID = "type_id";
-	public static final NamespacedKey typeIdKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), TYPE_ID);
+	public static final NamespacedKey typeIdKey = new NamespacedKey(Ludos.namespace, TYPE_ID);
 
 	public static final String ITEM_ID_KEY = "item_id";
-	public static final NamespacedKey itemIdKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), ITEM_ID_KEY);
+	public static final NamespacedKey itemIdKey = new NamespacedKey(Ludos.namespace, ITEM_ID_KEY);
 
 	public static final String OWNER_KEY = "owner";
-	public static final NamespacedKey ownerKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), OWNER_KEY);
+	public static final NamespacedKey ownerKey = new NamespacedKey(Ludos.namespace, OWNER_KEY);
 
 
 	Game getGame();

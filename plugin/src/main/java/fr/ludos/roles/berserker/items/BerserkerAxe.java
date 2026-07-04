@@ -19,7 +19,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
@@ -63,7 +62,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 
 	public static final String VARIANT_KEY = "variant";
 
-	private final static NamespacedKey variantKey = new NamespacedKey(JavaPlugin.getPlugin(Ludos.class), VARIANT_KEY);
+	private final static NamespacedKey variantKey = new NamespacedKey(Ludos.namespace, VARIANT_KEY);
 
 	private final Variant variant;
 	public Variant getVariant() {

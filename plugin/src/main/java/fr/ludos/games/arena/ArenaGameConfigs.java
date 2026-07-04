@@ -96,7 +96,8 @@ public enum ArenaGameConfigs implements ConfigSubcommand {
 			try {
 				setRounds(config, Integer.parseInt(args[0]));
 			} catch (NumberFormatException e) {
-				return false;
+				sender.sendMessage("Invalid number");
+				return true;
 			}
 			sender.sendMessage("Arena rounds set to " + getRounds(config));
 			return true;
@@ -122,7 +123,10 @@ public enum ArenaGameConfigs implements ConfigSubcommand {
 				return true;
 			}
 			WorldBorderAreaOption value = Arrays.stream(WorldBorderAreaOption.values()).filter(o -> o.name().equalsIgnoreCase(args[0])).findFirst().orElse(null);
-			if (value == null) return false;
+			if (value == null)  {
+				sender.sendMessage("Invalid option");
+				return true;
+			}
 			setArea(config, value);
 			sender.sendMessage("Arena area set to " + value.name());
 			return true;
