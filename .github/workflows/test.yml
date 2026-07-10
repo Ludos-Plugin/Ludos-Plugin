@@ -1,11 +1,11 @@
-name: Build and Release
+name: Run Unit Tests
 
 on:
   push:
   workflow_dispatch:
 
 jobs:
-  build-and-release:
+  run-unit-tests:
     runs-on: ubuntu-latest
     permissions:
       contents: write
