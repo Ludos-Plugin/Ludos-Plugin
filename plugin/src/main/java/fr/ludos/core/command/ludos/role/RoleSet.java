@@ -59,12 +59,10 @@ public class RoleSet implements Subcommand {
 				}
 
 				if (Role.isAuthorizedToEditRole(sender, target, plugin)) {
-					sender.sendMessage(
-						sender == target ?
-						"Your role is now " + roleId :
-						"The role of Player " + target.getName() + " is now " + roleId
-					);
 					Role.setRole(target, roleId, plugin);
+					if (sender != target) {
+						sender.sendMessage("The role of Player " + target.getName() + " is now " + roleId);
+					}
 				} else {
 					sender.sendMessage("You are not authorized to reset this player's role");
 				}

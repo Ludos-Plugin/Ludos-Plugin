@@ -225,13 +225,17 @@ public abstract class Role extends GameProcessBase {
 		if (role == null) return;
 
 		playerRoles.put(playerUUID, roleId);
-		Player online = player.getPlayer();
-		if (online != null) {
-			online.sendMessage("Your role is now " + roleId);
-		}
 
 		plugin.getConfig().set(rolesKey + '.' + playerUUID, roleId);
 		plugin.saveConfig();
+
+		Player online = player.getPlayer();
+		if (online != null) {
+			online.sendMessage("Your role is now " + roleId);
+			System.out.println("Player online!");
+		} else {
+			System.out.println("Player offline!");
+		}
 	}
 
 	public static void removeRole(OfflinePlayer player, Ludos plugin) {
@@ -242,13 +246,13 @@ public abstract class Role extends GameProcessBase {
 		if (role == null) return;
 
 		playerRoles.remove(playerUUID);
+		plugin.getConfig().set(rolesKey + '.' + playerUUID, null);
+		plugin.saveConfig();
+
 		Player online = player.getPlayer();
 		if (online != null) {
 			online.sendMessage("You now have no role");
 		}
-
-		plugin.getConfig().set(rolesKey + '.' + playerUUID, null);
-		plugin.saveConfig();
 	}
 
 

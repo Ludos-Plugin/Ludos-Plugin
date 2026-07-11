@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import fr.ludos.core.role.Role;
 
 class RoleAuthorizationTest extends RoleTest {
@@ -18,6 +19,9 @@ class RoleAuthorizationTest extends RoleTest {
 
 	@Test
 	void testUnsetOtherRole() {
+		PlayerMock player1 = createPlayer("Player1");
+		PlayerMock player2 = createPlayer("Player2");
+
 		Role.Builder role = getValidRole();
 		player1.setOp(true);
 
@@ -41,6 +45,9 @@ class RoleAuthorizationTest extends RoleTest {
 
 	@Test
 	void testSetRoleAuthz() {
+		PlayerMock player1 = createPlayer("Player1");
+		PlayerMock player2 = createPlayer("Player2");
+
 		Role.Builder role = getValidRole();
 
 		player1.performCommand("ludos role set " + role.getId() + " " + player2.getName());

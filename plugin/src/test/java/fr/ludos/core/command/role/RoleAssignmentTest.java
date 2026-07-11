@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
+import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import fr.ludos.core.role.Role;
 
 class RoleAssignmentTest extends RoleTest {
@@ -17,6 +18,8 @@ class RoleAssignmentTest extends RoleTest {
 
 	@Test
 	void testSetUnsetRole() {
+		PlayerMock player1 = createPlayer("Player1");
+
 		player1.performCommand("ludos role get");
 		assertEquals(Role.noneLabel, player1.nextMessage(), "Role is not unset by default");
 
@@ -41,7 +44,11 @@ class RoleAssignmentTest extends RoleTest {
 
 	@Test
 	void testSetInvalidRole() {
+		PlayerMock player1 = createPlayer("Player1");
+
 		String invalidRoleId = "invalidRole";
+		Role.Builder role = Role.getRoleById(invalidRoleId);
+		assertNull(role, "Invalid role ID should not return a valid role builder");
 
 		player1.performCommand("ludos role set " + invalidRoleId);
 		assertEquals("Role not found: " + invalidRoleId.toLowerCase(), player1.nextMessage(), "Role was not set");

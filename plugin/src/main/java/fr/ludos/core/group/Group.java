@@ -138,7 +138,9 @@ public final class Group implements ConfigurationSerializable {
 
 	public final Set<OfflinePlayer> getPlayers() {
 		Set<OfflinePlayer> allPlayers = new HashSet<>(members);
-		allPlayers.add(leader);
+		if (leader != null) {
+			allPlayers.add(leader);
+		}
 		return Collections.unmodifiableSet(allPlayers);
 	}
 	public final Set<Player> getOnlinePlayers() {
