@@ -2,18 +2,17 @@ package fr.ludos.core.command.role;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.BeforeEach;
-
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import fr.ludos.core.command.MockBukkitTestBase;
 import fr.ludos.core.role.Role;
 
 abstract class RoleTest extends MockBukkitTestBase {
-	@BeforeEach
-	void reset() {
-		super.resetPlayers();
-		resetRole(player1);
-		resetRole(player2);
+
+	@Override
+	public void initPlayer(PlayerMock player) {
+		super.initPlayer(player);
+		player.performCommand("ludos role get");
+		assertEquals("none", player.nextMessage(), "Created player with a role");
 	}
 
 	protected void resetRole(PlayerMock player) {

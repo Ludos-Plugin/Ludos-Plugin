@@ -2,24 +2,34 @@ package fr.ludos.core.command.group;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.Test;
+
+import be.seeseemelk.mockbukkit.entity.PlayerMock;
 
 class GroupMembershipTest extends GroupTest {
 	@Test
 	void testGroupCreateWithInvite() {
-		createGroupWithInvite();
-		joinGroup();
+		PlayerMock player1 = createPlayer("Player1");
+		PlayerMock player2 = createPlayer("Player2");
 
-		assertGroupInfo(player1, player1.getName(), player2.getName());
-		assertGroupInfo(player2, player1.getName(), player2.getName());
+		createGroupWithInvite(player1, Collections.singletonList(player2));
+		joinGroup(player2, player1);
+
+		assertGroupInfo(player1, player1, Collections.singletonList(player2));
+		assertGroupInfo(player2, player1, Collections.singletonList(player2));
 	}
 
 	@Test
 	void testElectNewLeader() {
-		createGroupWithInvite();
-		joinGroup();
-		assertGroupInfo(player1, player1.getName(), player2.getName());
-		assertGroupInfo(player2, player1.getName(), player2.getName());
+		PlayerMock player1 = createPlayer("Player1");
+		PlayerMock player2 = createPlayer("Player2");
+
+		createGroupWithInvite(player1, Collections.singletonList(player2));
+		joinGroup(player2, player1);
+		assertGroupInfo(player1, player1, Collections.singletonList(player2));
+		assertGroupInfo(player2, player1, Collections.singletonList(player2));
 
 		player1.performCommand("ludos group leave");
 		assertEquals("You have left the group.", player1.nextMessage(), "Could not leave the group");

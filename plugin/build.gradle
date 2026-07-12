@@ -3,6 +3,7 @@ import io.papermc.paperweight.userdev.ReobfArtifactConfiguration
 plugins {
     id 'java'
     id 'io.papermc.paperweight.userdev' version '2.0.0-beta.21'
+    id 'checkstyle'
 }
 
 java {
@@ -39,6 +40,14 @@ dependencies {
 
 paperweight {
     addServerDependencyTo = [configurations.compileOnly] as Set
+}
+
+checkstyle {
+    toolVersion = '10.12.4'
+    configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
+    ignoreFailures = false
+    maxWarnings = 0
+    maxErrors = 0
 }
 
 tasks.named('test') {
