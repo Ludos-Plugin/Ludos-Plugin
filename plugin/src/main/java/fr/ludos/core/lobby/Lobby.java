@@ -28,10 +28,10 @@ import org.bukkit.scheduler.BukkitTask;
 import com.google.common.base.Predicate;
 
 import fr.ludos.core.Utility;
-import fr.ludos.core.command.ludos.group.GroupConfigs;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameProcessBase;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.group.GroupConfigMap;
 import fr.ludos.core.structure.Structure;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
@@ -211,7 +211,7 @@ public final class Lobby extends GameProcessBase {
 	@EventHandler
 	public void onPlayerDieInLobby(PlayerDeathEvent event) {
 		Player player = event.getPlayer();
-		if (! players.contains(player)) return;
+		if (players == null || ! players.contains(player)) return;
 
 		event.setCancelled(true);
 		player.playEffect(EntityEffect.TOTEM_RESURRECT);
@@ -220,7 +220,7 @@ public final class Lobby extends GameProcessBase {
 	@EventHandler
 	public void onFoodLevelChange(FoodLevelChangeEvent event) {
 		if (! (event.getEntity() instanceof Player player)) return;
-		if (! players.contains(player)) return;
+		if (players == null || ! players.contains(player)) return;
 
 		event.setCancelled(true);
 	}
@@ -228,7 +228,7 @@ public final class Lobby extends GameProcessBase {
 	@EventHandler
 	public void onBreakBlock(BlockBreakEvent event) {
 		Player player = event.getPlayer();
-		if (! players.contains(player)) return;
+		if (players == null || ! players.contains(player)) return;
 
 		event.setCancelled(true);
 	}
@@ -290,7 +290,7 @@ public final class Lobby extends GameProcessBase {
 		private final Set<OfflinePlayer> getPlayers() {
 			if (players != null) return new HashSet<>(players);
 			if (playersGroup != null) {
-				LobbyWaitPlayersOption option = GroupConfigs.getWaitPlayersOption(playersGroup.getConfig());
+				LobbyWaitPlayersOption option = GroupConfigMap.instance.getLobbyWaitPlayers(playersGroup.getConfig());
 				return option.getPlayers(playersGroup);
 			}
 			return null;

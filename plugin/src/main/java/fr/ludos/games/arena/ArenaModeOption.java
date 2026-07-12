@@ -6,9 +6,13 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import fr.ludos.core.config.EnumConfigOptions;
+
 public enum ArenaModeOption {
 	duel("Duel", "1v1 rounds"),
 	multi("Multi", "team rounds");
+
+	public static final EnumConfigOptions<ArenaModeOption> configOptions = new EnumConfigOptions<>("Arena Mode", ArenaModeOption.class);
 
 	private final String displayName;
 	private final String description;

@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
-import fr.ludos.core.command.ConfigSubcommandManager;
+import fr.ludos.core.config.ConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
@@ -63,7 +63,7 @@ public class RaidGame extends WaveGame {
 
 		this.waveController = new RaidWaveController(
 			this,
-			RaidGameConfigs.getWaves(config)
+			RaidGameConfigMap.instance.getWaves(config)
 		);
 
 		this.worldManager = WorldManager.within(this, returnLocation)
@@ -75,14 +75,16 @@ public class RaidGame extends WaveGame {
 					.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(this)
-					.ofSize(RaidGameConfigs.getArea(config))
+				WorldBorderArea.within(
+					this,
+					RaidGameConfigMap.instance.getArea(config)
+				)
 			)
 			.build();
 
 		this.teamController = new RaidTeamController(
 			this,
-			RaidGameConfigs.getChosenPlayers(config)
+			RaidGameConfigMap.instance.getPlayers(config)
 		);
 	}
 
@@ -92,7 +94,6 @@ public class RaidGame extends WaveGame {
 	}
 
 	public static class Builder extends Game.Builder {
-
 		public Builder(Ludos plugin) {
 			super(plugin);
 		}
@@ -115,12 +116,6 @@ public class RaidGame extends WaveGame {
 			);
 		}
 
-		private final ConfigSubcommandManager<RaidGameConfigs> configsSubcommand = new ConfigSubcommandManager<>(RaidGameConfigs.values());
-		@Override
-		protected ConfigSubcommandManager<?> getConfigsSubcommand() {
-			return configsSubcommand;
-		}
-
 		public WorldCreator createWorldCreator() {
 			String worldName = "raid_" + UUID.randomUUID();
 			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.namespace, worldName))
@@ -129,6 +124,11 @@ public class RaidGame extends WaveGame {
 				.generateStructures(true)
 				.seed(new Random().nextLong());
 			return wc;
+		}
+
+		@Override
+		public ConfigMap getConfig() {
+			return RaidGameConfigMap.instance;
 		}
 
 		@Override

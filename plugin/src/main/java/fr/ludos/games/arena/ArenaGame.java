@@ -14,16 +14,15 @@ import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
-import fr.ludos.core.command.ConfigSubcommandManager;
-import fr.ludos.core.command.ludos.group.GroupConfigs;
+import fr.ludos.core.config.ConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.group.GroupConfigMap;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
 import fr.ludos.core.wave.WaveController;
 import fr.ludos.core.wave.WaveGame;
 import fr.ludos.core.world.WorldManager;
-import fr.ludos.games.raid.RaidGameConfigs;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -67,7 +66,7 @@ public class ArenaGame extends WaveGame {
 
 		this.waveController = new ArenaWaveController(
 			this,
-			ArenaGameConfigs.getRounds(config)
+			ArenaGameConfigMap.instance.getRounds(config)
 		);
 
 		this.worldManager = WorldManager.within(this, returnLocation)
@@ -76,19 +75,18 @@ public class ArenaGame extends WaveGame {
 				Lobby.within(this)
 					.waitFor(group)
 					.clear(ClearMode.ALL)
-					.wait(Duration.ofSeconds(GroupConfigs.getWaitDurationOption(config).getDuration()))
+					.wait(Duration.ofSeconds(GroupConfigMap.instance.getStartDelaySeconds(config)))
 					.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(this)
-					.ofSize(RaidGameConfigs.getArea(config))
+				WorldBorderArea.within(this, ArenaGameConfigMap.instance.getAreaSize(config))
 			)
 			.build();
 		this.teamController = new ArenaTeamController(
 			this,
-			ArenaGameConfigs.getMode(config),
-			ArenaGameConfigs.getChosenTeam(config, 0),
-			ArenaGameConfigs.getChosenTeam(config, 1)
+			ArenaGameConfigMap.instance.getMode(config),
+			ArenaGameConfigMap.instance.getTeam1Players(config),
+			ArenaGameConfigMap.instance.getTeam2Players(config)
 		);
 	}
 
@@ -104,7 +102,6 @@ public class ArenaGame extends WaveGame {
 
 
 	public static class Builder extends Game.Builder {
-
 		public Builder(Ludos plugin) {
 			super(plugin);
 		}
@@ -127,12 +124,6 @@ public class ArenaGame extends WaveGame {
 			);
 		}
 
-		private final ConfigSubcommandManager<ArenaGameConfigs> configsSubcommand = new ConfigSubcommandManager<>(ArenaGameConfigs.values());
-		@Override
-		protected ConfigSubcommandManager<?> getConfigsSubcommand() {
-			return configsSubcommand;
-		}
-
 		public WorldCreator createWorldCreator() {
 			String worldName = "arena_" + UUID.randomUUID();
 			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.namespace, worldName))
@@ -142,6 +133,11 @@ public class ArenaGame extends WaveGame {
 				.seed(new Random().nextLong());
 			wc.keepSpawnLoaded(TriState.FALSE);
 			return wc;
+		}
+
+		@Override
+		public ConfigMap getConfig() {
+			return ArenaGameConfigMap.instance;
 		}
 
 		@Override

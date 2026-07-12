@@ -12,9 +12,10 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
-import fr.ludos.core.command.ludos.group.GroupConfigs;
+import fr.ludos.core.config.ConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.group.GroupConfigMap;
 
 public class GameConfig implements Subcommand {
 	private final static String id = "config";
@@ -37,7 +38,7 @@ public class GameConfig implements Subcommand {
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length < 1) return false;
 		if (! (sender instanceof Player player)) {
-			sender.sendMessage("Only players can configure games.");
+			sender.sendMessage("Only players can configure games through a group.");
 			return true;
 		}
 
@@ -47,33 +48,35 @@ public class GameConfig implements Subcommand {
 			return true;
 		}
 
-		boolean membersCanConfig = GroupConfigs.getGroupRightsOption(group.getConfig()).canConfig();
+		String configGameId = args[0].toLowerCase();
+		Game.Builder game = Game.getRegistered().get(configGameId);
+		if (game == null) {
+			sender.sendMessage("Game not found: " + configGameId);
+			return true;
+		}
+
+		ConfigurationSection config = group.getConfig();
+		String configKey = args[1];
+
+		if (args.length == 2) {
+			sender.sendMessage(game.getConfig().getOrDefault(configKey, config));
+			return true;
+		}
+
+		boolean membersCanConfig = GroupConfigMap.instance.getMembersAuth(group.getConfig()).canConfig();
 		if (! group.isLeader(player) && ! membersCanConfig) {
 			sender.sendMessage("Only the group leader can configure the group.");
 			return true;
 		}
 
-		String configGameId = args[0].toLowerCase();
-		Game.Builder configGame = Game.getRegistered().get(configGameId);
-		if (configGame == null) {
-			sender.sendMessage("Game not found: " + configGameId);
-			return true;
-		}
+		boolean success = game.getConfig().set(configKey, Arrays.copyOfRange(args, 2, args.length), sender, config);
 
-		ConfigurationSection configSection = group.getConfig();
-		if (! configSection.isConfigurationSection(Game.namespace)) {
-			configSection.createSection(Game.namespace);
-		}
-		ConfigurationSection gamesSection = configSection.getConfigurationSection(Game.namespace);
-
-		boolean res = configGame.executeGameConfig(sender, command, label, gamesSection, Arrays.copyOfRange(args, 1, args.length));
-
-		if (res) {
+		if (success) {
 			group.saveConfigGroup();
 			plugin.saveConfig();
 		}
 
-		return res;
+		return success;
 	}
 	@Override
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -81,17 +84,18 @@ public class GameConfig implements Subcommand {
 			return Game.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
 
 		String configGameId = args[0].toLowerCase();
-		Game.Builder configGame = Game.getRegistered().get(configGameId);
-		if (configGame == null) return null;
+		Game.Builder game = Game.getRegistered().get(configGameId);
+		if (game == null) return null;
 
-		return configGame.gameConfigTabComplete(sender, command, label, java.util.Arrays.copyOfRange(args, 1, args.length));
+		ConfigMap config = game.getConfig();
+		return config.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender);
 	}
 	@Override
 	public String getUsage() {
 		return "<" +
 			Game.getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))
-			+ "> [option]";
+			+ "> [name] [option]";
 	}
 	@Override
 	public boolean requireOp() {

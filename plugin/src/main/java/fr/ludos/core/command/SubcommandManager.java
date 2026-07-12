@@ -34,17 +34,11 @@ public final class SubcommandManager implements CommandExecutor, TabCompleter, C
 
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		if (args.length == 0) {
-			System.out.println("0");
-			return false;
-		}
+		if (args.length == 0) return false;
 
 		String arg = args[0].toLowerCase();
 		Subcommand option = subcommands.get(arg);
-		if (option == null) {
-			System.out.println("No option");
-			return false;
-		}
+		if (option == null) return false;
 
 		return option.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 	}

@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.group.GroupConfigMap;
 
 public class GroupDisband implements Subcommand {
 	private final static String id = "disband";
@@ -41,7 +42,7 @@ public class GroupDisband implements Subcommand {
 			return true;
 		}
 
-		boolean membersCanManage = GroupConfigs.getGroupRightsOption(group.getConfig()).canManage();
+		boolean membersCanManage = GroupConfigMap.instance.getMembersAuth(group.getConfig()).canManage();
 		if (! group.isLeader(player) && ! membersCanManage) {
 			sender.sendMessage("Only the group leader can disband the group.");
 			return true;

@@ -27,11 +27,10 @@ import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
-import fr.ludos.core.area.WorldBorderAreaOption;
-import fr.ludos.core.command.ConfigSubcommandManager;
-import fr.ludos.core.command.ludos.group.GroupConfigs;
+import fr.ludos.core.config.ConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.group.GroupConfigMap;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
 import fr.ludos.core.world.WorldManager;
@@ -90,27 +89,25 @@ public class ManhuntGame extends Game {
 			returnLocation = leader.getLocation();
 		}
 
-		WorldBorderAreaOption opt = ManhuntGameConfigs.getArea(config);
 		this.worldManager = WorldManager.within(this, returnLocation)
 			.of(builder.createWorldCreator())
 			.withLobby(Lobby.within(this)
 				.clear(ClearMode.ALL)
 				.waitFor(group)
-				.wait(Duration.ofSeconds(GroupConfigs.getWaitDurationOption(config).getDuration()))
+				.wait(Duration.ofSeconds(GroupConfigMap.instance.getStartDelaySeconds(config)))
 				.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(this)
-					.ofSize(opt)
+				WorldBorderArea.within(this, ManhuntGameConfigMap.instance.getArea(config))
 			)
 			.build();
 		this.teamController = new ManhuntTeamController(
 			this,
-			ManhuntGameConfigs.getChosenPlayers(config),
-			ManhuntGameConfigs.getChosenPrey(config)
+			ManhuntGameConfigMap.instance.getPlayers(config),
+			ManhuntGameConfigMap.instance.getPrey(config)
 		);
 
-		timer = new ManhuntTimer(this, ManhuntGameConfigs.getReveal(config));
+		timer = new ManhuntTimer(this, ManhuntGameConfigMap.instance.getRevealPeriod(config));
 		compassEvents = new ManhuntCompass.Events(this);
 	}
 
@@ -230,7 +227,6 @@ public class ManhuntGame extends Game {
 
 
 	public static class Builder extends Game.Builder {
-
 		public Builder(Ludos plugin) {
 			super(plugin);
 		}
@@ -253,12 +249,6 @@ public class ManhuntGame extends Game {
 			)))));
 		}
 
-		private final ConfigSubcommandManager<ManhuntGameConfigs> configsSubcommand = new ConfigSubcommandManager<>(ManhuntGameConfigs.values());
-		@Override
-		protected ConfigSubcommandManager<?> getConfigsSubcommand() {
-			return configsSubcommand;
-		}
-
 		public static Component getHunterText() {
 			return getHunterText(false);
 		}
@@ -279,6 +269,11 @@ public class ManhuntGame extends Game {
 				.seed(new Random().nextLong());
 			wc.keepSpawnLoaded(TriState.FALSE);
 			return wc;
+		}
+
+		@Override
+		public ConfigMap getConfig() {
+			return ManhuntGameConfigMap.instance;
 		}
 
 		@Override

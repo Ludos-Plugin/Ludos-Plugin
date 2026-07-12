@@ -15,9 +15,6 @@ import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -25,11 +22,10 @@ import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
-import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.book.BookUtility;
-import fr.ludos.core.command.ConfigSubcommandManager;
+import fr.ludos.core.config.ConfigMap;
 import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.item.SpecialItem;
@@ -342,17 +338,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
-		protected abstract ConfigSubcommandManager<?> getConfigsSubcommand();
-
-		public boolean executeGameConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, ConfigurationSection config, @NotNull String[] args) {
-			return getConfigsSubcommand().onCommand(sender, command, label, config, args);
-		}
-		public List<String> gameConfigTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			return getConfigsSubcommand().onTabComplete(sender, command, label, args);
-		}
-		public String getGameConfigUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return getConfigsSubcommand().getUsage();
-		}
+		public abstract ConfigMap getConfig();
 
 
 		public abstract Game build(Group group);
