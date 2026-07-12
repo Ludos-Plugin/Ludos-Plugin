@@ -7,11 +7,17 @@ import org.bukkit.WorldBorder;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.Utility;
+import fr.ludos.core.config.ConfigEntry;
 import fr.ludos.core.config.NumberConfigOption;
 import fr.ludos.core.game.Game;
 
 public class WorldBorderArea extends Area {
 	public static final NumberConfigOption configOption = new NumberConfigOption("WorldBorder Area diameter", Set.of(150, 250, 350), 150, true);
+	public static final ConfigEntry<Integer> configEntry = new ConfigEntry<>(
+		"area",
+		WorldBorderArea.configOption
+	);
+
 	private final Builder builder;
 	@Override
 	public Builder getBuilder() {

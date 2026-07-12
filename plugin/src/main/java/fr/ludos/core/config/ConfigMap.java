@@ -81,4 +81,7 @@ public abstract class ConfigMap {
 	public final <T> T getTypedOptionValue(String key, ConfigOptions<T> options, ConfigurationSection config) {
 		return options.getTypedValueOrDefault(namespacedPath(key), config);
 	}
+	public final <T> T getTypedOptionValue(ConfigEntry<T> entry, ConfigurationSection config) {
+		return getTypedOptionValue(entry.key(), entry.options(), config);
+	}
 }
