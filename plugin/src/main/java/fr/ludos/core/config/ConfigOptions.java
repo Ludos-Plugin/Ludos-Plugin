@@ -1,5 +1,7 @@
 package fr.ludos.core.config;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -8,7 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class ConfigOptions<T> {
+public abstract class ConfigOptions {
 	private final @NotNull String name;
 	public @NotNull String getName() {
 		return name;
@@ -23,18 +25,9 @@ public abstract class ConfigOptions<T> {
 		return getOptions(sender).contains(option);
 	}
 
-	public abstract @Nullable T getDefaultValue();
-	public final @Nullable String getDefaultStringValue() {
-		return toString(getDefaultValue());
-	}
+	public abstract @Nullable String getDefaultValue();
 	public final @Nullable String getValueOrDefault(String key, ConfigurationSection container) {
-		return container.getString(key, getDefaultStringValue());
-	}
-	public final @Nullable T getTypedValueOrDefault(String key, ConfigurationSection container) {
-		String found = container.getString(key);
-		if (found == null) return getDefaultValue();
-
-		return fromString(found);
+		return container.getString(key, getDefaultValue());
 	}
 
 	public boolean unsetValue(String key, CommandSender sender, ConfigurationSection container) {
@@ -51,6 +44,11 @@ public abstract class ConfigOptions<T> {
 		return true;
 	}
 
-	protected abstract @Nullable T fromString(String value);
-	protected abstract @Nullable String toString(T value);
+	public @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender) {
+		if (args.length <= 1) {
+			return getOptions(sender).stream().toList();
+		}
+
+		return Collections.emptyList();
+	}
 }

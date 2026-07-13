@@ -10,37 +10,28 @@ import javax.annotation.Nullable;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-public class NumberConfigOption extends ConfigOptions<Integer> {
+public class NumberConfigOption extends TypedConfigOptions<Integer> {
 	private final static Set<String> NUMBERS = new HashSet<>() {{add("1"); add("2"); add("3");}};
 	private final @Nullable Set<@NotNull String> suggestions;
 	private final @Nullable Integer defaultValue;
 	private final boolean unsigned;
 
-	public NumberConfigOption(@NotNull String name, @Nullable Set<@NotNull Integer> suggestions, @NotNull Integer defaultValue, boolean unsigned) {
+	public NumberConfigOption(@NotNull String name, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions, boolean unsigned) {
 		super(name);
+		this.defaultValue = Objects.requireNonNull(defaultValue);
 		this.suggestions = suggestions != null
 			? suggestions.stream().map(i -> i.toString()).collect(Collectors.toSet())
 			: null;
-		this.defaultValue = Objects.requireNonNull(defaultValue);
 		this.unsigned = unsigned;
 	}
-	public NumberConfigOption(@NotNull String name, @Nullable Set<@NotNull Integer> suggestions, @NotNull Integer defaultValue) {
-		this(name, suggestions, defaultValue, false);
-	}
-	public NumberConfigOption(@NotNull String name, @Nullable Set<@NotNull Integer> suggestions, boolean unsigned) {
-		this(name, suggestions, null, unsigned);
+	public NumberConfigOption(@NotNull String name, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions) {
+		this(name, defaultValue, suggestions, false);
 	}
 	public NumberConfigOption(@NotNull String name, @NotNull Integer defaultValue, boolean unsigned) {
-		this(name, null, defaultValue, unsigned);
+		this(name, defaultValue, null, unsigned);
 	}
 	public NumberConfigOption(@NotNull String name, @NotNull Integer defaultValue) {
-		this(name, null, defaultValue);
-	}
-	public NumberConfigOption(@NotNull String name, @Nullable Set<@NotNull Integer> suggestions) {
-		this(name, suggestions, null);
-	}
-	public NumberConfigOption(@NotNull String name, boolean unsigned) {
-		this(name, null, null, unsigned);
+		this(name, defaultValue, null);
 	}
 
 	@Override
@@ -56,7 +47,7 @@ public class NumberConfigOption extends ConfigOptions<Integer> {
 	}
 
 	@Override
-	public @Nullable Integer getDefaultValue() {
+	public @Nullable Integer getDefaultTypedValue() {
 		return defaultValue;
 	}
 	@Override

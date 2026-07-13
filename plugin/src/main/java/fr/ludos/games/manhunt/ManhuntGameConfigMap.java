@@ -6,26 +6,26 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 
 import fr.ludos.core.area.WorldBorderArea;
-import fr.ludos.core.config.ConfigEntry;
 import fr.ludos.core.config.ConfigHashMap;
 import fr.ludos.core.config.MultipleGroupPlayerConfigOptions;
 import fr.ludos.core.config.NumberConfigOption;
 import fr.ludos.core.config.SingleGroupPlayerConfigOptions;
+import fr.ludos.core.config.TypedConfigEntry;
 
 public final class ManhuntGameConfigMap extends ConfigHashMap {
-	public static final ConfigEntry<Set<OfflinePlayer>> playersEntry = new ConfigEntry<>(
+	public static final TypedConfigEntry<Set<OfflinePlayer>> playersEntry = new TypedConfigEntry<>(
 		"players",
 		new MultipleGroupPlayerConfigOptions("Players", "all")
 	);
 
-	public static final ConfigEntry<OfflinePlayer> preyEntry = new ConfigEntry<>(
+	public static final TypedConfigEntry<OfflinePlayer> preyEntry = new TypedConfigEntry<>(
 		"prey",
 		new SingleGroupPlayerConfigOptions("Prey Player", "random")
 	);
 
-	public static final ConfigEntry<Integer> revealEntry = new ConfigEntry<>(
+	public static final TypedConfigEntry<Integer> revealEntry = new TypedConfigEntry<>(
 		"reveal",
-		new NumberConfigOption("Reveal period duration seconds", Set.of(60, 120, 180, 240, 300, 360), 60, true)
+		new NumberConfigOption("Reveal period duration seconds", 180, Set.of(60, 120, 180, 240, 300, 360), true)
 	);
 
 	public static final ManhuntGameConfigMap instance = new ManhuntGameConfigMap(ManhuntGame.ID);

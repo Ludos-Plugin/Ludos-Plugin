@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.group.Group;
 
-public final class MultipleGroupPlayerConfigOptions extends ConfigOptions<Set<OfflinePlayer>> {
+public final class MultipleGroupPlayerConfigOptions extends TypedConfigOptions<Set<OfflinePlayer>> {
 	private final @Nullable Integer limit;
 	private final String defaultOption;
 	private final boolean excludeSelf;
@@ -53,7 +53,7 @@ public final class MultipleGroupPlayerConfigOptions extends ConfigOptions<Set<Of
 	}
 
 	@Override
-	public Set<OfflinePlayer> getDefaultValue() {
+	public Set<OfflinePlayer> getDefaultTypedValue() {
 		return Collections.emptySet();
 	}
 
@@ -80,7 +80,7 @@ public final class MultipleGroupPlayerConfigOptions extends ConfigOptions<Set<Of
 	@Override
 	public boolean setValue(String key, @NotNull String[] args, CommandSender sender, ConfigurationSection container) {
 		if (args.length == 1 && args[0].equals(defaultOption)) {
-			container.set(key, defaultOption);
+			container.set(key, null);
 			sender.sendMessage(getName() + " set to " + defaultOption);
 			return true;
 		}
@@ -92,6 +92,25 @@ public final class MultipleGroupPlayerConfigOptions extends ConfigOptions<Set<Of
 		container.set(key, vals);
 		sender.sendMessage(getName() + " set to " + vals.stream().collect(Collectors.joining(", ")));
 		return true;
+	}
+
+	@Override
+	public @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender) {
+		Set<String> options = getOptions(sender);
+		if (args.length <= 1) {
+			return options.stream().toList();
+		}
+
+		if (args[0].equals(defaultOption)) {
+			return Collections.emptyList();
+		}
+
+		options.remove(defaultOption);
+
+		for (int i = 0; i < args.length - 1; i++) {
+			options.remove(args[i]);
+		}
+		return options.stream().toList();
 	}
 
 	@Override

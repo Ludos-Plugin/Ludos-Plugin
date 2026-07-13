@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.group.Group;
 
-public final class SingleGroupPlayerConfigOptions extends ConfigOptions<OfflinePlayer> {
+public final class SingleGroupPlayerConfigOptions extends TypedConfigOptions<OfflinePlayer> {
 	private final String defaultOption;
 	private final boolean excludeSelf;
 
@@ -35,7 +35,7 @@ public final class SingleGroupPlayerConfigOptions extends ConfigOptions<OfflineP
 	}
 
 	@Override
-	public OfflinePlayer getDefaultValue() {
+	public OfflinePlayer getDefaultTypedValue() {
 		return null;
 	}
 

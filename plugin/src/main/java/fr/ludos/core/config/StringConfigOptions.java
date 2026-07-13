@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-public final class StringConfigOptions extends ConfigOptions<String> {
+public final class StringConfigOptions extends ConfigOptions {
 	private final @NotNull Set<@NotNull String> values;
 	private final @Nullable String defaultValue;
 
@@ -28,13 +28,5 @@ public final class StringConfigOptions extends ConfigOptions<String> {
 	@Override
 	public @NotNull Set<@NotNull String> getOptions(CommandSender player) {
 		return values;
-	}
-	@Override
-	protected String fromString(String value) {
-		return value;
-	}
-	@Override
-	protected String toString(String value) {
-		return value;
 	}
 }

@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-public final class EnumConfigOptions<T extends Enum<T>> extends ConfigOptions<T> {
+public final class EnumConfigOptions<T extends Enum<T>> extends TypedConfigOptions<T> {
 	private final @NotNull Class<T> clazz;
 	private final @Nullable T defaultValue;
 
@@ -24,7 +24,7 @@ public final class EnumConfigOptions<T extends Enum<T>> extends ConfigOptions<T>
 	}
 
 	@Override
-	public T getDefaultValue() {
+	public T getDefaultTypedValue() {
 		return defaultValue != null
 			? defaultValue
 			: clazz.getEnumConstants()[0];

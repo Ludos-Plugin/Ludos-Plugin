@@ -7,13 +7,13 @@ import org.bukkit.WorldBorder;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.Utility;
-import fr.ludos.core.config.ConfigEntry;
+import fr.ludos.core.config.TypedConfigEntry;
 import fr.ludos.core.config.NumberConfigOption;
 import fr.ludos.core.game.Game;
 
 public class WorldBorderArea extends Area {
-	public static final NumberConfigOption configOption = new NumberConfigOption("WorldBorder Area diameter", Set.of(150, 250, 350), 150, true);
-	public static final ConfigEntry<Integer> configEntry = new ConfigEntry<>(
+	public static final NumberConfigOption configOption = new NumberConfigOption("WorldBorder Area diameter", 150, Set.of(150, 250, 350), true);
+	public static final TypedConfigEntry<Integer> configEntry = new TypedConfigEntry<>(
 		"area",
 		WorldBorderArea.configOption
 	);
