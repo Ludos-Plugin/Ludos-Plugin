@@ -2,60 +2,32 @@ package fr.ludos.core.group;
 
 import java.util.Set;
 
-import org.bukkit.configuration.ConfigurationSection;
-
-import fr.ludos.core.config.TypedConfigEntry;
-import fr.ludos.core.config.ConfigHashMap;
+import fr.ludos.core.config.ConfigOptionsMap;
 import fr.ludos.core.config.EnumConfigOptions;
-import fr.ludos.core.config.NumberConfigOption;
+import fr.ludos.core.config.NumberConfigOptions;
+import fr.ludos.core.config.ValueConfigOptions;
 import fr.ludos.core.game.teamController.GameJoinOption;
 import fr.ludos.core.lobby.LobbyWaitPlayersOption;
 
-public final class GroupConfigMap extends ConfigHashMap {
-	public static final TypedConfigEntry<GroupRightsOption> membersAuthEntry = new TypedConfigEntry<>(
-		"member_authorisation",
-		new EnumConfigOptions<>("Members authorisation", GroupRightsOption.class, GroupRightsOption.invite)
-	);
+public final class GroupConfigMap extends ConfigOptionsMap {
+	public static final ValueConfigOptions<GroupRightsOption> membersAuth =
+		new EnumConfigOptions<>("Members authorisation", "member_authorisation", null, GroupRightsOption.class, GroupRightsOption.invite);
 
-	public static final TypedConfigEntry<GroupJoinOption> groupJoinEntry = new TypedConfigEntry<>(
-		"group_join",
-		new EnumConfigOptions<>("Group join behaviour", GroupJoinOption.class, GroupJoinOption.auto_accept)
-	);
+	public static final ValueConfigOptions<GroupJoinOption> groupJoin =
+		new EnumConfigOptions<>("Group join behaviour", "group_join", null, GroupJoinOption.class, GroupJoinOption.auto_accept);
 
-	public static final TypedConfigEntry<GameJoinOption> gameJoinEntry = new TypedConfigEntry<>(
-		"game_join",
-		new EnumConfigOptions<>("Member Game join behaviour", GameJoinOption.class, GameJoinOption.auto)
-	);
+	public static final ValueConfigOptions<GameJoinOption> gameJoin =
+		new EnumConfigOptions<>("Member Game join behaviour", "game_join", null, GameJoinOption.class, GameJoinOption.auto);
 
-	public static final TypedConfigEntry<LobbyWaitPlayersOption> waitPlayersEntry = new TypedConfigEntry<>(
-		"wait_players",
-		new EnumConfigOptions<>("Players to wait in lobby", LobbyWaitPlayersOption.class, LobbyWaitPlayersOption.all)
-	);
+	public static final ValueConfigOptions<LobbyWaitPlayersOption> waitPlayers =
+		new EnumConfigOptions<>("Players to wait in lobby", "wait_players", null, LobbyWaitPlayersOption.class, LobbyWaitPlayersOption.all);
 
-	public static final TypedConfigEntry<Integer> startDelayEntry = new TypedConfigEntry<>(
-		"start_delay",
-		new NumberConfigOption("Lobby start delay seconds", 10, Set.of(5, 10, 30), true)
-	);
+	public static final ValueConfigOptions<Integer> startDelay =
+		new NumberConfigOptions("Lobby start delay seconds", "start_delay", null, 10, Set.of(5, 10, 30), true);
 
-	public static final GroupConfigMap instance = new GroupConfigMap("group");
+	public static final GroupConfigMap instance = new GroupConfigMap();
 
-	private GroupConfigMap(String namespace) {
-		super(namespace, Set.of(membersAuthEntry, groupJoinEntry, gameJoinEntry, waitPlayersEntry, startDelayEntry));
-	}
-
-	public GroupRightsOption getMembersAuth(ConfigurationSection container) {
-		return getTypedOptionValue(membersAuthEntry, container);
-	}
-	public GroupJoinOption getGroupJoinMode(ConfigurationSection container) {
-		return getTypedOptionValue(groupJoinEntry, container);
-	}
-	public GameJoinOption getGameJoinMode(ConfigurationSection container) {
-		return getTypedOptionValue(gameJoinEntry, container);
-	}
-	public LobbyWaitPlayersOption getLobbyWaitPlayers(ConfigurationSection container) {
-		return getTypedOptionValue(waitPlayersEntry, container);
-	}
-	public int getStartDelaySeconds(ConfigurationSection container) {
-		return getTypedOptionValue(startDelayEntry, container);
+	private GroupConfigMap() {
+		super("group", Set.of(membersAuth, groupJoin, gameJoin, waitPlayers, startDelay));
 	}
 }

@@ -10,28 +10,28 @@ import javax.annotation.Nullable;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-public class NumberConfigOption extends TypedConfigOptions<Integer> {
+public class NumberConfigOptions extends ValueConfigOptions<Integer> {
 	private final static Set<String> NUMBERS = new HashSet<>() {{add("1"); add("2"); add("3");}};
 	private final @Nullable Set<@NotNull String> suggestions;
 	private final @Nullable Integer defaultValue;
 	private final boolean unsigned;
 
-	public NumberConfigOption(@NotNull String name, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions, boolean unsigned) {
-		super(name);
+	public NumberConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions, boolean unsigned) {
+		super(name, key, emptyValue);
 		this.defaultValue = Objects.requireNonNull(defaultValue);
 		this.suggestions = suggestions != null
 			? suggestions.stream().map(i -> i.toString()).collect(Collectors.toSet())
 			: null;
 		this.unsigned = unsigned;
 	}
-	public NumberConfigOption(@NotNull String name, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions) {
-		this(name, defaultValue, suggestions, false);
+	public NumberConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions) {
+		this(name, key, emptyValue, defaultValue, suggestions, false);
 	}
-	public NumberConfigOption(@NotNull String name, @NotNull Integer defaultValue, boolean unsigned) {
-		this(name, defaultValue, null, unsigned);
+	public NumberConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue, boolean unsigned) {
+		this(name, key, emptyValue, defaultValue, null, unsigned);
 	}
-	public NumberConfigOption(@NotNull String name, @NotNull Integer defaultValue) {
-		this(name, defaultValue, null);
+	public NumberConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue) {
+		this(name, key, emptyValue, defaultValue, null);
 	}
 
 	@Override
@@ -40,18 +40,19 @@ public class NumberConfigOption extends TypedConfigOptions<Integer> {
 	}
 
 	@Override
-	public @NotNull Set<@NotNull String> getOptions(CommandSender player) {
+	public @NotNull Set<@NotNull String> getActualOptions(CommandSender player) {
 		return suggestions != null
 			? suggestions
 			: NUMBERS;
 	}
 
 	@Override
-	public @Nullable Integer getDefaultTypedValue() {
+	public @Nullable Integer getEmptyValue() {
 		return defaultValue;
 	}
 	@Override
 	protected Integer fromString(String value) {
+		if (value == null || value.equals(emptyValue())) return null;
 		try {
 			if (unsigned) {
 				return Integer.parseUnsignedInt(value);
@@ -64,7 +65,7 @@ public class NumberConfigOption extends TypedConfigOptions<Integer> {
 	}
 	@Override
 	protected String toString(Integer value) {
-		if (value == null) return null;
+		if (value == null) return emptyValue();
 		return value.toString();
 	}
 

@@ -26,10 +26,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
+import fr.ludos.core.Utility;
+import fr.ludos.core.command.ludos.game.GameConfigMap;
 import fr.ludos.core.game.Game;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -47,7 +48,6 @@ public final class Group implements ConfigurationSerializable {
 		Failed
 	}
 
-	private static final String groupsKey = "groups";
 	static {
 		ConfigurationSerialization.registerClass(Group.class);
 	}
@@ -62,14 +62,20 @@ public final class Group implements ConfigurationSerializable {
 		return playerGroupMap.get(Objects.requireNonNull(player, "Player cannot be null"));
 	}
 
-	private final Ludos plugin;
-	public Ludos getPlugin() {
-		return plugin;
+	private final Ludos ludos;
+	public Ludos getLudos() {
+		return ludos;
 	}
 
 	private ConfigurationSection config;
 	public ConfigurationSection getConfig() {
 		return config;
+	}
+	public ConfigurationSection getGroupConfig() {
+		return Utility.getOrCreateConfigSection(config, GroupConfigMap.instance.getNamespace());
+	}
+	public ConfigurationSection getGameConfig(Game.Builder game) {
+		return Utility.getOrCreateConfigSection(config, GameConfigMap.instance.getNamespace() + "." + game.getId());
 	}
 
 	private OfflinePlayer leader;
@@ -131,7 +137,7 @@ public final class Group implements ConfigurationSerializable {
 	private Group(@NotNull OfflinePlayer leader, @NotNull Collection<OfflinePlayer> members, Ludos plugin, @Nullable ConfigurationSection config) {
 		this.leader = leader;
 		this.members = new HashSet<>(members);
-		this.plugin = plugin;
+		this.ludos = plugin;
 		this.config = config == null ? new MemoryConfiguration() : config;
 	}
 
@@ -285,7 +291,7 @@ public final class Group implements ConfigurationSerializable {
 			saveConfigGroup();
 		}
 
-		plugin.saveConfig();
+		ludos.saveGroups();
 
 		Player onlineLeader = oldLeader.getPlayer();
 		if (onlineLeader != null && demoteMessage != null) {
@@ -473,28 +479,27 @@ public final class Group implements ConfigurationSerializable {
 
 
 	public final void removeConfigGroup() {
-		FileConfiguration pluginConfig = plugin.getConfig();
+		FileConfiguration pluginConfig = ludos.getConfig();
 
 		pluginConfig.set(
-			groupsKey + "." + leader.getUniqueId().toString(),
+			leader.getUniqueId().toString(),
 			null
 		);
 	}
 
 	public final void saveConfigGroup() {
-		FileConfiguration pluginConfig = plugin.getConfig();
+		FileConfiguration pluginConfig = ludos.getGroups();
 
 		pluginConfig.set(
-			groupsKey + "." + leader.getUniqueId().toString(),
+			leader.getUniqueId().toString(),
 			serialize()
 		);
 	}
 
-	public static void saveConfigGroups(JavaPlugin plugin) {
-		FileConfiguration pluginConfig = plugin.getConfig();
-		ConfigurationSection groupsSection = pluginConfig.createSection(groupsKey);
+	public static void saveConfigGroups(Ludos plugin) {
+		FileConfiguration groupsData = plugin.getGroups();
 		for (Group group : groups) {
-			groupsSection.set(
+			groupsData.set(
 				group.leader.getUniqueId().toString(),
 				group.serialize()
 			);
@@ -502,16 +507,9 @@ public final class Group implements ConfigurationSerializable {
 	}
 
 	public static void loadConfigGroups(Ludos plugin) {
-		ConfigurationSection configSection = plugin.getConfig();
-		if (! configSection.isConfigurationSection(groupsKey)) {
-			configSection.createSection(groupsKey);
-		}
-		ConfigurationSection groupsSection = configSection.getConfigurationSection(groupsKey);
-		if (groupsSection == null) {
-			return;
-		}
+		ConfigurationSection configSection = plugin.getGroups();
 
-		for (Map.Entry<String, Object> groupEntry : groupsSection.getValues(false).entrySet()) {
+		for (Map.Entry<String, Object> groupEntry : configSection.getValues(false).entrySet()) {
 			if (groupEntry.getValue() instanceof MemorySection groupData) {
 				try {
 					Group.deserialize(groupData.getValues(true), plugin);

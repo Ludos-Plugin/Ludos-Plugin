@@ -1,22 +1,21 @@
-package fr.ludos.core.command.ludos.group;
+package fr.ludos.core.command.ludos.config;
 
 import java.util.List;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
-import fr.ludos.core.group.Group;
+import fr.ludos.core.command.ludos.ScopeConfigMap;
 
-public class GroupLeave implements Subcommand {
-	private final static String id = "leave";
+public class LudosConfig implements Subcommand {
+	private final static String id = "config";
+	private final ScopeConfigMap map;
 
-	private final Ludos plugin;
-	public GroupLeave(Ludos plugin) {
-		this.plugin = plugin;
+	public LudosConfig(Ludos plugin) {
+		this.map = new ScopeConfigMap(plugin, LudosConfigMap.instance);
 	}
 
 	@Override
@@ -26,34 +25,19 @@ public class GroupLeave implements Subcommand {
 
 	@Override
 	public String getDescription() {
-		return "Leave the current group.";
+		return "Configure Ludos.";
 	}
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		if (!(sender instanceof Player player)) {
-			sender.sendMessage("Only players can leave groups.");
-			return true;
-		}
-
-		Group group = Group.getGroupOfPlayer(player);
-		if (group == null) {
-			sender.sendMessage("You are not in a group.");
-			return true;
-		}
-
-		group.removePlayer(player, false);
-
-		plugin.saveGroups();
-
-		return true;
+		return map.exec(args, sender);
 	}
 	@Override
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		return null;
+		return map.tabComplete(args, sender);
 	}
 	@Override
 	public String getUsage() {
-		return "";
+		return "<global | group> [config] [name] [option]";
 	}
 	@Override
 	public boolean requireOp() {

@@ -15,7 +15,6 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -27,7 +26,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
-import fr.ludos.core.config.ConfigMap;
+import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupConfigMap;
@@ -74,8 +73,6 @@ public class ManhuntGame extends Game {
 		super(builder, group, Bukkit.getServer().getScoreboardManager().getNewScoreboard());
 		this.builder = builder;
 
-		ConfigurationSection config = group.getConfig();
-
 		Location returnLocation;
 		Player leader = group.getLeader().getPlayer();
 		if (leader == null || ! leader.isOnline()) {
@@ -94,20 +91,20 @@ public class ManhuntGame extends Game {
 			.withLobby(Lobby.within(this)
 				.clear(ClearMode.ALL)
 				.waitFor(group)
-				.wait(Duration.ofSeconds(GroupConfigMap.instance.getStartDelaySeconds(config)))
+				.wait(Duration.ofSeconds(GroupConfigMap.startDelay.getGroupConfig(group)))
 				.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(this, ManhuntGameConfigMap.instance.getArea(config))
+				WorldBorderArea.within(this, WorldBorderArea.config.getGameConfig(group, builder))
 			)
 			.build();
 		this.teamController = new ManhuntTeamController(
 			this,
-			ManhuntGameConfigMap.instance.getPlayers(config),
-			ManhuntGameConfigMap.instance.getPrey(config)
+			ManhuntGameConfigMap.players.getGameConfig(group, builder),
+			ManhuntGameConfigMap.prey.getGameConfig(group, builder)
 		);
 
-		timer = new ManhuntTimer(this, ManhuntGameConfigMap.instance.getRevealPeriod(config));
+		timer = new ManhuntTimer(this, ManhuntGameConfigMap.revealPeriod.getGameConfig(group, builder));
 		compassEvents = new ManhuntCompass.Events(this);
 	}
 
@@ -272,7 +269,7 @@ public class ManhuntGame extends Game {
 		}
 
 		@Override
-		public ConfigMap getConfig() {
+		public ConfigOptionsCollection getConfig() {
 			return ManhuntGameConfigMap.instance;
 		}
 

@@ -42,7 +42,7 @@ public class GroupDisband implements Subcommand {
 			return true;
 		}
 
-		boolean membersCanManage = GroupConfigMap.instance.getMembersAuth(group.getConfig()).canManage();
+		boolean membersCanManage = GroupConfigMap.membersAuth.getGroupConfig(group).canManage();
 		if (! group.isLeader(player) && ! membersCanManage) {
 			sender.sendMessage("Only the group leader can disband the group.");
 			return true;
@@ -50,7 +50,7 @@ public class GroupDisband implements Subcommand {
 
 		group.disband();
 
-		plugin.saveConfig();
+		plugin.saveGroups();
 
 		return true;
 	}

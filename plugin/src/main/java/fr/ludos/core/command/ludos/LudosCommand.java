@@ -13,6 +13,7 @@ import fr.ludos.core.command.HelpSubcommand;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.SubcommandManager;
 import fr.ludos.core.command.ludos.cheats.CheatsSubcommand;
+import fr.ludos.core.command.ludos.config.LudosConfig;
 import fr.ludos.core.command.ludos.game.GameSubcommand;
 import fr.ludos.core.command.ludos.group.GroupSubcommand;
 import fr.ludos.core.command.ludos.role.RoleSubcommand;
@@ -27,6 +28,7 @@ public class LudosCommand implements Subcommand {
 			add(new GroupSubcommand(plugin));
 			add(new GameSubcommand(plugin));
 			add(new RoleSubcommand(plugin));
+			add(new LudosConfig(plugin));
 			add(new CheatsSubcommand());
 			add(new LudosGuidebook());
 		}};

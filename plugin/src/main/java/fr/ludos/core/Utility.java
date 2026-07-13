@@ -30,6 +30,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.LivingEntity;
@@ -439,5 +440,12 @@ public class Utility {
 	}
 	public static Stream<Player> getTeamAlivePlayers(Team team) {
 		return getTeamOnlinePlayers(team).filter(isPlayerAlive);
+	}
+
+
+	public final static ConfigurationSection getOrCreateConfigSection(ConfigurationSection config, String path) {
+		ConfigurationSection deeper = config.getConfigurationSection(path);
+		if (deeper != null) return deeper;
+		return config.createSection(path);
 	}
 }

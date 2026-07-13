@@ -10,27 +10,27 @@ import javax.annotation.Nullable;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-public final class EnumConfigOptions<T extends Enum<T>> extends TypedConfigOptions<T> {
+public final class EnumConfigOptions<T extends Enum<T>> extends ValueConfigOptions<T> {
 	private final @NotNull Class<T> clazz;
 	private final @Nullable T defaultValue;
 
-	public EnumConfigOptions(@NotNull String name, @NotNull Class<T> clazz, @Nullable T defaultValue) {
-		super(name);
+	public EnumConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Class<T> clazz, @Nullable T defaultValue) {
+		super(name, key, emptyValue);
 		this.clazz = Objects.requireNonNull(clazz);
 		this.defaultValue = defaultValue;
 	}
-	public EnumConfigOptions(@NotNull String name, @NotNull Class<T> clazz) {
-		this(name, clazz, null);
+	public EnumConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Class<T> clazz) {
+		this(name, key, emptyValue, clazz, null);
 	}
 
 	@Override
-	public T getDefaultTypedValue() {
+	public T getEmptyValue() {
 		return defaultValue != null
 			? defaultValue
 			: clazz.getEnumConstants()[0];
 	}
 	@Override
-	public @NotNull Set<@NotNull String> getOptions(CommandSender player) {
+	public @NotNull Set<@NotNull String> getActualOptions(CommandSender player) {
 		return Arrays.stream(clazz.getEnumConstants())
 			.map(Enum::name)
 			.collect(Collectors.toSet());
@@ -38,6 +38,7 @@ public final class EnumConfigOptions<T extends Enum<T>> extends TypedConfigOptio
 
 	@Override
 	protected T fromString(String value) {
+		if (value == null || value.equals(emptyValue())) return null;
 		try {
 			return Enum.valueOf(clazz, value);
 		} catch (Exception e) {
@@ -46,6 +47,7 @@ public final class EnumConfigOptions<T extends Enum<T>> extends TypedConfigOptio
 	}
 	@Override
 	protected String toString(T value) {
+		if (value == null) return emptyValue();
 		return value.name();
 	}
 }

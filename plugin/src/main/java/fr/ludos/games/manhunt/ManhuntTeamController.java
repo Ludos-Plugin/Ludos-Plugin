@@ -44,7 +44,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<OfflinePlayer> players, @Nullable OfflinePlayer prey) {
-		super(game, GroupConfigMap.instance.getGameJoinMode(game.getGroup().getConfig()));
+		super(game, GroupConfigMap.gameJoin.getGroupConfig(game.getGroup()));
 
 		Set<Player> finalPlayers = game.getGroup().getOnlinePlayers();
 		if (players != null && ! players.isEmpty()) {

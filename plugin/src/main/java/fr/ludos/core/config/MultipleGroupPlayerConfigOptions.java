@@ -19,46 +19,44 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.group.Group;
 
-public final class MultipleGroupPlayerConfigOptions extends TypedConfigOptions<Set<OfflinePlayer>> {
+public final class MultipleGroupPlayerConfigOptions extends ValueConfigOptions<Set<OfflinePlayer>> {
 	private final @Nullable Integer limit;
-	private final String defaultOption;
 	private final boolean excludeSelf;
 
-	public MultipleGroupPlayerConfigOptions(@NotNull String name, @Nullable Integer limit, @Nullable String defaultOption, boolean excludeSelf) {
-		super(name);
+	public MultipleGroupPlayerConfigOptions(@NotNull String name, @NotNull String key, @Nullable Integer limit, @Nullable String emptyValue, boolean excludeSelf) {
+		super(name, key, emptyValue);
 		this.limit = limit;
-		this.defaultOption = defaultOption;
 		this.excludeSelf = excludeSelf;
 	}
-	public MultipleGroupPlayerConfigOptions(@NotNull String name, @Nullable Integer limit, @Nullable String defaultOption) {
-		this(name, limit, defaultOption, false);
+	public MultipleGroupPlayerConfigOptions(@NotNull String name, @NotNull String key, @Nullable Integer limit, @Nullable String emptyValue) {
+		this(name, key, limit, emptyValue, false);
 	}
-	public MultipleGroupPlayerConfigOptions(@NotNull String name, @Nullable Integer limit, boolean excludeSelf) {
-		this(name, limit, null, excludeSelf);
+	public MultipleGroupPlayerConfigOptions(@NotNull String name, @NotNull String key, @Nullable Integer limit, boolean excludeSelf) {
+		this(name, key, limit, null, excludeSelf);
 	}
-	public MultipleGroupPlayerConfigOptions(@NotNull String name, @Nullable Integer limit) {
-		this(name, limit, null);
+	public MultipleGroupPlayerConfigOptions(@NotNull String name, @NotNull String key, @Nullable Integer limit) {
+		this(name, key, limit, null);
 	}
-	public MultipleGroupPlayerConfigOptions(@NotNull String name, @Nullable String defaultOption, boolean excludeSelf) {
-		this(name, null, defaultOption, excludeSelf);
+	public MultipleGroupPlayerConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue, boolean excludeSelf) {
+		this(name, key, null, emptyValue, excludeSelf);
 	}
-	public MultipleGroupPlayerConfigOptions(@NotNull String name, @Nullable String defaultOption) {
-		this(name, null, defaultOption);
+	public MultipleGroupPlayerConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue) {
+		this(name, key, null, emptyValue);
 	}
-	public MultipleGroupPlayerConfigOptions(@NotNull String name, boolean excludeSelf) {
-		this(name, null, null, excludeSelf);
+	public MultipleGroupPlayerConfigOptions(@NotNull String name, @NotNull String key, boolean excludeSelf) {
+		this(name, key, null, null, excludeSelf);
 	}
-	public MultipleGroupPlayerConfigOptions(@NotNull String name) {
-		this(name, null, null);
+	public MultipleGroupPlayerConfigOptions(@NotNull String name, @NotNull String key) {
+		this(name, key, null, null);
 	}
 
 	@Override
-	public Set<OfflinePlayer> getDefaultTypedValue() {
+	public Set<OfflinePlayer> getEmptyValue() {
 		return Collections.emptySet();
 	}
 
 	@Override
-	public Set<String> getOptions(CommandSender sender) {
+	public Set<String> getActualOptions(CommandSender sender) {
 		if (! (sender instanceof Player player )) return Collections.emptySet();
 
 		Group group = Group.getGroupOfPlayer(player);
@@ -70,18 +68,19 @@ public final class MultipleGroupPlayerConfigOptions extends TypedConfigOptions<S
 		if (excludeSelf) {
 			res.remove(player.getName());
 		}
-		if (defaultOption != null) {
-			res.add(defaultOption);
-		}
 
 		return res;
 	}
 
 	@Override
-	public boolean setValue(String key, @NotNull String[] args, CommandSender sender, ConfigurationSection container) {
-		if (args.length == 1 && args[0].equals(defaultOption)) {
-			container.set(key, null);
-			sender.sendMessage(getName() + " set to " + defaultOption);
+	public boolean set(@NotNull String[] args, CommandSender sender, ConfigurationSection config) {
+		if (args.length == 0) {
+			sender.sendMessage(getStringValueOrDefault(config));
+			return false;
+		}
+		if (args.length == 1 && args[0].equals(emptyValue())) {
+			config.set(key(), null);
+			notifyUnset(sender);
 			return true;
 		}
 
@@ -89,8 +88,8 @@ public final class MultipleGroupPlayerConfigOptions extends TypedConfigOptions<S
 			.filter(a -> isValidOption(a, sender))
 			.toList();
 
-		container.set(key, vals);
-		sender.sendMessage(getName() + " set to " + vals.stream().collect(Collectors.joining(", ")));
+		config.set(key(), vals);
+		notifySet(vals.stream().collect(Collectors.joining(", ")), sender);
 		return true;
 	}
 
@@ -101,11 +100,11 @@ public final class MultipleGroupPlayerConfigOptions extends TypedConfigOptions<S
 			return options.stream().toList();
 		}
 
-		if (args[0].equals(defaultOption)) {
+		if (args[0].equals(emptyValue())) {
 			return Collections.emptyList();
 		}
 
-		options.remove(defaultOption);
+		options.remove(emptyValue());
 
 		for (int i = 0; i < args.length - 1; i++) {
 			options.remove(args[i]);
@@ -115,7 +114,7 @@ public final class MultipleGroupPlayerConfigOptions extends TypedConfigOptions<S
 
 	@Override
 	protected Set<OfflinePlayer> fromString(String value) {
-		if (value.equals(defaultOption)) return Collections.emptySet();
+		if (value == null || value.equals(emptyValue())) return Collections.emptySet();
 		return Arrays.stream(value.split(" "))
 			.map(Bukkit::getOfflinePlayer)
 			.filter(Objects::nonNull)
@@ -123,7 +122,7 @@ public final class MultipleGroupPlayerConfigOptions extends TypedConfigOptions<S
 	}
 	@Override
 	protected String toString(Set<OfflinePlayer> value) {
-		if (value == null) return defaultOption;
+		if (value == null) return emptyValue();
 		return value.stream()
 			.map(OfflinePlayer::getName)
 			.filter(Objects::nonNull)

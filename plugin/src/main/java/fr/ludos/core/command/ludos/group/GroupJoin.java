@@ -55,7 +55,7 @@ public class GroupJoin implements Subcommand {
 		JoinResult res = group.requestPlayerJoin(player, JoinMethod.Join);
 		switch (res) {
 			case Succeeded:
-				plugin.saveConfig();
+				plugin.saveGroups();
 				break;
 			case Requested:
 				player.sendMessage("Requested to join " + leaderName + "'s group.");

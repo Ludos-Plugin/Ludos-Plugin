@@ -1,10 +1,16 @@
 package fr.ludos.core;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.bukkit.Material;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -19,8 +25,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.command.ludos.LudosCommand;
+import fr.ludos.core.command.ludos.game.GameConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.group.GroupConfigMap;
 import fr.ludos.core.group.GroupManager;
 import fr.ludos.core.item.texture.TextureListener;
 import fr.ludos.core.item.texture.TextureManager;
@@ -42,6 +50,17 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 public class Ludos extends JavaPlugin implements Listener {
+	private final File groupsFile = new File(getDataFolder(), "groups.yml");
+	private final FileConfiguration groupsData = YamlConfiguration.loadConfiguration(groupsFile);
+	public final FileConfiguration getGroups() {
+		return groupsData;
+	}
+
+	private final File rolesFile = new File(getDataFolder(), "roles.yml");
+	private final FileConfiguration rolesData = YamlConfiguration.loadConfiguration(rolesFile);
+	public final FileConfiguration getRoles() {
+		return rolesData;
+	}
 
 	public static final String namespace = "ludos";
 
@@ -50,7 +69,27 @@ public class Ludos extends JavaPlugin implements Listener {
 	private final TextureListener textureListener = new TextureListener(this);
 	public final PlayerPackets playerPackets = PlayerPacketsFactory.createHandler();
 
-	public Ludos() { }
+	public void saveGroups() {
+		try {
+			groupsData.save(groupsFile);
+		} catch (IOException ex) {
+			getLogger().log(Level.SEVERE, "Could not save groups to " + groupsFile, ex);
+		}
+	}
+	public ConfigurationSection getGroupConfig() {
+		return Utility.getOrCreateConfigSection(getConfig(), GroupConfigMap.instance.getNamespace());
+	}
+	public ConfigurationSection getGameConfig(Game.Builder game) {
+		return Utility.getOrCreateConfigSection(getConfig(), GameConfigMap.instance.getNamespace() + "." + game.getId());
+	}
+
+	public void saveRoles() {
+		try {
+			rolesData.save(rolesFile);
+		} catch (IOException ex) {
+			getLogger().log(Level.SEVERE, "Could not save roles to " + rolesFile, ex);
+		}
+	}
 
 	public TextureManager getTextureManager() {
 		return textureManager;

@@ -290,7 +290,7 @@ public final class Lobby extends GameProcessBase {
 		private final Set<OfflinePlayer> getPlayers() {
 			if (players != null) return new HashSet<>(players);
 			if (playersGroup != null) {
-				LobbyWaitPlayersOption option = GroupConfigMap.instance.getLobbyWaitPlayers(playersGroup.getConfig());
+				LobbyWaitPlayersOption option = GroupConfigMap.waitPlayers.getGroupConfig(playersGroup);
 				return option.getPlayers(playersGroup);
 			}
 			return null;

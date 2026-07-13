@@ -45,7 +45,7 @@ public class GroupCreate implements Subcommand {
 			group.requestPlayerJoin(member, JoinMethod.Invite);
 		}
 
-		plugin.saveConfig();
+		plugin.saveGroups();
 
 		return true;
 	}

@@ -58,7 +58,7 @@ public class GroupInvite implements Subcommand {
 			return true;
 		}
 
-		boolean membersCanInvite = GroupConfigMap.instance.getMembersAuth(group.getConfig()).canInvite();
+		boolean membersCanInvite = GroupConfigMap.membersAuth.getGroupConfig(group).canInvite();
 		if (! group.isLeader(player) && ! membersCanInvite) {
 			sender.sendMessage("Only the group leader can invite new members.");
 			return true;
@@ -77,7 +77,7 @@ public class GroupInvite implements Subcommand {
 			}
 		}
 		if (hasJoined) {
-			plugin.saveConfig();
+			plugin.saveGroups();
 		}
 
 		if (targets.size() > 0) {

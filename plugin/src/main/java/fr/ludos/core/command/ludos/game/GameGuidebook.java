@@ -15,7 +15,6 @@ import fr.ludos.core.game.Game;
 
 public class GameGuidebook implements Subcommand {
 	private final static String id = "guidebook";
-
 	@Override
 	public String id() {
 		return id;

@@ -9,12 +9,11 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
-import fr.ludos.core.config.ConfigMap;
+import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupConfigMap;
@@ -59,14 +58,12 @@ public class ArenaGame extends WaveGame {
 		super(builder, group);
 		this.builder = builder;
 
-		ConfigurationSection config = group.getConfig();
-
 		Location returnLocation = group.pickReturnLocation();
 
 
 		this.waveController = new ArenaWaveController(
 			this,
-			ArenaGameConfigMap.instance.getRounds(config)
+			ArenaGameConfigMap.roundsEntryConfig.getGameConfig(group, builder)
 		);
 
 		this.worldManager = WorldManager.within(this, returnLocation)
@@ -75,18 +72,18 @@ public class ArenaGame extends WaveGame {
 				Lobby.within(this)
 					.waitFor(group)
 					.clear(ClearMode.ALL)
-					.wait(Duration.ofSeconds(GroupConfigMap.instance.getStartDelaySeconds(config)))
+					.wait(Duration.ofSeconds(GroupConfigMap.startDelay.getGroupConfig(group)))
 					.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(this, ArenaGameConfigMap.instance.getAreaSize(config))
+				WorldBorderArea.within(this, WorldBorderArea.config.getGameConfig(group, builder))
 			)
 			.build();
 		this.teamController = new ArenaTeamController(
 			this,
-			ArenaGameConfigMap.instance.getMode(config),
-			ArenaGameConfigMap.instance.getTeam1Players(config),
-			ArenaGameConfigMap.instance.getTeam2Players(config)
+			ArenaModeOption.config.getGameConfig(group, builder),
+			ArenaGameConfigMap.team1PlayersConfig.getGameConfig(group, builder),
+			ArenaGameConfigMap.team2PlayersConfig.getGameConfig(group, builder)
 		);
 	}
 
@@ -136,7 +133,7 @@ public class ArenaGame extends WaveGame {
 		}
 
 		@Override
-		public ConfigMap getConfig() {
+		public ConfigOptionsCollection getConfig() {
 			return ArenaGameConfigMap.instance;
 		}
 

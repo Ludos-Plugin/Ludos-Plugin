@@ -8,12 +8,11 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
-import fr.ludos.core.config.ConfigMap;
+import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
@@ -56,14 +55,12 @@ public class RaidGame extends WaveGame {
 		super(builder, group);
 		this.builder = builder;
 
-		ConfigurationSection config = group.getConfig();
-
 		Location returnLocation = group.pickReturnLocation();
 
 
 		this.waveController = new RaidWaveController(
 			this,
-			RaidGameConfigMap.instance.getWaves(config)
+			RaidGameConfigMap.waves.getGameConfig(group, builder)
 		);
 
 		this.worldManager = WorldManager.within(this, returnLocation)
@@ -77,14 +74,14 @@ public class RaidGame extends WaveGame {
 			.inArea(
 				WorldBorderArea.within(
 					this,
-					RaidGameConfigMap.instance.getArea(config)
+					WorldBorderArea.config.getGameConfig(group, builder)
 				)
 			)
 			.build();
 
 		this.teamController = new RaidTeamController(
 			this,
-			RaidGameConfigMap.instance.getPlayers(config)
+			RaidGameConfigMap.players.getGameConfig(group, builder)
 		);
 	}
 
@@ -127,7 +124,7 @@ public class RaidGame extends WaveGame {
 		}
 
 		@Override
-		public ConfigMap getConfig() {
+		public ConfigOptionsCollection getConfig() {
 			return RaidGameConfigMap.instance;
 		}
 

@@ -25,7 +25,7 @@ class GroupPermissionTest extends GroupTest {
 		assertEquals("You have joined " + player1.getName() + "'s group.", player2.nextMessage(), "Join should be accepted after invite");
 		assertEquals(player2.getName() + " has joined the group.", player1.nextMessage(), "Leader should be notified on join");
 
-		player1.performCommand("ludos group config member_authorisation " + GroupRightsOption.none.name());
+		player1.performCommand("ludos group config local member_authorisation " + GroupRightsOption.none.name());
 		assertEquals("Members authorisation set to none", player1.nextMessage(), "Could not set group rights");
 
 		player2.performCommand("ludos group invite " + player3.getName());
@@ -45,7 +45,7 @@ class GroupPermissionTest extends GroupTest {
 		invitePlayerToGroup(player1, Collections.singletonList(player3));
 		joinGroup(player3, player1);
 
-		player1.performCommand("ludos group config member_authorisation " + GroupRightsOption.none.name());
+		player1.performCommand("ludos group config local member_authorisation " + GroupRightsOption.none.name());
 		assertEquals("Members authorisation set to " + GroupRightsOption.none.name(), player1.nextMessage(), "Could not set group rights");
 
 		player2.performCommand("ludos group kick " + player3.getName());
@@ -61,7 +61,7 @@ class GroupPermissionTest extends GroupTest {
 		createGroupWithInvite(player1, Collections.singletonList(player2));
 		joinGroup(player2, player1);
 
-		player1.performCommand("ludos group config member_authorisation " + rights);
+		player1.performCommand("ludos group config local member_authorisation " + rights);
 		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
 
 		PlayerMock player3 = createPlayer("Player3");
@@ -85,7 +85,7 @@ class GroupPermissionTest extends GroupTest {
 
 		joinGroup(player3, player1);
 
-		player1.performCommand("ludos group config member_authorisation " + rights);
+		player1.performCommand("ludos group config local member_authorisation " + rights);
 		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
 
 		player2.performCommand("ludos group kick " + player3.getName());
@@ -101,10 +101,10 @@ class GroupPermissionTest extends GroupTest {
 		createGroupWithInvite(player1, Collections.singletonList(player2));
 		joinGroup(player2, player1);
 
-		player1.performCommand("ludos group config member_authorisation " + rights);
+		player1.performCommand("ludos group config local member_authorisation " + rights);
 		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
 
-		player2.performCommand("ludos group config member_authorisation none");
+		player2.performCommand("ludos group config local member_authorisation none");
 		assertEquals("Members authorisation set to none", player2.nextMessage(), "Member should be allowed to configure the group when rights permit it");
 	}
 

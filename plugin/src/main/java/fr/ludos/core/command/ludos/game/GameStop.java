@@ -14,7 +14,6 @@ import fr.ludos.core.group.GroupConfigMap;
 
 public class GameStop implements Subcommand {
 	private final static String id = "stop";
-
 	@Override
 	public String id() {
 		return id;
@@ -37,7 +36,7 @@ public class GameStop implements Subcommand {
 			return true;
 		}
 
-		boolean membersCanRunGames = GroupConfigMap.instance.getMembersAuth(group.getConfig()).canRunGames();
+		boolean membersCanRunGames = GroupConfigMap.membersAuth.getGroupConfig(group).canRunGames();
 		if (! group.isLeader(player) && ! membersCanRunGames) {
 			sender.sendMessage("Only the group leader can stop the game.");
 			return true;

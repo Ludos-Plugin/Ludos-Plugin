@@ -25,7 +25,7 @@ import org.bukkit.scoreboard.Scoreboard;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.book.BookUtility;
-import fr.ludos.core.config.ConfigMap;
+import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.item.SpecialItem;
@@ -109,7 +109,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 	protected Game(Builder builder, Group group, Scoreboard scoreboard) {
 		this.builder = builder;
 		this.group = group;
-		this.scoreboard = group.getPlugin().getServer().getScoreboardManager().getNewScoreboard();
+		this.scoreboard = group.getLudos().getServer().getScoreboardManager().getNewScoreboard();
 	}
 
 	public static boolean startGame(String id, Group group) {
@@ -338,7 +338,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
-		public abstract ConfigMap getConfig();
+		public abstract ConfigOptionsCollection getConfig();
 
 
 		public abstract Game build(Group group);

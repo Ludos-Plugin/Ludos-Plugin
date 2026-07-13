@@ -18,7 +18,6 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -46,7 +45,6 @@ import net.kyori.adventure.text.format.TextDecoration;
  */
 public abstract class Role extends GameProcessBase {
 	public static final String noneLabel = "none";
-	private static final String rolesKey = "playerRoles";
 
 	public static Map<String, Builder> getRegistered() {
 		return registered;
@@ -142,23 +140,14 @@ public abstract class Role extends GameProcessBase {
 	protected abstract LinkedHashMap<String, GameEvents> createGameEvents(Builder builder, Game game);
 
 	public static void loadConfigRoles(Ludos plugin) {
-		ConfigurationSection configSection = plugin.getConfig();
-		if (! configSection.isConfigurationSection(rolesKey)) {
-			configSection.createSection(rolesKey);
-		}
-		ConfigurationSection rolesSection = configSection.getConfigurationSection(rolesKey);
-		if (rolesSection == null) {
-			return;
-		}
 
-		playerRoles = rolesSection.getKeys(false).stream()
+		playerRoles = plugin.getRoles().getKeys(false).stream()
 			.filter(Objects::nonNull)
 			.collect(Collectors.toMap(
 				(s) -> UUID.fromString(s),
 				(s) -> {
-					String path = rolesKey + '.' + UUID.fromString(s);
-					String val = plugin.getConfig().getString(path);
-					plugin.getLogger().info("Loaded Role of Player UUID : " + path + " | Role ID : " + val);
+					String val = plugin.getRoles().getString(s);
+					plugin.getLogger().info("Loaded Role of Player UUID : " + s + " | Role ID : " + val);
 					return val;
 				}
 			));
@@ -226,15 +215,12 @@ public abstract class Role extends GameProcessBase {
 
 		playerRoles.put(playerUUID, roleId);
 
-		plugin.getConfig().set(rolesKey + '.' + playerUUID, roleId);
-		plugin.saveConfig();
+		plugin.getRoles().set(playerUUID.toString(), roleId);
+		plugin.saveRoles();
 
 		Player online = player.getPlayer();
 		if (online != null) {
 			online.sendMessage("Your role is now " + roleId);
-			System.out.println("Player online!");
-		} else {
-			System.out.println("Player offline!");
 		}
 	}
 
@@ -246,8 +232,8 @@ public abstract class Role extends GameProcessBase {
 		if (role == null) return;
 
 		playerRoles.remove(playerUUID);
-		plugin.getConfig().set(rolesKey + '.' + playerUUID, null);
-		plugin.saveConfig();
+		plugin.getRoles().set(playerUUID.toString(), null);
+		plugin.saveRoles();
 
 		Player online = player.getPlayer();
 		if (online != null) {

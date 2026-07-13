@@ -15,7 +15,6 @@ import fr.ludos.core.group.GroupConfigMap;
 
 public class GameStart implements Subcommand {
 	private final static String id = "start";
-
 	@Override
 	public String id() {
 		return id;
@@ -46,7 +45,7 @@ public class GameStart implements Subcommand {
 			return true;
 		}
 
-		boolean membersCanRunGames = GroupConfigMap.instance.getMembersAuth(group.getConfig()).canRunGames();
+		boolean membersCanRunGames = GroupConfigMap.membersAuth.getGroupConfig(group).canRunGames();
 		if (! group.isLeader(player) && ! membersCanRunGames) {
 			sender.sendMessage("Only the group leader can start games.");
 			return true;

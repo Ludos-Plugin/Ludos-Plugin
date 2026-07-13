@@ -15,32 +15,24 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.group.Group;
 
-public final class SingleGroupPlayerConfigOptions extends TypedConfigOptions<OfflinePlayer> {
-	private final String defaultOption;
+public final class SingleGroupPlayerConfigOptions extends ValueConfigOptions<OfflinePlayer> {
 	private final boolean excludeSelf;
 
-	public SingleGroupPlayerConfigOptions(@NotNull String name, @Nullable String defaultOption, boolean excludeSelf) {
-		super(name);
-		this.defaultOption = defaultOption;
+	public SingleGroupPlayerConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue, boolean excludeSelf) {
+		super(name, key, emptyValue);
 		this.excludeSelf = excludeSelf;
 	}
-	public SingleGroupPlayerConfigOptions(@NotNull String name, @Nullable String defaultOption) {
-		this(name, defaultOption, false);
-	}
-	public SingleGroupPlayerConfigOptions(@NotNull String name, boolean excludeSelf) {
-		this(name, null, excludeSelf);
-	}
-	public SingleGroupPlayerConfigOptions(@NotNull String name) {
-		this(name, null);
+	public SingleGroupPlayerConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue) {
+		this(name, key, emptyValue, false);
 	}
 
 	@Override
-	public OfflinePlayer getDefaultTypedValue() {
+	public OfflinePlayer getEmptyValue() {
 		return null;
 	}
 
 	@Override
-	public Set<String> getOptions(CommandSender sender) {
+	public Set<String> getActualOptions(CommandSender sender) {
 		if (! (sender instanceof Player player )) return Collections.emptySet();
 
 		Group group = Group.getGroupOfPlayer(player);
@@ -52,21 +44,18 @@ public final class SingleGroupPlayerConfigOptions extends TypedConfigOptions<Off
 		if (excludeSelf) {
 			res.remove(player.getName());
 		}
-		if (defaultOption != null) {
-			res.add(defaultOption);
-		}
 
 		return res;
 	}
 
 	@Override
 	protected OfflinePlayer fromString(String value) {
-		if (value == defaultOption) return null;
+		if (value == null || value.equals(emptyValue())) return null;
 		return Bukkit.getOfflinePlayer(value);
 	}
 	@Override
 	protected String toString(OfflinePlayer value) {
-		if (value == null) return defaultOption;
+		if (value == null) return emptyValue();
 		return value.getName();
 	}
 }

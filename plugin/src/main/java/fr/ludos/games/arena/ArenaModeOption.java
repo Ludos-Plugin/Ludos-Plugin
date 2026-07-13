@@ -12,7 +12,7 @@ public enum ArenaModeOption {
 	duel("Duel", "1v1 rounds"),
 	multi("Multi", "team rounds");
 
-	public static final EnumConfigOptions<ArenaModeOption> configOptions = new EnumConfigOptions<>("Arena Mode", ArenaModeOption.class);
+	public static final EnumConfigOptions<ArenaModeOption> config = new EnumConfigOptions<>("Arena Mode", "arena_mode", null, ArenaModeOption.class);
 
 	private final String displayName;
 	private final String description;
