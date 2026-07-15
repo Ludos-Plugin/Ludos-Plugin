@@ -40,17 +40,29 @@ jobs:
       - name: Generate Changelog
         id: changelog
         uses: requarks/changelog-action@v1
+        continue-on-error: true
         with:
           token: ${{ github.token }}
           tag: ${{ github.ref_name }}
-          writeToFile: false # Don't commit CHANGELOG.md automatically here
+          writeToFile: false
+
+      - name: Build Body Content
+        id: set_body
+        run: |
+          if [ "${{ steps.changelog.outcome }}" == "failure" ]; then
+            echo "body_value=First version. No changes listed." >> $GITHUB_OUTPUT
+          else
+            # Set value if the previous step SUCCEEDED
+            # Use the original output from the changelog step
+            echo "body_value=${{ steps.changelog.outputs.changes }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.get_version.outputs.VERSION }}
           name: Release v${{ steps.get_version.outputs.VERSION }}
-          body: ${{ steps.changelog.outputs.changes }}
+          body: ${{ steps.set_body.outputs.body_value }}
           files: plugin/build/output/*.jar
           draft: false
           prerelease: false
