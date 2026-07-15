@@ -47,7 +47,7 @@ public class NumberConfigOptions extends ValueConfigOptions<Integer> {
 	}
 
 	@Override
-	public @Nullable Integer getEmptyValue() {
+	public @Nullable Integer getDefaultValue() {
 		return defaultValue;
 	}
 	@Override

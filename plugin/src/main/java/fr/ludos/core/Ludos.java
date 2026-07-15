@@ -25,6 +25,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.command.ludos.LudosCommand;
+import fr.ludos.core.command.ludos.config.LudosConfigMap;
 import fr.ludos.core.command.ludos.game.GameConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
@@ -75,6 +76,9 @@ public class Ludos extends JavaPlugin implements Listener {
 		} catch (IOException ex) {
 			getLogger().log(Level.SEVERE, "Could not save groups to " + groupsFile, ex);
 		}
+	}
+	public ConfigurationSection getPluginConfig() {
+		return Utility.getOrCreateConfigSection(getConfig(), LudosConfigMap.instance.getNamespace());
 	}
 	public ConfigurationSection getGroupConfig() {
 		return Utility.getOrCreateConfigSection(getConfig(), GroupConfigMap.instance.getNamespace());
@@ -279,10 +283,13 @@ public class Ludos extends JavaPlugin implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player currentPlayer = event.getPlayer();
 
-		TextComponent message = Component.text("Click here to get a guidebook!")
-			.color(NamedTextColor.GOLD)
-			.decoration(TextDecoration.UNDERLINED, true)
-			.clickEvent(ClickEvent.runCommand("/ludos guidebook"));
-		currentPlayer.sendMessage(message);
+		boolean showMessage = LudosConfigMap.guidebookMessage.getPluginConfig(this);
+		if (showMessage) {
+			TextComponent message = Component.text("Click here to get a guidebook!")
+				.color(NamedTextColor.GOLD)
+				.decoration(TextDecoration.UNDERLINED, true)
+				.clickEvent(ClickEvent.runCommand("/ludos guidebook"));
+			currentPlayer.sendMessage(message);
+		}
 	}
 }

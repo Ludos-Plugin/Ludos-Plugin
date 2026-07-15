@@ -15,7 +15,7 @@ public class LudosConfig implements Subcommand {
 	private final ScopeConfigMap map;
 
 	public LudosConfig(Ludos plugin) {
-		this.map = new ScopeConfigMap(plugin, LudosConfigMap.instance);
+		this.map = new ScopeConfigMap(plugin, GlobalConfigMap.instance, LocalConfigMap.instance);
 	}
 
 	@Override

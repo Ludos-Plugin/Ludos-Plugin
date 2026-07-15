@@ -27,7 +27,7 @@ public final class SingleGroupPlayerConfigOptions extends ValueConfigOptions<Off
 	}
 
 	@Override
-	public OfflinePlayer getEmptyValue() {
+	public OfflinePlayer getDefaultValue() {
 		return null;
 	}
 

@@ -3,15 +3,17 @@ package fr.ludos.core.config.sectionProvider;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.config.ConfigOptions;
 
 public class ConfigSectionMap extends ConfigSectionCollection {
-	private final Map<String, ConfigSectionProvider> map;
-	public ConfigSectionMap(ConfigOptions options, Map<String, ConfigSectionProvider> map) {
-		super(options);
+	private final static Pair<ConfigSectionProvider, ConfigOptions> empty_pair = Pair.of(null, null);
+	private final Map<String, Pair<ConfigSectionProvider, ConfigOptions>> map;
+
+	public ConfigSectionMap(Map<String, Pair<ConfigSectionProvider, ConfigOptions>> map) {
 		this.map = map;
 	}
 
@@ -22,7 +24,12 @@ public class ConfigSectionMap extends ConfigSectionCollection {
 
 	@Override
 	public @NotNull ConfigSectionProvider getProvider(String key, CommandSender sender) {
-		return map.get(key);
+		return map.getOrDefault(key, empty_pair).getLeft();
+	}
+
+	@Override
+	public @NotNull ConfigOptions getOptions(String key, CommandSender sender) {
+		return map.getOrDefault(key, empty_pair).getRight();
 	}
 
 }

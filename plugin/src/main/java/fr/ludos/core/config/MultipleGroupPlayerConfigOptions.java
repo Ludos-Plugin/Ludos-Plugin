@@ -51,7 +51,7 @@ public final class MultipleGroupPlayerConfigOptions extends ValueConfigOptions<S
 	}
 
 	@Override
-	public Set<OfflinePlayer> getEmptyValue() {
+	public Set<OfflinePlayer> getDefaultValue() {
 		return Collections.emptySet();
 	}
 

@@ -24,7 +24,7 @@ public final class EnumConfigOptions<T extends Enum<T>> extends ValueConfigOptio
 	}
 
 	@Override
-	public T getEmptyValue() {
+	public T getDefaultValue() {
 		return defaultValue != null
 			? defaultValue
 			: clazz.getEnumConstants()[0];

@@ -22,7 +22,7 @@ public final class StringConfigOptions extends ValueConfigOptions<String> {
 	}
 
 	@Override
-	public String getEmptyValue() {
+	public String getDefaultValue() {
 		return defaultValue;
 	}
 

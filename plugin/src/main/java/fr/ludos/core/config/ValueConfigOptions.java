@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 
@@ -42,9 +43,9 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		this.emptyValue = (emptyValue != null && ! emptyValue.isBlank()) ? emptyValue : defaultEmptyValue;
 	}
 
-	public abstract @Nullable T getEmptyValue();
+	public abstract @Nullable T getDefaultValue();
 	public final @Nullable String getDefaultStringValue() {
-		return toString(getEmptyValue());
+		return toString(getDefaultValue());
 	}
 
 	public final @Nullable String getStringValueOrNull(ConfigurationSection config) {
@@ -85,7 +86,7 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		T found = getValueOrNull(config);
 		if (found != null) return found;
 
-		return getEmptyValue();
+		return getDefaultValue();
 	}
 
 	public final @Nullable T getValueOrNull(ConfigurationSection config, ConfigurationSection fallback) {
@@ -98,9 +99,12 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		T found = getValueOrNull(config, fallback);
 		if (found != null) return found;
 
-		return getEmptyValue();
+		return getDefaultValue();
 	}
 
+	public final @Nullable T getPluginConfig(Ludos ludos) {
+		return getValueOrDefault(ludos.getPluginConfig());
+	}
 	public final @Nullable T getGroupConfig(Group group) {
 		return getValueOrDefault(group.getGroupConfig(), group.getLudos().getGroupConfig());
 	}
