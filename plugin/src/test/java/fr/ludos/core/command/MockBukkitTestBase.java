@@ -45,11 +45,8 @@ public abstract class MockBukkitTestBase {
 	}
 	public final PlayerMock createPlayer(String name) {
 		PlayerMock player = server.addPlayer(name);
-		clearMessages(player);
-
 		initPlayer(player);
 
-		clearMessages(player);
 		return player;
 	}
 

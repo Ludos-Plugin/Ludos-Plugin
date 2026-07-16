@@ -11,8 +11,10 @@ abstract class RoleTest extends MockBukkitTestBase {
 	@Override
 	public void initPlayer(PlayerMock player) {
 		super.initPlayer(player);
+		clearMessages(player);
 		player.performCommand("ludos role get");
 		assertEquals("none", player.nextMessage(), "Created player with a role");
+		clearMessages(player);
 	}
 
 	protected void resetRole(PlayerMock player) {

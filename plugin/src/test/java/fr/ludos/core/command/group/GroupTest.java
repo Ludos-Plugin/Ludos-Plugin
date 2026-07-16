@@ -77,4 +77,10 @@ abstract class GroupTest extends MockBukkitTestBase {
 
 		assertTrue(actualMemberNames.equals(infoMemberNames), "Invalid Group members in Info\nActual Members: " + actualMemberNames.stream().collect(Collectors.joining(", ")) + ".\nInfo Members: " + infoMemberNamesString + ".");
 	}
+
+	@Override
+	public void initPlayer(PlayerMock player) {
+		super.initPlayer(player);
+		clearMessages(player);
+	}
 }

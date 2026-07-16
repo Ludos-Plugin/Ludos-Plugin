@@ -6,8 +6,9 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
-	private final static String FALSE_STRING = "false";
-	private final static String TRUE_STRING = "true";
+	public final static String FALSE_STRING = "false";
+	public final static String TRUE_STRING = "true";
+
 	private final boolean defaultValue;
 
 	public BooleanConfigOptions(@NotNull String name, @NotNull String key, Boolean defaultValue, String emptyValue) {
