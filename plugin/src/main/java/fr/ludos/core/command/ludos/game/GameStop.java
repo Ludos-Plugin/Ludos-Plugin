@@ -13,11 +13,11 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 
 public class GameStop implements Subcommand {
-	private final static String id = "stop";
+	private final static String ID = "stop";
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

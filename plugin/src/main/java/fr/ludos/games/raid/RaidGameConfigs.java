@@ -33,9 +33,9 @@ public enum RaidGameConfigs implements ConfigSubcommand {
 				return true;
 			}
 
-			if (allOption.equalsIgnoreCase(args[0])) {
+			if (ALL_OPTION.equalsIgnoreCase(args[0])) {
 				setPlayerNames(config, null);
-				sender.sendMessage("Players reset to " + allOption);
+				sender.sendMessage("Players reset to " + ALL_OPTION);
 				return true;
 			}
 
@@ -46,12 +46,12 @@ public enum RaidGameConfigs implements ConfigSubcommand {
 		@Override
 		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			List<String> values = CommandUtility.getOnlinePlayerNames();
-			values.add(allOption);
+			values.add(ALL_OPTION);
 			return values;
 		}
 		@Override
 		public String getUsage() {
-			return "[" + allOption + " | <player1> <player2> ...]";
+			return "[" + ALL_OPTION + " | <player1> <player2> ...]";
 		}
 	},
 	rounds {
@@ -105,7 +105,7 @@ public enum RaidGameConfigs implements ConfigSubcommand {
 		}
 		@Override
 		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-			if (args.length == 1) return WorldBorderAreaOption.options;
+			if (args.length == 1) return WorldBorderAreaOption.OPTIONS;
 			return null;
 		}
 		@Override
@@ -114,16 +114,16 @@ public enum RaidGameConfigs implements ConfigSubcommand {
 		}
 	};
 
-	public static final String playersKey = "players";
-	public static final String playersPath = ArenaGame.ID + '.' + playersKey;
+	public static final String PLAYERS_KEY = "players";
+	public static final String PLAYERS_PATH = ArenaGame.ID + '.' + PLAYERS_KEY;
 
-	public static final String wavesKey = "waves";
-	public static final String wavesPath = ArenaGame.ID + '.' + wavesKey;
+	public static final String WAVES_KEY = "waves";
+	public static final String WAVES_PATH = ArenaGame.ID + '.' + WAVES_KEY;
 
-	public static final String areaKey = "area";
-	public static final String areaPath = ArenaGame.ID + '.' + areaKey;
+	public static final String AREA_KEY = "area";
+	public static final String AREA_PATH = ArenaGame.ID + '.' + AREA_KEY;
 
-	private static final String allOption = "all";
+	private static final String ALL_OPTION = "all";
 
 	@Override
 	public boolean requireOp() {
@@ -144,21 +144,21 @@ public enum RaidGameConfigs implements ConfigSubcommand {
 	}
 
 	public static Set<String> getPlayerNames(ConfigurationSection config) {
-		return new HashSet<>(config.getStringList(playersPath));
+		return new HashSet<>(config.getStringList(PLAYERS_PATH));
 	}
 	public static void setPlayerNames(ConfigurationSection config, Set<String> names) {
-		config.set(playersPath, names == null ? null : List.copyOf(names));
+		config.set(PLAYERS_PATH, names == null ? null : List.copyOf(names));
 	}
 
 	public static int getWaves(ConfigurationSection config) {
-		return config.getInt(wavesPath, 15);
+		return config.getInt(WAVES_PATH, 15);
 	}
 	public static void setWaves(ConfigurationSection config, int value) {
-		config.set(wavesPath, value);
+		config.set(WAVES_PATH, value);
 	}
 
 	public static WorldBorderAreaOption getArea(ConfigurationSection config) {
-		String area = config.getString(areaPath, null);
+		String area = config.getString(AREA_PATH, null);
 		return Arrays.stream(WorldBorderAreaOption.values())
 			.filter(o -> o.name().equalsIgnoreCase(area))
 			.findFirst()

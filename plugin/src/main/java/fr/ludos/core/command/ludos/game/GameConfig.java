@@ -17,7 +17,7 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 
 public class GameConfig implements Subcommand {
-	private final static String id = "config";
+	private final static String ID = "config";
 
 	private final Ludos plugin;
 	public GameConfig(Ludos plugin) {
@@ -26,7 +26,7 @@ public class GameConfig implements Subcommand {
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -61,10 +61,10 @@ public class GameConfig implements Subcommand {
 		}
 
 		ConfigurationSection configSection = group.getConfig();
-		if (! configSection.isConfigurationSection(Game.namespace)) {
-			configSection.createSection(Game.namespace);
+		if (! configSection.isConfigurationSection(Game.NAMESPACE)) {
+			configSection.createSection(Game.NAMESPACE);
 		}
-		ConfigurationSection gamesSection = configSection.getConfigurationSection(Game.namespace);
+		ConfigurationSection gamesSection = configSection.getConfigurationSection(Game.NAMESPACE);
 
 		boolean res = configGame.executeGameConfig(sender, command, label, gamesSection, Arrays.copyOfRange(args, 1, args.length));
 

@@ -24,7 +24,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 
 public class HuntsmanRole extends Role {
-	public static final String id = "huntsman";
+	public static final String ID = "huntsman";
 
 
 	public HuntsmanRole(Builder builder, Game game) {
@@ -62,7 +62,7 @@ public class HuntsmanRole extends Role {
 
 	@Override
 	protected Boolean isPlayerValidInternal(OfflinePlayer player) {
-		return Role.isPlayerRole(player, id);
+		return Role.isPlayerRole(player, ID);
 	}
 
 
@@ -70,7 +70,7 @@ public class HuntsmanRole extends Role {
 
 		@Override
 		public String getId() {
-			return id;
+			return ID;
 		}
 
 		public Builder(Ludos plugin) {

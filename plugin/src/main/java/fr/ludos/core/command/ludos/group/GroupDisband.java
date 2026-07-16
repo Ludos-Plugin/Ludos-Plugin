@@ -12,7 +12,7 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
 
 public class GroupDisband implements Subcommand {
-	private final static String id = "disband";
+	private final static String ID = "disband";
 
 	private final Ludos plugin;
 	public GroupDisband(Ludos plugin) {
@@ -21,7 +21,7 @@ public class GroupDisband implements Subcommand {
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

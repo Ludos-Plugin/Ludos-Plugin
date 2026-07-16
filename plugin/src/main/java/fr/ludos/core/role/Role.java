@@ -45,8 +45,8 @@ import net.kyori.adventure.text.format.TextDecoration;
  * It contains events and Data.
  */
 public abstract class Role extends GameProcessBase {
-	public static final String noneLabel = "none";
-	private static final String rolesKey = "playerRoles";
+	public static final String NONE_LABEL = "none";
+	private static final String ROLE_KEY = "playerRoles";
 
 	public static Map<String, Builder> getRegistered() {
 		return registered;
@@ -143,10 +143,10 @@ public abstract class Role extends GameProcessBase {
 
 	public static void loadConfigRoles(Ludos plugin) {
 		ConfigurationSection configSection = plugin.getConfig();
-		if (! configSection.isConfigurationSection(rolesKey)) {
-			configSection.createSection(rolesKey);
+		if (! configSection.isConfigurationSection(ROLE_KEY)) {
+			configSection.createSection(ROLE_KEY);
 		}
-		ConfigurationSection rolesSection = configSection.getConfigurationSection(rolesKey);
+		ConfigurationSection rolesSection = configSection.getConfigurationSection(ROLE_KEY);
 		if (rolesSection == null) {
 			return;
 		}
@@ -156,7 +156,7 @@ public abstract class Role extends GameProcessBase {
 			.collect(Collectors.toMap(
 				(s) -> UUID.fromString(s),
 				(s) -> {
-					String path = rolesKey + '.' + UUID.fromString(s);
+					String path = ROLE_KEY + '.' + UUID.fromString(s);
 					String val = plugin.getConfig().getString(path);
 					plugin.getLogger().info("Loaded Role of Player UUID : " + path + " | Role ID : " + val);
 					return val;
@@ -226,7 +226,7 @@ public abstract class Role extends GameProcessBase {
 
 		playerRoles.put(playerUUID, roleId);
 
-		plugin.getConfig().set(rolesKey + '.' + playerUUID, roleId);
+		plugin.getConfig().set(ROLE_KEY + '.' + playerUUID, roleId);
 		plugin.saveConfig();
 
 		Player online = player.getPlayer();
@@ -246,7 +246,7 @@ public abstract class Role extends GameProcessBase {
 		if (role == null) return;
 
 		playerRoles.remove(playerUUID);
-		plugin.getConfig().set(rolesKey + '.' + playerUUID, null);
+		plugin.getConfig().set(ROLE_KEY + '.' + playerUUID, null);
 		plugin.saveConfig();
 
 		Player online = player.getPlayer();

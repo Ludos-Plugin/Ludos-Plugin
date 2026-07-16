@@ -21,14 +21,14 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 public interface SpecialItemInterface {
-	public static final String TYPE_ID = "type_id";
-	public static final NamespacedKey typeIdKey = new NamespacedKey(Ludos.namespace, TYPE_ID);
+	public static final String TYPE_ID_KEY_STRING = "type_id";
+	public static final NamespacedKey TYPE_ID_KEY = new NamespacedKey(Ludos.NAMESPACE, TYPE_ID_KEY_STRING);
 
-	public static final String ITEM_ID_KEY = "item_id";
-	public static final NamespacedKey itemIdKey = new NamespacedKey(Ludos.namespace, ITEM_ID_KEY);
+	public static final String ITEM_ID_KEY_STRING = "item_id";
+	public static final NamespacedKey ITEM_ID_KEY = new NamespacedKey(Ludos.NAMESPACE, ITEM_ID_KEY_STRING);
 
-	public static final String OWNER_KEY = "owner";
-	public static final NamespacedKey ownerKey = new NamespacedKey(Ludos.namespace, OWNER_KEY);
+	public static final String OWNER_KEY_STRING = "owner";
+	public static final NamespacedKey OWNER_KEY = new NamespacedKey(Ludos.NAMESPACE, OWNER_KEY_STRING);
 
 
 	Game getGame();
@@ -51,14 +51,14 @@ public interface SpecialItemInterface {
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
-		if (! container.has(typeIdKey, PersistentDataType.STRING) ) return null;
-		String found = container.get(typeIdKey, PersistentDataType.STRING);
+		if (! container.has(TYPE_ID_KEY, PersistentDataType.STRING) ) return null;
+		String found = container.get(TYPE_ID_KEY, PersistentDataType.STRING);
 
 		if (! found.equals(typeId)) return null;
-		if (! container.has(itemIdKey, PersistentDataType.STRING) ) return null;
+		if (! container.has(ITEM_ID_KEY, PersistentDataType.STRING) ) return null;
 
 		return UUID.fromString(
-			container.get(itemIdKey, PersistentDataType.STRING)
+			container.get(ITEM_ID_KEY, PersistentDataType.STRING)
 		);
 	}
 
@@ -71,11 +71,11 @@ public interface SpecialItemInterface {
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
-		if (! container.has(ownerKey, PersistentDataType.STRING) ) return null;
+		if (! container.has(OWNER_KEY, PersistentDataType.STRING) ) return null;
 
 		Player owner = Bukkit.getPlayer(
 			UUID.fromString(
-				container.get(ownerKey, PersistentDataType.STRING)
+				container.get(OWNER_KEY, PersistentDataType.STRING)
 			)
 		);
 

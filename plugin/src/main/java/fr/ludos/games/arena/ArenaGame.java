@@ -135,7 +135,7 @@ public class ArenaGame extends WaveGame {
 
 		public WorldCreator createWorldCreator() {
 			String worldName = "arena_" + UUID.randomUUID();
-			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.namespace, worldName))
+			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.NAMESPACE, worldName))
 				.environment(Environment.NORMAL)
 				.type(WorldType.NORMAL)
 				.generateStructures(true)

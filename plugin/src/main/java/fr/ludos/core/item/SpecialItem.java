@@ -68,9 +68,9 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		UUID itemId = UUID.randomUUID();
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
-		container.set(ownerKey, PersistentDataType.STRING, owner.getUniqueId().toString());
-		container.set(typeIdKey, PersistentDataType.STRING, getTypeId());
-		container.set(itemIdKey, PersistentDataType.STRING, itemId.toString());
+		container.set(OWNER_KEY, PersistentDataType.STRING, owner.getUniqueId().toString());
+		container.set(TYPE_ID_KEY, PersistentDataType.STRING, getTypeId());
+		container.set(ITEM_ID_KEY, PersistentDataType.STRING, itemId.toString());
 
 		stack.setItemMeta(meta);
 

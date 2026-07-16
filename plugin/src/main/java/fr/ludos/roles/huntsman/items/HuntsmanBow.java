@@ -108,7 +108,7 @@ public class HuntsmanBow extends SpecialItem {
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HuntsmanRole.id);
+			return Role.isPlayerRole(owner, HuntsmanRole.ID);
 		}
 	}
 }

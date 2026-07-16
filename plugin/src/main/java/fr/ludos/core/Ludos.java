@@ -43,7 +43,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public class Ludos extends JavaPlugin implements Listener {
 
-	public static final String namespace = "ludos";
+	public static final String NAMESPACE = "ludos";
 
 	private final GroupManager groupManager = new GroupManager(this);
 	private final TextureManager textureManager = new TextureManager(this);

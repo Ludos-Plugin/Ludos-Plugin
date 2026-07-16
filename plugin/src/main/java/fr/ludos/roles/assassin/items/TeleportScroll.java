@@ -99,7 +99,7 @@ public class TeleportScroll extends SpecialItem {
 		protected void onItemStop() {
 			super.onItemStop();
 
-			for (Player player : Role.getPlayersOfRole(AssassinRole.id)) {
+			for (Player player : Role.getPlayersOfRole(AssassinRole.ID)) {
 				var healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
 				if (healthAttr == null) continue;
 				new ArrayList<>(healthAttr.getModifiers()).stream()
@@ -198,7 +198,7 @@ public class TeleportScroll extends SpecialItem {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, AssassinRole.id);
+			return Role.isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

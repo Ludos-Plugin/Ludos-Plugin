@@ -74,14 +74,14 @@ public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.
 	public static @Nullable Map<String, LevelValue> levelsFromItemStack(ItemStack stack, String id, Game game) {
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 
-		if ( ! container.has(LevelItem.levelKey, LevelValueMapPersistentDataType.INSTANCE) ) return null;
+		if ( ! container.has(LevelItem.LEVEL_KEY, LevelValueMapPersistentDataType.INSTANCE) ) return null;
 
-		return container.get(LevelItem.levelKey, LevelValueMapPersistentDataType.INSTANCE);
+		return container.get(LevelItem.LEVEL_KEY, LevelValueMapPersistentDataType.INSTANCE);
 	}
 	public static void saveLevelStates(SpecialItem item, Map<String, LevelValue> levelValues) {
 		ItemMeta meta = item.getStack().getItemMeta();
 		PersistentDataContainer container = meta.getPersistentDataContainer();
-		container.set(LevelItem.levelKey, LevelValueMapPersistentDataType.INSTANCE, levelValues);
+		container.set(LevelItem.LEVEL_KEY, LevelValueMapPersistentDataType.INSTANCE, levelValues);
 		item.getStack().setItemMeta(meta);
 	}
 	public static <T extends MultiLevelBranchItem<TBranch>, TBranch extends MultiLevelBranchItem.Branch> Component getBranchXpLoreField(T item, TBranch branch) {

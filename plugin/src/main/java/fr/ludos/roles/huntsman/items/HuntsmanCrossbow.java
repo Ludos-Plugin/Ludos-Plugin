@@ -104,19 +104,19 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 
 	public static class Events extends MultiLevelBranchItem.Events<HuntsmanCrossbow, HuntsmanCrossbowBranch> {
-		private static final List<HuntsmanCrossbowBranch> branches = Arrays.asList(HuntsmanCrossbowBranches.values());
+		private static final List<HuntsmanCrossbowBranch> BRANCHES = Arrays.asList(HuntsmanCrossbowBranches.values());
 
 		public static final String ARROW_TYPE = "arrow_type";
-		public final NamespacedKey arrowTypeKey = new NamespacedKey(Ludos.namespace, ARROW_TYPE);
+		public final NamespacedKey arrowTypeKey = new NamespacedKey(Ludos.NAMESPACE, ARROW_TYPE);
 
 		public static final String ARROW_LEVEL = "arrow_level";
-		public final NamespacedKey arrowLevelKey = new NamespacedKey(Ludos.namespace, ARROW_LEVEL);
+		public final NamespacedKey arrowLevelKey = new NamespacedKey(Ludos.NAMESPACE, ARROW_LEVEL);
 
 		// private BukkitTask saturationTask;
 
 
 		public Events(Game game) {
-			super(branches, game, new Events.Info(ItemSlot.HOTBAR_2));
+			super(BRANCHES, game, new Events.Info(ItemSlot.HOTBAR_2));
 		}
 
 
@@ -208,7 +208,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HuntsmanRole.id);
+			return Role.isPlayerRole(owner, HuntsmanRole.ID);
 		}
 	}
 }

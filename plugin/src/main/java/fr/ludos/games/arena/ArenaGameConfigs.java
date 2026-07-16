@@ -34,7 +34,7 @@ public enum ArenaGameConfigs implements ConfigSubcommand {
 		}
 		@Override
 		public String getUsage() {
-			return "[" + autoOption + " | <player1> <player2> ...]";
+			return "[" + AUTO_OPTION + " | <player1> <player2> ...]";
 		}
 	},
 	team2 {
@@ -52,7 +52,7 @@ public enum ArenaGameConfigs implements ConfigSubcommand {
 		}
 		@Override
 		public String getUsage() {
-			return "[" + autoOption + " | <player1> <player2> ...]";
+			return "[" + AUTO_OPTION + " | <player1> <player2> ...]";
 		}
 	},
 	mode {
@@ -74,7 +74,7 @@ public enum ArenaGameConfigs implements ConfigSubcommand {
 		}
 		@Override
 		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-			if (args.length == 1) return modeOptions;
+			if (args.length == 1) return MODE_OPTIONS;
 			return null;
 		}
 		@Override
@@ -133,7 +133,7 @@ public enum ArenaGameConfigs implements ConfigSubcommand {
 		}
 		@Override
 		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-			if (args.length == 1) return areaOptions;
+			if (args.length == 1) return AREA_OPTIONS;
 			return null;
 		}
 		@Override
@@ -151,25 +151,25 @@ public enum ArenaGameConfigs implements ConfigSubcommand {
 	public abstract List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args);
 
 
-	public static final String team1Key = "team1";
-	public static final String team1Path = ArenaGame.ID + '.' + team1Key;
-	public static final String team2Key = "team2";
-	public static final String team2Path = ArenaGame.ID + '.' + team2Key;
-	public static final String modeKey = "mode";
-	public static final String modePath = ArenaGame.ID + '.' + modeKey;
-	public static final String roundsKey = "rounds";
-	public static final String roundsPath = ArenaGame.ID + '.' + roundsKey;
-	public static final String areaKey = "area";
-	public static final String areaPath = ArenaGame.ID + '.' + areaKey;
+	public static final String TEAM_1_KEY = "team1";
+	public static final String TEAM_1_PATH = ArenaGame.ID + '.' + TEAM_1_KEY;
+	public static final String TEAM_2_KEY = "team2";
+	public static final String TEAM_2_PATH = ArenaGame.ID + '.' + TEAM_2_KEY;
+	public static final String MODE_KEY = "mode";
+	public static final String MODE_PATH = ArenaGame.ID + '.' + MODE_KEY;
+	public static final String ROUNDS_KEY = "rounds";
+	public static final String ROUNDS_PATH = ArenaGame.ID + '.' + ROUNDS_KEY;
+	public static final String AREA_KEY = "area";
+	public static final String AREA_PATH = ArenaGame.ID + '.' + AREA_KEY;
 
-	private static final String autoOption = "auto";
+	private static final String AUTO_OPTION = "auto";
 
-	public static final List<String> modeOptions = ArenaModeOption.options;
-	public static final List<String> areaOptions = WorldBorderAreaOption.options;
+	public static final List<String> MODE_OPTIONS = ArenaModeOption.OPTIONS;
+	public static final List<String> AREA_OPTIONS = WorldBorderAreaOption.OPTIONS;
 
 
 	private static String teamPath(int index) {
-		return index == 0 ? team1Path : team2Path;
+		return index == 0 ? TEAM_1_PATH : TEAM_2_PATH;
 	}
 
 	public static Set<String> getTeamNames(ConfigurationSection config, int index) {
@@ -190,25 +190,25 @@ public enum ArenaGameConfigs implements ConfigSubcommand {
 	}
 
 	public static ArenaModeOption getMode(ConfigurationSection config) {
-		return ArenaModeOption.fromConfig(config.getString(modePath), ArenaModeOption.duel);
+		return ArenaModeOption.fromConfig(config.getString(MODE_PATH), ArenaModeOption.duel);
 	}
 	public static void setMode(ConfigurationSection config, ArenaModeOption mode) {
-		config.set(modePath, mode == null ? null : mode.name());
+		config.set(MODE_PATH, mode == null ? null : mode.name());
 	}
 
 	public static int getRounds(ConfigurationSection config) {
-		return Math.max(1, config.getInt(roundsPath, 3));
+		return Math.max(1, config.getInt(ROUNDS_PATH, 3));
 	}
 	public static void setRounds(ConfigurationSection config, int rounds) {
-		config.set(roundsPath, Math.max(1, rounds));
+		config.set(ROUNDS_PATH, Math.max(1, rounds));
 	}
 
 	public static WorldBorderAreaOption getArea(ConfigurationSection config) {
-		String value = config.getString(areaPath);
+		String value = config.getString(AREA_PATH);
 		return Arrays.stream(WorldBorderAreaOption.values()).filter(o -> o.name().equalsIgnoreCase(value)).findFirst().orElse(WorldBorderAreaOption.small);
 	}
 	public static void setArea(ConfigurationSection config, WorldBorderAreaOption area) {
-		config.set(areaPath, area == null ? null : area.name());
+		config.set(AREA_PATH, area == null ? null : area.name());
 	}
 
 	private static boolean handleTeamCommand(CommandSender sender, ConfigurationSection config, String[] args, int index) {
@@ -217,9 +217,9 @@ public enum ArenaGameConfigs implements ConfigSubcommand {
 			sender.sendMessage(names.isEmpty() ? "Auto" : String.join(" ", names));
 			return true;
 		}
-		if (autoOption.equalsIgnoreCase(args[0])) {
+		if (AUTO_OPTION.equalsIgnoreCase(args[0])) {
 			setTeamNames(config, index, null);
-			sender.sendMessage("Arena team" + (index + 1) + " reset to " + autoOption);
+			sender.sendMessage("Arena team" + (index + 1) + " reset to " + AUTO_OPTION);
 			return true;
 		}
 		setTeamNames(config, index, new HashSet<>(Arrays.asList(args)));
@@ -229,7 +229,7 @@ public enum ArenaGameConfigs implements ConfigSubcommand {
 
 	private static List<String> teamTabComplete() {
 		List<String> values = CommandUtility.getOnlinePlayerNames();
-		values.add(autoOption);
+		values.add(AUTO_OPTION);
 		return values;
 	}
 }

@@ -33,7 +33,7 @@ public enum WorldBorderAreaOption {
 		return sb.toString();
 	}
 
-	public static final List<String> options = Arrays.stream(WorldBorderAreaOption.values())
+	public static final List<String> OPTIONS = Arrays.stream(WorldBorderAreaOption.values())
 		.map(Enum::name)
 		.collect(Collectors.toList());
 }

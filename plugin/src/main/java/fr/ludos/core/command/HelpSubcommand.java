@@ -9,7 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 public class HelpSubcommand implements Subcommand {
-	private final static String id = "help";
+	private final static String ID = "help";
 
 	private final String label;
 	private final Map<String, Subcommand> subcommands;
@@ -21,7 +21,7 @@ public class HelpSubcommand implements Subcommand {
 		this(
 			label,
 			subcommands.stream()
-				.filter((sc) -> sc.id() != id)
+				.filter((sc) -> sc.id() != ID)
 				.collect(Collectors.toMap(
 					(sc) -> sc.id(),
 					(sc) -> sc
@@ -31,7 +31,7 @@ public class HelpSubcommand implements Subcommand {
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

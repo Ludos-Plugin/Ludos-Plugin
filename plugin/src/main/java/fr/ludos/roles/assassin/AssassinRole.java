@@ -31,7 +31,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 
 public class AssassinRole extends Role {
-	public static final String id = "assassin";
+	public static final String ID = "assassin";
 
 	private static final int INVISIBILITY_DURATION = 300;
 	private static final long STATIONARY_DURATION_MS = 3000;
@@ -51,7 +51,7 @@ public class AssassinRole extends Role {
 		stealthTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), () -> {
 			long now = System.currentTimeMillis();
 			List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
-				.filter((player) -> Role.isPlayerRole(player, id))
+				.filter((player) -> Role.isPlayerRole(player, ID))
 				.collect(Collectors.toUnmodifiableList());
 			for (Player player : players) {
 				if (!player.isOnline()) continue;
@@ -91,7 +91,7 @@ public class AssassinRole extends Role {
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event) {
 		Player player = event.getPlayer();
-		if (!Role.isPlayerRole(player, AssassinRole.id)) return;
+		if (!Role.isPlayerRole(player, AssassinRole.ID)) return;
 
 		// Ignorer les rotations (regarder autour sans bouger)
 		if (event.getFrom().getBlockX() == event.getTo().getBlockX() &&
@@ -108,7 +108,7 @@ public class AssassinRole extends Role {
 	@EventHandler
 	public void onInvisibleDaggerHit(EntityDamageByEntityEvent event) {
 		if (! (event.getDamager() instanceof Player player)) return;
-		if (! Role.isPlayerRole(player, AssassinRole.id)) return;
+		if (! Role.isPlayerRole(player, AssassinRole.ID)) return;
 
 		if (!player.hasPotionEffect(PotionEffectType.INVISIBILITY)) return;
 
@@ -117,7 +117,7 @@ public class AssassinRole extends Role {
 
 	@Override
 	protected Boolean isPlayerValidInternal(OfflinePlayer player) {
-		return Role.isPlayerRole(player, id);
+		return Role.isPlayerRole(player, ID);
 	}
 
 
@@ -125,7 +125,7 @@ public class AssassinRole extends Role {
 
 		@Override
 		public String getId() {
-			return id;
+			return ID;
 		}
 
 		public Builder(Ludos plugin) {

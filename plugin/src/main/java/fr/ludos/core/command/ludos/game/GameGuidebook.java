@@ -14,11 +14,11 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.game.Game;
 
 public class GameGuidebook implements Subcommand {
-	private final static String id = "guidebook";
+	private final static String ID = "guidebook";
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

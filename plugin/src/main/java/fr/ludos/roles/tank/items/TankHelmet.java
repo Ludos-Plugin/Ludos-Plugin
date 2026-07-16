@@ -92,7 +92,7 @@ public class TankHelmet extends SpecialItem {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, TankRole.id);
+			return Role.isPlayerRole(owner, TankRole.ID);
 		}
 	}
 }

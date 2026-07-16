@@ -12,11 +12,11 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.role.Role;
 
 public class RoleConfig implements Subcommand {
-	private final static String id = "config";
+	private final static String ID = "config";
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

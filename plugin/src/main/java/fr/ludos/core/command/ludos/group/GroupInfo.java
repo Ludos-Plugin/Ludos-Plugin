@@ -13,11 +13,11 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
 
 public class GroupInfo implements Subcommand {
-	private final static String id = "info";
+	private final static String ID = "info";
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

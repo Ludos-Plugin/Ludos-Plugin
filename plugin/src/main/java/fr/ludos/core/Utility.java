@@ -44,7 +44,7 @@ import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
 public class Utility {
-	private static final Random random = new Random();
+	private static final Random RANDOM = new Random();
 
 	public static Location getLocationAround(Location searchOrigin, int min, int max, Location fallback) {
 		return getLocationAround(searchOrigin, min, max, fallback, 0);
@@ -114,7 +114,7 @@ public class Utility {
 		int biomeSearchRetries = retries;
 
 		do {
-			Biome randomBiome = biomes.stream().skip(random.nextInt(biomes.size())).findFirst().orElse(null);
+			Biome randomBiome = biomes.stream().skip(RANDOM.nextInt(biomes.size())).findFirst().orElse(null);
 			biomes.remove(randomBiome);
 
 			biomeLocation = world.locateNearestBiome(searchOrigin, randomBiome, biomeSearchSize, 16);
@@ -130,8 +130,8 @@ public class Utility {
 	public static Location getLocationAround(Location searchOrigin, int min, int max, Location fallback, int retries) {
 		Location location = searchOrigin.clone();
 		do {
-			location.setX(searchOrigin.getBlockX() + random.nextInt(min, max + 1) * (random.nextBoolean() ? 1 : -1) + 0.5);
-			location.setZ(searchOrigin.getBlockZ() + random.nextInt(min, max + 1) * (random.nextBoolean() ? 1 : -1) + 0.5);
+			location.setX(searchOrigin.getBlockX() + RANDOM.nextInt(min, max + 1) * (RANDOM.nextBoolean() ? 1 : -1) + 0.5);
+			location.setZ(searchOrigin.getBlockZ() + RANDOM.nextInt(min, max + 1) * (RANDOM.nextBoolean() ? 1 : -1) + 0.5);
 
 			retries--;
 		}
@@ -415,9 +415,9 @@ public class Utility {
 	}
 
 
-	public final static Predicate<Player> isPlayerInNormalGamemode = (p) -> p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE;
-	public final static Predicate<LivingEntity> isEntityAlive = (p) -> ! p.isDead() && (p instanceof Player player ? isPlayerInNormalGamemode.test(player) : true);
-	public final static Predicate<Player> isPlayerAlive = (p) -> isPlayerInNormalGamemode.test(p) && ! p.isDead();
+	public final static Predicate<Player> IS_PLAYER_IN_NORMAL_GAMEMODE = (p) -> p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE;
+	public final static Predicate<LivingEntity> IS_ENTITY_ALIVE = (p) -> ! p.isDead() && (p instanceof Player player ? IS_PLAYER_IN_NORMAL_GAMEMODE.test(player) : true);
+	public final static Predicate<Player> IS_PLAYER_ALIVE = (p) -> IS_PLAYER_IN_NORMAL_GAMEMODE.test(p) && ! p.isDead();
 
 	public static Stream<Entity> getTeamEntities(Team team) {
 		return team.getEntries().stream()
@@ -438,6 +438,6 @@ public class Utility {
 		return getOnline(getTeamPlayers(team));
 	}
 	public static Stream<Player> getTeamAlivePlayers(Team team) {
-		return getTeamOnlinePlayers(team).filter(isPlayerAlive);
+		return getTeamOnlinePlayers(team).filter(IS_PLAYER_ALIVE);
 	}
 }

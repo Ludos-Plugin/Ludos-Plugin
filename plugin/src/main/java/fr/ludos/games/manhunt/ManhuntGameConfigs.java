@@ -35,7 +35,7 @@ public enum ManhuntGameConfigs implements ConfigSubcommand {
 
 			String givenPreyName = args[0];
 
-			if ( givenPreyName.equalsIgnoreCase(randomOption) ) {
+			if ( givenPreyName.equalsIgnoreCase(RANDOM_OPTION) ) {
 				// Reset to default option
 				setPreyName(config, null);
 
@@ -53,7 +53,7 @@ public enum ManhuntGameConfigs implements ConfigSubcommand {
 		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			// Options are : any single player, or a random player
 			List<String> allPlayers = CommandUtility.getOnlinePlayerNames();
-			allPlayers.add(randomOption);
+			allPlayers.add(RANDOM_OPTION);
 			return allPlayers;
 		}
 		@Override
@@ -94,7 +94,7 @@ public enum ManhuntGameConfigs implements ConfigSubcommand {
 		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			// Options are : large, medium, small
 			if (args.length == 1)
-				return areaOptions;
+				return AREA_OPTIONS;
 			return null;
 		}
 
@@ -139,7 +139,7 @@ public enum ManhuntGameConfigs implements ConfigSubcommand {
 		public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 			// Options are : short, medium, long
 			if (args.length == 1)
-				return revealOptions;
+				return REVEAL_OPTIONS;
 			return null;
 		}
 
@@ -155,63 +155,63 @@ public enum ManhuntGameConfigs implements ConfigSubcommand {
 	};
 
 
-	public static final String playersKey = "players";
-	public static final String playersPath = ManhuntGame.ID + '.' + playersKey;
-	public static final String preyKey = "prey";
-	public static final String preyPath = ManhuntGame.ID + '.' + preyKey;
+	public static final String PLAYERS_KEY = "players";
+	public static final String PLAYERS_PATH = ManhuntGame.ID + '.' + PLAYERS_KEY;
+	public static final String PREY_KEY = "prey";
+	public static final String PREY_PATH = ManhuntGame.ID + '.' + PREY_KEY;
 
-	public static final String areaKey = "area";
-	public static final String areaPath = ManhuntGame.ID + '.' + areaKey;
-	public static final String locationKey = "location";
-	public static final String locationPath = ManhuntGame.ID + '.' + locationKey;
-	public static final String revealKey = "reveal";
-	public static final String revealPath = ManhuntGame.ID + '.' + revealKey;
+	public static final String AREA_KEY = "area";
+	public static final String AREA_PATH = ManhuntGame.ID + '.' + AREA_KEY;
+	public static final String LOCATION_KEY = "location";
+	public static final String LOCATION_PATH = ManhuntGame.ID + '.' + LOCATION_KEY;
+	public static final String REVEAL_KEY = "reveal";
+	public static final String REVEAL_PATH = ManhuntGame.ID + '.' + REVEAL_KEY;
 
-	private static final String randomOption = "random";
+	private static final String RANDOM_OPTION = "random";
 
-	public static final List<String> areaOptions = Arrays.stream(WorldBorderAreaOption.values())
+	public static final List<String> AREA_OPTIONS = Arrays.stream(WorldBorderAreaOption.values())
 		.map(v -> v.name())
 		.collect(Collectors.toList());
-	public static final List<String> revealOptions = Arrays.stream(ManhuntRevealOptions.values())
+	public static final List<String> REVEAL_OPTIONS = Arrays.stream(ManhuntRevealOptions.values())
 		.map(v -> v.name())
 		.collect(Collectors.toList());
 
 
 	public static String getPreyName(ConfigurationSection config) {
-		return config.getString(preyPath);
+		return config.getString(PREY_PATH);
 	}
 	public static void setPreyName(ConfigurationSection config, String prey) {
 		String value = prey == null ? null : prey;
-		config.set(preyPath, value);
+		config.set(PREY_PATH, value);
 	}
 
 	public static Set<String> getPlayerNames(ConfigurationSection config) {
-		return config.getStringList(playersPath).stream()
+		return config.getStringList(PLAYERS_PATH).stream()
 			.collect(Collectors.toSet());
 	}
 	public static void setPlayerNames(ConfigurationSection config, Set<String> players) {
 		List<String> value = players == null ? null : players.stream().collect(Collectors.toList());
-		config.set(playersPath, value);
+		config.set(PLAYERS_PATH, value);
 	}
 
 	public static WorldBorderAreaOption getArea(ConfigurationSection config) {
-		String areaString = config.getString(areaPath);
+		String areaString = config.getString(AREA_PATH);
 		return Arrays.stream(WorldBorderAreaOption.values()).filter(o -> o.name().equals(areaString)).findFirst()
 			.orElse(WorldBorderAreaOption.medium);
 	}
 	public static void setArea(ConfigurationSection config, WorldBorderAreaOption area) {
 		String value = area == null ? null : area.name();
-		config.set(areaPath, value);
+		config.set(AREA_PATH, value);
 	}
 
 	public static ManhuntRevealOptions getReveal(ConfigurationSection config) {
-		String revealString = config.getString(revealPath);
+		String revealString = config.getString(REVEAL_PATH);
 		return Arrays.stream(ManhuntRevealOptions.values()).filter(o -> o.name().equals(revealString)).findFirst()
 			.orElse(ManhuntRevealOptions.three_minutes);
 	}
 	public static void setReveal(ConfigurationSection config, ManhuntRevealOptions reveal) {
 		String value = reveal == null ? null : reveal.name();
-		config.set(revealPath, value);
+		config.set(REVEAL_PATH, value);
 	}
 
 	@Nullable

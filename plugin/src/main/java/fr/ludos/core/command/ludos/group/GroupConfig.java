@@ -16,7 +16,7 @@ import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupRightsOption;
 
 public class GroupConfig implements Subcommand {
-	private final static String id = "config";
+	private final static String ID = "config";
 
 	protected final ConfigSubcommandManager<GroupConfigs> configCommand = new ConfigSubcommandManager<>(GroupConfigs.values());
 
@@ -27,7 +27,7 @@ public class GroupConfig implements Subcommand {
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

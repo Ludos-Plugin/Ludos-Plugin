@@ -38,7 +38,7 @@ class RoleAuthorizationTest extends RoleTest {
 		assertEquals("The role of player " + player2.getName() + " was reset", player1.nextMessage(), "Role was not reset");
 
 		player1.performCommand("ludos role get");
-		assertEquals(Role.noneLabel, player1.nextMessage(), "Role was not reset");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was not reset");
 
 		assertNull(Role.getPlayerRole(player1), "Role appears unset but isn't");
 	}

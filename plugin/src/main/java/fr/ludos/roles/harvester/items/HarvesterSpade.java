@@ -46,7 +46,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 	private static final int COOLDOWN_SECONDS = 20;
 	private static final int TUNNEL_LENGTH = 10;
 
-	private final static Map<Player, List<List<BlockState>>> tunnelBlocks = new HashMap<>();
+	private final static Map<Player, List<List<BlockState>>> TUNNEL_BLOCKS = new HashMap<>();
 
 
 	public static HarvesterSpade fromItemStack(List<HarvesterSpadeLevels> levels, ItemStack stack, Game game) throws IllegalArgumentException {
@@ -109,7 +109,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 	public void useAbility() {
 		if (! refreshUseCooldown()) return;
-		boolean tunnelActive = tunnelBlocks.containsKey(getOwner());
+		boolean tunnelActive = TUNNEL_BLOCKS.containsKey(getOwner());
 
 
 		if (tunnelActive) {
@@ -131,11 +131,11 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 
 	private boolean digTunnel() {
-		if (tunnelBlocks.containsKey(getOwner())) return false;
+		if (TUNNEL_BLOCKS.containsKey(getOwner())) return false;
 
 		List<Block> lastTwoTargetBlocks = getOwner().getLastTwoTargetBlocks(null, 12);
 		if (lastTwoTargetBlocks.size() != 2) return false;
-		tunnelBlocks.put(getOwner(), null);
+		TUNNEL_BLOCKS.put(getOwner(), null);
 
 
 		Block targetBlock = lastTwoTargetBlocks.get(1);
@@ -182,7 +182,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 				current++;
 				if (current >= digBlocks.size()) {
-					tunnelBlocks.put(getOwner(), digBlocksState);
+					TUNNEL_BLOCKS.put(getOwner(), digBlocksState);
 					cancel();
 				}
 			}
@@ -193,9 +193,9 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 
 	private boolean revertTunnel() {
-		List<List<BlockState>> blocks = tunnelBlocks.get(getOwner());
+		List<List<BlockState>> blocks = TUNNEL_BLOCKS.get(getOwner());
 		if (blocks == null) return false;
-		tunnelBlocks.put(getOwner(), null);
+		TUNNEL_BLOCKS.put(getOwner(), null);
 
 
 		new BukkitRunnable() {
@@ -215,7 +215,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 				current++;
 				if (current >= blocks.size()) {
-					tunnelBlocks.remove(getOwner());
+					TUNNEL_BLOCKS.remove(getOwner());
 					cancel();
 				}
 			}
@@ -291,7 +291,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HarvesterRole.id);
+			return Role.isPlayerRole(owner, HarvesterRole.ID);
 		}
 	}
 }

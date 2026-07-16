@@ -8,24 +8,24 @@ import java.util.Properties;
 
 
 public class DataController {
-	private static final File propsFile = new File("manhunt.dat");
-	private static final String propertiesPath = "prop.propeties";
+	private static final File PROPS_FILE = new File("manhunt.dat");
+	private static final String PROPS_PATH = "prop.propeties";
 
-	private static final Properties props = new Properties();
+	private static final Properties PROPS = new Properties();
 
 	public static Properties getProperties() {
-		return DataController.props;
+		return DataController.PROPS;
 	}
 
 	public static void loadProperties() throws IOException {
-		FileInputStream fileStream = new FileInputStream( DataController.propsFile );
-		props.load( fileStream );
+		FileInputStream fileStream = new FileInputStream( DataController.PROPS_FILE );
+		PROPS.load( fileStream );
 		fileStream.close();
 	}
 
 	public static void saveProperties() throws IOException {
-		FileOutputStream fileStream = new FileOutputStream( DataController.propsFile );
-		props.store(fileStream , DataController.propertiesPath);
+		FileOutputStream fileStream = new FileOutputStream( DataController.PROPS_FILE );
+		PROPS.store(fileStream , DataController.PROPS_PATH);
 		fileStream.close();
 	}
 

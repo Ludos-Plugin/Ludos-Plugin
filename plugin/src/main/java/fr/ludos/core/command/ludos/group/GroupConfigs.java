@@ -247,10 +247,10 @@ public enum GroupConfigs implements ConfigSubcommand {
 				return true;
 			}
 
-			if (! config.isConfigurationSection(Game.namespace)) {
-				config.createSection(Game.namespace);
+			if (! config.isConfigurationSection(Game.NAMESPACE)) {
+				config.createSection(Game.NAMESPACE);
 			}
-			ConfigurationSection gamesSection = config.getConfigurationSection(Game.namespace);
+			ConfigurationSection gamesSection = config.getConfigurationSection(Game.NAMESPACE);
 
 			boolean success = configGame.executeGameConfig(sender, command, label, gamesSection, Arrays.copyOfRange(args, 1, args.length));
 			if (success) {
@@ -284,71 +284,71 @@ public enum GroupConfigs implements ConfigSubcommand {
 		return false;
 	}
 
-	public static final String groupRightsKey = "group_rights";
-	public static final String groupRightsPath = Ludos.namespace + '.' + groupRightsKey;
+	public static final String GROUP_RIGHTS_KEY = "group_rights";
+	public static final String GROUP_RIGHTS_PATH = Ludos.NAMESPACE + '.' + GROUP_RIGHTS_KEY;
 
-	public static final String groupJoinKey = "group_join";
-	public static final String groupJoinPath = Ludos.namespace + '.' + groupJoinKey;
+	public static final String GROUP_JOIN_KEY = "group_join";
+	public static final String GROUP_JOIN_PATH = Ludos.NAMESPACE + '.' + GROUP_JOIN_KEY;
 
-	public static final String gameJoinKey = "game_join";
-	public static final String gameJoinPath = Ludos.namespace + '.' + gameJoinKey;
+	public static final String GAME_JOIN_KEY = "game_join";
+	public static final String GAME_JOIN_PATH = Ludos.NAMESPACE + '.' + GAME_JOIN_KEY;
 
-	public static final String waitPlayersKey = "waitPlayers";
-	public static final String waitPlayersPath = Ludos.namespace + '.' + waitPlayersKey;
+	public static final String WAIT_PLAYERS_KEY = "waitPlayers";
+	public static final String WAIT_PLAYERS_PATH = Ludos.NAMESPACE + '.' + WAIT_PLAYERS_KEY;
 
-	public static final String startDelayKey = "startDelay";
-	public static final String startDelayPath = Ludos.namespace + '.' + startDelayKey;
+	public static final String START_DELAY_KEY = "startDelay";
+	public static final String START_DELAY_PATH = Ludos.NAMESPACE + '.' + START_DELAY_KEY;
 
 
 
 	public static GroupRightsOption getGroupRightsOption(ConfigurationSection config) {
-		String rightsString = config.getString(groupRightsPath);
+		String rightsString = config.getString(GROUP_RIGHTS_PATH);
 		return Arrays.stream(GroupRightsOption.values()).filter(o -> o.name().equals(rightsString)).findFirst()
 			.orElse(GroupRightsOption.invite);
 	}
 	public static void setGroupRightsOption(ConfigurationSection config, GroupRightsOption rights) {
 		String value = rights == null ? null : rights.name();
-		config.set(groupRightsPath, value);
+		config.set(GROUP_RIGHTS_PATH, value);
 	}
 
 
 	public static GameJoinOption getGameJoinOption(ConfigurationSection config) {
-		String joinString = config.getString(gameJoinPath);
+		String joinString = config.getString(GAME_JOIN_PATH);
 		return Arrays.stream(GameJoinOption.values()).filter(o -> o.name().equals(joinString)).findFirst()
 			.orElse(GameJoinOption.auto);
 	}
 	public static void setGameJoinOption(ConfigurationSection config, GameJoinOption join) {
 		String value = join == null ? null : join.name();
-		config.set(gameJoinPath, value);
+		config.set(GAME_JOIN_PATH, value);
 	}
 
 	public static GroupJoinOption getGroupJoinOption(ConfigurationSection config) {
-		String joinString = config.getString(groupJoinPath);
+		String joinString = config.getString(GROUP_JOIN_PATH);
 		return Arrays.stream(GroupJoinOption.values()).filter(o -> o.name().equals(joinString)).findFirst()
 			.orElse(GroupJoinOption.need_accept);
 	}
 	public static void setGroupJoinOption(ConfigurationSection config, GroupJoinOption join) {
 		String value = join == null ? null : join.name();
-		config.set(groupJoinPath, value);
+		config.set(GROUP_JOIN_PATH, value);
 	}
 
 	public static LobbyWaitPlayersOption getWaitPlayersOption(ConfigurationSection config) {
-		String waitPlayersString = config.getString(waitPlayersPath);
+		String waitPlayersString = config.getString(WAIT_PLAYERS_PATH);
 		return Arrays.stream(LobbyWaitPlayersOption.values()).filter(o -> o.name().equals(waitPlayersString)).findFirst()
 			.orElse(LobbyWaitPlayersOption.all);
 	}
 	public static void setWaitPlayersOption(ConfigurationSection config, LobbyWaitPlayersOption waitPlayers) {
 		String value = waitPlayers == null ? null : waitPlayers.name();
-		config.set(waitPlayersPath, value);
+		config.set(WAIT_PLAYERS_PATH, value);
 	}
 
 	public static LobbyStartDelayOption getWaitDurationOption(ConfigurationSection config) {
-		String startDelayString = config.getString(startDelayPath);
+		String startDelayString = config.getString(START_DELAY_PATH);
 		return Arrays.stream(LobbyStartDelayOption.values()).filter(o -> o.name().equals(startDelayString)).findFirst()
 			.orElse(LobbyStartDelayOption.ten_seconds);
 	}
 	public static void setWaitDurationOption(ConfigurationSection config, LobbyStartDelayOption startDelay) {
 		String value = startDelay == null ? null : startDelay.name();
-		config.set(startDelayPath, value);
+		config.set(START_DELAY_PATH, value);
 	}
 }

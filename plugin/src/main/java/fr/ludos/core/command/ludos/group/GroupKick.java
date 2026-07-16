@@ -18,7 +18,7 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
 
 public class GroupKick implements Subcommand {
-	private final static String id = "kick";
+	private final static String ID = "kick";
 
 	private final Ludos plugin;
 	public GroupKick(Ludos plugin) {
@@ -27,7 +27,7 @@ public class GroupKick implements Subcommand {
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

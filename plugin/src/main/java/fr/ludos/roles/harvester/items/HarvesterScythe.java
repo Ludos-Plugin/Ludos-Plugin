@@ -237,7 +237,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HarvesterRole.id);
+			return Role.isPlayerRole(owner, HarvesterRole.ID);
 		}
 	}
 }

@@ -12,11 +12,11 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.role.Role;
 
 public class RoleGet implements Subcommand {
-	private final static String id = "get";
+	private final static String ID = "get";
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -27,12 +27,12 @@ public class RoleGet implements Subcommand {
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		OfflinePlayer getTarget = CommandUtility.getOfflinePlayerFromArgsOrSender(args, 0, sender);
 		if (getTarget == null) {
-			sender.sendMessage(Role.noneLabel); // TODO: Translate
+			sender.sendMessage(Role.NONE_LABEL); // TODO: Translate
 			return true;
 		}
 
 		Role.Builder getRole = Role.getPlayerRole(getTarget);
-		sender.sendMessage(getRole == null ? Role.noneLabel : getRole.getId());
+		sender.sendMessage(getRole == null ? Role.NONE_LABEL : getRole.getId());
 		return true;
 	}
 	@Override

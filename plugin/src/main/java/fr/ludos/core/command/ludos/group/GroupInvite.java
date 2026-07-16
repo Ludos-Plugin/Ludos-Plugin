@@ -17,7 +17,7 @@ import fr.ludos.core.group.Group;
 import fr.ludos.core.group.Group.JoinMethod;
 
 public class GroupInvite implements Subcommand {
-	private final static String id = "invite";
+	private final static String ID = "invite";
 
 	private final Ludos plugin;
 	public GroupInvite(Ludos plugin) {
@@ -26,7 +26,7 @@ public class GroupInvite implements Subcommand {
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

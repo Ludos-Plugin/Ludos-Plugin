@@ -54,7 +54,7 @@ public enum ArenaModeOption {
 		return sb.toString();
 	}
 
-	public static final List<String> options = Arrays.stream(ArenaModeOption.values())
+	public static final List<String> OPTIONS = Arrays.stream(ArenaModeOption.values())
 		.map(Enum::name)
 		.collect(Collectors.toList());
 }
