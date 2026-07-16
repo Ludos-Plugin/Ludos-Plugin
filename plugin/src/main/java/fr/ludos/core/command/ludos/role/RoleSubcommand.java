@@ -17,7 +17,7 @@ public final class RoleSubcommand extends SubcommandHandler {
 			add(new RoleGet());
 			add(new RoleSet(plugin));
 			add(new RoleReset(plugin));
-			add(new RoleConfig());
+			add(new RoleConfig(plugin));
 			add(new RoleGuidebook());
 		}};
 		HelpSubcommand help = new HelpSubcommand("role", subcommands);

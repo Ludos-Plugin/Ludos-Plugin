@@ -338,7 +338,9 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
-		public abstract ConfigOptionsCollection getConfig();
+		public ConfigOptionsCollection getConfig() {
+			return null;
+		}
 
 
 		public abstract Game build(Group group);
