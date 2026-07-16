@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.config.ConfigOptions;
 
 public class ConfigSectionMap extends ConfigSectionCollection {
-	private final static Pair<ConfigSectionProvider, ConfigOptions> empty_pair = Pair.of(null, null);
+	private final static Pair<ConfigSectionProvider, ConfigOptions> EMPTY_PAIR = Pair.of(null, null);
 	private final Map<String, Pair<ConfigSectionProvider, ConfigOptions>> map;
 
 	public ConfigSectionMap(Map<String, Pair<ConfigSectionProvider, ConfigOptions>> map) {
@@ -24,12 +24,12 @@ public class ConfigSectionMap extends ConfigSectionCollection {
 
 	@Override
 	public @NotNull ConfigSectionProvider getProvider(String key, CommandSender sender) {
-		return map.getOrDefault(key, empty_pair).getLeft();
+		return map.getOrDefault(key, EMPTY_PAIR).getLeft();
 	}
 
 	@Override
 	public @NotNull ConfigOptions getOptions(String key, CommandSender sender) {
-		return map.getOrDefault(key, empty_pair).getRight();
+		return map.getOrDefault(key, EMPTY_PAIR).getRight();
 	}
 
 }

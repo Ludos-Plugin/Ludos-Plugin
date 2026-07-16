@@ -91,20 +91,20 @@ public class ManhuntGame extends Game {
 			.withLobby(Lobby.within(this)
 				.clear(ClearMode.ALL)
 				.waitFor(group)
-				.wait(Duration.ofSeconds(GroupConfigMap.startDelay.getGroupConfig(group)))
+				.wait(Duration.ofSeconds(GroupConfigMap.START_DELAY.getGroupConfig(group)))
 				.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(this, WorldBorderArea.config.getGameConfig(group, builder))
+				WorldBorderArea.within(this, WorldBorderArea.CONFIG.getGameConfig(group, builder))
 			)
 			.build();
 		this.teamController = new ManhuntTeamController(
 			this,
-			ManhuntGameConfigMap.players.getGameConfig(group, builder),
-			ManhuntGameConfigMap.prey.getGameConfig(group, builder)
+			ManhuntGameConfigMap.PLAYERS.getGameConfig(group, builder),
+			ManhuntGameConfigMap.PREY.getGameConfig(group, builder)
 		);
 
-		timer = new ManhuntTimer(this, ManhuntGameConfigMap.revealPeriod.getGameConfig(group, builder));
+		timer = new ManhuntTimer(this, ManhuntGameConfigMap.REVEAL_PERIOD.getGameConfig(group, builder));
 		compassEvents = new ManhuntCompass.Events(this);
 	}
 
@@ -259,7 +259,7 @@ public class ManhuntGame extends Game {
 
 		public @Nullable WorldCreator createWorldCreator() {
 			String worldName = "manhunt_" + UUID.randomUUID();
-			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.namespace, worldName))
+			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.NAMESPACE, worldName))
 				.environment(Environment.NORMAL)
 				.type(WorldType.NORMAL)
 				.generateStructures(true)
@@ -270,7 +270,7 @@ public class ManhuntGame extends Game {
 
 		@Override
 		public ConfigOptionsCollection getConfig() {
-			return ManhuntGameConfigMap.instance;
+			return ManhuntGameConfigMap.INSTANCE;
 		}
 
 		@Override

@@ -13,7 +13,7 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.role.Role;
 
 public class RoleReset implements Subcommand {
-	private final static String id = "reset";
+	private final static String ID = "reset";
 
 	private final Ludos plugin;
 	public RoleReset(Ludos plugin) {
@@ -22,7 +22,7 @@ public class RoleReset implements Subcommand {
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

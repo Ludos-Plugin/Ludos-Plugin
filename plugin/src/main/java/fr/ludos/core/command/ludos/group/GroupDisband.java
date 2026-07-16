@@ -13,7 +13,7 @@ import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupConfigMap;
 
 public class GroupDisband implements Subcommand {
-	private final static String id = "disband";
+	private final static String ID = "disband";
 
 	private final Ludos plugin;
 	public GroupDisband(Ludos plugin) {
@@ -22,7 +22,7 @@ public class GroupDisband implements Subcommand {
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class GroupDisband implements Subcommand {
 			return true;
 		}
 
-		boolean membersCanManage = GroupConfigMap.membersAuth.getGroupConfig(group).canManage();
+		boolean membersCanManage = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canManage();
 		if (! group.isLeader(player) && ! membersCanManage) {
 			sender.sendMessage("Only the group leader can disband the group.");
 			return true;

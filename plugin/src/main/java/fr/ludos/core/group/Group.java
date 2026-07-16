@@ -52,14 +52,14 @@ public final class Group implements ConfigurationSerializable {
 		ConfigurationSerialization.registerClass(Group.class);
 	}
 
-	private static final Set<Group> groups = new HashSet<>();
+	private static final Set<Group> GROUPS = new HashSet<>();
 	public static final Set<Group> getGroups() {
-		return Collections.unmodifiableSet(groups);
+		return Collections.unmodifiableSet(GROUPS);
 	}
 
-	private static final Map<OfflinePlayer, Group> playerGroupMap = new HashMap<>();
+	private static final Map<OfflinePlayer, Group> PLAYER_GROUP_MAP = new HashMap<>();
 	public static Group getGroupOfPlayer(@NotNull OfflinePlayer player) {
-		return playerGroupMap.get(Objects.requireNonNull(player, "Player cannot be null"));
+		return PLAYER_GROUP_MAP.get(Objects.requireNonNull(player, "Player cannot be null"));
 	}
 
 	private final Ludos ludos;
@@ -72,10 +72,10 @@ public final class Group implements ConfigurationSerializable {
 		return config;
 	}
 	public ConfigurationSection getGroupConfig() {
-		return Utility.getOrCreateConfigSection(config, GroupConfigMap.instance.getNamespace());
+		return Utility.getOrCreateConfigSection(config, GroupConfigMap.INSTANCE.getNamespace());
 	}
 	public ConfigurationSection getGameConfig(Game.Builder game) {
-		return Utility.getOrCreateConfigSection(config, GameConfigMap.instance.getNamespace() + "." + game.getId());
+		return Utility.getOrCreateConfigSection(config, GameConfigMap.INSTANCE.getNamespace() + "." + game.getId());
 	}
 
 	private OfflinePlayer leader;
@@ -178,13 +178,13 @@ public final class Group implements ConfigurationSerializable {
 
 	private static void initializeGroup(Group group) {
 		for (OfflinePlayer member : group.getMembers()) {
-			playerGroupMap.put(member, group);
+			PLAYER_GROUP_MAP.put(member, group);
 		}
 		OfflinePlayer leader = group.getLeader();
 		if (leader != null) {
-			playerGroupMap.put(leader, group);
+			PLAYER_GROUP_MAP.put(leader, group);
 		}
-		groups.add(group);
+		GROUPS.add(group);
 	}
 	private static void deinitializeGroup(Group group) {
 		Game game = group.getGame();
@@ -192,13 +192,13 @@ public final class Group implements ConfigurationSerializable {
 			game.stop();
 		}
 		for (OfflinePlayer member : group.getMembers()) {
-			playerGroupMap.remove(member);
+			PLAYER_GROUP_MAP.remove(member);
 		}
 		OfflinePlayer leader = group.getLeader();
 		if (leader != null) {
-			playerGroupMap.remove(leader);
+			PLAYER_GROUP_MAP.remove(leader);
 		}
-		groups.remove(group);
+		GROUPS.remove(group);
 	}
 
 	public final static Group createGroup(@NotNull OfflinePlayer leader, @Nullable Set<OfflinePlayer> members, Ludos plugin) {
@@ -323,7 +323,7 @@ public final class Group implements ConfigurationSerializable {
 		}
 
 		members.add(player);
-		playerGroupMap.put(player, this);
+		PLAYER_GROUP_MAP.put(player, this);
 
 		Component targetMessage = Component.text("You have joined " + leader.getName() + "'s group.");
 		if (onlinePlayer != null) {
@@ -345,7 +345,7 @@ public final class Group implements ConfigurationSerializable {
 		if (wasLeader) {
 			if (electNewLeader()) {
 				members.remove(player);
-				playerGroupMap.remove(player);
+				PLAYER_GROUP_MAP.remove(player);
 			}
 			else {
 				disband();
@@ -353,7 +353,7 @@ public final class Group implements ConfigurationSerializable {
 			}
 		} else {
 			members.remove(player);
-			playerGroupMap.remove(player);
+			PLAYER_GROUP_MAP.remove(player);
 
 			saveConfigGroup();
 
@@ -498,7 +498,7 @@ public final class Group implements ConfigurationSerializable {
 
 	public static void saveConfigGroups(Ludos plugin) {
 		FileConfiguration groupsData = plugin.getGroups();
-		for (Group group : groups) {
+		for (Group group : GROUPS) {
 			groupsData.set(
 				group.leader.getUniqueId().toString(),
 				group.serialize()

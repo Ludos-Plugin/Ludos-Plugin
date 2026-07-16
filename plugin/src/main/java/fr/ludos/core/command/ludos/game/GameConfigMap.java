@@ -11,7 +11,7 @@ import fr.ludos.core.config.ConfigOptions;
 import fr.ludos.core.game.Game;
 
 public class GameConfigMap extends ConfigOptionsCollection {
-	public static final GameConfigMap instance = new GameConfigMap();
+	public static final GameConfigMap INSTANCE = new GameConfigMap();
 
 	public GameConfigMap() {
 		super("game");

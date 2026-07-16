@@ -44,7 +44,7 @@ import net.kyori.adventure.text.format.TextDecoration;
  * It contains events and Data.
  */
 public abstract class Role extends GameProcessBase {
-	public static final String noneLabel = "none";
+	public static final String NONE_LABEL = "none";
 
 	public static Map<String, Builder> getRegistered() {
 		return registered;

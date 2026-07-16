@@ -39,33 +39,33 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public abstract class Game extends TwoStepGameProcessBase {
-	public static final String namespace = "game";
+	public static final String NAMESPACE = "game";
 	public final Random random = new Random();
 
-	private static final Map<String, Builder> registered = new HashMap<>();
+	private static final Map<String, Builder> REGISTERED = new HashMap<>();
 	public static Map<String, Builder> getRegistered() {
-		return registered;
+		return REGISTERED;
 	}
 
-	private static final Set<Game> activeGames = new HashSet<>();
+	private static final Set<Game> ACTIVE = new HashSet<>();
 	public static Set<Game> getActiveGames() {
-		return Collections.unmodifiableSet(activeGames);
+		return Collections.unmodifiableSet(ACTIVE);
 	}
 
 	@Nullable
 	public static Builder getGameById(String gameId) {
-		return registered.getOrDefault(gameId, null);
+		return REGISTERED.getOrDefault(gameId, null);
 	}
 
 	public static List<String> getGameIds() {
-		return registered.keySet().stream().collect( Collectors.toList() );
+		return REGISTERED.keySet().stream().collect( Collectors.toList() );
 	}
 	public static List<Builder> getGameBuilders() {
-		return registered.values().stream().collect( Collectors.toList() );
+		return REGISTERED.values().stream().collect( Collectors.toList() );
 	}
 
 	public static void registerGame(Builder builder) {
-		registered.put(builder.getId(), builder);
+		REGISTERED.put(builder.getId(), builder);
 	}
 
 
@@ -113,7 +113,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 	}
 
 	public static boolean startGame(String id, Group group) {
-		if (! registered.containsKey(id)) return false;
+		if (! REGISTERED.containsKey(id)) return false;
 
 		Game oldGame = group.getGame();
 		if (oldGame != null) {
@@ -124,13 +124,13 @@ public abstract class Game extends TwoStepGameProcessBase {
 				public void run() {
 					if (! oldGame.isClear()) return;
 
-					registered.get(id).build(group).setup();
+					REGISTERED.get(id).build(group).setup();
 					cancel();
 				}
 			}.runTaskTimer(oldGame.getPlugin(), 0, 20);
 		}
 		else {
-			registered.get(id).build(group).setup();
+			REGISTERED.get(id).build(group).setup();
 		}
 
 		return true;
@@ -210,7 +210,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 		}
 
 		group.setGame(this);
-		activeGames.add(this);
+		ACTIVE.add(this);
 
 		getWorldManager().start();
 
@@ -267,7 +267,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 		scoreboard = null;
 
 		group.setGame(null);
-		activeGames.remove(this);
+		ACTIVE.remove(this);
 	}
 
 	protected void onGameSetup() { }

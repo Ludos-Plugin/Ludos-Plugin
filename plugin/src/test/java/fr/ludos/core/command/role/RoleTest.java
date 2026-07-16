@@ -19,6 +19,6 @@ abstract class RoleTest extends MockBukkitTestBase {
 		player.performCommand("ludos role reset");
 		clearMessages(player);
 		player.performCommand("ludos role get");
-		assertEquals(Role.noneLabel, player.nextMessage(), "Role is not unset by default");
+		assertEquals(Role.NONE_LABEL, player.nextMessage(), "Role is not unset by default");
 	}
 }

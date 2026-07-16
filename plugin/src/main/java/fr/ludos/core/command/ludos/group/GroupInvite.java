@@ -18,7 +18,7 @@ import fr.ludos.core.group.Group.JoinMethod;
 import fr.ludos.core.group.GroupConfigMap;
 
 public class GroupInvite implements Subcommand {
-	private final static String id = "invite";
+	private final static String ID = "invite";
 
 	private final Ludos plugin;
 	public GroupInvite(Ludos plugin) {
@@ -27,7 +27,7 @@ public class GroupInvite implements Subcommand {
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class GroupInvite implements Subcommand {
 			return true;
 		}
 
-		boolean membersCanInvite = GroupConfigMap.membersAuth.getGroupConfig(group).canInvite();
+		boolean membersCanInvite = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canInvite();
 		if (! group.isLeader(player) && ! membersCanInvite) {
 			sender.sendMessage("Only the group leader can invite new members.");
 			return true;

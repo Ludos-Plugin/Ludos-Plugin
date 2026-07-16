@@ -27,7 +27,7 @@ public enum HarvesterPickLevels implements LevelItem.Level<HarvesterPickLevels> 
 	NETHERITE2  (Material.NETHERITE_PICKAXE, 6000, 1, 2, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 5); put(Enchantment.LOOT_BONUS_BLOCKS, 3);}});
 
 
-	private final static HarvesterPickLevels[] values = HarvesterPickLevels.values();
+	private final static HarvesterPickLevels[] VALUES = HarvesterPickLevels.values();
 
 	private final Material material;
 	public Material getMaterial() {
@@ -65,7 +65,7 @@ public enum HarvesterPickLevels implements LevelItem.Level<HarvesterPickLevels> 
 
 
 	public boolean isMax() {
-		return (ordinal() + 1) >= values.length;
+		return (ordinal() + 1) >= VALUES.length;
 	}
 
 

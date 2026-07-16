@@ -6,8 +6,8 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
-	private final static String falseString = "false";
-	private final static String trueString = "true";
+	private final static String FALSE_STRING = "false";
+	private final static String TRUE_STRING = "true";
 	private final boolean defaultValue;
 
 	public BooleanConfigOptions(@NotNull String name, @NotNull String key, Boolean defaultValue, String emptyValue) {
@@ -26,9 +26,9 @@ public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
 	@Override
 	protected Boolean fromString(String value) {
 		switch (value) {
-			case falseString:
+			case FALSE_STRING:
 				return false;
-			case trueString:
+			case TRUE_STRING:
 				return true;
 			default:
 				return null;
@@ -39,13 +39,13 @@ public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
 	protected String toString(Boolean value) {
 		if (value == null) return null;
 		return value
-			? trueString
-			: falseString;
+			? TRUE_STRING
+			: FALSE_STRING;
 	}
 
 	@Override
 	protected @NotNull Set<@NotNull String> getActualOptions(CommandSender sender) {
-		return Set.of(falseString, trueString);
+		return Set.of(FALSE_STRING, TRUE_STRING);
 	}
 
 }

@@ -126,7 +126,7 @@ public class AssassinBoots extends SpecialItem {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, AssassinRole.id);
+			return Role.isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

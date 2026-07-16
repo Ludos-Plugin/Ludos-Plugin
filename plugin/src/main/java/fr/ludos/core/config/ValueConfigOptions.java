@@ -16,7 +16,7 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 
 public abstract class ValueConfigOptions<T> extends ConfigOptions implements ConfigEntryInterface {
-	public static final String defaultEmptyValue = "default";
+	public static final String DEFAULT_EMPTY_VALUE = "default";
 	private final @NotNull String name;
 	public @NotNull String getName() {
 		return name;
@@ -40,7 +40,7 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	public ValueConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue) {
 		this.name = ObjectUtils.requireNonEmpty(name);
 		this.key = ObjectUtils.requireNonEmpty(key);
-		this.emptyValue = (emptyValue != null && ! emptyValue.isBlank()) ? emptyValue : defaultEmptyValue;
+		this.emptyValue = (emptyValue != null && ! emptyValue.isBlank()) ? emptyValue : DEFAULT_EMPTY_VALUE;
 	}
 
 	public abstract @Nullable T getDefaultValue();

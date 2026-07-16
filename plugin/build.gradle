@@ -14,6 +14,12 @@ java {
 group = 'fr.ludos'
 version = '0.0.0'
 
+tasks.register('printVersion') {
+    doLast {
+        println project.version
+    }
+}
+
 repositories {
     mavenCentral()
     mavenLocal()

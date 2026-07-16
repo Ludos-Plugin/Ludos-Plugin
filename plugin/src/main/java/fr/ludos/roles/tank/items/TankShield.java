@@ -220,7 +220,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 				@Override
 				public void run() {
 					Player[] tankPlayers = getGame().getGroup().getOnlinePlayers().stream()
-						.filter(Role.ofRole(TankRole.id))
+						.filter(Role.ofRole(TankRole.ID))
 						.toArray(Player[]::new);
 
 					for (Player player : tankPlayers) {
@@ -289,7 +289,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, TankRole.id);
+			return Role.isPlayerRole(owner, TankRole.ID);
 		}
 
 		@EventHandler

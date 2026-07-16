@@ -23,7 +23,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 public class TankRole extends Role {
-	public static final String id = "tank";
+	public static final String ID = "tank";
 
 	public TankRole(Builder builder, Game game) {
 		super(builder, game);
@@ -49,7 +49,7 @@ public class TankRole extends Role {
 		super.onRoleStart();
 
 		List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
-			.filter(Role.ofRole(id))
+			.filter(Role.ofRole(ID))
 			.toList();
 
 		PotionEffect absorbEffect = new PotionEffect(
@@ -71,7 +71,7 @@ public class TankRole extends Role {
 		super.onRoleStop();
 
 		List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
-			.filter(Role.ofRole(id))
+			.filter(Role.ofRole(ID))
 			.toList();
 
 		for (Player player : players) {
@@ -84,7 +84,7 @@ public class TankRole extends Role {
 	public void onPlayerHit(EntityDamageByEntityEvent event) {
 		if (! (event.getDamager() instanceof Player attacker)) return;
 
-		if (!Role.getPlayersOfRole(id).contains(attacker)) return;
+		if (!Role.getPlayersOfRole(ID).contains(attacker)) return;
 
 		Material material = attacker.getInventory().getItemInMainHand().getType();
 
@@ -102,7 +102,7 @@ public class TankRole extends Role {
 	public static class Builder extends Role.Builder {
 		@Override
 		public String getId() {
-			return id;
+			return ID;
 		}
 
 		public Builder(Ludos plugin) {

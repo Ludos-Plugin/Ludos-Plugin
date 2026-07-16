@@ -7,9 +7,9 @@ import fr.ludos.core.config.ConfigOptionsMap;
 import fr.ludos.core.group.GroupConfigMap;
 
 public class GlobalConfigMap extends ConfigOptionsMap {
-	public static final GlobalConfigMap instance = new GlobalConfigMap();
+	public static final GlobalConfigMap INSTANCE = new GlobalConfigMap();
 
 	public GlobalConfigMap() {
-		super(null, Set.of(LudosConfigMap.instance, GroupConfigMap.instance, GameConfigMap.instance));
+		super(null, Set.of(LudosConfigMap.INSTANCE, GroupConfigMap.INSTANCE, GameConfigMap.INSTANCE));
 	}
 }

@@ -11,7 +11,8 @@ import fr.ludos.core.config.NumberConfigOptions;
 import fr.ludos.core.game.Game;
 
 public class WorldBorderArea extends Area {
-	public static final NumberConfigOptions config = new NumberConfigOptions("WorldBorder Area diameter", "area", null, 150, Set.of(150, 250, 350), true);
+	public static final NumberConfigOptions CONFIG =
+		new NumberConfigOptions("WorldBorder Area diameter", "area", null, 150, Set.of(150, 250, 350), true);
 
 	private final Builder builder;
 	@Override

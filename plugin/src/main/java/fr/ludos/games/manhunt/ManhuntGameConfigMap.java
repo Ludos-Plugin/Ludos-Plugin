@@ -12,18 +12,18 @@ import fr.ludos.core.config.SingleGroupPlayerConfigOptions;
 import fr.ludos.core.config.ValueConfigOptions;
 
 public final class ManhuntGameConfigMap extends ConfigOptionsMap {
-	public static final ValueConfigOptions<Set<OfflinePlayer>> players =
+	public static final ValueConfigOptions<Set<OfflinePlayer>> PLAYERS =
 		new MultipleGroupPlayerConfigOptions("Players", "players", "all");
 
-	public static final ValueConfigOptions<OfflinePlayer> prey =
+	public static final ValueConfigOptions<OfflinePlayer> PREY =
 		new SingleGroupPlayerConfigOptions("Prey Player", "prey", "random");
 
-	public static final ValueConfigOptions<Integer> revealPeriod =
+	public static final ValueConfigOptions<Integer> REVEAL_PERIOD =
 		new NumberConfigOptions("Reveal period duration seconds", "reveal", null, 180, Set.of(60, 120, 180, 240, 300, 360), true);
 
-	public static final ManhuntGameConfigMap instance = new ManhuntGameConfigMap(ManhuntGame.ID);
+	public static final ManhuntGameConfigMap INSTANCE = new ManhuntGameConfigMap(ManhuntGame.ID);
 
 	private ManhuntGameConfigMap(String namespace) {
-		super(namespace, Set.of(players, prey, WorldBorderArea.config, revealPeriod));
+		super(namespace, Set.of(PLAYERS, PREY, WorldBorderArea.CONFIG, REVEAL_PERIOD));
 	}
 }

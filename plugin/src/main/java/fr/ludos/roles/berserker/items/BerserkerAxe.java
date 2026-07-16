@@ -60,9 +60,9 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		}
 	}
 
-	public static final String VARIANT_KEY = "variant";
+	public static final String VARIANT_KEY_STRING = "variant";
 
-	private final static NamespacedKey variantKey = new NamespacedKey(Ludos.namespace, VARIANT_KEY);
+	private final static NamespacedKey VARIANT_KEY = new NamespacedKey(Ludos.NAMESPACE, VARIANT_KEY_STRING);
 
 	private final Variant variant;
 	public Variant getVariant() {
@@ -79,9 +79,9 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
-		if (! container.has(variantKey, PersistentDataType.INTEGER) ) return null;
+		if (! container.has(VARIANT_KEY, PersistentDataType.INTEGER) ) return null;
 
-		return Variant.fromKey(container.get(variantKey, PersistentDataType.INTEGER));
+		return Variant.fromKey(container.get(VARIANT_KEY, PersistentDataType.INTEGER));
 	}
 
 
@@ -131,7 +131,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		super.onInitialize();
 		ItemMeta meta = getStack().getItemMeta();
 
-		meta.getPersistentDataContainer().set(variantKey, PersistentDataType.INTEGER, variant.key());
+		meta.getPersistentDataContainer().set(VARIANT_KEY, PersistentDataType.INTEGER, variant.key());
 
 		// Set damage to sword baseline: 1 (base) + 5 = 6 damage, same as iron sword
 		if (variant == Variant.FIRST) {

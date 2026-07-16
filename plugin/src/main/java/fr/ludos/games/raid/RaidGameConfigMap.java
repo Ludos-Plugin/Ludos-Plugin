@@ -11,15 +11,15 @@ import fr.ludos.core.config.NumberConfigOptions;
 import fr.ludos.core.config.ValueConfigOptions;
 
 public final class RaidGameConfigMap extends ConfigOptionsMap {
-	public static final ValueConfigOptions<Set<OfflinePlayer>> players =
+	public static final ValueConfigOptions<Set<OfflinePlayer>> PLAYERS =
 		new MultipleGroupPlayerConfigOptions("Players", "players", "all");
 
-	public static final ValueConfigOptions<Integer> waves =
+	public static final ValueConfigOptions<Integer> WAVES =
 		new NumberConfigOptions("Number of Waves", "waves", null, 0, true);
 
-	public static final RaidGameConfigMap instance = new RaidGameConfigMap(RaidGame.ID);
+	public static final RaidGameConfigMap INSTANCE = new RaidGameConfigMap(RaidGame.ID);
 
 	private RaidGameConfigMap(String namespace) {
-		super(namespace, Set.of(players, waves, WorldBorderArea.config));
+		super(namespace, Set.of(PLAYERS, WAVES, WorldBorderArea.CONFIG));
 	}
 }

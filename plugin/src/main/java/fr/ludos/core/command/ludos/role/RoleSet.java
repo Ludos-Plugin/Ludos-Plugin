@@ -15,7 +15,7 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.role.Role;
 
 public class RoleSet implements Subcommand {
-	private final static String id = "set";
+	private final static String ID = "set";
 
 	private final Ludos plugin;
 	public RoleSet(Ludos plugin) {
@@ -24,7 +24,7 @@ public class RoleSet implements Subcommand {
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

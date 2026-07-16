@@ -11,18 +11,18 @@ import fr.ludos.core.config.NumberConfigOptions;
 import fr.ludos.core.config.ValueConfigOptions;
 
 public final class ArenaGameConfigMap extends ConfigOptionsMap {
-	public static final ValueConfigOptions<Set<OfflinePlayer>> team1PlayersConfig =
+	public static final ValueConfigOptions<Set<OfflinePlayer>> TEAM_1_PLAYERS =
 		new MultipleGroupPlayerConfigOptions("Team 1 players", "team_1", "random");
 
-	public static final ValueConfigOptions<Set<OfflinePlayer>> team2PlayersConfig =
+	public static final ValueConfigOptions<Set<OfflinePlayer>> TEAM_2_PLAYERS =
 		new MultipleGroupPlayerConfigOptions("Team 2 players", "team_2", "random");
 
-	public static final ValueConfigOptions<Integer> roundsEntryConfig =
+	public static final ValueConfigOptions<Integer> ROUNDS =
 		new NumberConfigOptions("Number of Rounds", "rounds", null, 3, true);
 
-	public static final ArenaGameConfigMap instance = new ArenaGameConfigMap(ArenaGame.ID);
+	public static final ArenaGameConfigMap INSTANCE = new ArenaGameConfigMap(ArenaGame.ID);
 
 	private ArenaGameConfigMap(String namespace) {
-		super(namespace, Set.of(team1PlayersConfig, team2PlayersConfig, ArenaModeOption.config, roundsEntryConfig, WorldBorderArea.config));
+		super(namespace, Set.of(TEAM_1_PLAYERS, TEAM_2_PLAYERS, ArenaModeOption.CONFIG, ROUNDS, WorldBorderArea.CONFIG));
 	}
 }

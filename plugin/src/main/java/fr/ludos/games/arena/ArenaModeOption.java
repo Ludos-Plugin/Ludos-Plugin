@@ -12,7 +12,8 @@ public enum ArenaModeOption {
 	duel("Duel", "1v1 rounds"),
 	multi("Multi", "team rounds");
 
-	public static final EnumConfigOptions<ArenaModeOption> config = new EnumConfigOptions<>("Arena Mode", "arena_mode", null, ArenaModeOption.class);
+	public static final EnumConfigOptions<ArenaModeOption> CONFIG =
+		new EnumConfigOptions<>("Arena Mode", "arena_mode", null, ArenaModeOption.class);
 
 	private final String displayName;
 	private final String description;
@@ -58,7 +59,7 @@ public enum ArenaModeOption {
 		return sb.toString();
 	}
 
-	public static final List<String> options = Arrays.stream(ArenaModeOption.values())
+	public static final List<String> OPTIONS = Arrays.stream(ArenaModeOption.values())
 		.map(Enum::name)
 		.collect(Collectors.toList());
 }

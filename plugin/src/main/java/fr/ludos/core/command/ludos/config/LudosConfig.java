@@ -11,16 +11,16 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.ScopeConfigMap;
 
 public class LudosConfig implements Subcommand {
-	private final static String id = "config";
+	private final static String ID = "config";
 	private final ScopeConfigMap map;
 
 	public LudosConfig(Ludos plugin) {
-		this.map = new ScopeConfigMap(plugin, GlobalConfigMap.instance, LocalConfigMap.instance);
+		this.map = new ScopeConfigMap(plugin, GlobalConfigMap.INSTANCE, LocalConfigMap.INSTANCE);
 	}
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

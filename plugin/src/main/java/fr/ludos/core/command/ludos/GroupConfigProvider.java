@@ -28,7 +28,7 @@ public final class GroupConfigProvider extends ConfigSectionProvider {
 			return null;
 		}
 
-		boolean membersCanConfig = GroupConfigMap.membersAuth.getGroupConfig(group).canConfig();
+		boolean membersCanConfig = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canConfig();
 		if (! group.isLeader(player) && ! membersCanConfig) {
 			sender.sendMessage("Only the group leader can configure the group.");
 			return null;

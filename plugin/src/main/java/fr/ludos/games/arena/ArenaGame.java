@@ -63,7 +63,7 @@ public class ArenaGame extends WaveGame {
 
 		this.waveController = new ArenaWaveController(
 			this,
-			ArenaGameConfigMap.roundsEntryConfig.getGameConfig(group, builder)
+			ArenaGameConfigMap.ROUNDS.getGameConfig(group, builder)
 		);
 
 		this.worldManager = WorldManager.within(this, returnLocation)
@@ -72,18 +72,18 @@ public class ArenaGame extends WaveGame {
 				Lobby.within(this)
 					.waitFor(group)
 					.clear(ClearMode.ALL)
-					.wait(Duration.ofSeconds(GroupConfigMap.startDelay.getGroupConfig(group)))
+					.wait(Duration.ofSeconds(GroupConfigMap.START_DELAY.getGroupConfig(group)))
 					.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(this, WorldBorderArea.config.getGameConfig(group, builder))
+				WorldBorderArea.within(this, WorldBorderArea.CONFIG.getGameConfig(group, builder))
 			)
 			.build();
 		this.teamController = new ArenaTeamController(
 			this,
-			ArenaModeOption.config.getGameConfig(group, builder),
-			ArenaGameConfigMap.team1PlayersConfig.getGameConfig(group, builder),
-			ArenaGameConfigMap.team2PlayersConfig.getGameConfig(group, builder)
+			ArenaModeOption.CONFIG.getGameConfig(group, builder),
+			ArenaGameConfigMap.TEAM_1_PLAYERS.getGameConfig(group, builder),
+			ArenaGameConfigMap.TEAM_2_PLAYERS.getGameConfig(group, builder)
 		);
 	}
 
@@ -123,7 +123,7 @@ public class ArenaGame extends WaveGame {
 
 		public WorldCreator createWorldCreator() {
 			String worldName = "arena_" + UUID.randomUUID();
-			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.namespace, worldName))
+			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.NAMESPACE, worldName))
 				.environment(Environment.NORMAL)
 				.type(WorldType.NORMAL)
 				.generateStructures(true)
@@ -134,7 +134,7 @@ public class ArenaGame extends WaveGame {
 
 		@Override
 		public ConfigOptionsCollection getConfig() {
-			return ArenaGameConfigMap.instance;
+			return ArenaGameConfigMap.INSTANCE;
 		}
 
 		@Override

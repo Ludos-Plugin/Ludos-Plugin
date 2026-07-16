@@ -63,7 +63,7 @@ public class Ludos extends JavaPlugin implements Listener {
 		return rolesData;
 	}
 
-	public static final String namespace = "ludos";
+	public static final String NAMESPACE = "ludos";
 
 	private final GroupManager groupManager = new GroupManager(this);
 	private final TextureManager textureManager = new TextureManager(this);
@@ -78,13 +78,13 @@ public class Ludos extends JavaPlugin implements Listener {
 		}
 	}
 	public ConfigurationSection getPluginConfig() {
-		return Utility.getOrCreateConfigSection(getConfig(), LudosConfigMap.instance.getNamespace());
+		return Utility.getOrCreateConfigSection(getConfig(), LudosConfigMap.INSTANCE.getNamespace());
 	}
 	public ConfigurationSection getGroupConfig() {
-		return Utility.getOrCreateConfigSection(getConfig(), GroupConfigMap.instance.getNamespace());
+		return Utility.getOrCreateConfigSection(getConfig(), GroupConfigMap.INSTANCE.getNamespace());
 	}
 	public ConfigurationSection getGameConfig(Game.Builder game) {
-		return Utility.getOrCreateConfigSection(getConfig(), GameConfigMap.instance.getNamespace() + "." + game.getId());
+		return Utility.getOrCreateConfigSection(getConfig(), GameConfigMap.INSTANCE.getNamespace() + "." + game.getId());
 	}
 
 	public void saveRoles() {
@@ -283,7 +283,7 @@ public class Ludos extends JavaPlugin implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player currentPlayer = event.getPlayer();
 
-		boolean showMessage = LudosConfigMap.guidebookMessage.getPluginConfig(this);
+		boolean showMessage = LudosConfigMap.GUIDEBOOK_MESSAGE.getPluginConfig(this);
 		if (showMessage) {
 			TextComponent message = Component.text("Click here to get a guidebook!")
 				.color(NamedTextColor.GOLD)

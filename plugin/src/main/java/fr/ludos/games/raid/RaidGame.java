@@ -60,7 +60,7 @@ public class RaidGame extends WaveGame {
 
 		this.waveController = new RaidWaveController(
 			this,
-			RaidGameConfigMap.waves.getGameConfig(group, builder)
+			RaidGameConfigMap.WAVES.getGameConfig(group, builder)
 		);
 
 		this.worldManager = WorldManager.within(this, returnLocation)
@@ -74,14 +74,14 @@ public class RaidGame extends WaveGame {
 			.inArea(
 				WorldBorderArea.within(
 					this,
-					WorldBorderArea.config.getGameConfig(group, builder)
+					WorldBorderArea.CONFIG.getGameConfig(group, builder)
 				)
 			)
 			.build();
 
 		this.teamController = new RaidTeamController(
 			this,
-			RaidGameConfigMap.players.getGameConfig(group, builder)
+			RaidGameConfigMap.PLAYERS.getGameConfig(group, builder)
 		);
 	}
 
@@ -115,7 +115,7 @@ public class RaidGame extends WaveGame {
 
 		public WorldCreator createWorldCreator() {
 			String worldName = "raid_" + UUID.randomUUID();
-			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.namespace, worldName))
+			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.NAMESPACE, worldName))
 				.environment(Environment.NORMAL)
 				.type(WorldType.NORMAL)
 				.generateStructures(true)
@@ -125,7 +125,7 @@ public class RaidGame extends WaveGame {
 
 		@Override
 		public ConfigOptionsCollection getConfig() {
-			return RaidGameConfigMap.instance;
+			return RaidGameConfigMap.INSTANCE;
 		}
 
 		@Override

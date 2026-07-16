@@ -12,7 +12,7 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
 
 public class GroupLeave implements Subcommand {
-	private final static String id = "leave";
+	private final static String ID = "leave";
 
 	private final Ludos plugin;
 	public GroupLeave(Ludos plugin) {
@@ -21,7 +21,7 @@ public class GroupLeave implements Subcommand {
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

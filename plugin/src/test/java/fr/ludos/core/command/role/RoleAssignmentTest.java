@@ -21,7 +21,7 @@ class RoleAssignmentTest extends RoleTest {
 		PlayerMock player1 = createPlayer("Player1");
 
 		player1.performCommand("ludos role get");
-		assertEquals(Role.noneLabel, player1.nextMessage(), "Role is not unset by default");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role is not unset by default");
 
 		Role.Builder role = getValidRole();
 		player1.performCommand("ludos role set " + role.getId());
@@ -37,7 +37,7 @@ class RoleAssignmentTest extends RoleTest {
 		assertEquals("You now have no role", player1.nextMessage(), "None role message was not sent");
 
 		player1.performCommand("ludos role get");
-		assertEquals(Role.noneLabel, player1.nextMessage(), "Role was not unset");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was not unset");
 
 		assertNull(Role.getPlayerRole(player1), "Role appears unset but isn't");
 	}
@@ -54,13 +54,13 @@ class RoleAssignmentTest extends RoleTest {
 		assertEquals("Role not found: " + invalidRoleId.toLowerCase(), player1.nextMessage(), "Role was not set");
 
 		player1.performCommand("ludos role get");
-		assertEquals(Role.noneLabel, player1.nextMessage(), "Role was set despite being invalid");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was set despite being invalid");
 
 		player1.performCommand("ludos role reset");
 		assertEquals(null, player1.nextMessage(), "Role was reset, despite being already unset");
 
 		player1.performCommand("ludos role get");
-		assertEquals(Role.noneLabel, player1.nextMessage(), "Role was not reset");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was not reset");
 
 		assertNull(Role.getPlayerRole(player1), "Role appears unset but isn't");
 	}

@@ -19,7 +19,7 @@ import fr.ludos.core.command.ludos.group.GroupSubcommand;
 import fr.ludos.core.command.ludos.role.RoleSubcommand;
 
 public class LudosCommand implements Subcommand {
-	private final static String id = "ludos";
+	private final static String ID = "ludos";
 
 	private final SubcommandManager manager;
 
@@ -39,7 +39,7 @@ public class LudosCommand implements Subcommand {
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
