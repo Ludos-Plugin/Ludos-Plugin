@@ -3,6 +3,7 @@ package fr.ludos.core.config;
 import java.util.Set;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
@@ -23,6 +24,15 @@ public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
 	public Boolean getDefaultValue() {
 		return defaultValue;
 	}
+	@Override
+	protected @NotNull Set<@NotNull String> getValidOptions(CommandSender sender) {
+		return Set.of(FALSE_STRING, TRUE_STRING);
+	}
+
+	@Override
+	public Boolean getValueOrNull(ConfigurationSection config) {
+		return config.getBoolean(key(), getDefaultValue());
+	}
 
 	@Override
 	protected Boolean fromString(String value) {
@@ -38,15 +48,9 @@ public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
 
 	@Override
 	protected String toString(Boolean value) {
-		if (value == null) return null;
+		if (value == null) return placeholderValue();
 		return value
 			? TRUE_STRING
 			: FALSE_STRING;
 	}
-
-	@Override
-	protected @NotNull Set<@NotNull String> getActualOptions(CommandSender sender) {
-		return Set.of(FALSE_STRING, TRUE_STRING);
-	}
-
 }

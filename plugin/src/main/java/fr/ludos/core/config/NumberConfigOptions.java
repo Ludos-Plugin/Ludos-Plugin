@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 public class NumberConfigOptions extends ValueConfigOptions<Integer> {
@@ -35,24 +36,26 @@ public class NumberConfigOptions extends ValueConfigOptions<Integer> {
 	}
 
 	@Override
-	public boolean isValidOption(String opt, CommandSender player) {
-		return fromString(opt) != null;
+	public @Nullable Integer getDefaultValue() {
+		return defaultValue;
 	}
 
 	@Override
-	public @NotNull Set<@NotNull String> getActualOptions(CommandSender player) {
+	public @NotNull Set<@NotNull String> getValidOptions(CommandSender player) {
 		return suggestions != null
 			? suggestions
 			: NUMBERS;
 	}
 
 	@Override
-	public @Nullable Integer getDefaultValue() {
-		return defaultValue;
+	public Integer getValueOrNull(ConfigurationSection config) {
+		if (! config.isInt(key())) return null;
+		return config.getInt(key());
 	}
+
 	@Override
 	protected Integer fromString(String value) {
-		if (value == null || value.equals(emptyValue())) return null;
+		if (value == null || value.equals(placeholderValue())) return null;
 		try {
 			if (unsigned) {
 				return Integer.parseUnsignedInt(value);
@@ -65,8 +68,7 @@ public class NumberConfigOptions extends ValueConfigOptions<Integer> {
 	}
 	@Override
 	protected String toString(Integer value) {
-		if (value == null) return emptyValue();
+		if (value == null) return placeholderValue();
 		return value.toString();
 	}
-
 }

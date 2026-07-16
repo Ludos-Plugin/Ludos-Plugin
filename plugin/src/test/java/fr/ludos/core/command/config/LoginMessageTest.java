@@ -19,7 +19,7 @@ class LoginMessageTest extends MockBukkitTestBase {
 		player1.setOp(true);
 		clearMessages(player1);
 
-		player1.performCommand("ludos config global ludos " + LudosConfigMap.GUIDEBOOK_MESSAGE.key() + " " + LudosConfigMap.GUIDEBOOK_MESSAGE.emptyValue());
+		player1.performCommand("ludos config global ludos " + LudosConfigMap.GUIDEBOOK_MESSAGE.key() + " " + LudosConfigMap.GUIDEBOOK_MESSAGE.placeholderValue());
 		assertEquals(LudosConfigMap.GUIDEBOOK_MESSAGE.getName() + " reset", player1.nextMessage(), "Invalid Reset message for configuration.");
 	}
 

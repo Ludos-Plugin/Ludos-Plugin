@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 public final class StringConfigOptions extends ValueConfigOptions<String> {
@@ -27,17 +28,22 @@ public final class StringConfigOptions extends ValueConfigOptions<String> {
 	}
 
 	@Override
-	public @NotNull Set<@NotNull String> getActualOptions(CommandSender player) {
+	public String getValueOrNull(ConfigurationSection config) {
+		return config.getString(key());
+	}
+
+	@Override
+	public @NotNull Set<@NotNull String> getValidOptions(CommandSender player) {
 		return values;
 	}
 	@Override
 	protected String fromString(String value) {
-		if (value == null || value.equals(emptyValue())) return emptyValue();
+		if (value == null || value.equals(placeholderValue())) return placeholderValue();
 		return value;
 	}
 	@Override
 	protected String toString(String value) {
-		if (value == null || value.equals(emptyValue())) return emptyValue();
+		if (value == null || value.equals(placeholderValue())) return placeholderValue();
 		return value;
 	}
 }

@@ -12,9 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class ConfigOptions {
 	public abstract @NotNull Set<@NotNull String> getOptions(CommandSender sender);
-	public boolean isValidOption(String option, CommandSender sender) {
-		return getOptions(sender).contains(option);
-	}
 
 	public abstract boolean set(@NotNull String[] args, CommandSender sender, ConfigurationSection config);
 

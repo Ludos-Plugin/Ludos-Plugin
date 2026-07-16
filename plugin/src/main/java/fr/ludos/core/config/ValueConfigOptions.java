@@ -16,7 +16,7 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 
 public abstract class ValueConfigOptions<T> extends ConfigOptions implements ConfigEntryInterface {
-	public static final String DEFAULT_EMPTY_VALUE = "default";
+	public static final String DEFAULT_PLACEHOLDER_VALUE = "default";
 	private final @NotNull String name;
 	public @NotNull String getName() {
 		return name;
@@ -27,9 +27,9 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		return key;
 	}
 
-	private final @NotNull String emptyValue;
-	public final @NotNull String emptyValue() {
-		return emptyValue;
+	private final @NotNull String placeholderValue;
+	public final @NotNull String placeholderValue() {
+		return placeholderValue;
 	}
 
 	@Override
@@ -37,51 +37,12 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		return this;
 	}
 
-	public ValueConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue) {
+	public ValueConfigOptions(@NotNull String name, @NotNull String key, @Nullable String placeholderValue) {
 		this.name = ObjectUtils.requireNonEmpty(name);
 		this.key = ObjectUtils.requireNonEmpty(key);
-		this.emptyValue = (emptyValue != null && ! emptyValue.isBlank()) ? emptyValue : DEFAULT_EMPTY_VALUE;
+		this.placeholderValue = (placeholderValue != null && ! placeholderValue.isBlank()) ? placeholderValue : DEFAULT_PLACEHOLDER_VALUE;
 	}
 
-	public abstract @Nullable T getDefaultValue();
-	public final @Nullable String getDefaultStringValue() {
-		return toString(getDefaultValue());
-	}
-
-	public final @Nullable String getStringValueOrNull(ConfigurationSection config) {
-		return config != null ? config.getString(key) : null;
-	}
-	public final @Nullable String getStringValueOrNull(ConfigurationSection config, ConfigurationSection fallback) {
-		String first = config != null ? config.getString(key) : null;
-		if (first != null) return first;
-
-		String second = fallback != null ? fallback.getString(key) : null;
-		if (second != null) return second;
-
-		return null;
-	}
-	public final @Nullable String getStringValueOrDefault(ConfigurationSection config) {
-		String found = getStringValueOrNull(config);
-		if (found != null) return found;
-
-		return getDefaultStringValue();
-	}
-	public final @Nullable String getStringValueOrDefault(ConfigurationSection config, ConfigurationSection fallback) {
-		String found = getStringValueOrNull(config, fallback);
-		if (found != null) return found;
-
-		return getDefaultStringValue();
-	}
-
-	protected abstract @Nullable T fromString(String value);
-	protected abstract @Nullable String toString(T value);
-
-	public final @Nullable T getValueOrNull(ConfigurationSection config) {
-		String found = getStringValueOrNull(config);
-		if (found != null) return fromString(found);
-
-		return null;
-	}
 	public final @Nullable T getValueOrDefault(ConfigurationSection config) {
 		T found = getValueOrNull(config);
 		if (found != null) return found;
@@ -90,8 +51,11 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	}
 
 	public final @Nullable T getValueOrNull(ConfigurationSection config, ConfigurationSection fallback) {
-		String found = getStringValueOrNull(config, fallback);
-		if (found != null) return fromString(found);
+		T first = getValueOrNull(config);
+		if (first != null) return first;
+
+		T second = getValueOrNull(config);
+		if (second != null) return second;
 
 		return null;
 	}
@@ -112,46 +76,73 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		return getValueOrDefault(group.getGameConfig(game), group.getLudos().getGameConfig(game));
 	}
 
-	protected void notifyUnset(CommandSender sender) {
-		sender.sendMessage(getName() + " reset");
-	}
-
-	@Override
-	public boolean isValidOption(String option, CommandSender sender) {
-		return getActualOptions(sender).contains(option);
-	}
-
-	protected abstract @NotNull Set<@NotNull String> getActualOptions(CommandSender sender);
 	@Override
 	public @NotNull Set<@NotNull String> getOptions(CommandSender sender) {
-		Set<String> options = getActualOptions(sender).stream()
+		Set<String> options = getValidOptions(sender).stream()
 			.collect(Collectors.toCollection(HashSet::new));
 
-		options.add(emptyValue);
+		options.add(placeholderValue);
 
 		return options;
 	}
 
 	public boolean set(@NotNull String[] args, CommandSender sender, ConfigurationSection config) {
 		if (args.length == 0) {
-			sender.sendMessage(getStringValueOrDefault(config));
+			sender.sendMessage(defaultMessage(config));
 			return false;
 		}
 
-		String value = args[0];
-		if (value.equals(emptyValue)) {
-			config.set(key, null);
-			notifyUnset(sender);
+		if (isDefaultArgs(args, sender)) {
+			setValueAndNotify(null, sender, config);
 			return true;
 		}
 
-		if (! isValidOption(value, sender)) return false;
-
-		config.set(key, value);
-		notifySet(value, sender);
+		setValueAndNotify(parseValueFromArgs(args, sender), sender, config);
 		return true;
+	}
+
+	protected boolean setValue(T value, ConfigurationSection config) {
+		config.set(key, value);
+		return value != null;
+	}
+	protected void setValueAndNotify(T value, CommandSender sender, ConfigurationSection config) {
+		boolean wasValue = setValue(value, config);
+
+		String stringValue = toString(value);
+		if (! wasValue || stringValue == null) {
+			notifyUnset(sender);
+		} else {
+			notifySet(stringValue, sender);
+		}
+	}
+
+	public boolean isDefaultArgs(@NotNull String[] args, CommandSender sender) {
+		return args[0].equals(placeholderValue);
+	}
+	public T parseValueFromArgs(@NotNull String[] args, CommandSender sender) {
+		return fromString(args[0]);
+	}
+
+	protected void notifyUnset(CommandSender sender) {
+		sender.sendMessage(getName() + " reset");
 	}
 	protected void notifySet(String value, CommandSender sender) {
 		sender.sendMessage(getName() + " set to " + value);
 	}
+
+	public String defaultMessage(ConfigurationSection config) {
+		String returnString = toString(getValueOrNull(config));
+		if (returnString.equals(placeholderValue)) {
+			return returnString + " (" + toString(getDefaultValue()) + ")";
+		}
+		return returnString;
+	}
+
+	public abstract @Nullable T getDefaultValue();
+	protected abstract @NotNull Set<@NotNull String> getValidOptions(CommandSender sender);
+
+	public abstract @Nullable T getValueOrNull(ConfigurationSection config);
+
+	protected abstract @Nullable T fromString(String value);
+	protected abstract @Nullable String toString(T value);
 }

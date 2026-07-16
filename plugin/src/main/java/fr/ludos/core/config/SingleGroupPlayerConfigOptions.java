@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,13 +27,17 @@ public final class SingleGroupPlayerConfigOptions extends ValueConfigOptions<Off
 		this(name, key, emptyValue, false);
 	}
 
+	public String defaultMessage(ConfigurationSection config) {
+		return toString(getValueOrNull(config));
+	}
+
 	@Override
 	public OfflinePlayer getDefaultValue() {
 		return null;
 	}
 
 	@Override
-	public Set<String> getActualOptions(CommandSender sender) {
+	public Set<String> getValidOptions(CommandSender sender) {
 		if (! (sender instanceof Player player )) return Collections.emptySet();
 
 		Group group = Group.getGroupOfPlayer(player);
@@ -49,13 +54,18 @@ public final class SingleGroupPlayerConfigOptions extends ValueConfigOptions<Off
 	}
 
 	@Override
+	public OfflinePlayer getValueOrNull(ConfigurationSection config) {
+		return config.getOfflinePlayer(key());
+	}
+
+	@Override
 	protected OfflinePlayer fromString(String value) {
-		if (value == null || value.equals(emptyValue())) return null;
+		if (value == null || value.equals(placeholderValue())) return null;
 		return Bukkit.getOfflinePlayer(value);
 	}
 	@Override
 	protected String toString(OfflinePlayer value) {
-		if (value == null) return emptyValue();
+		if (value == null) return placeholderValue();
 		return value.getName();
 	}
 }

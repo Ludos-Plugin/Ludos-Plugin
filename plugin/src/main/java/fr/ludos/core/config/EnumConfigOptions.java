@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 public final class EnumConfigOptions<T extends Enum<T>> extends ValueConfigOptions<T> {
@@ -30,15 +31,30 @@ public final class EnumConfigOptions<T extends Enum<T>> extends ValueConfigOptio
 			: clazz.getEnumConstants()[0];
 	}
 	@Override
-	public @NotNull Set<@NotNull String> getActualOptions(CommandSender player) {
+	public @NotNull Set<@NotNull String> getValidOptions(CommandSender player) {
 		return Arrays.stream(clazz.getEnumConstants())
 			.map(Enum::name)
 			.collect(Collectors.toSet());
 	}
 
 	@Override
+	public T getValueOrNull(ConfigurationSection config) {
+		return fromString(config.getString(key()));
+	}
+
+	@Override
+	protected boolean setValue(T value, ConfigurationSection config) {
+		if (value == null) {
+			config.set(key(), null);
+			return false;
+		}
+		config.set(key(), value.name());
+		return true;
+	}
+
+	@Override
 	protected T fromString(String value) {
-		if (value == null || value.equals(emptyValue())) return null;
+		if (value == null || value.equals(placeholderValue())) return null;
 		try {
 			return Enum.valueOf(clazz, value);
 		} catch (Exception e) {
@@ -47,7 +63,7 @@ public final class EnumConfigOptions<T extends Enum<T>> extends ValueConfigOptio
 	}
 	@Override
 	protected String toString(T value) {
-		if (value == null) return emptyValue();
+		if (value == null) return placeholderValue();
 		return value.name();
 	}
 }
