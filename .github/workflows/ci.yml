@@ -94,6 +94,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Cache OWASP Dependency-Check Data
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/dependency-check-data
+          key: ${{ runner.os }}-owasp-dc-v1
+
       - name: Check Dependency vulnerabilities with Gradle
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
