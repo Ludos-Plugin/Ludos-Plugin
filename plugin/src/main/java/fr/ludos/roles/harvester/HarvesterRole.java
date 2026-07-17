@@ -130,8 +130,8 @@ public class HarvesterRole extends Role {
 			return EnumSet.of(RoleFlag.SUPPORT);
 		}
 
-		public Builder(Ludos plugin) {
-			super(plugin);
+		public Builder(Ludos ludos) {
+			super(ludos);
 		}
 
 		@Override

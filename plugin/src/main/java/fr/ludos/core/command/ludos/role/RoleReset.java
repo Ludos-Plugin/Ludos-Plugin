@@ -15,9 +15,9 @@ import fr.ludos.core.role.Role;
 public class RoleReset implements Subcommand {
 	private final static String ID = "reset";
 
-	private final Ludos plugin;
-	public RoleReset(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public RoleReset(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@Override
@@ -37,7 +37,7 @@ public class RoleReset implements Subcommand {
 			return true;
 		}
 
-		if (Role.isAuthorizedToEditRole(sender, target, plugin)) {
+		if (Role.isAuthorizedToEditRole(sender, target, ludos)) {
 			if (Role.getPlayerRole(target) == null) return true;
 
 			sender.sendMessage(
@@ -45,7 +45,7 @@ public class RoleReset implements Subcommand {
 				"Your role was reset" :
 				"The role of player " + target.getName() + " was reset"
 			);
-			Role.removeRole(target, plugin);
+			Role.removeRole(target, ludos);
 		} else {
 			sender.sendMessage("You are not authorized to reset this player's role");
 		}

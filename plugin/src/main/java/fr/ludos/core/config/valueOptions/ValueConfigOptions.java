@@ -1,4 +1,4 @@
-package fr.ludos.core.config;
+package fr.ludos.core.config.valueOptions;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -7,13 +7,17 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
+import fr.ludos.core.config.ConfigEntryInterface;
+import fr.ludos.core.config.ConfigOptions;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.role.Role;
 
 public abstract class ValueConfigOptions<T> extends ConfigOptions implements ConfigEntryInterface {
 	public static final String DEFAULT_PLACEHOLDER_VALUE = "default";
@@ -54,7 +58,7 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		T first = getValueOrNull(config);
 		if (first != null) return first;
 
-		T second = getValueOrNull(config);
+		T second = getValueOrNull(fallback);
 		if (second != null) return second;
 
 		return null;
@@ -66,14 +70,54 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		return getDefaultValue();
 	}
 
+	public final @Nullable T getValueOrNull(ConfigurationSection scopedConfig, ConfigurationSection config, ConfigurationSection fallback) {
+		T first = getValueOrNull(scopedConfig);
+		if (first != null) return first;
+
+		T second = getValueOrNull(config);
+		if (second != null) return second;
+
+		T third = getValueOrNull(fallback);
+		if (third != null) return third;
+
+		return null;
+	}
+	public final @Nullable T getValueOrDefault(ConfigurationSection scopedConfig, ConfigurationSection config, ConfigurationSection fallback) {
+		T found = getValueOrNull(scopedConfig, config, fallback);
+		if (found != null) return found;
+
+		return getDefaultValue();
+	}
+
 	public final @Nullable T getPluginConfig(Ludos ludos) {
 		return getValueOrDefault(ludos.getPluginConfig());
 	}
 	public final @Nullable T getGroupConfig(Group group) {
-		return getValueOrDefault(group.getGroupConfig(), group.getLudos().getGroupConfig());
+		return getValueOrDefault(group.getGroupConfig(), group.getLudos().getGlobalGroupConfig());
 	}
 	public final @Nullable T getGameConfig(Group group, Game.Builder game) {
-		return getValueOrDefault(group.getGameConfig(game), group.getLudos().getGameConfig(game));
+		return getValueOrDefault(group.getGameConfig(game), group.getLudos().getGlobalGameConfig(game));
+	}
+	public final @Nullable T getRoleConfig(Group group, Role.Builder role) {
+		return getValueOrDefault(group.getRoleConfig(role), group.getLudos().getGlobalRoleConfig(role));
+	}
+	public final @Nullable T getRoleConfig(OfflinePlayer player, Ludos ludos, Role.Builder role) {
+		ConfigurationSection playerScopedConfig = ludos.getPlayerRoleConfig(player, role);
+		ConfigurationSection globalScopedConfig = ludos.getGlobalRoleConfig(role);
+		Group group = Group.getGroupOfPlayer(player);
+		if (group == null) {
+			return getValueOrDefault(playerScopedConfig, globalScopedConfig);
+		}
+		return getValueOrDefault(playerScopedConfig, group.getRoleConfig(role), globalScopedConfig);
+	}
+	public final @Nullable T getPlayerConfig(OfflinePlayer player, Ludos ludos) {
+		ConfigurationSection playerScopedConfig = ludos.getPlayerConfig(player);
+		ConfigurationSection globalScopedConfig = ludos.getGlobalPlayerConfig();
+		Group group = Group.getGroupOfPlayer(player);
+		if (group == null) {
+			return getValueOrDefault(playerScopedConfig, globalScopedConfig);
+		}
+		return getValueOrDefault(playerScopedConfig, group.getPlayerConfig(), globalScopedConfig);
 	}
 
 	@Override

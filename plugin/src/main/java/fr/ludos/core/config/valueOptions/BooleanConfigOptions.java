@@ -1,4 +1,4 @@
-package fr.ludos.core.config;
+package fr.ludos.core.config.valueOptions;
 
 import java.util.Set;
 
@@ -31,7 +31,8 @@ public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
 
 	@Override
 	public Boolean getValueOrNull(ConfigurationSection config) {
-		return config.getBoolean(key(), getDefaultValue());
+		if (! config.isBoolean(key())) return null;
+		return config.getBoolean(key());
 	}
 
 	@Override

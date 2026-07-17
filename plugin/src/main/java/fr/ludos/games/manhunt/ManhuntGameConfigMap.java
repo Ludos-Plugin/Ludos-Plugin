@@ -6,10 +6,10 @@ import org.bukkit.OfflinePlayer;
 
 import fr.ludos.core.area.WorldBorderArea;
 import fr.ludos.core.config.ConfigOptionsMap;
-import fr.ludos.core.config.MultipleGroupPlayerConfigOptions;
-import fr.ludos.core.config.NumberConfigOptions;
-import fr.ludos.core.config.SingleGroupPlayerConfigOptions;
-import fr.ludos.core.config.ValueConfigOptions;
+import fr.ludos.core.config.valueOptions.MultipleGroupPlayerConfigOptions;
+import fr.ludos.core.config.valueOptions.NumberConfigOptions;
+import fr.ludos.core.config.valueOptions.SingleGroupPlayerConfigOptions;
+import fr.ludos.core.config.valueOptions.ValueConfigOptions;
 
 public final class ManhuntGameConfigMap extends ConfigOptionsMap {
 	public static final ValueConfigOptions<Set<OfflinePlayer>> PLAYERS =

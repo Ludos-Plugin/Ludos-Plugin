@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import fr.ludos.core.command.MockBukkitTestBase;
-import fr.ludos.core.command.ludos.config.LudosConfigMap;
-import fr.ludos.core.config.BooleanConfigOptions;
+import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
+import fr.ludos.core.config.valueOptions.BooleanConfigOptions;
 
 class LoginMessageTest extends MockBukkitTestBase {
 	@BeforeEach
@@ -19,8 +19,8 @@ class LoginMessageTest extends MockBukkitTestBase {
 		player1.setOp(true);
 		clearMessages(player1);
 
-		player1.performCommand("ludos config global ludos " + LudosConfigMap.GUIDEBOOK_MESSAGE.key() + " " + LudosConfigMap.GUIDEBOOK_MESSAGE.placeholderValue());
-		assertEquals(LudosConfigMap.GUIDEBOOK_MESSAGE.getName() + " reset", player1.nextMessage(), "Invalid Reset message for configuration.");
+		player1.performCommand("ludos config global player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + " " + PlayerConfigMap.GUIDEBOOK_MESSAGE.placeholderValue());
+		assertEquals(PlayerConfigMap.GUIDEBOOK_MESSAGE.getName() + " reset", player1.nextMessage(), "Invalid Reset message for configuration.");
 	}
 
 	@Test
@@ -29,11 +29,13 @@ class LoginMessageTest extends MockBukkitTestBase {
 		assertNotNull(player1.nextMessage());
 		player1.setOp(true);
 
-		player1.performCommand("ludos config global ludos " + LudosConfigMap.GUIDEBOOK_MESSAGE.key() + " " + BooleanConfigOptions.FALSE_STRING);
+		player1.performCommand("ludos config global player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + " " + BooleanConfigOptions.FALSE_STRING);
+		assertEquals(PlayerConfigMap.GUIDEBOOK_MESSAGE.getName() + " set to " + BooleanConfigOptions.FALSE_STRING, player1.nextMessage(), "Could not disable login message globally.");
 		PlayerMock player2 = createPlayer("Player2");
 		assertNull(player2.nextMessage(), "Player received login message when disabled.");
 
-		player1.performCommand("ludos config global ludos " + LudosConfigMap.GUIDEBOOK_MESSAGE.key() + " " + BooleanConfigOptions.TRUE_STRING);
+		player1.performCommand("ludos config global player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + " " + BooleanConfigOptions.TRUE_STRING);
+		assertEquals(PlayerConfigMap.GUIDEBOOK_MESSAGE.getName() + " set to " + BooleanConfigOptions.TRUE_STRING, player1.nextMessage(), "Could not enable login message globally.");
 		PlayerMock player3 = createPlayer("Player3");
 		assertNotNull(player3.nextMessage(), "Player dit not receive login message when enabled.");
 	}

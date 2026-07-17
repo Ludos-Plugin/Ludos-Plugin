@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -42,6 +43,7 @@ import net.kyori.adventure.text.format.TextDecoration;
  * It contains events and Data.
  */
 public abstract class Role extends GameProcessBase {
+	public static final String NAMESPACE = "role";
 	public static final String NONE_LABEL = "none";
 
 	public static Map<String, Builder> getRegistered() {
@@ -137,16 +139,22 @@ public abstract class Role extends GameProcessBase {
 
 	protected abstract LinkedHashMap<String, GameEvents> createGameEvents(Builder builder, Game game);
 
-	public static void loadConfigRoles(Ludos plugin) {
+	public static void loadConfigRoles(Ludos ludos) {
 
-		playerRoles = plugin.getRoles().getKeys(false).stream()
+		playerRoles = ludos.getPlayersConfig().getKeys(false).stream()
 			.filter(Objects::nonNull)
+			.map(s -> {
+				OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(s));
+				String roleId = ludos.getPlayerConfigSection(player).getString(NAMESPACE);
+				return Pair.of(player, roleId);
+			})
+			.filter(p -> p.getKey() != null && p.getValue() != null)
 			.collect(Collectors.toMap(
-				(s) -> UUID.fromString(s),
-				(s) -> {
-					String val = plugin.getRoles().getString(s);
-					plugin.getLogger().info("Loaded Role of Player UUID : " + s + " | Role ID : " + val);
-					return val;
+				(p) -> p.getKey().getUniqueId(),
+				(p) -> {
+					String roleId = p.getValue();
+					ludos.getLogger().info("Loaded Role of Player : " + p.getKey() + " | Role ID : " + roleId);
+					return roleId;
 				}
 			));
 	}
@@ -155,7 +163,7 @@ public abstract class Role extends GameProcessBase {
 		Role.registered.put(constructor.getId().toLowerCase(), constructor);
 	}
 
-	public static final boolean isAuthorizedToEditRole(ServerOperator operator, OfflinePlayer target, Ludos plugin) {
+	public static final boolean isAuthorizedToEditRole(ServerOperator operator, OfflinePlayer target, Ludos ludos) {
 		if (operator.isOp() || operator == target) {
 			return true;
 		}
@@ -204,7 +212,7 @@ public abstract class Role extends GameProcessBase {
 		return (OfflinePlayer p) -> isPlayerRole(p, id);
 	}
 
-	public static void setRole(OfflinePlayer player, String roleId, Ludos plugin) {
+	public static void setRole(OfflinePlayer player, String roleId, Ludos ludos) {
 		UUID playerUUID = player.getUniqueId();
 		if ( playerRoles.containsKey(playerUUID) && playerRoles.get(playerUUID).equalsIgnoreCase(roleId) ) return;
 
@@ -213,8 +221,8 @@ public abstract class Role extends GameProcessBase {
 
 		playerRoles.put(playerUUID, roleId);
 
-		plugin.getRoles().set(playerUUID.toString(), roleId);
-		plugin.saveRoles();
+		ludos.getPlayerConfigSection(player).set(NAMESPACE, roleId);
+		ludos.savePlayersConfig();
 
 		Player online = player.getPlayer();
 		if (online != null) {
@@ -222,7 +230,7 @@ public abstract class Role extends GameProcessBase {
 		}
 	}
 
-	public static void removeRole(OfflinePlayer player, Ludos plugin) {
+	public static void removeRole(OfflinePlayer player, Ludos ludos) {
 		UUID playerUUID = player.getUniqueId();
 		if ( ! playerRoles.containsKey(playerUUID) ) return;
 
@@ -230,8 +238,8 @@ public abstract class Role extends GameProcessBase {
 		if (role == null) return;
 
 		playerRoles.remove(playerUUID);
-		plugin.getRoles().set(playerUUID.toString(), null);
-		plugin.saveRoles();
+		ludos.getPlayerConfigSection(player).set(NAMESPACE, null);
+		ludos.savePlayersConfig();
 
 		Player online = player.getPlayer();
 		if (online != null) {
@@ -253,6 +261,9 @@ public abstract class Role extends GameProcessBase {
 	 * It contains configuration for the Role itself.
 	 */
 	public static abstract class Builder {
+		private final Ludos ludos;
+		public final Ludos getLudos() { return ludos; }
+
 		private final JavaPlugin plugin;
 		public final JavaPlugin getPlugin() { return plugin; }
 
@@ -317,8 +328,12 @@ public abstract class Role extends GameProcessBase {
 		}
 
 
-		public Builder(JavaPlugin plugin) {
+		public Builder(Ludos ludos, JavaPlugin plugin) {
+			this.ludos = ludos;
 			this.plugin = plugin;
+		}
+		public Builder(Ludos ludos) {
+			this(ludos, ludos);
 		}
 
 		public abstract Role build(Game game);

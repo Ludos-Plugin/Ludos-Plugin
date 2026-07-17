@@ -203,8 +203,8 @@ public class BerserkerRole extends Role {
 
 	public static class Builder extends Role.Builder {
 
-		public Builder(Ludos plugin) {
-			super(plugin);
+		public Builder(Ludos ludos) {
+			super(ludos);
 		}
 
 		@Override

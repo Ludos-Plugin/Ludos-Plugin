@@ -8,15 +8,15 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.SubcommandHandler;
 
 public final class GameSubcommand extends SubcommandHandler {
-	public GameSubcommand(Ludos plugin) {
-		super("game", "Manage Ludos Games", false, getSubcommands(plugin));
+	public GameSubcommand(Ludos ludos) {
+		super("game", "Manage Ludos Games", false, getSubcommands(ludos));
 	}
 
-	private static final ArrayList<Subcommand> getSubcommands(Ludos plugin) {
+	private static final ArrayList<Subcommand> getSubcommands(Ludos ludos) {
 		ArrayList<Subcommand> subcommands = new ArrayList<>() {{
 			add(new GameStart());
 			add(new GameStop());
-			add(new GameConfig(plugin));
+			add(new GameConfig(ludos));
 			add(new GameGuidebook());
 		}};
 		HelpSubcommand help = new HelpSubcommand("game", subcommands);

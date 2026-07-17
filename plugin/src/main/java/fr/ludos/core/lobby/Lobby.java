@@ -28,10 +28,10 @@ import org.bukkit.scheduler.BukkitTask;
 import com.google.common.base.Predicate;
 
 import fr.ludos.core.Utility;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameProcessBase;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.group.GroupConfigMap;
 import fr.ludos.core.structure.Structure;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;

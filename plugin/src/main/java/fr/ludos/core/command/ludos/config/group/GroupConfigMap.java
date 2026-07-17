@@ -1,12 +1,14 @@
-package fr.ludos.core.group;
+package fr.ludos.core.command.ludos.config.group;
 
 import java.util.Set;
 
 import fr.ludos.core.config.ConfigOptionsMap;
-import fr.ludos.core.config.EnumConfigOptions;
-import fr.ludos.core.config.NumberConfigOptions;
-import fr.ludos.core.config.ValueConfigOptions;
+import fr.ludos.core.config.valueOptions.EnumConfigOptions;
+import fr.ludos.core.config.valueOptions.NumberConfigOptions;
+import fr.ludos.core.config.valueOptions.ValueConfigOptions;
 import fr.ludos.core.game.teamController.GameJoinOption;
+import fr.ludos.core.group.GroupJoinOption;
+import fr.ludos.core.group.GroupRightsOption;
 import fr.ludos.core.lobby.LobbyWaitPlayersOption;
 
 public final class GroupConfigMap extends ConfigOptionsMap {

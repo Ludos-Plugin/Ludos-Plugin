@@ -7,7 +7,7 @@ import org.bukkit.WorldBorder;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.Utility;
-import fr.ludos.core.config.NumberConfigOptions;
+import fr.ludos.core.config.valueOptions.NumberConfigOptions;
 import fr.ludos.core.game.Game;
 
 public class WorldBorderArea extends Area {

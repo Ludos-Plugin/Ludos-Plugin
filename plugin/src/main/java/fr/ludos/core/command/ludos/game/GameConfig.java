@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.ScopeConfigMap;
+import fr.ludos.core.command.ludos.config.game.GameConfigMap;
 import fr.ludos.core.game.Game;
 
 public class GameConfig implements Subcommand {
@@ -17,8 +18,8 @@ public class GameConfig implements Subcommand {
 
 	private final ScopeConfigMap map;
 
-	public GameConfig(Ludos plugin) {
-		this.map = new ScopeConfigMap(plugin, GameConfigMap.INSTANCE);
+	public GameConfig(Ludos ludos) {
+		this.map = new ScopeConfigMap(ludos, GameConfigMap.INSTANCE);
 	}
 
 	@Override

@@ -9,13 +9,14 @@ import fr.ludos.core.config.ConfigOptions;
 import fr.ludos.core.config.sectionProvider.ConfigSectionMap;
 
 public class ScopeConfigMap extends ConfigSectionMap {
-	public ScopeConfigMap(Ludos plugin, ConfigOptions globalOptions, ConfigOptions localOptions) {
+	public ScopeConfigMap(Ludos ludos, ConfigOptions globalOptions, ConfigOptions groupOptions, ConfigOptions playerOptions) {
 		super(new HashMap<>() {{
-			put("global", Pair.of(new GlobalConfigProvider(plugin), globalOptions));
-			put("local", Pair.of(new GroupConfigProvider(plugin), localOptions));
+			put("global", Pair.of(new GlobalConfigProvider(ludos), globalOptions));
+			put("group", Pair.of(new GroupConfigProvider(ludos), groupOptions));
+			put("player", Pair.of(new PlayerConfigProvider(ludos), playerOptions));
 		}});
 	}
-	public ScopeConfigMap(Ludos plugin, ConfigOptions options) {
-		this(plugin, options, options);
+	public ScopeConfigMap(Ludos ludos, ConfigOptions options) {
+		this(ludos, options, options, options);
 	}
 }

@@ -17,9 +17,9 @@ import fr.ludos.core.group.Group.JoinMethod;
 public class GroupCreate implements Subcommand {
 	private final static String ID = "create";
 
-	private final Ludos plugin;
-	public GroupCreate(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public GroupCreate(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@Override
@@ -38,14 +38,14 @@ public class GroupCreate implements Subcommand {
 			return true;
 		}
 
-		Group group = Group.createGroup(player, null, plugin);
+		Group group = Group.createGroup(player, null, ludos);
 
 		Set<Player> members = CommandUtility.getPlayersFromArgs(args, 0, sender);
 		for (Player member : members) {
 			group.requestPlayerJoin(member, JoinMethod.Invite);
 		}
 
-		plugin.saveGroups();
+		ludos.saveGroupsConfig();
 
 		return true;
 	}

@@ -13,16 +13,16 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.Group.JoinMethod;
-import fr.ludos.core.group.GroupConfigMap;
 
 public class GroupInvite implements Subcommand {
 	private final static String ID = "invite";
 
-	private final Ludos plugin;
-	public GroupInvite(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public GroupInvite(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class GroupInvite implements Subcommand {
 			}
 		}
 		if (hasJoined) {
-			plugin.saveGroups();
+			ludos.saveGroupsConfig();
 		}
 
 		if (targets.size() > 0) {
@@ -93,7 +93,7 @@ public class GroupInvite implements Subcommand {
 		Group group = Group.getGroupOfPlayer(player);
 		if (group == null) return null;
 
-		HashSet<Player> onlines = plugin.getServer().getOnlinePlayers()
+		HashSet<Player> onlines = ludos.getServer().getOnlinePlayers()
 			.stream()
 			.collect(Collectors.toCollection(HashSet::new));
 		onlines.removeAll(group.getPlayers());

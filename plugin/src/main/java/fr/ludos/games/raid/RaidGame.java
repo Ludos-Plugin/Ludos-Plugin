@@ -91,8 +91,8 @@ public class RaidGame extends WaveGame {
 	}
 
 	public static class Builder extends Game.Builder {
-		public Builder(Ludos plugin) {
-			super(plugin);
+		public Builder(Ludos ludos) {
+			super(ludos);
 		}
 
 		@Override

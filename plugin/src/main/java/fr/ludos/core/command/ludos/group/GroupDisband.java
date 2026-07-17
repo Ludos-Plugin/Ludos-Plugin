@@ -9,15 +9,15 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.group.GroupConfigMap;
 
 public class GroupDisband implements Subcommand {
 	private final static String ID = "disband";
 
-	private final Ludos plugin;
-	public GroupDisband(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public GroupDisband(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class GroupDisband implements Subcommand {
 
 		group.disband();
 
-		plugin.saveGroups();
+		ludos.saveGroupsConfig();
 
 		return true;
 	}

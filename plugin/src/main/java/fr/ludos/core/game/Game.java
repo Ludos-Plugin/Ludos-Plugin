@@ -75,7 +75,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 	}
 	@Override
 	public JavaPlugin getPlugin() {
-		return builder.getPlugin();
+		return builder.getLudos();
 	}
 
 	private final Group group;
@@ -288,9 +288,9 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 
 	public static abstract class Builder {
-		public final Ludos plugin;
-		public Ludos getPlugin() {
-			return plugin;
+		public final Ludos ludos;
+		public Ludos getLudos() {
+			return ludos;
 		}
 
 		public abstract String getId();
@@ -345,8 +345,8 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 		public abstract Game build(Group group);
 
-		public Builder(Ludos plugin) {
-			this.plugin = plugin;
+		public Builder(Ludos ludos) {
+			this.ludos = ludos;
 		}
 	}
 }

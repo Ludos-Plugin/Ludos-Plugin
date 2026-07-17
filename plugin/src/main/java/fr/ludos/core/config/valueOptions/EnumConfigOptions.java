@@ -1,4 +1,4 @@
-package fr.ludos.core.config;
+package fr.ludos.core.config.valueOptions;
 
 import java.util.Arrays;
 import java.util.Objects;

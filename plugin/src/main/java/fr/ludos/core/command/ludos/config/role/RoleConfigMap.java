@@ -1,4 +1,4 @@
-package fr.ludos.core.command.ludos.role;
+package fr.ludos.core.command.ludos.config.role;
 
 import java.util.Set;
 import java.util.stream.Collectors;

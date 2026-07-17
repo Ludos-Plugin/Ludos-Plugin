@@ -73,8 +73,8 @@ public class HuntsmanRole extends Role {
 			return ID;
 		}
 
-		public Builder(Ludos plugin) {
-			super(plugin);
+		public Builder(Ludos ludos) {
+			super(ludos);
 		}
 
 

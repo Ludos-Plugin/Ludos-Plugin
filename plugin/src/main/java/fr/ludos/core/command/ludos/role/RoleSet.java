@@ -17,9 +17,9 @@ import fr.ludos.core.role.Role;
 public class RoleSet implements Subcommand {
 	private final static String ID = "set";
 
-	private final Ludos plugin;
-	public RoleSet(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public RoleSet(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@Override
@@ -49,7 +49,7 @@ public class RoleSet implements Subcommand {
 					return true;
 				}
 
-				Role.setRole(player, roleId, plugin);
+				Role.setRole(player, roleId, ludos);
 				break;
 			case 2:
 				OfflinePlayer target = CommandUtility.getOfflinePlayerFromArg(args, 1, sender);
@@ -58,8 +58,8 @@ public class RoleSet implements Subcommand {
 					return true;
 				}
 
-				if (Role.isAuthorizedToEditRole(sender, target, plugin)) {
-					Role.setRole(target, roleId, plugin);
+				if (Role.isAuthorizedToEditRole(sender, target, ludos)) {
+					Role.setRole(target, roleId, ludos);
 					if (sender != target) {
 						sender.sendMessage("The role of Player " + target.getName() + " is now " + roleId);
 					}

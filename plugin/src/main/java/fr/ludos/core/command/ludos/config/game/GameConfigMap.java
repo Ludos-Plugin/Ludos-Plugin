@@ -1,4 +1,4 @@
-package fr.ludos.core.command.ludos.game;
+package fr.ludos.core.command.ludos.config.game;
 
 import java.util.Set;
 import java.util.stream.Collectors;

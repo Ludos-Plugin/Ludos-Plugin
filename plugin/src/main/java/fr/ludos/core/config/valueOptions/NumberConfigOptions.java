@@ -1,4 +1,4 @@
-package fr.ludos.core.config;
+package fr.ludos.core.config.valueOptions;
 
 import java.util.HashSet;
 import java.util.Objects;

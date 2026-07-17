@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.ScopeConfigMap;
+import fr.ludos.core.command.ludos.config.role.RoleConfigMap;
 import fr.ludos.core.role.Role;
 
 public class RoleConfig implements Subcommand {
@@ -17,8 +18,8 @@ public class RoleConfig implements Subcommand {
 
 	private final ScopeConfigMap map;
 
-	public RoleConfig(Ludos plugin) {
-		this.map = new ScopeConfigMap(plugin, RoleConfigMap.INSTANCE);
+	public RoleConfig(Ludos ludos) {
+		this.map = new ScopeConfigMap(ludos, RoleConfigMap.INSTANCE);
 	}
 
 	@Override

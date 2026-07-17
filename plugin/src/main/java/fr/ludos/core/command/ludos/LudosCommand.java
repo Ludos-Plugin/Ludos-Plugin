@@ -23,12 +23,12 @@ public class LudosCommand implements Subcommand {
 
 	private final SubcommandManager manager;
 
-	public LudosCommand(Ludos plugin) {
+	public LudosCommand(Ludos ludos) {
 		ArrayList<Subcommand> subcommands = new ArrayList<>() {{
-			add(new GroupSubcommand(plugin));
-			add(new GameSubcommand(plugin));
-			add(new RoleSubcommand(plugin));
-			add(new LudosConfig(plugin));
+			add(new GroupSubcommand(ludos));
+			add(new GameSubcommand(ludos));
+			add(new RoleSubcommand(ludos));
+			add(new LudosConfig(ludos));
 			add(new CheatsSubcommand());
 			add(new LudosGuidebook());
 		}};

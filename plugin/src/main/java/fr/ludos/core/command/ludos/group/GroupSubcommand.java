@@ -8,19 +8,19 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.SubcommandHandler;
 
 public final class GroupSubcommand extends SubcommandHandler {
-	public GroupSubcommand(Ludos plugin) {
-		super("group", "Manage Ludos Groups", false, getSubcommands(plugin));
+	public GroupSubcommand(Ludos ludos) {
+		super("group", "Manage Ludos Groups", false, getSubcommands(ludos));
 	}
 
-	private static final ArrayList<Subcommand> getSubcommands(Ludos plugin) {
+	private static final ArrayList<Subcommand> getSubcommands(Ludos ludos) {
 		ArrayList<Subcommand> subcommands = new ArrayList<>() {{
-			add(new GroupCreate(plugin));
-			add(new GroupDisband(plugin));
-			add(new GroupJoin(plugin));
-			add(new GroupInvite(plugin));
-			add(new GroupLeave(plugin));
-			add(new GroupKick(plugin));
-			add(new GroupConfig(plugin));
+			add(new GroupCreate(ludos));
+			add(new GroupDisband(ludos));
+			add(new GroupJoin(ludos));
+			add(new GroupInvite(ludos));
+			add(new GroupLeave(ludos));
+			add(new GroupKick(ludos));
+			add(new GroupConfig(ludos));
 			add(new GroupInfo());
 		}};
 		HelpSubcommand help = new HelpSubcommand("group", subcommands);

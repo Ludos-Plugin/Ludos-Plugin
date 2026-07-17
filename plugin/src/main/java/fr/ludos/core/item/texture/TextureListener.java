@@ -15,11 +15,11 @@ import org.bukkit.scheduler.BukkitTask;
 import fr.ludos.core.Ludos;
 
 public final class TextureListener implements Listener {
-	private final Ludos plugin;
+	private final Ludos ludos;
 	private final ConcurrentMap<Player, BukkitTask> tasks = new ConcurrentHashMap<>();
 
-	public TextureListener(Ludos plugin) {
-		this.plugin = plugin;
+	public TextureListener(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -41,8 +41,8 @@ public final class TextureListener implements Listener {
 		var oldTask = tasks.remove(player);
 		if (oldTask != null && !oldTask.isCancelled()) oldTask.cancel();
 
-		tasks.put(player, plugin.getServer().getScheduler()
-			.runTaskLater(plugin, () -> {
+		tasks.put(player, ludos.getServer().getScheduler()
+			.runTaskLater(ludos, () -> {
 				TextureApplier.process(player);
 				tasks.remove(player);
 			}, delay));

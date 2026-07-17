@@ -7,25 +7,26 @@ import org.bukkit.entity.Player;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.config.sectionProvider.ConfigSectionProvider;
 
-public final class GlobalConfigProvider extends ConfigSectionProvider {
+public final class PlayerConfigProvider extends ConfigSectionProvider {
 	private final Ludos ludos;
-	public GlobalConfigProvider(Ludos ludos) {
+	public PlayerConfigProvider(Ludos ludos) {
 		this.ludos = ludos;
 	}
 
 	@Override
 	public ConfigurationSection getConfig(CommandSender sender) {
-		if (sender instanceof Player player && ! player.isOp()) {
-			sender.sendMessage("Only Server Operators are allowed to globally configure Ludos.");
+		if (! (sender instanceof Player player)) {
+			sender.sendMessage("Only players can set player configuration.");
 			return null;
 		}
 
-		return ludos.getConfig();
+		return ludos.getPlayerScopedConfig(player);
 	}
 
 	@Override
 	public boolean saveConfig(ConfigurationSection config, CommandSender sender) {
-		ludos.saveConfig();
+		ludos.savePlayersConfig();
 		return true;
 	}
+
 }

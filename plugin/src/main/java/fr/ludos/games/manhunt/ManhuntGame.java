@@ -26,10 +26,10 @@ import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.group.GroupConfigMap;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
 import fr.ludos.core.world.WorldManager;
@@ -224,8 +224,8 @@ public class ManhuntGame extends Game {
 
 
 	public static class Builder extends Game.Builder {
-		public Builder(Ludos plugin) {
-			super(plugin);
+		public Builder(Ludos ludos) {
+			super(ludos);
 		}
 
 		@Override

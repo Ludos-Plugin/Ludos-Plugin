@@ -9,9 +9,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.command.Subcommand;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.group.GroupConfigMap;
 
 public class GameStart implements Subcommand {
 	private final static String ID = "start";

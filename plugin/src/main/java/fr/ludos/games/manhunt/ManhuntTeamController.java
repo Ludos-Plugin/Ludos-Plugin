@@ -24,8 +24,8 @@ import org.bukkit.scoreboard.Team;
 
 import fr.ludos.core.Utility;
 import fr.ludos.core.area.Area;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.teamController.GameTeamController;
-import fr.ludos.core.group.GroupConfigMap;
 import fr.ludos.core.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
