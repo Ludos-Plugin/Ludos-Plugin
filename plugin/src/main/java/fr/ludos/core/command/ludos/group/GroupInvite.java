@@ -1,8 +1,8 @@
 package fr.ludos.core.command.ludos.group;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bukkit.command.Command;
@@ -49,9 +49,9 @@ public class GroupInvite implements Subcommand {
 			return true;
 		}
 
-		Set<Player> targets = CommandUtility.getPlayersFromArgs(args, 0, sender).stream()
+		List<Player> targets = CommandUtility.getPlayersFromArgs(args, sender).stream()
 			.filter(p -> ! group.isPlayer(p))
-			.collect(Collectors.toSet());
+			.collect(Collectors.toCollection(ArrayList::new));
 
 		if (targets.isEmpty()) {
 			sender.sendMessage("No valid player names provided.");
@@ -65,7 +65,7 @@ public class GroupInvite implements Subcommand {
 		}
 
 		boolean hasJoined = false;
-		for (Player target : targets) {
+		for (Player target : targets.stream().toList()) {
 			switch (group.requestPlayerJoin(target, JoinMethod.Invite)) {
 				case Succeeded:
 					hasJoined = true;

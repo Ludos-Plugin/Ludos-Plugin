@@ -28,6 +28,7 @@ public final class SingleGroupPlayerConfigOptions extends ValueConfigOptions<Off
 	}
 
 	public String getterMessage(String value) {
+		if (value == null) return placeholderValue();
 		return value;
 	}
 
@@ -59,12 +60,12 @@ public final class SingleGroupPlayerConfigOptions extends ValueConfigOptions<Off
 	}
 
 	@Override
-	protected OfflinePlayer fromString(String value) {
+	public OfflinePlayer fromString(String value) {
 		if (value == null) return null;
-		return Bukkit.getOfflinePlayer(value);
+		return Bukkit.getOfflinePlayer(value).getPlayer();
 	}
 	@Override
-	protected String toString(OfflinePlayer value) {
+	public String toString(OfflinePlayer value) {
 		if (value == null) return null;
 		return value.getName();
 	}

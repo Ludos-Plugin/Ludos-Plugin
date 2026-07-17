@@ -69,6 +69,15 @@ public final class MultipleGroupPlayerConfigOptions extends SetConfigOptions<Off
 		return Bukkit.getOfflinePlayer(arg);
 	}
 	@Override
+	public boolean validateParsedValueFromArg(OfflinePlayer argValue, CommandSender sender) {
+		if (! (sender instanceof Player player)) return false;
+
+		Group group = Group.getGroupOfPlayer(player);
+		if (group == null) return false;
+
+		return group.isPlayer(argValue);
+	}
+	@Override
 	public String parseSingleValueToString(OfflinePlayer value) {
 		return value.getName();
 	}

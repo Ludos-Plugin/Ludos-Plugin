@@ -1,7 +1,6 @@
 package fr.ludos.core.command.ludos.group;
 
 import java.util.List;
-import java.util.Set;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -40,7 +39,7 @@ public class GroupCreate implements Subcommand {
 
 		Group group = Group.createGroup(player, null, ludos);
 
-		Set<Player> members = CommandUtility.getPlayersFromArgs(args, 0, sender);
+		List<Player> members = CommandUtility.getPlayersFromArgs(args, sender);
 		for (Player member : members) {
 			group.requestPlayerJoin(member, JoinMethod.Invite);
 		}

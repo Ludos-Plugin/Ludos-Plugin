@@ -44,7 +44,9 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	public ValueConfigOptions(@NotNull String name, @NotNull String key, @Nullable String placeholderValue) {
 		this.name = ObjectUtils.requireNonEmpty(name);
 		this.key = ObjectUtils.requireNonEmpty(key);
-		this.placeholderValue = (placeholderValue != null && ! placeholderValue.isBlank()) ? placeholderValue : DEFAULT_PLACEHOLDER_VALUE;
+		this.placeholderValue = (placeholderValue == null || placeholderValue.isBlank())
+			? DEFAULT_PLACEHOLDER_VALUE
+			: placeholderValue;
 	}
 
 	public final @Nullable T getValueOrDefault(ConfigurationSection config) {
@@ -209,11 +211,12 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 
 	/**
 	 * The message sent to the command sender, when no option value was given.</br>
-	 * We use this to give the current set value to the user.
+	 * We use this to give the current set value to the user.</br>
+	 * Must not be null.
 	 * @param config The Configuration section to use as a root path for the fetching.
 	 * @return A more detailed, if necessary, value to return to the player.
 	 */
-	public String getterMessage(ConfigurationSection config) {
+	public @NotNull String getterMessage(ConfigurationSection config) {
 		String valueString = toString(getValueOrNull(config));
 		return getterMessage(valueString);
 	}
@@ -260,12 +263,12 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	 * @param value The representative String value to parse to a native T type.
 	 * @return The parsed T value or null if an invalid/non-parsable String `value` was given.
 	 */
-	protected abstract @Nullable T fromString(String value);
+	public abstract @Nullable T fromString(String value);
 	/**
 	 * Function to convert a T native value to a parsed String value.</br>
 	 * If the given T value is invalid/null, return null.
 	 * @param value The T native value type to represent as a string
 	 * @return The representative String or null if an invalid/null T `value` was given.
 	 */
-	protected abstract @NotNull String toString(T value);
+	public abstract @NotNull String toString(T value);
 }

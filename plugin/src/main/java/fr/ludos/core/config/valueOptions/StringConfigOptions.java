@@ -37,12 +37,12 @@ public final class StringConfigOptions extends ValueConfigOptions<String> {
 		return values;
 	}
 	@Override
-	protected String fromString(String value) {
+	public String fromString(String value) {
 		if (value == null) return null;
 		return value;
 	}
 	@Override
-	protected String toString(String value) {
+	public String toString(String value) {
 		if (value == null) return null;
 		return value;
 	}

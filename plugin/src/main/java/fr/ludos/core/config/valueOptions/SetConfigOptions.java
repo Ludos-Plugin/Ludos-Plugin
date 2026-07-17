@@ -14,11 +14,12 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class SetConfigOptions<T> extends ValueConfigOptions<Set<T>> {
 
-	public SetConfigOptions(@NotNull String name, @NotNull String key, String emptyValue) {
-		super(name, key, emptyValue);
+	public SetConfigOptions(@NotNull String name, @NotNull String key, String placeholderValue) {
+		super(name, key, placeholderValue);
 	}
 
 	public String getterMessage(String value) {
+		if (value == null) return placeholderValue();
 		return value;
 	}
 
@@ -35,7 +36,7 @@ public abstract class SetConfigOptions<T> extends ValueConfigOptions<Set<T>> {
 	public Set<T> parseValueFromArgs(@NotNull String[] args, CommandSender sender) {
 		return Arrays.stream(args)
 			.map(this::parseSingleValueFromArg)
-			.filter(Objects::nonNull)
+			.filter(a -> validateParsedValueFromArg(a, sender))
 			.collect(Collectors.toSet());
 	}
 
@@ -83,7 +84,7 @@ public abstract class SetConfigOptions<T> extends ValueConfigOptions<Set<T>> {
 	}
 
 	@Override
-	protected Set<T> fromString(String value) {
+	public Set<T> fromString(String value) {
 		if (value == null) return null;
 		return Arrays.stream(value.split(" "))
 			.map(this::parseSingleValueFromArg)
@@ -91,7 +92,7 @@ public abstract class SetConfigOptions<T> extends ValueConfigOptions<Set<T>> {
 			.collect(Collectors.toSet());
 	}
 	@Override
-	protected String toString(Set<T> value) {
+	public String toString(Set<T> value) {
 		if (value == null) return null;
 		if (value.isEmpty()) return placeholderValue();
 		return value.stream()
@@ -101,5 +102,6 @@ public abstract class SetConfigOptions<T> extends ValueConfigOptions<Set<T>> {
 	}
 
 	public abstract T parseSingleValueFromArg(@NotNull String arg);
+	public abstract boolean validateParsedValueFromArg(T argValue, CommandSender sender);
 	public abstract String parseSingleValueToString(T value);
 }

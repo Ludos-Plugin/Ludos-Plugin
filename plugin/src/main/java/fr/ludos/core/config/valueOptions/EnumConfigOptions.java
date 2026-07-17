@@ -53,7 +53,7 @@ public final class EnumConfigOptions<T extends Enum<T>> extends ValueConfigOptio
 	}
 
 	@Override
-	protected T fromString(String value) {
+	public T fromString(String value) {
 		if (value == null) return null;
 		try {
 			return Enum.valueOf(clazz, value);
@@ -62,7 +62,7 @@ public final class EnumConfigOptions<T extends Enum<T>> extends ValueConfigOptio
 		}
 	}
 	@Override
-	protected String toString(T value) {
+	public String toString(T value) {
 		if (value == null) return null;
 		return value.name();
 	}

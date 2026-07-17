@@ -8,11 +8,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
-import fr.ludos.core.command.MockBukkitTestBase;
 import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
 import fr.ludos.core.config.valueOptions.BooleanConfigOptions;
 
-class LoginMessageTest extends MockBukkitTestBase {
+class LoginMessageTest extends ConfigTest {
 	@BeforeEach
 	void resetConfig() {
 		PlayerMock player1 = createPlayer("Player1");
@@ -28,6 +27,8 @@ class LoginMessageTest extends MockBukkitTestBase {
 		PlayerMock player1 = createPlayer("Player1");
 		assertNotNull(player1.nextMessage());
 		player1.setOp(true);
+
+		assertSetConfigValues(player1, "ludos config global player", PlayerConfigMap.GUIDEBOOK_MESSAGE, "invalid");
 
 		player1.performCommand("ludos config global player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + " " + BooleanConfigOptions.FALSE_STRING);
 		assertEquals(PlayerConfigMap.GUIDEBOOK_MESSAGE.getName() + " set to " + BooleanConfigOptions.FALSE_STRING, player1.nextMessage(), "Could not disable login message globally.");

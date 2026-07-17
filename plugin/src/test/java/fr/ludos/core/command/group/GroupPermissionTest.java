@@ -20,7 +20,7 @@ class GroupPermissionTest extends GroupTest {
 		PlayerMock player2 = createPlayer("Player2");
 		PlayerMock player3 = createPlayer("Player3");
 
-		createGroupWithInvite(player1, java.util.Collections.singletonList(player2));
+		assertCreateGroupWithInvite(player1, java.util.Collections.singletonList(player2));
 		player2.performCommand("ludos group join " + player1.getName());
 		assertEquals("You have joined " + player1.getName() + "'s group.", player2.nextMessage(), "Join should be accepted after invite");
 		assertEquals(player2.getName() + " has joined the group.", player1.nextMessage(), "Leader should be notified on join");
@@ -37,13 +37,13 @@ class GroupPermissionTest extends GroupTest {
 		PlayerMock player1 = createPlayer("Player1");
 		PlayerMock player2 = createPlayer("Player2");
 
-		createGroupWithInvite(player1, Collections.singletonList(player2));
-		joinGroup(player2, player1);
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
+		assertJoinGroup(player2, player1);
 
 		PlayerMock player3 = createPlayer("Player3");
 
-		invitePlayerToGroup(player1, Collections.singletonList(player3));
-		joinGroup(player3, player1);
+		assertInvitePlayerToGroup(player1, Collections.singletonList(player3));
+		assertJoinGroup(player3, player1);
 
 		player1.performCommand("ludos group config group member_authorisation " + GroupRightsOption.none.name());
 		assertEquals("Members authorisation set to " + GroupRightsOption.none.name(), player1.nextMessage(), "Could not set group rights");
@@ -58,8 +58,8 @@ class GroupPermissionTest extends GroupTest {
 		PlayerMock player1 = createPlayer("Player1");
 		PlayerMock player2 = createPlayer("Player2");
 
-		createGroupWithInvite(player1, Collections.singletonList(player2));
-		joinGroup(player2, player1);
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
+		assertJoinGroup(player2, player1);
 
 		player1.performCommand("ludos group config group member_authorisation " + rights);
 		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
@@ -77,13 +77,13 @@ class GroupPermissionTest extends GroupTest {
 		PlayerMock player1 = createPlayer("Player1");
 		PlayerMock player2 = createPlayer("Player2");
 
-		createGroupWithInvite(player1, Collections.singletonList(player2));
-		joinGroup(player2, player1);
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
+		assertJoinGroup(player2, player1);
 
 		PlayerMock player3 = createPlayer("Player3");
-		invitePlayerToGroup(player1, Collections.singletonList(player3));
+		assertInvitePlayerToGroup(player1, Collections.singletonList(player3));
 
-		joinGroup(player3, player1);
+		assertJoinGroup(player3, player1);
 
 		player1.performCommand("ludos group config group member_authorisation " + rights);
 		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
@@ -98,8 +98,8 @@ class GroupPermissionTest extends GroupTest {
 		PlayerMock player1 = createPlayer("Player1");
 		PlayerMock player2 = createPlayer("Player2");
 
-		createGroupWithInvite(player1, Collections.singletonList(player2));
-		joinGroup(player2, player1);
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
+		assertJoinGroup(player2, player1);
 
 		player1.performCommand("ludos group config group member_authorisation " + rights);
 		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
@@ -113,8 +113,8 @@ class GroupPermissionTest extends GroupTest {
 		PlayerMock player1 = createPlayer("Player1");
 		PlayerMock player2 = createPlayer("Player2");
 
-		createGroupWithInvite(player1, Collections.singletonList(player2));
-		joinGroup(player2, player1);
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
+		assertJoinGroup(player2, player1);
 
 		Group group = Group.getGroupOfPlayer(player1);
 		assertTrue(group != null && group.isMember(player2), "Player should be a member after joining");

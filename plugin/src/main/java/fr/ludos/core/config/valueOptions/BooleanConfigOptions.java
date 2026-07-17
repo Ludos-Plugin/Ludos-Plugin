@@ -36,7 +36,7 @@ public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
 	}
 
 	@Override
-	protected Boolean fromString(String value) {
+	public Boolean fromString(String value) {
 		switch (value) {
 			case FALSE_STRING:
 				return false;
@@ -48,7 +48,7 @@ public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
 	}
 
 	@Override
-	protected String toString(Boolean value) {
+	public String toString(Boolean value) {
 		if (value == null) return null;
 		return value
 			? TRUE_STRING
