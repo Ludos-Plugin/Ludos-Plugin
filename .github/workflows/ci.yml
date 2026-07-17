@@ -95,6 +95,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Check Dependency vulnerabilities with Gradle
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: ./gradlew dependencyCheckAnalyze --info
 
       - name: Upload Dependency Check Reports

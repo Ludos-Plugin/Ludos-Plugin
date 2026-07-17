@@ -58,6 +58,10 @@ checkstyle {
     maxErrors = 0
 }
 
+dependencyCheck {
+    nvd.apiKey = System.getenv('NVD_API_KEY')
+}
+
 tasks.reobfJar {
     outputJar.set(layout.buildDirectory.file("output/LudosPlugin-${project.version}.jar"))
 }
