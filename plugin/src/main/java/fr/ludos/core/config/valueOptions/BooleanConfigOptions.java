@@ -25,7 +25,7 @@ public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
 		return defaultValue;
 	}
 	@Override
-	protected @NotNull Set<@NotNull String> getValidOptions(CommandSender sender) {
+	public @NotNull Set<@NotNull String> getValidOptions(CommandSender sender) {
 		return Set.of(FALSE_STRING, TRUE_STRING);
 	}
 
@@ -49,7 +49,7 @@ public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
 
 	@Override
 	protected String toString(Boolean value) {
-		if (value == null) return placeholderValue();
+		if (value == null) return null;
 		return value
 			? TRUE_STRING
 			: FALSE_STRING;

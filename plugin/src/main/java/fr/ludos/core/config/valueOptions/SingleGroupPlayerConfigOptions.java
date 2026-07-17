@@ -27,8 +27,8 @@ public final class SingleGroupPlayerConfigOptions extends ValueConfigOptions<Off
 		this(name, key, emptyValue, false);
 	}
 
-	public String defaultMessage(ConfigurationSection config) {
-		return toString(getValueOrNull(config));
+	public String getterMessage(String value) {
+		return value;
 	}
 
 	@Override
@@ -60,12 +60,12 @@ public final class SingleGroupPlayerConfigOptions extends ValueConfigOptions<Off
 
 	@Override
 	protected OfflinePlayer fromString(String value) {
-		if (value == null || value.equals(placeholderValue())) return null;
+		if (value == null) return null;
 		return Bukkit.getOfflinePlayer(value);
 	}
 	@Override
 	protected String toString(OfflinePlayer value) {
-		if (value == null) return placeholderValue();
+		if (value == null) return null;
 		return value.getName();
 	}
 }

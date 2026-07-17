@@ -55,7 +55,7 @@ public class NumberConfigOptions extends ValueConfigOptions<Integer> {
 
 	@Override
 	protected Integer fromString(String value) {
-		if (value == null || value.equals(placeholderValue())) return null;
+		if (value == null) return null;
 		try {
 			if (unsigned) {
 				return Integer.parseUnsignedInt(value);
@@ -68,7 +68,7 @@ public class NumberConfigOptions extends ValueConfigOptions<Integer> {
 	}
 	@Override
 	protected String toString(Integer value) {
-		if (value == null) return placeholderValue();
+		if (value == null) return null;
 		return value.toString();
 	}
 }

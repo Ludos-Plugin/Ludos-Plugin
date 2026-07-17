@@ -38,12 +38,12 @@ public final class StringConfigOptions extends ValueConfigOptions<String> {
 	}
 	@Override
 	protected String fromString(String value) {
-		if (value == null || value.equals(placeholderValue())) return placeholderValue();
+		if (value == null) return null;
 		return value;
 	}
 	@Override
 	protected String toString(String value) {
-		if (value == null || value.equals(placeholderValue())) return placeholderValue();
+		if (value == null) return null;
 		return value;
 	}
 }

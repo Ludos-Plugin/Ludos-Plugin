@@ -18,8 +18,8 @@ public abstract class SetConfigOptions<T> extends ValueConfigOptions<Set<T>> {
 		super(name, key, emptyValue);
 	}
 
-	public String defaultMessage(ConfigurationSection config) {
-		return toString(getValueOrNull(config));
+	public String getterMessage(String value) {
+		return value;
 	}
 
 	@Override
@@ -41,10 +41,8 @@ public abstract class SetConfigOptions<T> extends ValueConfigOptions<Set<T>> {
 
 	@Override
 	protected boolean setValue(Set<T> value, ConfigurationSection config) {
-		if (value == null || value.isEmpty()) {
-			config.set(key(), null);
-			return false;
-		}
+		if (value == null || value.isEmpty()) return false;
+
 		config.set(
 			key(),
 			value.stream()
@@ -86,7 +84,7 @@ public abstract class SetConfigOptions<T> extends ValueConfigOptions<Set<T>> {
 
 	@Override
 	protected Set<T> fromString(String value) {
-		if (value == null || value.equals(placeholderValue())) return Collections.emptySet();
+		if (value == null) return null;
 		return Arrays.stream(value.split(" "))
 			.map(this::parseSingleValueFromArg)
 			.filter(Objects::nonNull)
@@ -94,7 +92,8 @@ public abstract class SetConfigOptions<T> extends ValueConfigOptions<Set<T>> {
 	}
 	@Override
 	protected String toString(Set<T> value) {
-		if (value == null || value.isEmpty()) return placeholderValue();
+		if (value == null) return null;
+		if (value.isEmpty()) return placeholderValue();
 		return value.stream()
 			.map(this::parseSingleValueToString)
 			.filter(Objects::nonNull)
