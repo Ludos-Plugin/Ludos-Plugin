@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- Shaded JAR in Paper dev bundle -->
+    <suppress>
+        <notes><![CDATA[
+            file name: dev-bundle-1.19-R0.1-SNAPSHOT.zip: paperclip-mojang+yarn.jar (shaded: org.apache.commons:commons-compress:1.5)
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons-compress@.*$</packageUrl>
+        <cve>CVE-2021-35517</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+            file name: dev-bundle-1.19-R0.1-SNAPSHOT.zip: paperclip-mojang+yarn.jar (shaded: org.apache.commons:commons-compress:1.5)
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons-compress@.*$</packageUrl>
+        <cve>CVE-2021-36090</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+            file name: dev-bundle-1.19-R0.1-SNAPSHOT.zip: paperclip-mojang+yarn.jar (shaded: org.apache.commons:commons-compress:1.5)
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons-compress@.*$</packageUrl>
+        <cve>CVE-2024-25710</cve>
+    </suppress>
+    <!--  -->
+
+    <!-- Minecraft Decompiler, compile-time only -->
+    <suppress>
+    <notes><![CDATA[
+        file name: forgeflower-1.5.605.7.jar
+    ]]></notes>
+        <packageUrl regex="true">^pkg:maven/net\.minecraftforge/forgeflower@.*$</packageUrl>
+        <cve>CVE-2023-33245</cve>
+    </suppress>
+    <!--  -->
+
+    <!-- Before Minecraft 1.17.1 -->
+    <suppress>
+        <notes><![CDATA[
+            file name: forgeflower-1.5.605.7.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/net\.minecraftforge/forgeflower@.*$</packageUrl>
+        <cve>CVE-2021-35054</cve>
+    </suppress>
+    <!--  -->
+
+    <!-- Before Java 7 -->
+    <suppress>
+        <notes><![CDATA[
+            file name: forgeflower-1.5.605.7.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/net\.minecraftforge/forgeflower@.*$</packageUrl>
+        <cve>CVE-2023-33245</cve>
+    </suppress>
+    <!--  -->
+</suppressions>

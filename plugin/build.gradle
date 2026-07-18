@@ -43,6 +43,75 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:5.5.0'
 
     testImplementation 'com.github.seeseemelk:MockBukkit-v1.19:3.1.0'
+
+    // --- PATCH VULNERABILITIES ---
+    implementation 'com.mojang:logging:1.2.7'
+
+    configurations.all {
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j18-impl'
+
+        resolutionStrategy {
+            force 'org.apache.commons:commons-compress:1.26.0'
+            force 'org.apache.logging.log4j:log4j-slf4j2-impl:2.26.1'
+
+            eachDependency { details ->
+                if (details.requested.group == 'com.mojang') {
+                    if (details.requested.name == 'logging') {
+                        details.useVersion '1.2.7'
+                    }
+                }
+                if (details.requested.group == 'org.apache.logging.log4j') {
+                    if (details.requested.name != 'log4j-slf4j18-impl') {
+                        details.useVersion '2.26.1'
+                    }
+                }
+                if (details.requested.group == 'org.yaml') {
+                    if (details.requested.name == 'snakeyaml') {
+                        details.useVersion '2.6'
+                    }
+                }
+                if (details.requested.group == 'org.apache.commons') {
+                    if (details.requested.name == 'commons-lang3') {
+                        details.useVersion '3.20.0'
+                    }
+                }
+                if (details.requested.group == 'org.apache.httpcomponents') {
+                    if (details.requested.name == 'httpcore') {
+                        details.useVersion '4.4.16'
+                    }
+                }
+                if (details.requested.group == 'commons-io') {
+                    if (details.requested.name == 'commons-io') {
+                        details.useVersion '2.14.0'
+                    }
+                }
+                if (details.requested.group == 'org.codehaus.plexus') {
+                    if (details.requested.name == 'plexus-utils') {
+                        details.useVersion '3.6.1'
+                    }
+                }
+                if (details.requested.group == 'io.netty') {
+                    details.useVersion '4.2.15.Final'
+                }
+                if (details.requested.group == 'com.google.protobuf') {
+                    details.useVersion '3.25.5'
+                }
+                if (details.requested.group == 'com.google.guava') {
+                    if (details.requested.name == 'guava') {
+                        details.useVersion '33.6.0-jre'
+                    }
+                }
+                if (details.requested.group == 'org.jline') {
+                    details.useVersion '3.25.0'
+                }
+                if (details.requested.group == 'org.xerial') {
+                    if (details.requested.name == 'sqlite-jdbc') {
+                        details.useVersion '3.53.2'
+                    }
+                }
+            }
+        }
+    }
 }
 
 paperweight {
@@ -60,6 +129,14 @@ checkstyle {
 
 dependencyCheck {
     nvd.apiKey = System.getenv('NVD_API_KEY')
+    suppressionFile = "${rootDir}/config/owasp/suppressions.xml"
+
+    analyzers {
+        assemblyEnabled = false
+        skipConfigurations = ['testImplementation', 'testRuntimeOnly', 'compileOnly']
+    }
+
+    skipProjects = []
 }
 
 tasks.reobfJar {
