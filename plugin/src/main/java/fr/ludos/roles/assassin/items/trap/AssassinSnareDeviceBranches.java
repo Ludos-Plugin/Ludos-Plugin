@@ -124,7 +124,7 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 
 	@Override
 	public String id() {
-		return this.name().toLowerCase();
+		return name();
 	}
 
 	@Override

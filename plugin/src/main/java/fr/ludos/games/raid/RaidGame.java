@@ -8,7 +8,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
-import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
@@ -83,11 +82,6 @@ public class RaidGame extends WaveGame {
 			this,
 			RaidGameConfigMap.PLAYERS.getGameConfig(group, builder)
 		);
-	}
-
-	@Override
-	public Boolean canPlayerHaveRole(Player player, String roleId) {
-		return teamController.contains(player);
 	}
 
 	public static class Builder extends Game.Builder {

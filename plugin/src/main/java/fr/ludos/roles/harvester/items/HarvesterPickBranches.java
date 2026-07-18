@@ -92,7 +92,7 @@ public enum HarvesterPickBranches implements HarvesterPickBranch {
 
 	@Override
 	public String id() {
-		return super.name();
+		return name();
 	}
 
 	public abstract void onBreakBlock(HarvesterPick pick, BlockBreakEvent event);

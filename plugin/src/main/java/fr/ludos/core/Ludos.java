@@ -46,7 +46,7 @@ import fr.ludos.roles.assassin.AssassinRole;
 import fr.ludos.roles.berserker.BerserkerRole;
 import fr.ludos.roles.harvester.HarvesterRole;
 import fr.ludos.roles.huntsman.HuntsmanRole;
-import fr.ludos.roles.tank.TankRole;
+import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -159,7 +159,7 @@ public class Ludos extends JavaPlugin implements Listener {
 
 		Role.registerRole(new HuntsmanRole.Builder(this));
 		Role.registerRole(new HarvesterRole.Builder(this));
-		Role.registerRole(new TankRole.Builder(this));
+		Role.registerRole(new RampartRole.Builder(this));
 		Role.registerRole(new AssassinRole.Builder(this));
 		Role.registerRole(new BerserkerRole.Builder(this));
 

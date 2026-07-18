@@ -34,7 +34,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public final class HarvesterPick extends LevelBranchItem<HarvesterPickBranch, HarvesterPickLevels> {
-	private static final String ID = "manhuntHarvesterPick";
+	public static final String ID = "harvester_pick";
 	public final Events events;
 
 	// private final static Map<UUID, HarvesterPick> cachedItems = new HashMap<>();

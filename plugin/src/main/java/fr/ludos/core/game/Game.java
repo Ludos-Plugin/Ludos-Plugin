@@ -279,11 +279,9 @@ public abstract class Game extends TwoStepGameProcessBase {
 	protected void onGameSetdown() { }
 
 
-	public LinkedHashMap<String, GameEvents> modifyEvents(LinkedHashMap<String, GameEvents> events) {
+	public LinkedHashMap<String, GameEvents> digestRoleEvents(String roleId, LinkedHashMap<String, GameEvents> events) {
 		return events;
 	}
-
-	public abstract Boolean canPlayerHaveRole(Player player, String roleId);
 
 
 

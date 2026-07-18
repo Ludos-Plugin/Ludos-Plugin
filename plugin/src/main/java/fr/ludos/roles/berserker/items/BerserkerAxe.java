@@ -35,7 +35,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
-	public static final String ID = "berserkerAxe";
+	public static final String ID = "berserker_axe";
 
 	@Override
 	public String getTypeId() {

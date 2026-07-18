@@ -1,4 +1,4 @@
-package fr.ludos.roles.tank.items;
+package fr.ludos.roles.rampart.items;
 
 import java.util.UUID;
 
@@ -15,18 +15,18 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.role.Role;
-import fr.ludos.roles.tank.TankRole;
+import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
-public class TankHelmet extends SpecialItem {
-	private static final String ID = "tank_helmet";
+public class RampartHelm extends SpecialItem {
+	public static final String ID = "rampart_helm";
 
-	protected TankHelmet(ItemStack stack, Player owner, Game game) {
+	protected RampartHelm(ItemStack stack, Player owner, Game game) {
 		super(stack, owner, game);
 	}
 
-	public static @Nullable TankHelmet fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+	public static @Nullable RampartHelm fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
@@ -36,14 +36,14 @@ public class TankHelmet extends SpecialItem {
 		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		TankHelmet helmet = new TankHelmet(stack, owner, game);
+		RampartHelm helmet = new RampartHelm(stack, owner, game);
 		// cachedItems.put(itemId, dagger);
 
 		return helmet;
 	}
 
-	public static TankHelmet createItem(Player owner, Game game) {
-		TankHelmet helmet = new TankHelmet(createItemStack(), owner, game);
+	public static RampartHelm createItem(Player owner, Game game) {
+		RampartHelm helmet = new RampartHelm(createItemStack(), owner, game);
 		helmet.initializeItem();
 
 		// cachedItems.put(itemId, dagger);
@@ -59,7 +59,7 @@ public class TankHelmet extends SpecialItem {
 
 	@Override
 	public Component getName() {
-		return Component.text("Tank Helmet")
+		return Component.text("Rampart Helm")
 				.decoration(TextDecoration.ITALIC, false);
 	}
 
@@ -73,7 +73,7 @@ public class TankHelmet extends SpecialItem {
 		return stack;
 	}
 
-	public static class Events extends SpecialItem.Events<TankHelmet> {
+	public static class Events extends SpecialItem.Events<RampartHelm> {
 
 		public Events(Game game) {
 			super(game, new Events.Info(ItemSlot.HELMET));
@@ -81,18 +81,18 @@ public class TankHelmet extends SpecialItem {
 
 		@Override
 		@Nullable
-		public TankHelmet getItem(ItemStack stack) {
-			return TankHelmet.fromItemStack(stack, game);
+		public RampartHelm getItem(ItemStack stack) {
+			return RampartHelm.fromItemStack(stack, game);
 		}
 
 		@Override
-		public TankHelmet createItem(Player owner) {
-			return TankHelmet.createItem(owner, game);
+		public RampartHelm createItem(Player owner) {
+			return RampartHelm.createItem(owner, game);
 		}
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, TankRole.ID);
+			return Role.isPlayerRole(owner, RampartRole.ID);
 		}
 	}
 }

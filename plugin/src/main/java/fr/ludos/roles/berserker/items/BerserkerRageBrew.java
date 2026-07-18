@@ -30,7 +30,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class BerserkerRageBrew extends SpecialItem {
-	public static final String ID = "berserkerRageBrew";
+	public static final String ID = "berserker_rage_brew";
 
 	@Override
 	public String getTypeId() {

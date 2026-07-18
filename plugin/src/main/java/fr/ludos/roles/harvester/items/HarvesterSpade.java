@@ -39,7 +39,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
-	private static final String ID = "manhuntHarvesterSpade";
+	public static final String ID = "harvester_spade";
 
 	// private final static Map<UUID, HarvesterSpade> cachedItems = new HashMap<>();
 
