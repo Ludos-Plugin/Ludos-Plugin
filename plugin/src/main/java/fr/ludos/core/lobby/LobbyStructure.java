@@ -16,8 +16,8 @@ public class LobbyStructure extends BoundingBoxStructure {
 	private final Map<Location, BlockData> blocksData;
 	private final Location entranceLocation;
 
-	private final static int radius = 5;
-	private final static int height = 5;
+	private final static int RADIUS = 5;
+	private final static int HEIGHT = 5;
 
 	private final BoundingBox bb;
 
@@ -28,8 +28,8 @@ public class LobbyStructure extends BoundingBoxStructure {
 
 		Vector vec = location.toVector();
 		bb = new BoundingBox(
-			vec.getX() - radius, vec.getY(), vec.getZ() - radius,
-			vec.getX() + radius, vec.getY() + height, vec.getZ() + radius
+			vec.getX() - RADIUS, vec.getY(), vec.getZ() - RADIUS,
+			vec.getX() + RADIUS, vec.getY() + HEIGHT, vec.getZ() + RADIUS
 		);
 	}
 
@@ -76,9 +76,9 @@ public class LobbyStructure extends BoundingBoxStructure {
 			Material accent = Material.SEA_LANTERN;
 
 			// Hollow out the structure
-			for (int x = -radius; x <= radius; x++) {
-				for (int z = -radius; z <= radius; z++) {
-					for (int y = 0; y <= height; y++) {
+			for (int x = -RADIUS; x <= RADIUS; x++) {
+				for (int z = -RADIUS; z <= RADIUS; z++) {
+					for (int y = 0; y <= HEIGHT; y++) {
 						Location blockLoc = origin.clone().add(x, y, z);
 						setBlock(blockLoc, Material.AIR, oldBlocks);
 					}
@@ -86,12 +86,12 @@ public class LobbyStructure extends BoundingBoxStructure {
 			}
 
 			// Bordered floor
-			for (int x = -radius; x <= radius; x++) {
-				for (int z = -radius; z <= radius; z++) {
+			for (int x = -RADIUS; x <= RADIUS; x++) {
+				for (int z = -RADIUS; z <= RADIUS; z++) {
 					Location blockLoc = origin.clone().add(x, 0, z);
 					int absX = Math.abs(x);
 					int absZ = Math.abs(z);
-					setBlock(blockLoc, ((absX > 2 && absZ > 2) || absX == radius || absZ == radius) ? floorBorder : floorCenter, oldBlocks);
+					setBlock(blockLoc, ((absX > 2 && absZ > 2) || absX == RADIUS || absZ == RADIUS) ? floorBorder : floorCenter, oldBlocks);
 				}
 			}
 
@@ -103,10 +103,10 @@ public class LobbyStructure extends BoundingBoxStructure {
 			}
 
 			// North and South walls
-			for (int x = -radius; x <= radius; x++) {
-				for (int y = 1; y <= height - 1; y++) {
-					Location north = origin.clone().add(x, y, -radius);
-					Location south = origin.clone().add(x, y, radius);
+			for (int x = -RADIUS; x <= RADIUS; x++) {
+				for (int y = 1; y <= HEIGHT - 1; y++) {
+					Location north = origin.clone().add(x, y, -RADIUS);
+					Location south = origin.clone().add(x, y, RADIUS);
 					int absX = Math.abs(x);
 					if ((absX >= 1 && absX <= 3) && (y >= 1 && y <= 3)) {
 						setBlock(north, window, oldBlocks);
@@ -119,10 +119,10 @@ public class LobbyStructure extends BoundingBoxStructure {
 			}
 
 			// East and West walls
-			for (int z = -radius + 1; z <= radius - 1; z++) {
-				for (int y = 1; y <= height - 1; y++) {
-					Location west = origin.clone().add(-radius, y, z);
-					Location east = origin.clone().add(radius, y, z);
+			for (int z = -RADIUS + 1; z <= RADIUS - 1; z++) {
+				for (int y = 1; y <= HEIGHT - 1; y++) {
+					Location west = origin.clone().add(-RADIUS, y, z);
+					Location east = origin.clone().add(RADIUS, y, z);
 					int absZ = Math.abs(z);
 					if ((absZ >= 1 && absZ <= 3) && (y >= 1 && y <= 3)) {
 						setBlock(west, window, oldBlocks);
@@ -135,25 +135,25 @@ public class LobbyStructure extends BoundingBoxStructure {
 			}
 
 			// Roof
-			for (int x = -radius; x <= radius; x++) {
-				for (int z = -radius; z <= radius; z++) {
-					setBlock(origin.clone().add(x, height, z), Material.POLISHED_BLACKSTONE_SLAB, oldBlocks);
+			for (int x = -RADIUS; x <= RADIUS; x++) {
+				for (int z = -RADIUS; z <= RADIUS; z++) {
+					setBlock(origin.clone().add(x, HEIGHT, z), Material.POLISHED_BLACKSTONE_SLAB, oldBlocks);
 				}
 			}
 
-			for (int x = -radius; x <= radius; x++) {
-				setBlock(origin.clone().add(x, height, -radius), roof, oldBlocks);
-				setBlock(origin.clone().add(x, height, radius), roof, oldBlocks);
+			for (int x = -RADIUS; x <= RADIUS; x++) {
+				setBlock(origin.clone().add(x, HEIGHT, -RADIUS), roof, oldBlocks);
+				setBlock(origin.clone().add(x, HEIGHT, RADIUS), roof, oldBlocks);
 			}
 
-			for (int z = -radius + 1; z <= radius - 1; z++) {
-				setBlock(origin.clone().add(-radius, height, z), roof, oldBlocks);
-				setBlock(origin.clone().add(radius, height, z), roof, oldBlocks);
+			for (int z = -RADIUS + 1; z <= RADIUS - 1; z++) {
+				setBlock(origin.clone().add(-RADIUS, HEIGHT, z), roof, oldBlocks);
+				setBlock(origin.clone().add(RADIUS, HEIGHT, z), roof, oldBlocks);
 			}
 
 
-			int pillarDistance = radius - 2;
-			for (int y = 1; y <= height - 1; y ++) {
+			int pillarDistance = RADIUS - 2;
+			for (int y = 1; y <= HEIGHT - 1; y ++) {
 				setBlock(origin.clone().add(-pillarDistance, y, -pillarDistance), pillar, oldBlocks);
 				setBlock(origin.clone().add(pillarDistance, y, -pillarDistance), pillar, oldBlocks);
 				setBlock(origin.clone().add(-pillarDistance, y, pillarDistance), pillar, oldBlocks);

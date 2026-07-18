@@ -24,7 +24,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 
 public class HuntsmanRole extends Role {
-	public static final String id = "huntsman";
+	public static final String ID = "huntsman";
 
 
 	public HuntsmanRole(Builder builder, Game game) {
@@ -37,9 +37,9 @@ public class HuntsmanRole extends Role {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{
-					put("bow", new HuntsmanBow.Events(game));
-					put("crossbow", new HuntsmanCrossbow.Events(game));
-					put("arrow", new HuntsmanArrow.Events(game));
+					put(HuntsmanBow.ID, new HuntsmanBow.Events(game));
+					put(HuntsmanCrossbow.ID, new HuntsmanCrossbow.Events(game));
+					put(HuntsmanArrow.ID, new HuntsmanArrow.Events(game));
 				}};
 		}
 	}
@@ -62,7 +62,7 @@ public class HuntsmanRole extends Role {
 
 	@Override
 	protected Boolean isPlayerValidInternal(OfflinePlayer player) {
-		return Role.isPlayerRole(player, id);
+		return Role.isPlayerRole(player, ID);
 	}
 
 
@@ -70,11 +70,11 @@ public class HuntsmanRole extends Role {
 
 		@Override
 		public String getId() {
-			return id;
+			return ID;
 		}
 
-		public Builder(Ludos plugin) {
-			super(plugin);
+		public Builder(Ludos ludos) {
+			super(ludos);
 		}
 
 

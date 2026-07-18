@@ -18,7 +18,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public interface BranchItemInterface<TBranch extends BranchItem.Branch> extends SpecialItemInterface {
 	public static final String BRANCH_KEY_STRING = "branch";
-	public static final NamespacedKey BRANCH_KEY = new NamespacedKey(Ludos.namespace, BRANCH_KEY_STRING);
+	public static final NamespacedKey BRANCH_KEY = new NamespacedKey(Ludos.NAMESPACE, BRANCH_KEY_STRING);
 
 	public TBranch getBranch();
 	public void onSetBranch(TBranch branch);

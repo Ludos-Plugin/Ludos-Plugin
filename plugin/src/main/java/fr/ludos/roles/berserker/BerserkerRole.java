@@ -68,8 +68,8 @@ public class BerserkerRole extends Role {
 	@Override
 	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
 		LinkedHashMap<String, GameEvents> map = new LinkedHashMap<>();
-		map.put("axe", new BerserkerAxe.Events(game, this));
-		map.put("rage_brew", new BerserkerRageBrew.Events(game, this));
+		map.put(BerserkerAxe.ID, new BerserkerAxe.Events(game, this));
+		map.put(BerserkerRageBrew.ID, new BerserkerRageBrew.Events(game, this));
 		return map;
 	}
 
@@ -203,8 +203,8 @@ public class BerserkerRole extends Role {
 
 	public static class Builder extends Role.Builder {
 
-		public Builder(Ludos plugin) {
-			super(plugin);
+		public Builder(Ludos ludos) {
+			super(ludos);
 		}
 
 		@Override

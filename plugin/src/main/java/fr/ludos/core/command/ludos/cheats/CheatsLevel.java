@@ -15,11 +15,11 @@ import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.level.LevelItemInterface;
 
 public class CheatsLevel implements Subcommand {
-	private final static String id = "level";
+	private final static String ID = "level";
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

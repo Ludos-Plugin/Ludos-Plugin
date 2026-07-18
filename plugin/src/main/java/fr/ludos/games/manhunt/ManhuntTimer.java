@@ -22,7 +22,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public class ManhuntTimer extends GameProcessBase {
 	private final ManhuntGame game;
 
-	private ManhuntRevealOptions revealOption = ManhuntRevealOptions.three_minutes;
+	private int revealPeriodSeconds = 360;
 	private BossBar bossbar;
 
 	private boolean isRunning = false;
@@ -40,11 +40,24 @@ public class ManhuntTimer extends GameProcessBase {
 		return game.getPlugin();
 	}
 
-	public ManhuntTimer(ManhuntGame game, ManhuntRevealOptions revealOption) {
+	public ManhuntTimer(ManhuntGame game, int revealPeriodSeconds) {
 		this.game = game;
-		this.revealOption = revealOption;
+		this.revealPeriodSeconds = revealPeriodSeconds;
 
-		bossbar = Bukkit.createBossBar("Timer", BarColor.RED, BarStyle.SEGMENTED_12);
+		BarStyle segmentation;
+		if (revealPeriodSeconds % 120 == 0) {
+			segmentation = BarStyle.SEGMENTED_12;
+		} else if (revealPeriodSeconds % 6 == 0) {
+			segmentation = BarStyle.SEGMENTED_6;
+		} else if (revealPeriodSeconds % 200 == 0) {
+			segmentation = BarStyle.SEGMENTED_20;
+		} else if (revealPeriodSeconds % 10 == 0) {
+			segmentation = BarStyle.SEGMENTED_10;
+		} else {
+			segmentation = BarStyle.SOLID;
+		}
+
+		bossbar = Bukkit.createBossBar("Timer", BarColor.RED, segmentation);
 	}
 
 	@EventHandler
@@ -168,7 +181,7 @@ public class ManhuntTimer extends GameProcessBase {
 		long seconds = totalSeconds % 60;
 
 		formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-		double timerDuration = (double) revealOption.getDuration();
+		double timerDuration = (double) revealPeriodSeconds;
 
 		double progress = ((double)totalSeconds % timerDuration) / timerDuration;
 		bossbar.setProgress(progress);

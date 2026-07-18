@@ -15,16 +15,16 @@ import fr.ludos.core.group.Group.JoinMethod;
 import fr.ludos.core.group.Group.JoinResult;
 
 public class GroupJoin implements Subcommand {
-	private final static String id = "join";
+	private final static String ID = "join";
 
-	private final Ludos plugin;
-	public GroupJoin(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public GroupJoin(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class GroupJoin implements Subcommand {
 		if (args.length < 1) return false;
 
 		String leaderName = args[0];
-		Player leader = plugin.getServer().getPlayerExact(leaderName);
+		Player leader = ludos.getServer().getPlayerExact(leaderName);
 		if (leader == null) {
 			sender.sendMessage("Player not found: " + leaderName);
 			return true;
@@ -55,7 +55,7 @@ public class GroupJoin implements Subcommand {
 		JoinResult res = group.requestPlayerJoin(player, JoinMethod.Join);
 		switch (res) {
 			case Succeeded:
-				plugin.saveConfig();
+				ludos.saveGroupsConfig();
 				break;
 			case Requested:
 				player.sendMessage("Requested to join " + leaderName + "'s group.");

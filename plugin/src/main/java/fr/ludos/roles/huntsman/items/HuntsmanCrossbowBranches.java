@@ -218,7 +218,7 @@ public enum HuntsmanCrossbowBranches implements HuntsmanCrossbowBranch {
 
 	@Override
 	public String id() {
-		return toString();
+		return name();
 	}
 
 	public int maxLevel() {

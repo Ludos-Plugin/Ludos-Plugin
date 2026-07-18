@@ -1,4 +1,4 @@
-package fr.ludos.roles.tank.items;
+package fr.ludos.roles.rampart.items;
 
 import java.util.HashSet;
 import java.util.List;
@@ -28,12 +28,12 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.role.Role;
-import fr.ludos.roles.tank.TankRole;
+import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
-public class TankDashObject extends SpecialItem {
-	private static final String ID = "tank_dasher";
+public class RampartDash extends SpecialItem {
+	public static final String ID = "rampart_dash";
 
 	private static final double DASH_POWER = 1.1;
 	private static final double UNDERWATER_DASH_POWER = 0.55;
@@ -43,11 +43,11 @@ public class TankDashObject extends SpecialItem {
 	private static final double COLLISION_KNOCKBACK = 1.2;
 	private static final int COOLDOWN_DURATION = 15 * 20;
 
-	protected TankDashObject(ItemStack stack, Player owner, Game game) {
+	protected RampartDash(ItemStack stack, Player owner, Game game) {
 		super(stack, owner, game);
 	}
 
-	public static @Nullable TankDashObject fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
+	public static @Nullable RampartDash fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
@@ -57,14 +57,14 @@ public class TankDashObject extends SpecialItem {
 		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
 		if (owner == null) return null;
 
-		TankDashObject dasher = new TankDashObject(stack, owner, game);
+		RampartDash dasher = new RampartDash(stack, owner, game);
 		// cachedItems.put(itemId, dagger);
 
 		return dasher;
 	}
 
-	public static TankDashObject createItem(Player owner, Game game) {
-		TankDashObject dasher = new TankDashObject(createItemStack(), owner, game);
+	public static RampartDash createItem(Player owner, Game game) {
+		RampartDash dasher = new RampartDash(createItemStack(), owner, game);
 		dasher.initializeItem();
 
 		// cachedItems.put(itemId, dagger);
@@ -154,7 +154,7 @@ public class TankDashObject extends SpecialItem {
 
 	@Override
 	public Component getName() {
-		return Component.text("Tank Charge")
+		return Component.text("Rampart Charge")
 				.decoration(TextDecoration.ITALIC, false);
 	}
 
@@ -171,7 +171,7 @@ public class TankDashObject extends SpecialItem {
 		return stack;
 	}
 
-	public static class Events extends SpecialItem.Events<TankDashObject> {
+	public static class Events extends SpecialItem.Events<RampartDash> {
 
 		public Events(Game game) {
 			super(game, new Events.Info(ItemSlot.HOTBAR_3));
@@ -179,18 +179,18 @@ public class TankDashObject extends SpecialItem {
 
 		@Override
 		@Nullable
-		public TankDashObject getItem(ItemStack stack) {
-			return TankDashObject.fromItemStack(stack, game);
+		public RampartDash getItem(ItemStack stack) {
+			return RampartDash.fromItemStack(stack, game);
 		}
 
 		@Override
-		public TankDashObject createItem(Player owner) {
-			return TankDashObject.createItem(owner, game);
+		public RampartDash createItem(Player owner) {
+			return RampartDash.createItem(owner, game);
 		}
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, TankRole.id);
+			return Role.isPlayerRole(owner, RampartRole.ID);
 		}
 
 		@EventHandler
@@ -203,7 +203,7 @@ public class TankDashObject extends SpecialItem {
 			Player player = event.getPlayer();
 			ItemStack item = player.getInventory().getItemInMainHand();
 
-			TankDashObject dasher = TankDashObject.fromItemStack(item, game);
+			RampartDash dasher = RampartDash.fromItemStack(item, game);
 			if (dasher == null) return;
 			event.setCancelled(true);
 

@@ -1,10 +1,17 @@
 package fr.ludos.core;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -19,6 +26,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.command.ludos.LudosCommand;
+import fr.ludos.core.command.ludos.config.game.GameConfigMap;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
+import fr.ludos.core.command.ludos.config.ludos.LudosConfigMap;
+import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
+import fr.ludos.core.command.ludos.config.role.RoleConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupManager;
@@ -34,7 +46,7 @@ import fr.ludos.roles.assassin.AssassinRole;
 import fr.ludos.roles.berserker.BerserkerRole;
 import fr.ludos.roles.harvester.HarvesterRole;
 import fr.ludos.roles.huntsman.HuntsmanRole;
-import fr.ludos.roles.tank.TankRole;
+import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -42,15 +54,94 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 public class Ludos extends JavaPlugin implements Listener {
+	private final File groupsFile = new File(getDataFolder(), "groups.yml");
+	private final FileConfiguration groupsData = YamlConfiguration.loadConfiguration(groupsFile);
 
-	public static final String namespace = "ludos";
+	private final File playersFile = new File(getDataFolder(), "players.yml");
+	private final FileConfiguration playersData = YamlConfiguration.loadConfiguration(playersFile);
+
+	public static final String NAMESPACE = "ludos";
 
 	private final GroupManager groupManager = new GroupManager(this);
 	private final TextureManager textureManager = new TextureManager(this);
 	private final TextureListener textureListener = new TextureListener(this);
 	public final PlayerPackets playerPackets = PlayerPacketsFactory.createHandler();
 
-	public Ludos() { }
+	public ConfigurationSection getPluginConfig() {
+		return Utility.getOrCreateConfigSection(getConfig(), LudosConfigMap.INSTANCE.getNamespace());
+	}
+	public ConfigurationSection getGlobalGroupConfig() {
+		return Utility.getOrCreateConfigSection(getConfig(), GroupConfigMap.INSTANCE.getNamespace());
+	}
+	public ConfigurationSection getGlobalGameConfig(Game.Builder game) {
+		return Utility.getOrCreateConfigSection(getConfig(), GameConfigMap.INSTANCE.getNamespace() + "." + game.getId());
+	}
+	public ConfigurationSection getGlobalRoleConfig(Role.Builder role) {
+		return Utility.getOrCreateConfigSection(getConfig(), RoleConfigMap.INSTANCE.getNamespace() + "." + role.getId());
+	}
+	public ConfigurationSection getGlobalPlayerConfig() {
+		return Utility.getOrCreateConfigSection(getConfig(), PlayerConfigMap.INSTANCE.getNamespace());
+	}
+
+	public final FileConfiguration getGroupsConfig() {
+		return groupsData;
+	}
+	public ConfigurationSection getGroupConfigSection(Group group) {
+		return Utility.getOrCreateConfigSection(groupsData, group.getId().toString());
+	}
+	public ConfigurationSection getGroupScopedConfig(Group group) {
+		return Utility.getOrCreateConfigSection(getGroupConfigSection(group), "config");
+	}
+	public ConfigurationSection getGroupScopedConfig(Group group, String path) {
+		return Utility.getOrCreateConfigSection(getGroupConfigSection(group), "config." + path);
+	}
+	public ConfigurationSection getGroupConfig(Group group) {
+		return getGroupScopedConfig(group, GroupConfigMap.INSTANCE.getNamespace());
+	}
+	public ConfigurationSection getGroupGameConfig(Group group, Game.Builder game) {
+		return getGroupScopedConfig(group, GameConfigMap.INSTANCE.getNamespace() + "." + game.getId());
+	}
+	public ConfigurationSection getGroupRoleConfig(Group group, Role.Builder role) {
+		return getGroupScopedConfig(group, RoleConfigMap.INSTANCE.getNamespace() + "." + role.getId());
+	}
+	public ConfigurationSection getGroupPlayerConfig(Group group) {
+		return getGroupScopedConfig(group, PlayerConfigMap.INSTANCE.getNamespace());
+	}
+
+	public void saveGroupsConfig() {
+		try {
+			groupsData.save(groupsFile);
+		} catch (IOException ex) {
+			getLogger().log(Level.SEVERE, "Could not save groups to " + groupsFile, ex);
+		}
+	}
+
+	public final FileConfiguration getPlayersConfig() {
+		return playersData;
+	}
+	public ConfigurationSection getPlayerConfigSection(OfflinePlayer player) {
+		return Utility.getOrCreateConfigSection(playersData, player.getUniqueId().toString());
+	}
+	public ConfigurationSection getPlayerScopedConfig(OfflinePlayer player) {
+		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), "config");
+	}
+	public ConfigurationSection getPlayerScopedConfig(OfflinePlayer player, String path) {
+		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), "config." + path);
+	}
+	public ConfigurationSection getPlayerRoleConfig(OfflinePlayer player, Role.Builder role) {
+		return getPlayerScopedConfig(player, RoleConfigMap.INSTANCE.getNamespace() + "." + role.getId());
+	}
+	public ConfigurationSection getPlayerConfig(OfflinePlayer player) {
+		return getPlayerScopedConfig(player, PlayerConfigMap.INSTANCE.getNamespace());
+	}
+
+	public void savePlayersConfig() {
+		try {
+			playersData.save(playersFile);
+		} catch (IOException ex) {
+			getLogger().log(Level.SEVERE, "Could not save players to " + playersFile, ex);
+		}
+	}
 
 	public TextureManager getTextureManager() {
 		return textureManager;
@@ -68,7 +159,7 @@ public class Ludos extends JavaPlugin implements Listener {
 
 		Role.registerRole(new HuntsmanRole.Builder(this));
 		Role.registerRole(new HarvesterRole.Builder(this));
-		Role.registerRole(new TankRole.Builder(this));
+		Role.registerRole(new RampartRole.Builder(this));
 		Role.registerRole(new AssassinRole.Builder(this));
 		Role.registerRole(new BerserkerRole.Builder(this));
 
@@ -240,10 +331,13 @@ public class Ludos extends JavaPlugin implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player currentPlayer = event.getPlayer();
 
-		TextComponent message = Component.text("Click here to get a guidebook!")
-			.color(NamedTextColor.GOLD)
-			.decoration(TextDecoration.UNDERLINED, true)
-			.clickEvent(ClickEvent.runCommand("/ludos guidebook"));
-		currentPlayer.sendMessage(message);
+		boolean showMessage = PlayerConfigMap.GUIDEBOOK_MESSAGE.getPlayerConfig(currentPlayer, this);
+		if (showMessage) {
+			TextComponent message = Component.text("Click here to get a guidebook!")
+				.color(NamedTextColor.GOLD)
+				.decoration(TextDecoration.UNDERLINED, true)
+				.clickEvent(ClickEvent.runCommand("/ludos guidebook"));
+			currentPlayer.sendMessage(message);
+		}
 	}
 }

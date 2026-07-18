@@ -26,8 +26,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 public interface LevelItemInterface extends SpecialItemInterface {
-	public static final String LEVEL = "level";
-	public static final NamespacedKey levelKey = new NamespacedKey(Ludos.namespace, LEVEL);
+	public static final String LEVEL_KEY_STRING = "level";
+	public static final NamespacedKey LEVEL_KEY = new NamespacedKey(Ludos.NAMESPACE, LEVEL_KEY_STRING);
 
 	public static final String MAX_LVL_LABEL = "MAX";
 	public LevelState levelState();
@@ -106,7 +106,7 @@ public interface LevelItemInterface extends SpecialItemInterface {
 
 	public static void saveLevelValue(SpecialItem item, LevelValue levelValue) {
 		ItemMeta meta = item.getStack().getItemMeta();
-		meta.getPersistentDataContainer().set(LevelItem.levelKey, LevelValuePersistentDataType.INSTANCE, levelValue);
+		meta.getPersistentDataContainer().set(LevelItem.LEVEL_KEY, LevelValuePersistentDataType.INSTANCE, levelValue);
 		item.getStack().setItemMeta(meta);
 	}
 	public static void saveLevelState(SpecialItem item, LevelState levelState) {
@@ -115,16 +115,16 @@ public interface LevelItemInterface extends SpecialItemInterface {
 
 	public static void saveLevelValues(SpecialItem item, Map<String, LevelValue> levelValues) {
 		ItemMeta meta = item.getStack().getItemMeta();
-		meta.getPersistentDataContainer().set(LevelItem.levelKey, LevelValueMapPersistentDataType.INSTANCE, levelValues);
+		meta.getPersistentDataContainer().set(LevelItem.LEVEL_KEY, LevelValueMapPersistentDataType.INSTANCE, levelValues);
 		item.getStack().setItemMeta(meta);
 	}
 
 	public static LevelValue levelFromItemStack(ItemStack stack, Game game) {
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 
-		if ( ! container.has(levelKey, LevelValuePersistentDataType.INSTANCE) ) return null;
+		if ( ! container.has(LEVEL_KEY, LevelValuePersistentDataType.INSTANCE) ) return null;
 
-		return container.get(levelKey, LevelValuePersistentDataType.INSTANCE);
+		return container.get(LEVEL_KEY, LevelValuePersistentDataType.INSTANCE);
 	}
 
 	public static <T extends SpecialItem & LevelItemInterface> LevelState initializeLevelState(

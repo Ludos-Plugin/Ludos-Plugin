@@ -1,7 +1,6 @@
 package fr.ludos.core.command.ludos.group;
 
 import java.util.List;
-import java.util.Set;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -15,16 +14,16 @@ import fr.ludos.core.group.Group;
 import fr.ludos.core.group.Group.JoinMethod;
 
 public class GroupCreate implements Subcommand {
-	private final static String id = "create";
+	private final static String ID = "create";
 
-	private final Ludos plugin;
-	public GroupCreate(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public GroupCreate(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -38,14 +37,14 @@ public class GroupCreate implements Subcommand {
 			return true;
 		}
 
-		Group group = Group.createGroup(player, null, plugin);
+		Group group = Group.createGroup(player, null, ludos);
 
-		Set<Player> members = CommandUtility.getPlayersFromArgs(args, 0, sender);
+		List<Player> members = CommandUtility.getPlayersFromArgs(args, sender);
 		for (Player member : members) {
 			group.requestPlayerJoin(member, JoinMethod.Invite);
 		}
 
-		plugin.saveConfig();
+		ludos.saveGroupsConfig();
 
 		return true;
 	}

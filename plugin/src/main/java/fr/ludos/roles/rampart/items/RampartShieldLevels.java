@@ -1,11 +1,11 @@
-package fr.ludos.roles.tank.items;
+package fr.ludos.roles.rampart.items;
 
 import org.bukkit.Material;
 
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItemInterface.Level;
 
-public enum TankShieldLevels implements Level<TankShieldLevels> {
+public enum RampartShieldLevels implements Level<RampartShieldLevels> {
 	LEVEL_1(10, 0.25, 15),
 	LEVEL_2(20, 0.5, 25),
 	LEVEL_3(30, 0.75, 35),
@@ -21,7 +21,7 @@ public enum TankShieldLevels implements Level<TankShieldLevels> {
 	private final double regen;
 	private final double xpThreshold;
 
-	TankShieldLevels(int durability, double regen, double xpThreshold) {
+	RampartShieldLevels(int durability, double regen, double xpThreshold) {
 		this.durability = durability;
 		this.regen = regen;
 		this.xpThreshold = xpThreshold;

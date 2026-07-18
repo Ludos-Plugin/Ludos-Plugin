@@ -25,7 +25,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 
 public class HarvesterRole extends Role {
-	public static final String id = "harvester";
+	public static final String ID = "harvester";
 
 
 	public HarvesterRole(Builder builder, Game game) {
@@ -58,9 +58,9 @@ public class HarvesterRole extends Role {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{
-					put("scythe", new HarvesterScythe.Events(game));
-					put("pick", new HarvesterPick.Events(harvesterRole, game));
-					put("spade", new HarvesterSpade.Events(harvesterRole, game));
+					put(HarvesterScythe.ID, new HarvesterScythe.Events(game));
+					put(HarvesterPick.ID, new HarvesterPick.Events(harvesterRole, game));
+					put(HarvesterSpade.ID, new HarvesterSpade.Events(harvesterRole, game));
 				}};
 		}
 	}
@@ -68,7 +68,7 @@ public class HarvesterRole extends Role {
 
 	public void awardBreak(Player player, Block block, Game game) {
 		if (player == null || block == null) return;
-		if (!Role.isPlayerRole(player, id)) return;
+		if (!Role.isPlayerRole(player, ID)) return;
 
 		Inventory inventory = player.getInventory();
 		if (inventory == null) return;
@@ -122,7 +122,7 @@ public class HarvesterRole extends Role {
 
 		@Override
 		public String getId() {
-			return id;
+			return ID;
 		}
 
 		@Override
@@ -130,8 +130,8 @@ public class HarvesterRole extends Role {
 			return EnumSet.of(RoleFlag.SUPPORT);
 		}
 
-		public Builder(Ludos plugin) {
-			super(plugin);
+		public Builder(Ludos ludos) {
+			super(ludos);
 		}
 
 		@Override

@@ -1,13 +1,19 @@
 package fr.ludos.core.area;
 
+import java.util.Set;
+
 import org.bukkit.Location;
 import org.bukkit.WorldBorder;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.Utility;
+import fr.ludos.core.config.valueOptions.NumberConfigOptions;
 import fr.ludos.core.game.Game;
 
 public class WorldBorderArea extends Area {
+	public static final NumberConfigOptions CONFIG =
+		new NumberConfigOptions("WorldBorder Area diameter", "area", null, 150, Set.of(150, 250, 350), true);
+
 	private final Builder builder;
 	@Override
 	public Builder getBuilder() {
@@ -30,8 +36,8 @@ public class WorldBorderArea extends Area {
 		this.builder = builder;
 	}
 
-	public static Builder within(Game game) {
-		return new Builder(game);
+	public static Builder within(Game game, int diameter) {
+		return new Builder(game, diameter);
 	}
 
 	@Override
@@ -109,38 +115,18 @@ public class WorldBorderArea extends Area {
 
 	public static class Builder extends Area.Builder<WorldBorderArea> {
 		private final Game game;
+		private Integer diameter;
 
-		public Builder(Game game) {
+		public Builder(Game game, int diameter) {
 			this.game = game;
+			this.diameter = diameter;
 		}
 
-		private Integer radius = null;
-		private Integer diameter = null;
-		private WorldBorderAreaOption areaOption = WorldBorderAreaOption.medium;
 		public final int getAreaDiameter() {
-			if (diameter != null) return diameter;
-			if (radius != null) return radius * 2;
-			return areaOption.getSize();
+			return diameter;
 		}
 		public final int getAreaRadius() {
-			if (radius != null) return radius;
-			if (diameter != null) return diameter / 2;
-			return areaOption.getSize() / 2;
-		}
-
-		public Builder ofSize(WorldBorderAreaOption area) {
-			this.areaOption = area;
-			return this;
-		}
-		public Builder ofRadius(int radius) {
-			this.radius = radius;
-			this.diameter = null;
-			return this;
-		}
-		public Builder ofDiameter(int diameter) {
-			this.radius = null;
-			this.diameter = diameter;
-			return this;
+			return diameter / 2;
 		}
 
 		@Override

@@ -15,9 +15,6 @@ import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -25,11 +22,10 @@ import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
-import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.book.BookUtility;
-import fr.ludos.core.command.ConfigSubcommandManager;
+import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.item.SpecialItem;
@@ -43,33 +39,33 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public abstract class Game extends TwoStepGameProcessBase {
-	public static final String namespace = "game";
+	public static final String NAMESPACE = "game";
 	public final Random random = new Random();
 
-	private static final Map<String, Builder> registered = new HashMap<>();
+	private static final Map<String, Builder> REGISTERED = new HashMap<>();
 	public static Map<String, Builder> getRegistered() {
-		return registered;
+		return REGISTERED;
 	}
 
-	private static final Set<Game> activeGames = new HashSet<>();
+	private static final Set<Game> ACTIVE = new HashSet<>();
 	public static Set<Game> getActiveGames() {
-		return Collections.unmodifiableSet(activeGames);
+		return Collections.unmodifiableSet(ACTIVE);
 	}
 
 	@Nullable
 	public static Builder getGameById(String gameId) {
-		return registered.getOrDefault(gameId, null);
+		return REGISTERED.getOrDefault(gameId, null);
 	}
 
 	public static List<String> getGameIds() {
-		return registered.keySet().stream().collect( Collectors.toList() );
+		return REGISTERED.keySet().stream().collect( Collectors.toList() );
 	}
 	public static List<Builder> getGameBuilders() {
-		return registered.values().stream().collect( Collectors.toList() );
+		return REGISTERED.values().stream().collect( Collectors.toList() );
 	}
 
 	public static void registerGame(Builder builder) {
-		registered.put(builder.getId(), builder);
+		REGISTERED.put(builder.getId(), builder);
 	}
 
 
@@ -79,7 +75,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 	}
 	@Override
 	public JavaPlugin getPlugin() {
-		return builder.getPlugin();
+		return builder.getLudos();
 	}
 
 	private final Group group;
@@ -113,11 +109,11 @@ public abstract class Game extends TwoStepGameProcessBase {
 	protected Game(Builder builder, Group group, Scoreboard scoreboard) {
 		this.builder = builder;
 		this.group = group;
-		this.scoreboard = group.getPlugin().getServer().getScoreboardManager().getNewScoreboard();
+		this.scoreboard = group.getLudos().getServer().getScoreboardManager().getNewScoreboard();
 	}
 
 	public static boolean startGame(String id, Group group) {
-		if (! registered.containsKey(id)) return false;
+		if (! REGISTERED.containsKey(id)) return false;
 
 		Game oldGame = group.getGame();
 		if (oldGame != null) {
@@ -128,13 +124,13 @@ public abstract class Game extends TwoStepGameProcessBase {
 				public void run() {
 					if (! oldGame.isClear()) return;
 
-					registered.get(id).build(group).setup();
+					REGISTERED.get(id).build(group).setup();
 					cancel();
 				}
 			}.runTaskTimer(oldGame.getPlugin(), 0, 20);
 		}
 		else {
-			registered.get(id).build(group).setup();
+			REGISTERED.get(id).build(group).setup();
 		}
 
 		return true;
@@ -214,7 +210,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 		}
 
 		group.setGame(this);
-		activeGames.add(this);
+		ACTIVE.add(this);
 
 		getWorldManager().start();
 
@@ -271,7 +267,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 		scoreboard = null;
 
 		group.setGame(null);
-		activeGames.remove(this);
+		ACTIVE.remove(this);
 	}
 
 	protected void onGameSetup() { }
@@ -283,18 +279,16 @@ public abstract class Game extends TwoStepGameProcessBase {
 	protected void onGameSetdown() { }
 
 
-	public LinkedHashMap<String, GameEvents> modifyEvents(LinkedHashMap<String, GameEvents> events) {
+	public LinkedHashMap<String, GameEvents> digestRoleEvents(String roleId, LinkedHashMap<String, GameEvents> events) {
 		return events;
 	}
-
-	public abstract Boolean canPlayerHaveRole(Player player, String roleId);
 
 
 
 	public static abstract class Builder {
-		public final Ludos plugin;
-		public Ludos getPlugin() {
-			return plugin;
+		public final Ludos ludos;
+		public Ludos getLudos() {
+			return ludos;
 		}
 
 		public abstract String getId();
@@ -342,23 +336,15 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
-		protected abstract ConfigSubcommandManager<?> getConfigsSubcommand();
-
-		public boolean executeGameConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, ConfigurationSection config, @NotNull String[] args) {
-			return getConfigsSubcommand().onCommand(sender, command, label, config, args);
-		}
-		public List<String> gameConfigTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-			return getConfigsSubcommand().onTabComplete(sender, command, label, args);
-		}
-		public String getGameConfigUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) {
-			return getConfigsSubcommand().getUsage();
+		public ConfigOptionsCollection getConfig() {
+			return null;
 		}
 
 
 		public abstract Game build(Group group);
 
-		public Builder(Ludos plugin) {
-			this.plugin = plugin;
+		public Builder(Ludos ludos) {
+			this.ludos = ludos;
 		}
 	}
 }

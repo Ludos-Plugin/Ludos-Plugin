@@ -13,11 +13,11 @@ import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 
 public class LudosGuidebook implements Subcommand {
-	private final static String id = "guidebook";
+	private final static String ID = "guidebook";
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override

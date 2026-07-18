@@ -9,16 +9,16 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.command.Subcommand;
-import fr.ludos.core.command.ludos.group.GroupConfigs;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 
 public class GameStart implements Subcommand {
-	private final static String id = "start";
+	private final static String ID = "start";
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class GameStart implements Subcommand {
 			return true;
 		}
 
-		boolean membersCanRunGames = GroupConfigs.getGroupRightsOption(group.getConfig()).canRunGames();
+		boolean membersCanRunGames = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canRunGames();
 		if (! group.isLeader(player) && ! membersCanRunGames) {
 			sender.sendMessage("Only the group leader can start games.");
 			return true;

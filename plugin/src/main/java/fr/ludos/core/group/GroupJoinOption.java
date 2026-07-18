@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum GroupJoinOption {
-	auto {},
-	need_accept {};
+	auto_accept {},
+	manual_accept {};
 
 	public static List<String> getOptions() {
 		return Arrays.stream(GroupJoinOption.values())

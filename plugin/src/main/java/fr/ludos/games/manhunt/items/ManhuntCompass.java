@@ -23,7 +23,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class ManhuntCompass extends SpecialItem {
-	private static final String ID = "manhuntCompass";
+	private static final String ID = "manhunt_compass";
 
 	// private static final Map<UUID, ManhuntCompass> cachedItems = new HashMap<>();
 

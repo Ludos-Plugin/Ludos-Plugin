@@ -14,8 +14,8 @@ class GroupMembershipTest extends GroupTest {
 		PlayerMock player1 = createPlayer("Player1");
 		PlayerMock player2 = createPlayer("Player2");
 
-		createGroupWithInvite(player1, Collections.singletonList(player2));
-		joinGroup(player2, player1);
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
+		assertJoinGroup(player2, player1);
 
 		assertGroupInfo(player1, player1, Collections.singletonList(player2));
 		assertGroupInfo(player2, player1, Collections.singletonList(player2));
@@ -26,8 +26,8 @@ class GroupMembershipTest extends GroupTest {
 		PlayerMock player1 = createPlayer("Player1");
 		PlayerMock player2 = createPlayer("Player2");
 
-		createGroupWithInvite(player1, Collections.singletonList(player2));
-		joinGroup(player2, player1);
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
+		assertJoinGroup(player2, player1);
 		assertGroupInfo(player1, player1, Collections.singletonList(player2));
 		assertGroupInfo(player2, player1, Collections.singletonList(player2));
 

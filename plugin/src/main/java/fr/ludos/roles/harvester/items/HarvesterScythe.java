@@ -41,7 +41,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
-	public static final String ID = "manhuntHarvesterScythe";
+	public static final String ID = "harvester_scythe";
 
 	private static final int WALL_COOLDOWN_TICKS = 20 * 8;
 	private static final int WALL_DISTANCE_DEFAULT = 2;
@@ -237,7 +237,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HarvesterRole.id);
+			return Role.isPlayerRole(owner, HarvesterRole.ID);
 		}
 	}
 }

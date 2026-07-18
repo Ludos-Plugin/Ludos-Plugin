@@ -8,9 +8,9 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import fr.ludos.core.Ludos;
 
 public class GroupManager implements Listener {
-	private final Ludos plugin;
-	public GroupManager(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public GroupManager(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@EventHandler
@@ -22,5 +22,7 @@ public class GroupManager implements Listener {
 		if (! group.isLeader(player)) return;
 
 		group.demoteLeader();
+
+		ludos.saveGroupsConfig();
 	}
 }

@@ -190,10 +190,7 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch> extends Spec
 		}
 
 		public TBranch getDefaultBranch() {
-			if (defaultBranch == null) {
-				return branches.values().iterator().next();
-			}
-			if (! branches.containsValue(defaultBranch)) {
+			if (defaultBranch == null || ! branches.containsValue(defaultBranch)) {
 				return branches.values().iterator().next();
 			}
 			return defaultBranch;

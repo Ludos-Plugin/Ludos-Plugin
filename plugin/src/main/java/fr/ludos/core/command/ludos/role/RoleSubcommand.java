@@ -8,16 +8,16 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.SubcommandHandler;
 
 public final class RoleSubcommand extends SubcommandHandler {
-	public RoleSubcommand(Ludos plugin) {
-		super("role", "Manage Ludos Roles", false, getSubcommands(plugin));
+	public RoleSubcommand(Ludos ludos) {
+		super("role", "Manage Ludos Roles", false, getSubcommands(ludos));
 	}
 
-	private static final ArrayList<Subcommand> getSubcommands(Ludos plugin) {
+	private static final ArrayList<Subcommand> getSubcommands(Ludos ludos) {
 		ArrayList<Subcommand> subcommands = new ArrayList<>() {{
 			add(new RoleGet());
-			add(new RoleSet(plugin));
-			add(new RoleReset(plugin));
-			add(new RoleConfig());
+			add(new RoleSet(ludos));
+			add(new RoleReset(ludos));
+			add(new RoleConfig(ludos));
 			add(new RoleGuidebook());
 		}};
 		HelpSubcommand help = new HelpSubcommand("role", subcommands);

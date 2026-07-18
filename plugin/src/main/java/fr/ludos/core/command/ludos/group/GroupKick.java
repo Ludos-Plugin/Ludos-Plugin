@@ -15,19 +15,20 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.group.Group;
 
 public class GroupKick implements Subcommand {
-	private final static String id = "kick";
+	private final static String ID = "kick";
 
-	private final Ludos plugin;
-	public GroupKick(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public GroupKick(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -48,26 +49,31 @@ public class GroupKick implements Subcommand {
 			return true;
 		}
 
-		boolean membersCanManage = GroupConfigs.getGroupRightsOption(group.getConfig()).canManage();
+		boolean membersCanManage = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canManage();
 		if (! group.isLeader(player) && ! membersCanManage) {
 			sender.sendMessage("Only the group leader can kick members.");
 			return true;
 		}
 
+		boolean success = false;
 		List<String> targetNames = Arrays.asList(args);
 		for (String targetName : targetNames) {
 			OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
 
 			if (group.isMember(target)) {
-				group.removePlayer(target, true);
-				player.sendMessage("Kicked " + targetName + " from the group.");
+				if (group.removePlayer(target, true)) {
+					success = true;
+					player.sendMessage("Kicked " + targetName + " from the group.");
+				}
 			} else {
 				sender.sendMessage(targetName + " is not a member of your group.");
 			}
 
 		}
 
-		plugin.saveConfig();
+		if (success) {
+			ludos.saveGroupsConfig();
+		}
 
 		return true;
 	}

@@ -26,7 +26,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class HuntsmanBow extends SpecialItem {
-	private static final String ID = "manhuntHuntsmanBow";
+	public static final String ID = "huntsman_bow";
 
 	// private final static Map<UUID, HuntsmanBow> cachedItems = new HashMap<>();
 
@@ -108,7 +108,7 @@ public class HuntsmanBow extends SpecialItem {
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HuntsmanRole.id);
+			return Role.isPlayerRole(owner, HuntsmanRole.ID);
 		}
 	}
 }

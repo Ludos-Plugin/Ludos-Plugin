@@ -26,6 +26,7 @@ import org.bukkit.scoreboard.Team;
 
 import fr.ludos.core.Utility;
 import fr.ludos.core.area.Area;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameProcessBase;
 
@@ -50,7 +51,7 @@ public abstract class GameTeamController extends GameProcessBase {
 		this.joinOption = joinOption;
 	}
 	public GameTeamController(Game game) {
-		this(game, GameJoinOption.auto);
+		this(game, GroupConfigMap.GAME_JOIN.getGroupConfig(game.getGroup()));
 	}
 
 	public abstract Collection<Team> getTeams();

@@ -39,7 +39,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
 public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
-	private final static String ID = "trapperSnareGrimoire";
+	public final static String ID = "assassin_snare_grimoire";
 
 	// private final static Map<UUID, TrapperSnareDevice> cachedItems = new HashMap<>();
 
@@ -129,7 +129,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 								Vector range = trap.getRange();
 								List<LivingEntity> targets = trap.getLocation()
 									.getNearbyLivingEntities(range.getX(), range.getY(), range.getZ()).stream()
-									.filter(Utility.isEntityAlive)
+									.filter(Utility.IS_ENTITY_ALIVE)
 									.filter(teamController.isEntityAllyOfEntity(player))
 									.collect(Collectors.toList());
 
@@ -232,7 +232,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, AssassinRole.id);
+			return Role.isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }
