@@ -204,15 +204,6 @@ public class ManhuntGame extends Game {
 	}
 
 
-	@Override
-	public Boolean canPlayerHaveRole(Player player, String roleId) {
-		// if (teamController.preyTeam.getEntries().contains(player.getName())) {
-		// 	return false;
-		// }
-
-		return true;
-	}
-
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
