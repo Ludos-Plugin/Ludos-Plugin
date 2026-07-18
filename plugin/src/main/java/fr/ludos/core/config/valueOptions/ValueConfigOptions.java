@@ -210,8 +210,8 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	}
 
 	/**
-	 * The message sent to the command sender, when no option value was given.</br>
-	 * We use this to give the current set value to the user.</br>
+	 * The message sent to the command sender, when no option value was given.<br>
+	 * We use this to give the current set value to the user.<br>
 	 * Must not be null.
 	 * @param config The Configuration section to use as a root path for the fetching.
 	 * @return A more detailed, if necessary, value to return to the player.
@@ -221,7 +221,7 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		return getterMessage(valueString);
 	}
 	/**
-	 * The message sent to the command sender, when no option value was given.</br>
+	 * The message sent to the command sender, when no option value was given.<br>
 	 * We use this to give the current set value to the user.
 	 * @param value The parsed String value that was fetched.
 	 * @return A more detailed, if necessary, value to return to the player.
@@ -237,7 +237,7 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	}
 
 	/**
-	 * The default value that will be returned when fetching the value, when the option was not set, or after it was reset, using {@link #placeholderValue}.</br>
+	 * The default value that will be returned when fetching the value, when the option was not set, or after it was reset, using {@link #placeholderValue}.<br>
 	 * Using {@link #getDefaultValue} with {@link #getDefaultValue} should NEVER result in null, for the sake of sender messages.
 	 * @return The default value. Do not return null, unless the {@link #getValueOrDefault} call-sites are null-proof.
 	 */
@@ -250,7 +250,7 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	public abstract @NotNull Set<@NotNull String> getValidOptions(CommandSender sender);
 
 	/**
-	 * Fetches the currently set value of this ConfigOptions in the given {@link ConfigurationSection}.</br>
+	 * Fetches the currently set value of this ConfigOptions in the given {@link ConfigurationSection}.<br>
 	 * Returns null if the value was not set, or if it was reset, using {@link #placeholderValue}.
 	 * @param config The Configuration section to use as a root path for the fetching.
 	 * @return The value found in the config, or null.
@@ -258,14 +258,14 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	public abstract @Nullable T getValueOrNull(ConfigurationSection config);
 
 	/**
-	 * Function to convert a single String value to a native T type value.</br>
-	 * If the given String value is invalid/non-parsable, return null.</br>
+	 * Function to convert a single String value to a native T type value.<br>
+	 * If the given String value is invalid/non-parsable, return null.<br>
 	 * @param value The representative String value to parse to a native T type.
 	 * @return The parsed T value or null if an invalid/non-parsable String `value` was given.
 	 */
 	public abstract @Nullable T fromString(String value);
 	/**
-	 * Function to convert a T native value to a parsed String value.</br>
+	 * Function to convert a T native value to a parsed String value.<br>
 	 * If the given T value is invalid/null, return null.
 	 * @param value The T native value type to represent as a string
 	 * @return The representative String or null if an invalid/null T `value` was given.

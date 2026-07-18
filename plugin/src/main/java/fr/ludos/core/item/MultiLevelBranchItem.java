@@ -159,11 +159,13 @@ public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.
 
 		/**
 		 * Called when the level is set on the item, including when the item is created with a non-zero level. Should be used to apply the level's effects.
+		 * @param level The level that is being set
 		 * @param item The item on which the level is being set
 		 */
 		public void onSetLevel(int level, SpecialItemInterface item);
 		/**
 		 * Called when the level is unset on the item, including when the item is created with a non-zero level. Should be used to remove the level's effects.
+		 * @param level The level that is being set
 		 * @param item The item on which the level is being unset
 		 */
 		public void onUnsetLevel(int level, SpecialItemInterface item);

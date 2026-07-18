@@ -64,8 +64,7 @@ public interface LevelItemInterface extends SpecialItemInterface {
 	 * @param <TItem> The type of the item, must extend SpecialItem
 	 * @param <TLevel> The type of the level, must be an enum that implements LevelItem.Level
 	 * @param item The item whose level is being switched
-	 * @param newLevel The new level to switch to
-	 * @param newXp The new XP value to set
+	 * @param level The new level to switch to
 	 */
 	public static <TItem extends SpecialItem & LevelItemInterface, TLevel extends Enum<TLevel> & Level<TLevel>> void setItemLevel(TItem item, LevelValue level) {
 		final int oldLevel = item.level();
@@ -87,7 +86,6 @@ public interface LevelItemInterface extends SpecialItemInterface {
 	 * @param <TLevel> The type of the level, must be an enum that implements LevelItem.Level
 	 * @param event The PlayerItemHeldEvent to handle
 	 * @param getItem An "SpecialItem from ItemStack" function, used to get the item being switched from/to
-	 * @param getLevel A "Level from Item" function, used to get the level of the item being switched from/to
 	 */
 	public static <TItem extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem) {
 		Player player = event.getPlayer();

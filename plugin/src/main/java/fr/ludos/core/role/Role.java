@@ -86,8 +86,9 @@ public abstract class Role extends GameProcessBase {
 	}
 
 	/**
-	 * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
-	 * It contains configuration for the Role itself.
+	 * Builds an instance of this Role, using the configuration inside the builder, and asigning itself to the given Game.
+	 * @param builder The builder to use for configuration
+	 * @param game The game used for scope
 	 */
 	public Role(Builder builder, Game game) {
 		this.game = game;

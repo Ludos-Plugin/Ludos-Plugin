@@ -13,5 +13,8 @@
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
         <module name="ConstantName"/>
+        <module name="JavadocStyle"/>
+        <module name="JavadocType"/>
+        <module name="JavadocMethod"/>
     </module>
 </module>

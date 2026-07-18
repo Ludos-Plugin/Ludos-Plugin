@@ -120,8 +120,11 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	}
 
 	/**
-	 * @param inventory
-	 * @return true if the provided inventory contains a SpecialItem of type T
+	 * Check for the presence of any number of the SpecialItem type T in the given inventory, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of SpecialItem that will be searched for
+	 * @param inventory The inventory to search the SpecialItem in
+	 * @param constructor A function that parses an ItemStack as an instance of that SpecialItem.<br>
+	 * @return Whether or not the provided inventory contains at least one instance of SpecialItem type T
 	 */
 	public static <T extends SpecialItem> Boolean containedIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		ItemStack[] items = inventory.getContents();
@@ -139,7 +142,11 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	}
 
 	/**
-	 * @param inventory
+	 * Find a single instance of the SpecialItem type T in the given inventory, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of SpecialItem that will be searched for
+	 * @param inventory The inventory to search the SpecialItem in
+	 * @param constructor A function that parses an ItemStack as an instance of that SpecialItem.<br>
+	 * Note: it does not CREATE a SpecialItem, it only converts it into one if possible.
 	 * @return The first Special Item of type T found in the inventory or null if there is none
 	 */
 	@Nullable
@@ -147,13 +154,25 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		return findIn(Arrays.asList(inventory.getContents()), constructor);
 	}
 	/**
-	 * @param inventory
+	 * Find all instances of the SpecialItem type T in the given inventory, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of SpecialItem that will be searched for
+	 * @param inventory The inventory to search the SpecialItem in
+	 * @param constructor A function that parses an ItemStack as an instance of that SpecialItem.<br>
+	 * Note: it does not CREATE a SpecialItem, it only converts it into one if possible.
 	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
 	 */
 	public static <T extends SpecialItem> List<T> findAllIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		return findAllIn(Arrays.asList(inventory.getContents()), constructor);
 	}
 
+	/**
+	 * Find a single instance of the SpecialItem type T in the given items iterable, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of SpecialItem that will be searched for
+	 * @param items The items to search the SpecialItem in
+	 * @param constructor A function that parses an ItemStack as an instance of that SpecialItem.<br>
+	 * Note: it does not CREATE a SpecialItem, it only converts it into one if possible.
+	 * @return The first Special Item of type T found in the inventory or null if there is none
+	 */
 	public static <T extends SpecialItem> T findIn(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
 		for (ItemStack item : items) {
 			if (item == null) continue;
@@ -164,6 +183,14 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 		return null;
 	}
+	/**
+	 * Find all instances of the SpecialItem type T in the given items iterable, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of SpecialItem that will be searched for
+	 * @param items The items to search the SpecialItem in
+	 * @param constructor A function that parses an ItemStack as an instance of that SpecialItem.<br>
+	 * Note: it does not CREATE a SpecialItem, it only converts it into one if possible.
+	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
+	 */
 	public static <T extends SpecialItem> List<T> findAllIn(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
 		ArrayList<T> results = new ArrayList<>();
 		for (ItemStack item : items) {

@@ -101,7 +101,6 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch> extends Spec
 	 * @param <TBranch> The type of the branch, must be an enum that implements BranchItem.Branch
 	 * @param event The PlayerItemHeldEvent to handle
 	 * @param getItem An "SpecialItem from ItemStack" function, used to get the item being switched from/to
-	 * @param getBranch A "Branch from Item" function, used to get the branch of the item being switched from/to
 	 */
 	public static <TItem extends SpecialItem & BranchItemInterface<TBranch>, TBranch extends Branch> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem) {
 		Player player = event.getPlayer();
