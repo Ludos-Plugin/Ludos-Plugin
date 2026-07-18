@@ -1,4 +1,4 @@
-package fr.ludos.roles.tank.items;
+package fr.ludos.roles.rampart.items;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,20 +33,20 @@ import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.core.role.Role;
-import fr.ludos.roles.tank.TankRole;
+import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
-public class TankShield extends LevelItem<TankShieldLevels> {
-	public static final String ID = "tank_shield";
+public class RampartShield extends LevelItem<RampartShieldLevels> {
+	public static final String ID = "rampart_shield";
 
 	private static final int COOLDOWN_DURATION_SECONDS = 10;
 	private static final Vector ALLY_PROTECTION_RANGE = new Vector(2.0, 2.0, 2.0);
 
 
-	public static @Nullable TankShield fromItemStack(List<TankShieldLevels> levels, ItemStack stack, Game game) throws IllegalArgumentException {
+	public static @Nullable RampartShield fromItemStack(List<RampartShieldLevels> levels, ItemStack stack, Game game) throws IllegalArgumentException {
 		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
 		if (itemId == null) return null;
 
@@ -58,14 +58,14 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		LevelValue levelValue = LevelItemInterface.levelFromItemStack(stack, game);
 		if (levelValue == null) return null;
 
-		TankShield shield = new TankShield(levels, levelValue, stack, owner, game);
+		RampartShield shield = new RampartShield(levels, levelValue, stack, owner, game);
 		// cachedItems.put(itemId, dagger);
 
 		return shield;
 	}
 
-	public static TankShield createItem(List<TankShieldLevels> levels, LevelValue level, Player owner, Game game) {
-		TankShield shield = new TankShield(levels, level, createItemStack(), owner, game);
+	public static RampartShield createItem(List<RampartShieldLevels> levels, LevelValue level, Player owner, Game game) {
+		RampartShield shield = new RampartShield(levels, level, createItemStack(), owner, game);
 		shield.initializeItem();
 
 		ItemMeta meta = shield.getStack().getItemMeta();
@@ -77,7 +77,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		return shield;
 	}
 
-	protected TankShield(List<TankShieldLevels> levels, LevelValue level, ItemStack stack, Player owner, Game game) {
+	protected RampartShield(List<RampartShieldLevels> levels, LevelValue level, ItemStack stack, Player owner, Game game) {
 		super(levels, level, stack, owner, game);
 	}
 
@@ -94,7 +94,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		ItemMeta meta = stack.getItemMeta();
 		if (! (meta instanceof Damageable damageable)) return;
 
-		TankShieldLevels level = lvlObject(level());
+		RampartShieldLevels level = lvlObject(level());
 
 		int currentDamage = damageable.getDamage();
 		int maxDamage = stack.getType().getMaxDurability();
@@ -119,7 +119,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		ItemMeta meta = stack.getItemMeta();
 		if (! (meta instanceof Damageable damageable)) return;
 
-		TankShieldLevels level = lvlObject(level());
+		RampartShieldLevels level = lvlObject(level());
 
 		int currentDamage = damageable.getDamage();
 
@@ -165,7 +165,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 
 	@Override
 	public Component getName() {
-		return Component.text("Tank Shield")
+		return Component.text("Rampart Shield")
 				.decoration(TextDecoration.ITALIC, false);
 	}
 
@@ -173,7 +173,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		TankShieldLevels level = lvlObject();
+		RampartShieldLevels level = lvlObject();
 		int durability = level.getDurability();
 
 		lore.add(
@@ -201,15 +201,15 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		return stack;
 	}
 
-	public static class Events extends LevelItem.Events<TankShield, TankShieldLevels> {
-		private static final List<TankShieldLevels> LEVELS = List.of(TankShieldLevels.values());
-		private BukkitTask tankRoutine;
+	public static class Events extends LevelItem.Events<RampartShield, RampartShieldLevels> {
+		private static final List<RampartShieldLevels> LEVELS = List.of(RampartShieldLevels.values());
+		private BukkitTask rampartRoutine;
 		public Events(Game game) {
 			super(game, new Events.Info(ItemSlot.OFFHAND));
 		}
 
 		@Override
-		public List<TankShieldLevels> getLevels() {
+		public List<RampartShieldLevels> getLevels() {
 			return LEVELS;
 		}
 
@@ -217,17 +217,17 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		protected void onItemStart() {
 			super.onItemStart();
 
-			tankRoutine = new BukkitRunnable() {
+			rampartRoutine = new BukkitRunnable() {
 				@Override
 				public void run() {
-					Player[] tankPlayers = getGame().getGroup().getOnlinePlayers().stream()
-						.filter(Role.ofRole(TankRole.ID))
+					Player[] rampartPlayers = getGame().getGroup().getOnlinePlayers().stream()
+						.filter(Role.ofRole(RampartRole.ID))
 						.toArray(Player[]::new);
 
-					for (Player player : tankPlayers) {
+					for (Player player : rampartPlayers) {
 						PlayerInventory inventory = player.getInventory();
-						for (TankShield shield : TankShield.findAllIn(inventory, (ItemStack stack) -> getItem(stack))) {
-							TankShieldLevels level = shield.lvlObject();
+						for (RampartShield shield : RampartShield.findAllIn(inventory, (ItemStack stack) -> getItem(stack))) {
+							RampartShieldLevels level = shield.lvlObject();
 							shield.restore(level.getRegen());
 
 							if (player.isBlocking() && player.getCooldown(Material.SHIELD) == 0) {
@@ -271,26 +271,26 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		protected void onItemStop() {
 			super.onItemStop();
 
-			if (tankRoutine != null) {
-				tankRoutine.cancel();
+			if (rampartRoutine != null) {
+				rampartRoutine.cancel();
 			}
-			tankRoutine = null;
+			rampartRoutine = null;
 		}
 
 		@Override
-		public TankShield createItem(LevelValue level, Player owner) {
-			return TankShield.createItem(LEVELS, level, owner, game);
+		public RampartShield createItem(LevelValue level, Player owner) {
+			return RampartShield.createItem(LEVELS, level, owner, game);
 		}
 
 		@Override
 		@Nullable
-		public TankShield getItem(ItemStack stack) {
-			return TankShield.fromItemStack(LEVELS, stack, game);
+		public RampartShield getItem(ItemStack stack) {
+			return RampartShield.fromItemStack(LEVELS, stack, game);
 		}
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, TankRole.ID);
+			return Role.isPlayerRole(owner, RampartRole.ID);
 		}
 
 		@EventHandler
@@ -299,7 +299,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 
 			if (! defender.isBlocking() || defender.getCooldown(Material.SHIELD) > 0) return;
 
-			TankShield shield;
+			RampartShield shield;
 
 			ItemStack offHand = defender.getInventory().getItemInOffHand();
 			shield = getItem(offHand);
@@ -321,21 +321,21 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 
 			if (event.isCancelled()) return;
 
-			Iterable<Entity> nearbyTanks = victim.getNearbyEntities(
+			Iterable<Entity> nearbyRamparts = victim.getNearbyEntities(
 				ALLY_PROTECTION_RANGE.getX(),
 				ALLY_PROTECTION_RANGE.getY(),
 				ALLY_PROTECTION_RANGE.getZ()
 			);
 
-			for (Entity tankEntity : nearbyTanks) {
-				if (! (tankEntity instanceof Player tankPlayer)) continue;
+			for (Entity rampartEntity : nearbyRamparts) {
+				if (! (rampartEntity instanceof Player rampartPlayer)) continue;
 
-				if (! game.getTeamController().areEntitiesAllies(victim, tankPlayer)) continue;
-				if (! tankPlayer.isBlocking() || tankPlayer.getCooldown(Material.SHIELD) > 0) continue;
+				if (! game.getTeamController().areEntitiesAllies(victim, rampartPlayer)) continue;
+				if (! rampartPlayer.isBlocking() || rampartPlayer.getCooldown(Material.SHIELD) > 0) continue;
 
-				ItemStack mainHand = tankPlayer.getInventory().getItemInMainHand();
-				ItemStack offHand = tankPlayer.getInventory().getItemInOffHand();
-				TankShield shield = getItem(offHand);
+				ItemStack mainHand = rampartPlayer.getInventory().getItemInMainHand();
+				ItemStack offHand = rampartPlayer.getInventory().getItemInOffHand();
+				RampartShield shield = getItem(offHand);
 				if (shield == null) {
 					shield = getItem(mainHand);
 				}
@@ -343,7 +343,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 
 				event.setCancelled(true);
 				shield.hit(event.getDamage());
-				tankEntity.playEffect(EntityEffect.SHIELD_BLOCK);
+				rampartEntity.playEffect(EntityEffect.SHIELD_BLOCK);
 				return;
 			}
 		}
@@ -352,7 +352,7 @@ public class TankShield extends LevelItem<TankShieldLevels> {
 		public void onShieldDamage(PlayerItemDamageEvent event) {
 			ItemStack item = event.getItem();
 
-			TankShield shield = getItem(item);
+			RampartShield shield = getItem(item);
 			if (shield == null) return;
 
 			event.setCancelled(true);

@@ -1,4 +1,4 @@
-package fr.ludos.roles.tank;
+package fr.ludos.roles.rampart;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,17 +15,17 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
 import fr.ludos.core.role.Role;
-import fr.ludos.roles.tank.items.TankDashObject;
-import fr.ludos.roles.tank.items.TankHelmet;
-import fr.ludos.roles.tank.items.TankShield;
+import fr.ludos.roles.rampart.items.RampartDash;
+import fr.ludos.roles.rampart.items.RampartHelm;
+import fr.ludos.roles.rampart.items.RampartShield;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-public class TankRole extends Role {
-	public static final String ID = "tank";
+public class RampartRole extends Role {
+	public static final String ID = "rampart";
 
-	public TankRole(Builder builder, Game game) {
+	public RampartRole(Builder builder, Game game) {
 		super(builder, game);
 	}
 
@@ -33,9 +33,9 @@ public class TankRole extends Role {
 	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
 		return new LinkedHashMap<>() {
 			{
-				put(TankShield.ID, new TankShield.Events(game));
-				put(TankHelmet.ID, new TankHelmet.Events(game));
-				put(TankDashObject.ID, new TankDashObject.Events(game));
+				put(RampartShield.ID, new RampartShield.Events(game));
+				put(RampartHelm.ID, new RampartHelm.Events(game));
+				put(RampartDash.ID, new RampartDash.Events(game));
 			}
 		};
 	}
@@ -111,19 +111,19 @@ public class TankRole extends Role {
 
 		@Override
 		public Role build(Game game) {
-			return new TankRole(this, game);
+			return new RampartRole(this, game);
 		}
 
 		@Override
 		public TextComponent getDisplayName() {
-			return Component.text("Tank")
+			return Component.text("Rampart")
 				.color(NamedTextColor.GOLD);
 		}
 
 		@Override
 		public TextComponent getDescription() {
-			return Component.text("Guard against threats of all kinds, as the Tank.\n" +
-				"With his shield in hand, the Tank protects himself and his allies against any and all attacks."
+			return Component.text("Guard against threats of all kinds, as the Rampart.\n" +
+				"With his shield in hand, the Rampart protects himself and his allies against any and all attacks."
 			);
 		}
 	}
