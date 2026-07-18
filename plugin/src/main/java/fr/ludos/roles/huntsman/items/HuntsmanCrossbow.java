@@ -40,7 +40,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranch> {
-	public static final String ID = "manhuntHuntsmanCrossbow";
+	public static final String ID = "huntsman_crossbow";
 
 	// private final static Map<UUID, HuntsmanCrossbow> cachedItems = new HashMap<>();
 
@@ -171,9 +171,12 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 			PersistentDataContainer container = arrow.getPersistentDataContainer();
 			if (container.has(arrowTypeKey, PersistentDataType.STRING) && container.has(arrowLevelKey, PersistentDataType.INTEGER)) {
-				HuntsmanCrossbowBranch branch = getBranches().get(container.get(arrowTypeKey, PersistentDataType.STRING));
+				String branchKey = container.get(arrowTypeKey, PersistentDataType.STRING);
+				int levelIdx = container.get(arrowLevelKey, PersistentDataType.INTEGER);
+
+				HuntsmanCrossbowBranch branch = getBranches().get(branchKey);
 				if (branch != null) {
-					branch.processLandedArrow(arrow, player, container.get(arrowLevelKey, PersistentDataType.INTEGER), event);
+					branch.processLandedArrow(arrow, player, levelIdx, event);
 				}
 			}
 

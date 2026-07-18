@@ -33,9 +33,9 @@ public class TankRole extends Role {
 	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
 		return new LinkedHashMap<>() {
 			{
-				put("tankShield", new TankShield.Events(game));
-				put("tankHelmet", new TankHelmet.Events(game));
-				put("tankDasher", new TankDashObject.Events(game));
+				put(TankShield.ID, new TankShield.Events(game));
+				put(TankHelmet.ID, new TankHelmet.Events(game));
+				put(TankDashObject.ID, new TankDashObject.Events(game));
 			}
 		};
 	}

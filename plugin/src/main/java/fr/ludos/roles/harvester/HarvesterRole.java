@@ -58,9 +58,9 @@ public class HarvesterRole extends Role {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{
-					put("scythe", new HarvesterScythe.Events(game));
-					put("pick", new HarvesterPick.Events(harvesterRole, game));
-					put("spade", new HarvesterSpade.Events(harvesterRole, game));
+					put(HarvesterScythe.ID, new HarvesterScythe.Events(game));
+					put(HarvesterPick.ID, new HarvesterPick.Events(harvesterRole, game));
+					put(HarvesterSpade.ID, new HarvesterSpade.Events(harvesterRole, game));
 				}};
 		}
 	}

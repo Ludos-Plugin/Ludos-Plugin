@@ -33,7 +33,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
 public class TankDashObject extends SpecialItem {
-	private static final String ID = "tank_dasher";
+	public static final String ID = "tank_dasher";
 
 	private static final double DASH_POWER = 1.1;
 	private static final double UNDERWATER_DASH_POWER = 0.55;

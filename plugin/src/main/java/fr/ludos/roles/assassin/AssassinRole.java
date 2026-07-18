@@ -80,10 +80,10 @@ public class AssassinRole extends Role {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{
-					put("dagger", new AssassinDagger.Events(game));
-					put("boots", new AssassinBoots.Events(game));
-					put("teleport_scroll", new TeleportScroll.Events(game));
-					put("snare", new AssassinSnareDevice.Events(game));
+					put(AssassinDagger.ID, new AssassinDagger.Events(game));
+					put(AssassinBoots.ID, new AssassinBoots.Events(game));
+					put(TeleportScroll.ID, new TeleportScroll.Events(game));
+					put(AssassinSnareDevice.ID, new AssassinSnareDevice.Events(game));
 				}};
 		}
 	}

@@ -27,7 +27,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class HuntsmanArrow extends SpecialItem {
-	private final static String ID = "manhuntHuntsmanArrow";
+	public final static String ID = "huntsman_arrow";
 
 	// private final static Map<UUID, HuntsmanArrow> cachedItems = new HashMap<>();
 

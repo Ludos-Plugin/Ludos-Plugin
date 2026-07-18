@@ -20,7 +20,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
 public class TankHelmet extends SpecialItem {
-	private static final String ID = "tank_helmet";
+	public static final String ID = "tank_helmet";
 
 	protected TankHelmet(ItemStack stack, Player owner, Game game) {
 		super(stack, owner, game);

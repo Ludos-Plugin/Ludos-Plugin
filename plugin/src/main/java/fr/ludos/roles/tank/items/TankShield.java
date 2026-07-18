@@ -40,7 +40,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 
 public class TankShield extends LevelItem<TankShieldLevels> {
-	private static final String ID = "tankShield";
+	public static final String ID = "tank_shield";
+
 	private static final int COOLDOWN_DURATION_SECONDS = 10;
 	private static final Vector ALLY_PROTECTION_RANGE = new Vector(2.0, 2.0, 2.0);
 

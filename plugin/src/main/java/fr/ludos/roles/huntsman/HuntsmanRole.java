@@ -37,9 +37,9 @@ public class HuntsmanRole extends Role {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{
-					put("bow", new HuntsmanBow.Events(game));
-					put("crossbow", new HuntsmanCrossbow.Events(game));
-					put("arrow", new HuntsmanArrow.Events(game));
+					put(HuntsmanBow.ID, new HuntsmanBow.Events(game));
+					put(HuntsmanCrossbow.ID, new HuntsmanCrossbow.Events(game));
+					put(HuntsmanArrow.ID, new HuntsmanArrow.Events(game));
 				}};
 		}
 	}

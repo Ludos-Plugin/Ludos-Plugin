@@ -39,7 +39,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
 public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
-	private final static String ID = "trapperSnareGrimoire";
+	public final static String ID = "assassin_snare_grimoire";
 
 	// private final static Map<UUID, TrapperSnareDevice> cachedItems = new HashMap<>();
 
