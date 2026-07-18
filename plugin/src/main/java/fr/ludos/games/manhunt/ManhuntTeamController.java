@@ -24,7 +24,6 @@ import org.bukkit.scoreboard.Team;
 
 import fr.ludos.core.Utility;
 import fr.ludos.core.area.Area;
-import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.item.SpecialItem;
 import net.kyori.adventure.text.Component;
@@ -44,7 +43,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<OfflinePlayer> players, @Nullable OfflinePlayer prey) {
-		super(game, GroupConfigMap.GAME_JOIN.getGroupConfig(game.getGroup()));
+		super(game);
 
 		Set<Player> finalPlayers = game.getGroup().getOnlinePlayers();
 		if (players != null && ! players.isEmpty()) {

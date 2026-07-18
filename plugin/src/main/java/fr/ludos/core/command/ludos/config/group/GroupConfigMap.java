@@ -16,7 +16,7 @@ public final class GroupConfigMap extends ConfigOptionsMap {
 		new EnumConfigOptions<>("Members authorisation", "member_authorisation", null, GroupRightsOption.class, GroupRightsOption.invite);
 
 	public static final ValueConfigOptions<GroupJoinOption> GROUP_JOIN =
-		new EnumConfigOptions<>("Group join behaviour", "group_join", null, GroupJoinOption.class, GroupJoinOption.auto_accept);
+		new EnumConfigOptions<>("Group join behaviour", "group_join", null, GroupJoinOption.class, GroupJoinOption.manual_accept);
 
 	public static final ValueConfigOptions<GameJoinOption> GAME_JOIN =
 		new EnumConfigOptions<>("Member Game join behaviour", "game_join", null, GameJoinOption.class, GameJoinOption.auto);

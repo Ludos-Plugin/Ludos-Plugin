@@ -26,6 +26,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.role.Role;
 import net.kyori.adventure.text.Component;
@@ -400,8 +401,11 @@ public final class Group {
 		if (isMember(player)) return JoinResult.Failed;
 		if (method == null) return JoinResult.Failed;
 
+		GroupJoinOption joinBehaviour = GroupConfigMap.GROUP_JOIN.getGroupConfig(this);
+
 		JoinMethod currentMethod = joinRequests.get(player);
-		if (currentMethod != null && currentMethod != method) {
+		boolean consentIsTwoSided = currentMethod != null && currentMethod != method;
+		if (joinBehaviour == GroupJoinOption.auto_accept || consentIsTwoSided) {
 			joinRequests.remove(player);
 			addPlayer(player);
 			return JoinResult.Succeeded;
