@@ -92,7 +92,7 @@ public abstract class Role extends GameProcessBase {
 	public Role(Builder builder, Game game) {
 		this.game = game;
 		this.builder = builder;
-		gameEvents = game.modifyEvents(builder.getId(), createGameEvents(builder, game));
+		gameEvents = game.digestRoleEvents(builder.getId(), createGameEvents(builder, game));
 	}
 
 	@Override
