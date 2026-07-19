@@ -7,6 +7,9 @@ import org.bukkit.entity.Player;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.config.sectionProvider.ConfigSectionProvider;
 
+/**
+ * {@link ConfigSectionProvider} to scope subsequent {@link ConfigOptions} within a Player's config ({@link Ludos#getPlayerConfigSection}).
+ */
 public final class PlayerConfigProvider extends ConfigSectionProvider {
 	private final Ludos ludos;
 	public PlayerConfigProvider(Ludos ludos) {

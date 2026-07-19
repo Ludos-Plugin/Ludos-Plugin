@@ -23,6 +23,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+/**
+ * Implementation of the Raid {@link Game}.
+ */
 public class RaidGame extends WaveGame {
 	public static final String ID = "raid";
 
@@ -84,6 +87,9 @@ public class RaidGame extends WaveGame {
 		);
 	}
 
+	/**
+	 * Builder for {@link RaidGame}.
+	 */
 	public static class Builder extends Game.Builder {
 		public Builder(Ludos ludos) {
 			super(ludos);

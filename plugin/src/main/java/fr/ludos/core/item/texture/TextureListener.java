@@ -14,6 +14,9 @@ import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.core.Ludos;
 
+/**
+ * Listener that schedules texture application tasks for players.
+ */
 public final class TextureListener implements Listener {
 	private final Ludos ludos;
 	private final ConcurrentMap<Player, BukkitTask> tasks = new ConcurrentHashMap<>();

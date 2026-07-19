@@ -10,6 +10,9 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.ScopeConfigMap;
 
+/**
+ * Subcommand for all Ludos configuration.
+ */
 public class LudosConfig implements Subcommand {
 	private final static String ID = "config";
 	private final ScopeConfigMap map;

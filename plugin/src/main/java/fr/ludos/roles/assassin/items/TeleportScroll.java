@@ -30,6 +30,9 @@ import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * Implementation of the Assassin Teleport Scroll, for use by any Player with {@link AssassinRole}.
+ */
 public class TeleportScroll extends SpecialItem {
 	public static final String ID = "teleport_scroll";
 
@@ -84,6 +87,9 @@ public class TeleportScroll extends SpecialItem {
 		));
 	}
 
+	/**
+	 * Events for the {@link TeleportScroll}.
+	 */
 	public static class Events extends SpecialItem.Events<TeleportScroll> {
 		private static final int COOLDOWN = 20 * 30; // 30 secondes
 		private static final int MAX_ATTEMPTS = 100;

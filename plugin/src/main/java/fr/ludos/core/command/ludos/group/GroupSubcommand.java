@@ -7,6 +7,9 @@ import fr.ludos.core.command.HelpSubcommand;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.SubcommandHandler;
 
+/**
+ * {@link Subcommand} encapsulating all {@link Group}-specific Ludos subcommands.
+ */
 public final class GroupSubcommand extends SubcommandHandler {
 	public GroupSubcommand(Ludos ludos) {
 		super("group", "Manage Ludos Groups", false, getSubcommands(ludos));

@@ -14,6 +14,10 @@ import fr.ludos.core.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+/**
+ * Controller for managing waves in a {@link WaveGame}.
+ * Handles wave progression, scheduling, loadouts and related events.
+ */
 public abstract class WaveController extends GameProcessBase {
 	private boolean scheduled = false;
 

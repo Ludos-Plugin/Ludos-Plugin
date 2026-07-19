@@ -11,6 +11,9 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
 
+/**
+ * {@link Subcommand} to leave the current {@link Group}, as any Group member.
+ */
 public class GroupLeave implements Subcommand {
 	private final static String ID = "leave";
 

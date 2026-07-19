@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 
 import fr.ludos.core.config.valueOptions.EnumConfigOptions;
 
+/**
+ * Enum representing the different {@link ArenaGame} mode options.
+ */
 public enum ArenaModeOption {
 	duel("Duel", "1v1 rounds"),
 	multi("Multi", "team rounds");

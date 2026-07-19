@@ -10,6 +10,9 @@ import fr.ludos.core.config.valueOptions.MultipleGroupPlayerConfigOptions;
 import fr.ludos.core.config.valueOptions.NumberConfigOptions;
 import fr.ludos.core.config.valueOptions.ValueConfigOptions;
 
+/**
+ * {@link ConfigOptionsMap} for the {@link ArenaGame}.
+ */
 public final class ArenaGameConfigMap extends ConfigOptionsMap {
 	public static final ValueConfigOptions<Set<OfflinePlayer>> TEAM_1_PLAYERS =
 		new MultipleGroupPlayerConfigOptions("Team 1 players", "team_1", "random");

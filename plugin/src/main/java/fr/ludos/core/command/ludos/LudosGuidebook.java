@@ -12,6 +12,9 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 
+/**
+ * {@link Subcommand} to obtain a Ludos Guidebook.
+ */
 public class LudosGuidebook implements Subcommand {
 	private final static String ID = "guidebook";
 

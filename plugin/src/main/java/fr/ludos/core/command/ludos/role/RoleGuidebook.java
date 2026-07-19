@@ -13,6 +13,9 @@ import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.role.Role;
 
+/**
+ * {@link Subcommand} to obtain a Ludos Guidebook for the specified {@link Role}.
+ */
 public class RoleGuidebook implements Subcommand {
 	private final static String ID = "guidebook";
 

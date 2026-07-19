@@ -12,6 +12,9 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
 
+/**
+ * {@link Subcommand} to get info about the current {@link Group}, as a member.
+ */
 public class GroupInfo implements Subcommand {
 	private final static String ID = "info";
 

@@ -31,7 +31,10 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameProcessBase;
 
 
-
+/**
+ * A controller to manage different {@link Team}s, during a {@link Game}.<br>
+ * Contains various utility functions to manager players and entities.
+ */
 public abstract class GameTeamController extends GameProcessBase {
 	private final Game game;
 	public final Game getGame() {

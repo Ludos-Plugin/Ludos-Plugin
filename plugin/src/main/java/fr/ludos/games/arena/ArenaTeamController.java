@@ -26,6 +26,9 @@ import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.item.SpecialItem;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+/**
+ * Controller for {@link ArenaGame} teams, handling team selection and setup.
+ */
 public final class ArenaTeamController extends GameTeamController {
 	private static final int PRIMARY_TEAM_INDEX = 0;
 	private static final int SECONDARY_TEAM_INDEX = 1;

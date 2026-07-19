@@ -38,7 +38,13 @@ import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.title.TitlePart;
 
+/**
+ * Manager of the 'lobby' phase of a {@link Game}'s startup sequence, used to buffer the loading-in of Players into the {@link Game}'s managed {@link World}.
+ */
 public final class Lobby extends GameProcessBase {
+	/**
+	 * How much of a {@link Player}'s state should be cleared/reset in and out of a {@link Lobby}.
+	 */
 	public enum ClearMode {
 		NONE,
 		STATE {
@@ -233,6 +239,9 @@ public final class Lobby extends GameProcessBase {
 		event.setCancelled(true);
 	}
 
+	/**
+	 * Builder for {@link Lobby}.
+	 */
 	public static final class Builder {
 		private final Game game;
 

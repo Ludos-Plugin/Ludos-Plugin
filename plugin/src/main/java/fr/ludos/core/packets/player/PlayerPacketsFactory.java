@@ -4,6 +4,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+/**
+ * Factory used to create player packet handlers depending on the server version.
+ */
 public final class PlayerPacketsFactory {
 	public static PlayerPackets createHandler() {
 		String versionName = Bukkit.getServer().getClass().getPackage().getName();

@@ -9,6 +9,10 @@ import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
 import fr.ludos.core.command.ludos.config.role.RoleConfigMap;
 import fr.ludos.core.config.ConfigOptionsMap;
 
+/**
+ * Config Options Map for Globally scoped configuration.
+ * This is used to limit the subsequent config options to Global configuration.
+ */
 public class GlobalScopedConfigMap extends ConfigOptionsMap {
 	public static final GlobalScopedConfigMap INSTANCE = new GlobalScopedConfigMap();
 

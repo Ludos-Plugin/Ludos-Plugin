@@ -13,6 +13,9 @@ import fr.ludos.core.command.ludos.ScopeConfigMap;
 import fr.ludos.core.command.ludos.config.role.RoleConfigMap;
 import fr.ludos.core.role.Role;
 
+/**
+ * {@link Subcommand} for {@link Role}-specific configuration.
+ */
 public class RoleConfig implements Subcommand {
 	private final static String ID = "config";
 

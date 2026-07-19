@@ -32,6 +32,9 @@ import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * Implementation of the Rampart Dash/Charge, for use by any Player with {@link RampartRole}.
+ */
 public class RampartDash extends SpecialItem {
 	public static final String ID = "rampart_dash";
 
@@ -171,6 +174,9 @@ public class RampartDash extends SpecialItem {
 		return stack;
 	}
 
+	/**
+	 * Events for the {@link RampartDash}.
+	 */
 	public static class Events extends SpecialItem.Events<RampartDash> {
 
 		public Events(Game game) {

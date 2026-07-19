@@ -9,6 +9,9 @@ import javax.annotation.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A state representation of a Level/XP pair data. For use with {@link LevelItemInterface} implementations.
+ */
 public class LevelState {
 	@Nullable
 	private Integer maxLevel;

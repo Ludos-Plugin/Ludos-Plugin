@@ -10,6 +10,9 @@ import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.config.ConfigOptions;
 import fr.ludos.core.role.Role;
 
+/**
+ * Config Options Map for Role-specific configuration.
+ */
 public class RoleConfigMap extends ConfigOptionsCollection {
 	public static final RoleConfigMap INSTANCE = new RoleConfigMap();
 

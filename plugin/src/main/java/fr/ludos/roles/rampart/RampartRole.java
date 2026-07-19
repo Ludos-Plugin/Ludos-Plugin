@@ -22,6 +22,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+/**
+ * Implementation of the Rampart {@link Role}.
+ */
 public class RampartRole extends Role {
 	public static final String ID = "rampart";
 
@@ -99,6 +102,9 @@ public class RampartRole extends Role {
 		event.setDamage(event.getDamage() * multiplier);
 	}
 
+	/**
+	 * Builder for the {@link RampartRole}.
+	 */
 	public static class Builder extends Role.Builder {
 		@Override
 		public String getId() {

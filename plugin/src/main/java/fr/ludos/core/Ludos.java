@@ -53,6 +53,10 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * The main Ludos plugin.
+ * Contains Configuration file utility functions.
+ */
 public class Ludos extends JavaPlugin implements Listener {
 	private final File groupsFile = new File(getDataFolder(), "groups.yml");
 	private final FileConfiguration groupsData = YamlConfiguration.loadConfiguration(groupsFile);

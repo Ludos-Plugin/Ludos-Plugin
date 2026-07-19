@@ -26,7 +26,10 @@ import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.core.persistence.LevelValueMapPersistentDataType;
 import net.kyori.adventure.text.Component;
 
-
+/**
+ * A {@link SpecialItem} implementation with the ability to hold {@link BranchItemInterface.Branch}es, with each their own {@link LevelState}.
+ * @param <TBranch> The type of {@link BranchItemInterface.Branch} the item uses
+ */
 public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.Branch> extends BranchItem<TBranch> implements LevelItemInterface {
 	private final Map<String, LevelState> levelStates;
 	public Map<String, LevelState> getLevelStates() {
@@ -152,8 +155,10 @@ public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.
 		return lore;
 	}
 
-
-	public static interface Branch extends BranchItem.Branch {
+	/**
+	 * {@link BranchItemInterface.Branch} for {@link MultiLevelBranchItem}s.
+	 */
+	public static interface Branch extends BranchItemInterface.Branch {
 		public int maxLevel();
 		public double xpThreshold(@NotNull Integer level);
 
@@ -171,6 +176,11 @@ public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.
 		public void onUnsetLevel(int level, SpecialItemInterface item);
 	}
 
+	/**
+	 * Events for {@link MultiLevelBranchItem}s.
+	 * @param <T> The type of {@link MultiLevelBranchItem}
+	 * @param <TBranch> The type of {@link Branch} the item uses
+	 */
 	public static abstract class Events<T extends MultiLevelBranchItem<TBranch>, TBranch extends Branch> extends BranchItem.Events<T, TBranch> {
 		private Map<Player, Map<String, LevelValue>> deadPlayerLevels = new HashMap<>();
 

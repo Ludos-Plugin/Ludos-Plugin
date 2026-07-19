@@ -15,6 +15,9 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.group.Group;
 
+/**
+ * {@link ValueConfigOptions} for multiple {@link OfflinePlayer} instances, present in the {@link CommandSender}'s current {@link Group}.
+ */
 public final class MultipleGroupPlayerConfigOptions extends SetConfigOptions<OfflinePlayer> {
 	private final @Nullable Integer limit;
 	private final boolean excludeSelf;

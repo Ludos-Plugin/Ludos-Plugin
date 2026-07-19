@@ -19,6 +19,9 @@ import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * Implementation of the Rampart Helm, for use by any Player with {@link RampartRole}.
+ */
 public class RampartHelm extends SpecialItem {
 	public static final String ID = "rampart_helm";
 
@@ -73,6 +76,9 @@ public class RampartHelm extends SpecialItem {
 		return stack;
 	}
 
+	/**
+	 * Events for the {@link RampartHelm}.
+	 */
 	public static class Events extends SpecialItem.Events<RampartHelm> {
 
 		public Events(Game game) {

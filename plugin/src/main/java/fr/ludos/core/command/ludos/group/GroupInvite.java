@@ -15,8 +15,11 @@ import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.group.Group.JoinMethod;
+import fr.ludos.core.group.Group.AddPlayerMethod;
 
+/**
+ * {@link Subcommand} to invite players to the current {@link Group}, as the Group Leader, or an explicitly allowed member.
+ */
 public class GroupInvite implements Subcommand {
 	private final static String ID = "invite";
 
@@ -66,7 +69,7 @@ public class GroupInvite implements Subcommand {
 
 		boolean hasJoined = false;
 		for (Player target : targets.stream().toList()) {
-			switch (group.requestPlayerJoin(target, JoinMethod.Invite)) {
+			switch (group.requestAddPlayer(target, AddPlayerMethod.Invite)) {
 				case Succeeded:
 					hasJoined = true;
 				case Failed:

@@ -23,7 +23,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-
+/**
+ * Implementation of the Harvester {@link Role}.
+ */
 public class HarvesterRole extends Role {
 	public static final String ID = "harvester";
 
@@ -117,7 +119,9 @@ public class HarvesterRole extends Role {
 		}
 	}
 
-
+	/**
+	 * Builder for the {@link HarvesterRole}.
+	 */
 	public static class Builder extends Role.Builder {
 
 		@Override

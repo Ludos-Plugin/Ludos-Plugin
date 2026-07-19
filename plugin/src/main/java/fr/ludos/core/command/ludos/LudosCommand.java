@@ -18,6 +18,9 @@ import fr.ludos.core.command.ludos.game.GameSubcommand;
 import fr.ludos.core.command.ludos.group.GroupSubcommand;
 import fr.ludos.core.command.ludos.role.RoleSubcommand;
 
+/**
+ * {@link Subcommand} encapsulating all Ludos subcommands.
+ */
 public class LudosCommand implements Subcommand {
 	private final static String ID = "ludos";
 

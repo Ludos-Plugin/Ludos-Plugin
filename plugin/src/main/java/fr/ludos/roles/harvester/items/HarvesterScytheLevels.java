@@ -10,6 +10,9 @@ import org.bukkit.inventory.ItemStack;
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItemInterface.Level;
 
+/**
+ * Default {@link LevelItemInterface.Level}s for the {@link HarvesterScythe}.
+ */
 public enum HarvesterScytheLevels implements Level<HarvesterScytheLevels> {
 	WOODEN      (Material.WOODEN_HOE,    25,   new HashMap<>(){{ put(Enchantment.SWEEPING_EDGE, 2); }}),
 	STONE       (Material.STONE_HOE,     50,   new HashMap<>(){{ put(Enchantment.SWEEPING_EDGE, 2); }}),

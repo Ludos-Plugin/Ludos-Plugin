@@ -25,7 +25,9 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.role.Role;
 
-
+/**
+ * Base class for Testing Ludos functionality in a Mocked Bukkit environment.
+ */
 public abstract class MockBukkitTestBase {
 	protected static ServerMock server;
 	protected static Plugin plugin;

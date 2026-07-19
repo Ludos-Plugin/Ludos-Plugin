@@ -12,6 +12,9 @@ import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 
+/**
+ * {@link Subcommand} to stop the currently-operating {@link Game}, as a {@link Group} leader.
+ */
 public class GameStop implements Subcommand {
 	private final static String ID = "stop";
 

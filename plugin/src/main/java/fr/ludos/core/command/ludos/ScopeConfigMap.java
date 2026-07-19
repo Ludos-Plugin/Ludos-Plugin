@@ -5,9 +5,13 @@ import java.util.HashMap;
 import org.apache.commons.lang3.tuple.Pair;
 
 import fr.ludos.core.Ludos;
+import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.config.ConfigOptions;
 import fr.ludos.core.config.sectionProvider.ConfigSectionMap;
 
+/**
+ * {@link Subcommand} used to select a given Configuration scope for subsequent Configuration Options.
+ */
 public class ScopeConfigMap extends ConfigSectionMap {
 	public ScopeConfigMap(Ludos ludos, ConfigOptions globalOptions, ConfigOptions groupOptions, ConfigOptions playerOptions) {
 		super(new HashMap<>() {{

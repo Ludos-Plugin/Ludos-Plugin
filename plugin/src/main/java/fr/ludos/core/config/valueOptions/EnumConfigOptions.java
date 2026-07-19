@@ -11,6 +11,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * {@link ValueConfigOptions} for {@link Enum} values.
+ * @param <T> The Enum type of the values
+ */
 public final class EnumConfigOptions<T extends Enum<T>> extends ValueConfigOptions<T> {
 	private final @NotNull Class<T> clazz;
 	private final @Nullable T defaultValue;

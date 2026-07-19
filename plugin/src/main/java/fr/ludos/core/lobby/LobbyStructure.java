@@ -12,6 +12,9 @@ import org.bukkit.util.Vector;
 import fr.ludos.core.structure.BoundingBoxStructure;
 import fr.ludos.core.structure.Structure;
 
+/**
+ * Default {@link Structure} for a {@link Lobby}.
+ */
 public class LobbyStructure extends BoundingBoxStructure {
 	private final Map<Location, BlockData> blocksData;
 	private final Location entranceLocation;
@@ -54,6 +57,9 @@ public class LobbyStructure extends BoundingBoxStructure {
 		blocksData.clear();
 	}
 
+	/**
+	 * Builder for {@link LobbyStructure}s.
+	 */
 	public static class Builder extends Structure.Builder {
 		public Builder() { }
 

@@ -7,10 +7,12 @@ import java.util.Map;
 import org.bukkit.enchantments.Enchantment;
 
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.item.level.LevelItem;
+import fr.ludos.core.item.level.LevelItemInterface;
 
-
-public enum AssassinDaggerLevels implements LevelItem.Level<AssassinDaggerLevels> {
+/**
+ * Default {@link LevelItemInterface.Level}s for the {@link AssassinDagger}.
+ */
+public enum AssassinDaggerLevels implements LevelItemInterface.Level<AssassinDaggerLevels> {
 	BASE    (10, Collections.emptyMap(),                                  false),
 	SHARP1  (20, new HashMap<>() {{ put(Enchantment.DAMAGE_ALL, 1); }},   false),
 	POISONED(30, new HashMap<>() {{ put(Enchantment.DAMAGE_ALL, 1); }},   true),

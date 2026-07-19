@@ -16,6 +16,9 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.group.Group;
 
+/**
+ * {@link ValueConfigOptions} for a single {@link OfflinePlayer} instance, present in the {@link CommandSender}'s current {@link Group}.
+ */
 public final class SingleGroupPlayerConfigOptions extends ValueConfigOptions<OfflinePlayer> {
 	private final boolean excludeSelf;
 

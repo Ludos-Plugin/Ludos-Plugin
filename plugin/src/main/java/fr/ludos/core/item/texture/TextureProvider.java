@@ -2,6 +2,9 @@ package fr.ludos.core.item.texture;
 
 import org.bukkit.Material;
 
+/**
+ * Provides texture metadata and material mapping for custom item variants.
+ */
 public interface TextureProvider {
 	String getTextureId();
 	String getTexturePath();

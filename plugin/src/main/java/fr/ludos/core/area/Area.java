@@ -7,6 +7,9 @@ import org.bukkit.World;
 
 import fr.ludos.core.game.GameProcessBase;
 
+/**
+ * Manager for a game area, responsible for setting up the area and managing requests from Game processes.
+ */
 public abstract class Area extends GameProcessBase {
 	public abstract Builder<? extends Area> getBuilder();
 	public final Area mutate(Consumer<Builder<?>> config) {
@@ -26,6 +29,11 @@ public abstract class Area extends GameProcessBase {
 	public abstract Location constrain(Location location);
 	public abstract boolean isInside(Location location);
 
+	/**
+	 *
+	 * Builder for an {@link Area}.
+	 * @param <T> The type of Area that will be built.
+	 */
 	public static abstract class Builder<T extends Area> {
 
 		protected Location location;

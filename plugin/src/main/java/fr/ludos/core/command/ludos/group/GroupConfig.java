@@ -13,6 +13,9 @@ import fr.ludos.core.command.ludos.ScopeConfigMap;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 
+/**
+ * {@link Subcommand} for {@link Group}-specific configuration.
+ */
 public class GroupConfig implements Subcommand {
 	private final static String ID = "config";
 	private final ScopeConfigMap map;

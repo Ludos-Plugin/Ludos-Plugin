@@ -24,7 +24,9 @@ import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Huntsman Bow, for use by any Player with {@link HuntsmanRole}.
+ */
 public class HuntsmanBow extends SpecialItem {
 	public static final String ID = "huntsman_bow";
 
@@ -76,7 +78,9 @@ public class HuntsmanBow extends SpecialItem {
 		return new ArrayList<>();
 	}
 
-
+	/**
+	 * Events for the {@link HuntsmanBow}.
+	 */
 	public static class Events extends SpecialItem.Events<HuntsmanBow> {
 
 		public Events(Game game) {

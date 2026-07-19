@@ -44,6 +44,9 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
+/**
+ * Various utility functions for Ludos.
+ */
 public class Utility {
 	private static final Random RANDOM = new Random();
 

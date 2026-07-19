@@ -18,6 +18,9 @@ import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.core.Ludos;
 
+/**
+ * Manages texture providers, resource pack synchronization, and texture commands.
+ */
 public final class TextureManager implements CommandExecutor {
 	private final Ludos ludos;
 	private final ResourcePackLoader loader;

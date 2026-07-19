@@ -7,6 +7,9 @@ import fr.ludos.core.command.HelpSubcommand;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.SubcommandHandler;
 
+/**
+ * Subcommand encapsulating all Role-specific Ludos subcommands.
+ */
 public final class RoleSubcommand extends SubcommandHandler {
 	public RoleSubcommand(Ludos ludos) {
 		super("role", "Manage Ludos Roles", false, getSubcommands(ludos));

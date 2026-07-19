@@ -37,7 +37,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Huntsman Spade, for use by any Player with {@link HarvesterRole}.
+ */
 public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 	public static final String ID = "harvester_spade";
 
@@ -227,7 +229,9 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 		return true;
 	}
 
-
+	/**
+	 * Events for the {@link HarvesterSpade}.
+	 */
 	public static class Events extends LevelItem.Events<HarvesterSpade, HarvesterSpadeLevels> {
 		private static final List<HarvesterSpadeLevels> LEVELS = List.of(HarvesterSpadeLevels.values());
 		public final HarvesterRole role;
@@ -240,17 +244,6 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 		@Override
 		public List<HarvesterSpadeLevels> getLevels() {
 			return LEVELS;
-		}
-
-
-		public class BlockBreak {
-			Location location;
-			Material material;
-
-			public BlockBreak(Location location, Material material){
-				this.location = location;
-				this.material = material;
-			}
 		}
 
 		@EventHandler

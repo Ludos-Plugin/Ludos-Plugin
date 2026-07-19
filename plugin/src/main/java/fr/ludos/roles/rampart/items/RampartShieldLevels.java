@@ -5,6 +5,10 @@ import org.bukkit.Material;
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItemInterface.Level;
 
+/**
+ * Levels for the Rampart Shield.<br>
+ * Dictates the durability, regeneration rate and xp threshold for each level.
+ */
 public enum RampartShieldLevels implements Level<RampartShieldLevels> {
 	LEVEL_1(10, 0.25, 15),
 	LEVEL_2(20, 0.5, 25),

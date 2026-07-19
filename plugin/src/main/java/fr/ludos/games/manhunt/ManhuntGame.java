@@ -40,6 +40,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.util.TriState;
 
 
+/**
+ * Implementation of the Manhunt {@link Game}.
+ */
 public class ManhuntGame extends Game {
 	public static final String ID = "manhunt";
 
@@ -213,7 +216,9 @@ public class ManhuntGame extends Game {
 		}
 	}
 
-
+	/**
+	 * Builder for {@link ManhuntGame}.
+	 */
 	public static class Builder extends Game.Builder {
 		public Builder(Ludos ludos) {
 			super(ludos);

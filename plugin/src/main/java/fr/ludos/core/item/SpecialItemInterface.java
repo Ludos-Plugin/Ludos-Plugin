@@ -20,6 +20,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * A {@link Game} or {@link Role}-managed Item ({@link ItemStack}) with special Abilities or functionality.
+ */
 public interface SpecialItemInterface {
 	public static final String TYPE_ID_KEY_STRING = "type_id";
 	public static final NamespacedKey TYPE_ID_KEY = new NamespacedKey(Ludos.NAMESPACE, TYPE_ID_KEY_STRING);

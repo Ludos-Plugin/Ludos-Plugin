@@ -11,6 +11,9 @@ import fr.ludos.core.command.SubcommandHandler;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.SpecialItem;
 
+/**
+ * Subcommand meant for Admins to cheat during Ludos games, for debugging purposes.
+ */
 public final class CheatsSubcommand extends SubcommandHandler {
 	public CheatsSubcommand() {
 		super("cheats", "Use Ludos cheats", true, getSubcommands());

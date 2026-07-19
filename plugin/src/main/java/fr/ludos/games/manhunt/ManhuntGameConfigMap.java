@@ -11,6 +11,9 @@ import fr.ludos.core.config.valueOptions.NumberConfigOptions;
 import fr.ludos.core.config.valueOptions.SingleGroupPlayerConfigOptions;
 import fr.ludos.core.config.valueOptions.ValueConfigOptions;
 
+/**
+ * {@link ConfigOptionsMap} for the {@link ManhuntGame}.
+ */
 public final class ManhuntGameConfigMap extends ConfigOptionsMap {
 	public static final ValueConfigOptions<Set<OfflinePlayer>> PLAYERS =
 		new MultipleGroupPlayerConfigOptions("Players", "players", "all");

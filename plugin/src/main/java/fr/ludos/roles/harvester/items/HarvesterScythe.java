@@ -40,6 +40,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * Implementation of the Huntsman Scythe, for use by any Player with {@link HarvesterRole}.
+ */
 public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 	public static final String ID = "harvester_scythe";
 
@@ -178,6 +181,9 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 		}
 	}
 
+	/**
+	 * Events for the {@link HarvesterScythe}.
+	 */
 	public static class Events extends LevelItem.Events<HarvesterScythe, HarvesterScytheLevels> {
 		private static final List<HarvesterScytheLevels> LEVELS = List.of(HarvesterScytheLevels.values());
 

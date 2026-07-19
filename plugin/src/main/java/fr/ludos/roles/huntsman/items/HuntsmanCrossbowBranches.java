@@ -11,12 +11,15 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.SpecialItemInterface;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Default {@link BranchItemInterface.Branch}es for the {@link HuntsmanCrossbow}.
+ */
 public enum HuntsmanCrossbowBranches implements HuntsmanCrossbowBranch {
 	FLAME (
 		Component.text("Igniting")

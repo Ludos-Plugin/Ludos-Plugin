@@ -7,6 +7,9 @@ import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.core.game.Game;
 
+/**
+ * Service used to apply wave-specific loadouts to players.
+ */
 public abstract class WaveLoadoutService {
 	private final Game game;
 	public final Game getGame() {

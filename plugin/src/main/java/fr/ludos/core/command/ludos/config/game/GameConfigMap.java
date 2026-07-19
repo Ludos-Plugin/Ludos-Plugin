@@ -6,10 +6,14 @@ import java.util.stream.Collectors;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.config.ConfigOptions;
+import fr.ludos.core.config.ConfigOptionsCollection;
+import fr.ludos.core.config.ConfigOptionsMap;
 import fr.ludos.core.game.Game;
 
+/**
+ * {@link ConfigOptionsMap} for {@link Game}-specific configuration.
+ */
 public class GameConfigMap extends ConfigOptionsCollection {
 	public static final GameConfigMap INSTANCE = new GameConfigMap();
 

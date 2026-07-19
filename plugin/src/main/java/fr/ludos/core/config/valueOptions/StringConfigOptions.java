@@ -9,6 +9,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * {@link ValueConfigOptions} for {@link String}s.
+ */
 public final class StringConfigOptions extends ValueConfigOptions<String> {
 	private final @NotNull Set<@NotNull String> values;
 	private final @Nullable String defaultValue;

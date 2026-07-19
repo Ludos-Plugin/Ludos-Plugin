@@ -10,6 +10,9 @@ import fr.ludos.core.config.valueOptions.MultipleGroupPlayerConfigOptions;
 import fr.ludos.core.config.valueOptions.NumberConfigOptions;
 import fr.ludos.core.config.valueOptions.ValueConfigOptions;
 
+/**
+ * {@link ConfigOptionsMap} for the {@link RaidGame} game.
+ */
 public final class RaidGameConfigMap extends ConfigOptionsMap {
 	public static final ValueConfigOptions<Set<OfflinePlayer>> PLAYERS =
 		new MultipleGroupPlayerConfigOptions("Players", "players", "all");

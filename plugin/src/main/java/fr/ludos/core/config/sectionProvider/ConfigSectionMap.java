@@ -9,6 +9,9 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.config.ConfigOptions;
 
+/**
+ * {@link ConfigSectionCollection} implemented as a Map-like structure of sub-{@link ConfigSectionProvider}s and {@link ConfigOptions}.
+ */
 public class ConfigSectionMap extends ConfigSectionCollection {
 	private final static Pair<ConfigSectionProvider, ConfigOptions> EMPTY_PAIR = Pair.of(null, null);
 	private final Map<String, Pair<ConfigSectionProvider, ConfigOptions>> map;

@@ -25,6 +25,9 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * A {@link SpecialItemInterface} with the ability to store a Level and XP through {@link LevelState}(s).
+ */
 public interface LevelItemInterface extends SpecialItemInterface {
 	public static final String LEVEL_KEY_STRING = "level";
 	public static final NamespacedKey LEVEL_KEY = new NamespacedKey(Ludos.NAMESPACE, LEVEL_KEY_STRING);
@@ -60,9 +63,9 @@ public interface LevelItemInterface extends SpecialItemInterface {
 
 
 	/**
-	 * Utility function to handle level switching when player switches leveles.
-	 * @param <TItem> The type of the item, must extend SpecialItem
-	 * @param <TLevel> The type of the level, must be an enum that implements LevelItem.Level
+	 * Utility function to handle level switching when player switches levels.
+	 * @param <TItem> The type of the item, must extend {@link SpecialItem}
+	 * @param <TLevel> The type of the level, must be an enum that implements {@link LevelItemInterface.Level}
 	 * @param item The item whose level is being switched
 	 * @param level The new level to switch to
 	 */
@@ -82,12 +85,12 @@ public interface LevelItemInterface extends SpecialItemInterface {
 
 	/**
 	 * Utility function to handle level switching when player switches items.
-	 * @param <TItem> The type of the item, must extend SpecialItem
-	 * @param <TLevel> The type of the level, must be an enum that implements LevelItem.Level
+	 * @param <TItem> The type of the item, must extend {@link SpecialItem}
+	 * @param <TLevel> The type of the level, must be an enum that implements {@link LevelItemInterface.Level}
 	 * @param event The PlayerItemHeldEvent to handle
-	 * @param getItem An "SpecialItem from ItemStack" function, used to get the item being switched from/to
+	 * @param getItem A "{@link SpecialItem} from {@link ItemStack}" function, used to get the item being switched from/to
 	 */
-	public static <TItem extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem) {
+	public static <TItem extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & LevelItemInterface.Level<TLevel>> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem) {
 		Player player = event.getPlayer();
 
 		TItem oldItem = getItem.apply(player.getInventory().getItem(event.getPreviousSlot()));
@@ -216,7 +219,10 @@ public interface LevelItemInterface extends SpecialItemInterface {
 		return getLevelLoreField(item.level());
 	}
 
-
+	/**
+	 * Events for {@link LevelItemInterface}.
+	 * @param <T> The type of {@link Level} the item uses
+	 */
 	public static interface Level<T extends Level<T>> {
 		public double xpThreshold();
 

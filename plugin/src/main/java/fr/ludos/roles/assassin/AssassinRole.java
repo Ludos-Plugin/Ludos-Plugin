@@ -29,7 +29,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-
+/**
+ * Implementation of the Assassin {@link Role}.
+ */
 public class AssassinRole extends Role {
 	public static final String ID = "assassin";
 
@@ -120,7 +122,9 @@ public class AssassinRole extends Role {
 		return Role.isPlayerRole(player, ID);
 	}
 
-
+	/**
+	 * Builder for the {@link AssassinRole}.
+	 */
 	public static class Builder extends Role.Builder {
 
 		@Override

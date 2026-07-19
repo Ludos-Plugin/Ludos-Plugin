@@ -7,6 +7,9 @@ import fr.ludos.core.command.HelpSubcommand;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.SubcommandHandler;
 
+/**
+ * {@link Subcommand} encapsulating all {@link Game}-specific Ludos subcommands.
+ */
 public final class GameSubcommand extends SubcommandHandler {
 	public GameSubcommand(Ludos ludos) {
 		super("game", "Manage Ludos Games", false, getSubcommands(ludos));

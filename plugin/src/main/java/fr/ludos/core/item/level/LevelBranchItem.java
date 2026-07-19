@@ -16,10 +16,16 @@ import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.BranchItem;
+import fr.ludos.core.item.BranchItemInterface;
+import fr.ludos.core.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 
-
-public abstract class LevelBranchItem<TBranch extends BranchItem.Branch, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends BranchItem<TBranch> implements LevelItemInterface {
+/**
+ * A {@link SpecialItem} implementation with the ability to hold {@link BranchItemInterface.Branch}es, with a single {@link LevelState}, shared between them.
+ * @param <TBranch> The type of {@link BranchItemInterface.Branch} the item uses
+ * @param <TLevel> The type of {@link Level} the item uses
+ */
+public abstract class LevelBranchItem<TBranch extends BranchItemInterface.Branch, TLevel extends Enum<TLevel> & LevelItemInterface.Level<TLevel>> extends BranchItem<TBranch> implements LevelItemInterface {
 	private final LevelState levelState;
 	@Override
 	public LevelState levelState() {
@@ -86,8 +92,13 @@ public abstract class LevelBranchItem<TBranch extends BranchItem.Branch, TLevel 
 		return lore;
 	}
 
-
-	public static abstract class Events<T extends LevelBranchItem<TBranch, TLevel>, TBranch extends BranchItem.Branch, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> extends BranchItem.Events<T, TBranch> {
+	/**
+	 * Events for {@link LevelBranchItem}s.
+	 * @param <T> The type of {@link LevelBranchItem}
+	 * @param <TBranch> The type of {@link BranchItemInterface.Branch} the item uses
+	 * @param <TLevel> The type of {@link LevelItemInterface.Level} the item uses
+	 */
+	public static abstract class Events<T extends LevelBranchItem<TBranch, TLevel>, TBranch extends BranchItemInterface.Branch, TLevel extends Enum<TLevel> & LevelItemInterface.Level<TLevel>> extends BranchItem.Events<T, TBranch> {
 		private Map<Player, LevelValue> deadPlayerLevels = new HashMap<>();
 
 		protected Events(Map<String, TBranch> branches, @Nullable TBranch defaultBranch, Game game, Events.Info info) {

@@ -15,7 +15,9 @@ import net.kyori.adventure.text.minimessage.internal.parser.node.ValueNode;
 import net.kyori.adventure.text.minimessage.tree.Node;
 import net.kyori.adventure.text.minimessage.tree.Node.Root;
 
-
+/**
+ * Class used to process the truncation of {@link Component}-based pages, meant for use within Minecraft Books.
+ */
 final class PageTruncator {
 	private final MiniMessage mm = MiniMessage.miniMessage();
 
@@ -210,6 +212,9 @@ final class PageTruncator {
 	}
 }
 
+/**
+ * Various utilities for Minecraft Books.
+ */
 public class BookUtility {
 	public static final int MC_CHAR_WIDTH_DEFAULT = 5; // Default width for unknown characters
 	public static final int MC_SPACE_CHAR_WIDTH = 3;

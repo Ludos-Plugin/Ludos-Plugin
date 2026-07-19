@@ -12,6 +12,12 @@ import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * PersistentDataType implementation for serializing a Map to a byte array.
+ *
+ * @param <TKey> the type of map keys
+ * @param <TVal> the type of map values
+ */
 public abstract class PersistentMapDataType<TKey extends Serializable, TVal extends Serializable> implements PersistentDataType<byte[], Map<TKey, TVal>> {
 
 	@Override

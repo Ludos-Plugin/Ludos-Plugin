@@ -5,6 +5,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * Registry for custom model data mappings used by texture providers.
+ */
 public final class CustomModelRegistry {
 	private static final ConcurrentHashMap<String, Integer> REGISTRY = new ConcurrentHashMap<>();
 

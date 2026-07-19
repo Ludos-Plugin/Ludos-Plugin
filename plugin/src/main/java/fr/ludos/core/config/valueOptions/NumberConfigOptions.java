@@ -11,6 +11,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * {@link ValueConfigOptions} for {@link Number}s.
+ */
 public class NumberConfigOptions extends ValueConfigOptions<Integer> {
 	private final static Set<String> NUMBERS = new HashSet<>() {{add("1"); add("2"); add("3");}};
 	private final @Nullable Set<@NotNull String> suggestions;

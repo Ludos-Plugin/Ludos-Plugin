@@ -11,8 +11,11 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.group.Group.JoinMethod;
+import fr.ludos.core.group.Group.AddPlayerMethod;
 
+/**
+ * {@link Subcommand} to create a new {@link Group}, and join it as leader.
+ */
 public class GroupCreate implements Subcommand {
 	private final static String ID = "create";
 
@@ -41,7 +44,7 @@ public class GroupCreate implements Subcommand {
 
 		List<Player> members = CommandUtility.getPlayersFromArgs(args, sender);
 		for (Player member : members) {
-			group.requestPlayerJoin(member, JoinMethod.Invite);
+			group.requestAddPlayer(member, AddPlayerMethod.Invite);
 		}
 
 		ludos.saveGroupsConfig();

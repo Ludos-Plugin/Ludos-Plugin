@@ -35,6 +35,9 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 
+/**
+ * Implementation of the Berserker {@link Role}.
+ */
 public class BerserkerRole extends Role {
 	public static final String ID = "berserker";
 
@@ -200,7 +203,9 @@ public class BerserkerRole extends Role {
 		);
 	}
 
-
+	/**
+	 * Builder for the {@link BerserkerRole}.
+	 */
 	public static class Builder extends Role.Builder {
 
 		public Builder(Ludos ludos) {

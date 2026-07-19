@@ -12,6 +12,9 @@ import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.role.Role;
 
+/**
+ * {@link Subcommand} for resetting a Player's own role.
+ */
 public class RoleReset implements Subcommand {
 	private final static String ID = "reset";
 

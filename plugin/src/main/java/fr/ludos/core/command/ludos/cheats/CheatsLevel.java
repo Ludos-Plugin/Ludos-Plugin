@@ -14,6 +14,9 @@ import fr.ludos.core.group.Group;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.level.LevelItemInterface;
 
+/**
+ * Subcommand for cheating in {@link LevelItemInterface} levels.
+ */
 public class CheatsLevel implements Subcommand {
 	private final static String ID = "level";
 

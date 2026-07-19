@@ -3,6 +3,9 @@ package fr.ludos.core.item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
+/**
+ * Developper-Friendly wrapper for {@link PlayerInventory} item slots.
+ */
 public enum ItemSlot {
 	HOTBAR_1,
 	HOTBAR_2,

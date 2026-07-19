@@ -13,6 +13,9 @@ import fr.ludos.core.command.ludos.ScopeConfigMap;
 import fr.ludos.core.command.ludos.config.game.GameConfigMap;
 import fr.ludos.core.game.Game;
 
+/**
+ * {@link Subcommand} for {@link Game}-specific configuration.
+ */
 public class GameConfig implements Subcommand {
 	private final static String ID = "config";
 

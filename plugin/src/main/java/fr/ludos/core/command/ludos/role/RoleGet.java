@@ -11,6 +11,9 @@ import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.role.Role;
 
+/**
+ * {@link Subcommand} to get a Player's current {@link Role} if it was set, or "none".
+ */
 public class RoleGet implements Subcommand {
 	private final static String ID = "get";
 

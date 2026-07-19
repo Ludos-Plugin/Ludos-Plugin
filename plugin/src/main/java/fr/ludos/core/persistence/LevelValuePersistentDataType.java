@@ -5,7 +5,9 @@ import org.bukkit.persistence.PersistentDataType;
 
 import fr.ludos.core.item.level.LevelValue;
 
-
+/**
+ * Persistent data type for {@link LevelValue}.
+ */
 public class LevelValuePersistentDataType implements PersistentDataType<String, LevelValue> {
 
 	public static final LevelValuePersistentDataType INSTANCE = new LevelValuePersistentDataType();

@@ -15,7 +15,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Default {@link BranchItemInterface.Branch}es for the {@link AssassinSnareDevice}.
+ */
 public enum AssassinSnareDeviceBranches implements AssassinSnare {
 	REVEALING (
 		Component.text("Revealing")

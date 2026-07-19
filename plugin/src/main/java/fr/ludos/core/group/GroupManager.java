@@ -7,6 +7,9 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import fr.ludos.core.Ludos;
 
+/**
+ * Events Listener for {@link Group}s.
+ */
 public class GroupManager implements Listener {
 	private final Ludos ludos;
 	public GroupManager(Ludos ludos) {

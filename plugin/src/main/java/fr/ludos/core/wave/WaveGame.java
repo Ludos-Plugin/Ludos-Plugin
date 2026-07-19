@@ -5,6 +5,9 @@ import org.bukkit.Bukkit;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 
+/**
+ * Represents a game that progresses in waves.
+ */
 public abstract class WaveGame extends Game {
 	public abstract WaveController getWaveController();
 

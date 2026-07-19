@@ -8,6 +8,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * {@link Subcommand} for getting the usage of another {@link Subcommand}.
+ */
 public class HelpSubcommand implements Subcommand {
 	private final static String ID = "help";
 

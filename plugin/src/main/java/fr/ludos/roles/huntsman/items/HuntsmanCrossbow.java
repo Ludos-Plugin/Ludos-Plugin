@@ -38,7 +38,9 @@ import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Huntsman Crossbow, for use by any Player with {@link HuntsmanRole}.
+ */
 public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranch> {
 	public static final String ID = "huntsman_crossbow";
 
@@ -102,7 +104,9 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 		return lore;
 	}
 
-
+	/**
+	 * Events for the {@link HuntsmanCrossbow}.
+	 */
 	public static class Events extends MultiLevelBranchItem.Events<HuntsmanCrossbow, HuntsmanCrossbowBranch> {
 		private static final List<HuntsmanCrossbowBranch> BRANCHES = Arrays.asList(HuntsmanCrossbowBranches.values());
 

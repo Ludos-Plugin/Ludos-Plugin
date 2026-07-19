@@ -21,7 +21,9 @@ import fr.ludos.games.manhunt.ManhuntGame;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of ManhuntCompass, used for and managed by {@link ManhuntGame}.
+ */
 public class ManhuntCompass extends SpecialItem {
 	private static final String ID = "manhunt_compass";
 
@@ -111,7 +113,9 @@ public class ManhuntCompass extends SpecialItem {
 		return meta.getLodestone();
 	}
 
-
+	/**
+	 * Events for {@link ManhuntCompass}.
+	 */
 	public static class Events extends SpecialItem.Events<ManhuntCompass> {
 
 		public Events(Game game) {

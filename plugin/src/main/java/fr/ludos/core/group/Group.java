@@ -33,16 +33,25 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+/**
+ * A structure to encapsulate a Group of Players. Meant for {@link Game} instances.
+ */
 public final class Group {
 	public static final String LEADER_KEY = "leader";
 	public static final String MEMBERS_KEY = "members";
 
-	public enum JoinMethod {
+	/**
+	 * The method by which the request for a Player to be added to a Group was made.
+	 */
+	public enum AddPlayerMethod {
 		Join,
 		Invite
 	}
 
-	public enum JoinResult {
+	/**
+	 * The result of a {@link Group#requestAddPlayer} operation.
+	 */
+	public enum AddPlayerResult {
 		Succeeded,
 		Requested,
 		Failed
@@ -90,8 +99,8 @@ public final class Group {
 			.collect(Collectors.toSet());
 	}
 
-	private Map<OfflinePlayer, JoinMethod> joinRequests = new HashMap<>();
-	public Map<OfflinePlayer, JoinMethod> getJoinRequests() {
+	private Map<OfflinePlayer, AddPlayerMethod> joinRequests = new HashMap<>();
+	public Map<OfflinePlayer, AddPlayerMethod> getJoinRequests() {
 		return this.joinRequests;
 	}
 
@@ -395,20 +404,20 @@ public final class Group {
 		return true;
 	}
 
-	public final JoinResult requestPlayerJoin(Player player, JoinMethod method) {
-		if (player == null) return JoinResult.Failed;
-		if (isLeader(player)) return JoinResult.Failed;
-		if (isMember(player)) return JoinResult.Failed;
-		if (method == null) return JoinResult.Failed;
+	public final AddPlayerResult requestAddPlayer(Player player, AddPlayerMethod method) {
+		if (player == null) return AddPlayerResult.Failed;
+		if (isLeader(player)) return AddPlayerResult.Failed;
+		if (isMember(player)) return AddPlayerResult.Failed;
+		if (method == null) return AddPlayerResult.Failed;
 
 		GroupJoinOption joinBehaviour = GroupConfigMap.GROUP_JOIN.getGroupConfig(this);
 
-		JoinMethod currentMethod = joinRequests.get(player);
+		AddPlayerMethod currentMethod = joinRequests.get(player);
 		boolean consentIsTwoSided = currentMethod != null && currentMethod != method;
 		if (joinBehaviour == GroupJoinOption.auto_accept || consentIsTwoSided) {
 			joinRequests.remove(player);
 			addPlayer(player);
-			return JoinResult.Succeeded;
+			return AddPlayerResult.Succeeded;
 		}
 
 		OfflinePlayer leader = getLeader();
@@ -432,7 +441,7 @@ public final class Group {
 					onlineLeader.sendMessage(joinRequestMessage);
 				}
 
-				joinRequests.put(player, JoinMethod.Join);
+				joinRequests.put(player, AddPlayerMethod.Join);
 				break;
 			case Invite:
 				Component invitationMessage = Component.text("You have been invited to join " + leader.getName() + "'s group. Click ")
@@ -446,10 +455,10 @@ public final class Group {
 					.append(Component.text(" to join."));
 				player.sendMessage(invitationMessage);
 
-				joinRequests.put(player, JoinMethod.Invite);
+				joinRequests.put(player, AddPlayerMethod.Invite);
 				break;
 		}
-		return JoinResult.Requested;
+		return AddPlayerResult.Requested;
 	}
 
 	public static @NotNull Group deserialize(UUID id, @NotNull Map<String, Object> data, Ludos ludos) {

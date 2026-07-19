@@ -12,6 +12,10 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * {@link ValueConfigOptions} for a typed {@link Set} of values.
+ * @param <T> The type of data, stored inside the parsed Set
+ */
 public abstract class SetConfigOptions<T> extends ValueConfigOptions<Set<T>> {
 
 	public SetConfigOptions(@NotNull String name, @NotNull String key, String placeholderValue) {

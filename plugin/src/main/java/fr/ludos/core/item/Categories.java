@@ -10,7 +10,13 @@ import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * Categories for {@link ItemStack}s.
+ */
 public final class Categories {
+	/**
+	 * Groupings for Items.
+	 */
 	public enum Group {
 		HELMETS,
 		CHESTPLATES,

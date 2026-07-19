@@ -14,6 +14,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 
+/**
+ * Controller for managing waves in the {@link ArenaGame}.
+ */
 public final class ArenaWaveController extends WaveController {
 	private final ArenaGame game;
 

@@ -6,6 +6,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+/**
+ * An instance of a Trap, laid by and {@link AssassinRole}.
+ */
 public abstract class AssassinTrap {
 	private final Player owner;
 	public Player getOwner() {

@@ -38,7 +38,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Rampart Shield, for use by any Player with {@link RampartRole}.
+ */
 public class RampartShield extends LevelItem<RampartShieldLevels> {
 	public static final String ID = "rampart_shield";
 
@@ -201,6 +203,9 @@ public class RampartShield extends LevelItem<RampartShieldLevels> {
 		return stack;
 	}
 
+	/**
+	 * Events for the {@link RampartShield}.
+	 */
 	public static class Events extends LevelItem.Events<RampartShield, RampartShieldLevels> {
 		private static final List<RampartShieldLevels> LEVELS = List.of(RampartShieldLevels.values());
 		private BukkitTask rampartRoutine;

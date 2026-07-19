@@ -30,7 +30,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 
-
+/**
+ * Controller for {@link ManhuntGame} teams, handling team selection and setup.
+ */
 public final class ManhuntTeamController extends GameTeamController {
 	public Team hunterTeam;
 	public Team preyTeam;

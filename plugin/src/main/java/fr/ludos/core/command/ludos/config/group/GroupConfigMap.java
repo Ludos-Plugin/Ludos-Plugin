@@ -11,6 +11,9 @@ import fr.ludos.core.group.GroupJoinOption;
 import fr.ludos.core.group.GroupRightsOption;
 import fr.ludos.core.lobby.LobbyWaitPlayersOption;
 
+/**
+ * {@link ConfigOptionsMap} for Group-specific configuration.
+ */
 public final class GroupConfigMap extends ConfigOptionsMap {
 	public static final ValueConfigOptions<GroupRightsOption> MEMBERS_AUTH =
 		new EnumConfigOptions<>("Members authorisation", "member_authorisation", null, GroupRightsOption.class, GroupRightsOption.invite);

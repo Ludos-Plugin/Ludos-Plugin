@@ -19,6 +19,10 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.role.Role;
 
+/**
+ * {@link ConfigOptions} for flat, typed values.
+ * @param <T> The type of values, natively supported by this instance. Parsed to and from a String during command running.
+ */
 public abstract class ValueConfigOptions<T> extends ConfigOptions implements ConfigEntryInterface {
 	public static final String DEFAULT_PLACEHOLDER_VALUE = "default";
 	private final @NotNull String name;

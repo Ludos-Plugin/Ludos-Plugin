@@ -18,7 +18,9 @@ import fr.ludos.core.game.GameProcessBase;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-
+/**
+ * Timer manager for the {@link ManhuntGame}, handling boss bar updates and reveal cycles.
+ */
 public class ManhuntTimer extends GameProcessBase {
 	private final ManhuntGame game;
 

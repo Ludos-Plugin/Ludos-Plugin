@@ -18,6 +18,9 @@ import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.group.Group;
 
+/**
+ * {@link Subcommand} to kick members of the current {@link Group}, as the Group Leader, or an explicitly allowed member.
+ */
 public class GroupKick implements Subcommand {
 	private final static String ID = "kick";
 

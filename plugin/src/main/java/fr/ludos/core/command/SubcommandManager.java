@@ -12,6 +12,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Encapsulation of a set of Subcommands, for use by parent Commands.
+ */
 public final class SubcommandManager implements CommandExecutor, TabCompleter, CommandUsageProvider  {
 	private final Map<String, Subcommand> subcommands;
 	// private Predicate<Subcommand, CommandSender> filter;

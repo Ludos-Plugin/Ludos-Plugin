@@ -2,7 +2,10 @@ package fr.ludos.core.group;
 
 import org.bukkit.OfflinePlayer;
 
-public final class GroupInvite {
+/**
+ * A pending request to add a Player to a {@link Group}.
+ */
+public final class GroupAddPlayerRequest {
 	private final OfflinePlayer player;
 	public final OfflinePlayer getPlayer() {
 		return player;
@@ -14,7 +17,7 @@ public final class GroupInvite {
 	}
 
 
-	public GroupInvite(OfflinePlayer player, boolean isFromLeader) {
+	public GroupAddPlayerRequest(OfflinePlayer player, boolean isFromLeader) {
 		super();
 		this.player = player;
 		this.fromLeader = isFromLeader;

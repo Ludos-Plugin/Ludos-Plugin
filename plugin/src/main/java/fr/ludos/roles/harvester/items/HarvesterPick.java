@@ -32,7 +32,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Huntsman Pick, for use by any Player with {@link HarvesterRole}.
+ */
 public final class HarvesterPick extends LevelBranchItem<HarvesterPickBranch, HarvesterPickLevels> {
 	public static final String ID = "harvester_pick";
 	public final Events events;
@@ -144,7 +146,9 @@ public final class HarvesterPick extends LevelBranchItem<HarvesterPickBranch, Ha
 		}
 	}
 
-
+	/**
+	 * Events for the {@link HarvesterPick}.
+	 */
 	public static final class Events extends LevelBranchItem.Events<HarvesterPick, HarvesterPickBranch, HarvesterPickLevels> {
 		private static final List<HarvesterPickBranch> DEFAULT_BRANCHES = Arrays.asList(HarvesterPickBranches.values());
 		private static final List<HarvesterPickLevels> LEVELS = List.of(HarvesterPickLevels.values());

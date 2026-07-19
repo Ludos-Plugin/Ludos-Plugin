@@ -12,7 +12,13 @@
         <module name="IllegalImport"/>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
+
         <module name="ConstantName"/>
+
+        <module name="MissingJavadocType">
+            <property name="scope" value="protected"/>
+        </module>
+
         <module name="JavadocStyle"/>
         <module name="JavadocType"/>
         <module name="JavadocMethod"/>

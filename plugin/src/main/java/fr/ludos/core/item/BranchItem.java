@@ -21,8 +21,11 @@ import org.bukkit.persistence.PersistentDataType;
 import fr.ludos.core.game.Game;
 import net.kyori.adventure.text.Component;
 
-
-public abstract class BranchItem<TBranch extends BranchItem.Branch> extends SpecialItem implements BranchItemInterface<TBranch> {
+/**
+ * Wrapper for {@link BranchItemInterface} over a {@link ItemStack}.
+ * @param <TBranch> The type that a Branch needs to implement/extend to be used as a Branch for this type.
+ */
+public abstract class BranchItem<TBranch extends BranchItemInterface.Branch> extends SpecialItem implements BranchItemInterface<TBranch> {
 	protected TBranch branch;
 	@Override
 	public TBranch getBranch() {
@@ -72,7 +75,7 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch> extends Spec
 	/**
 	 * Utility function to handle branch switching when player switches branches.
 	 * @param <TItem> The type of the item, must extend SpecialItem
-	 * @param <TBranch> The type of the branch, must be an enum that implements BranchItem.Branch
+	 * @param <TBranch> The type of the branch, must be an enum that implements {@link BranchItemInterface.Branch}
 	 * @param item The item whose branch is being switched
 	 * @param newBranch The new branch to switch to
 	 */
@@ -98,7 +101,7 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch> extends Spec
 	/**
 	 * Utility function to handle branch switching when player switches items.
 	 * @param <TItem> The type of the item, must extend SpecialItem
-	 * @param <TBranch> The type of the branch, must be an enum that implements BranchItem.Branch
+	 * @param <TBranch> The type of the branch, must be an enum that implements {@link BranchItemInterface.Branch}
 	 * @param event The PlayerItemHeldEvent to handle
 	 * @param getItem An "SpecialItem from ItemStack" function, used to get the item being switched from/to
 	 */
@@ -162,6 +165,11 @@ public abstract class BranchItem<TBranch extends BranchItem.Branch> extends Spec
 		return lore;
 	}
 
+	/**
+	 * Events for a {@link BranchItem}.
+	 * @param <T> The type of {@link BranchItem}
+	 * @param <TBranch> The type of {@link BranchItemInterface.Branch} the item uses
+	 */
 	public static abstract class Events<T extends BranchItem<TBranch>, TBranch extends Branch> extends SpecialItem.Events<T> implements Map<String, TBranch> {
 		private final Map<String, TBranch> branches;
 

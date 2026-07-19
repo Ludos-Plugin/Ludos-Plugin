@@ -14,6 +14,9 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Utility;
 
+/**
+ * {@link ChunkGenerator} for Oceanic environments.
+ */
 public class OceanChunkGenerator extends ChunkGenerator {
 	@Override
 	public boolean shouldGenerateNoise() {

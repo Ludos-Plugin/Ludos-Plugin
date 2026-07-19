@@ -29,7 +29,9 @@ import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Assassin Dagger, for use by any Player with {@link AssassinRole}.
+ */
 public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 	public static final String ID = "assassin_dagger";
 
@@ -88,7 +90,9 @@ public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 		return lore;
 	}
 
-
+	/**
+	 * Events for the {@link AssassinDagger}.
+	 */
 	public static class Events extends LevelItem.Events<AssassinDagger, AssassinDaggerLevels> {
 		private static final List<AssassinDaggerLevels> LEVELS = List.of(AssassinDaggerLevels.values());
 

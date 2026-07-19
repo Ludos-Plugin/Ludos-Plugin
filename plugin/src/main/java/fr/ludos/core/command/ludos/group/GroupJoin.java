@@ -11,9 +11,12 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.group.Group.JoinMethod;
-import fr.ludos.core.group.Group.JoinResult;
+import fr.ludos.core.group.Group.AddPlayerMethod;
+import fr.ludos.core.group.Group.AddPlayerResult;
 
+/**
+ * {@link Subcommand} to request joining a Player's {@link Group}.
+ */
 public class GroupJoin implements Subcommand {
 	private final static String ID = "join";
 
@@ -52,7 +55,7 @@ public class GroupJoin implements Subcommand {
 			return true;
 		}
 
-		JoinResult res = group.requestPlayerJoin(player, JoinMethod.Join);
+		AddPlayerResult res = group.requestAddPlayer(player, AddPlayerMethod.Join);
 		switch (res) {
 			case Succeeded:
 				ludos.saveGroupsConfig();

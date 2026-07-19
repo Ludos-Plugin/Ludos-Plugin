@@ -13,6 +13,9 @@ import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 
+/**
+ * {@link Subcommand} to start a given {@link Game}, as a {@link Group} leader.
+ */
 public class GameStart implements Subcommand {
 	private final static String ID = "start";
 

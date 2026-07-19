@@ -9,10 +9,12 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.item.level.LevelItem;
+import fr.ludos.core.item.level.LevelItemInterface;
 
-
-public enum HarvesterPickLevels implements LevelItem.Level<HarvesterPickLevels> {
+/**
+ * Default {@link BranchItemInterface.level}s for the {@link HarvesterPick}.
+ */
+public enum HarvesterPickLevels implements LevelItemInterface.Level<HarvesterPickLevels> {
 	WOODEN      (Material.WOODEN_PICKAXE,    25,   1, 0, Collections.emptyMap()),
 	STONE       (Material.STONE_PICKAXE,     50,   1, 0, Collections.emptyMap()),
 	STONE1      (Material.STONE_PICKAXE,     100,  1, 0, new HashMap<>(){{ put(Enchantment.DIG_SPEED, 1); }}),

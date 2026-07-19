@@ -8,6 +8,9 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Wrapper around a {@link SubcommandManager} for use as a Subcommand.
+ */
 public class SubcommandHandler implements Subcommand {
 	private final String id;
 	private final String description;

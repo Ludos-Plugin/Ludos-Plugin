@@ -14,6 +14,9 @@ import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.role.Role;
 
+/**
+ * {@link Subcommand} for setting a Player's own role.
+ */
 public class RoleSet implements Subcommand {
 	private final static String ID = "set";
 

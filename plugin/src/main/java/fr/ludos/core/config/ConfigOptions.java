@@ -10,6 +10,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A structure to represent a Configurable value (ex: The number of waves in a Raid), and its valid values (options).
+ */
 public abstract class ConfigOptions {
 	public abstract @NotNull Set<@NotNull String> getOptions(CommandSender sender);
 

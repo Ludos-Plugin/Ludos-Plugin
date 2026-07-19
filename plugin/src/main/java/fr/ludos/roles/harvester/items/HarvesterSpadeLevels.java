@@ -9,8 +9,12 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelItemInterface.Level;
 
+/**
+ * Default {@link LevelItemInterface.Level}s for the {@link HarvesterSpade}.
+ */
 public enum HarvesterSpadeLevels implements Level<HarvesterSpadeLevels> {
 	WOODEN      (Material.WOODEN_SHOVEL,    25,   Collections.emptyMap()),
 	STONE       (Material.STONE_SHOVEL,     50,   Collections.emptyMap()),

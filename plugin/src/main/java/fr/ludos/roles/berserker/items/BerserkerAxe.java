@@ -33,7 +33,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Berserker Axe, for use by any Player with {@link BerserkerRole}.
+ */
 public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 	public static final String ID = "berserker_axe";
 
@@ -42,6 +44,9 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		return ID;
 	}
 
+	/**
+	 * The variant of a {@link BerserkerAxe}.
+	 */
 	public enum Variant {
 		FIRST(0),
 		SECOND(1);
@@ -183,7 +188,9 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		return lore;
 	}
 
-
+	/**
+	 * Events for the {@link BerserkerAxe}.
+	 */
 	public static class Events extends LevelItem.Events<BerserkerAxe, BerserkerAxeLevels> {
 		private static final List<BerserkerAxeLevels> LEVELS = List.of(BerserkerAxeLevels.values());
 		private final BerserkerRole role;

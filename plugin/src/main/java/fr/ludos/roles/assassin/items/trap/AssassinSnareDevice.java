@@ -38,6 +38,9 @@ import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * Implementation of the Assassin Snare Device, for use by any Player with {@link AssassinRole}.
+ */
 public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 	public final static String ID = "assassin_snare_grimoire";
 
@@ -95,7 +98,9 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 		item.setVelocity(player.getLocation().getDirection().multiply(2));
 	}
 
-
+	/**
+	 * Events for the {@link AssassinSnareDevice}.
+	 */
 	public static class Events extends BranchItem.Events<AssassinSnareDevice, AssassinSnare> {
 		private BukkitTask trapTask = null;
 		public final Map<Player, Map<AssassinSnare, ArrayList<AssassinTrap>>> traps = new HashMap<>();

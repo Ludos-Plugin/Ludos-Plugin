@@ -25,7 +25,9 @@ import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * A simple non-throwable, infinite source of arrows, notably for {@link HuntsmanBow}s and {@link HuntsmanCrossbow}s.
+ */
 public class HuntsmanArrow extends SpecialItem {
 	public final static String ID = "huntsman_arrow";
 
@@ -76,7 +78,9 @@ public class HuntsmanArrow extends SpecialItem {
 		return new ArrayList<>();
 	}
 
-
+	/**
+	 * Events for the {@link HuntsmanArrow}.
+	 */
 	public static class Events extends SpecialItem.Events<HuntsmanArrow> {
 		private final Integer arrowMagazineSize;
 		private final int reloadTime;

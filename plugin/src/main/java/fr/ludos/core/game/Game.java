@@ -37,7 +37,9 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * An encapsulation of a Game instance's logic within a Ludos environment.
+ */
 public abstract class Game extends TwoStepGameProcessBase {
 	public static final String NAMESPACE = "game";
 	public final Random random = new Random();
@@ -124,13 +126,13 @@ public abstract class Game extends TwoStepGameProcessBase {
 				public void run() {
 					if (! oldGame.isClear()) return;
 
-					REGISTERED.get(id).build(group).setup();
+					REGISTERED.get(id).build(group).setUp();
 					cancel();
 				}
 			}.runTaskTimer(oldGame.getPlugin(), 0, 20);
 		}
 		else {
-			REGISTERED.get(id).build(group).setup();
+			REGISTERED.get(id).build(group).setUp();
 		}
 
 		return true;
@@ -283,8 +285,9 @@ public abstract class Game extends TwoStepGameProcessBase {
 		return events;
 	}
 
-
-
+	/**
+	 * A simple Factory for a {@link Game}. Useful for registering Games in {@link Ludos}.
+	 */
 	public static abstract class Builder {
 		public final Ludos ludos;
 		public Ludos getLudos() {

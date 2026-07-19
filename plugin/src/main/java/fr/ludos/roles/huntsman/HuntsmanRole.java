@@ -22,7 +22,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-
+/**
+ * Implementation of the Huntsman {@link Role}.
+ */
 public class HuntsmanRole extends Role {
 	public static final String ID = "huntsman";
 
@@ -65,7 +67,9 @@ public class HuntsmanRole extends Role {
 		return Role.isPlayerRole(player, ID);
 	}
 
-
+	/**
+	 * Builder for the {@link HuntsmanRole}.
+	 */
 	public static class Builder extends Role.Builder {
 
 		@Override

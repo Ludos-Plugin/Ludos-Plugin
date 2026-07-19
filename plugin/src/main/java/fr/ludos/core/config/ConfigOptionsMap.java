@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * {@link ConfigOptions} implemented as a Map-like structure of sub-{@link ConfigOptions}.
+ */
 public class ConfigOptionsMap extends ConfigOptionsCollection {
 	private final Map<String, ConfigOptions> values;
 

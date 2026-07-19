@@ -28,7 +28,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Berserker Rage Brew, for use by any Player with {@link BerserkerRole}.
+ */
 public class BerserkerRageBrew extends SpecialItem {
 	public static final String ID = "berserker_rage_brew";
 
@@ -91,7 +93,9 @@ public class BerserkerRageBrew extends SpecialItem {
 		);
 	}
 
-
+	/**
+	 * Events for the {@link BerserkerRageBrew}.
+	 */
 	public static class Events extends SpecialItem.Events<BerserkerRageBrew> {
 		private final Map<UUID, Long> cooldowns = new HashMap<>();
 		private static final long COOLDOWN_MS = 30_000;

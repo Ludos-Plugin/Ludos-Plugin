@@ -10,6 +10,9 @@ import fr.ludos.core.Utility;
 import fr.ludos.core.config.valueOptions.NumberConfigOptions;
 import fr.ludos.core.game.Game;
 
+/**
+ * Area that is delimited by a Minecraft {@link WorldBorder}.
+ */
 public class WorldBorderArea extends Area {
 	public static final NumberConfigOptions CONFIG =
 		new NumberConfigOptions("WorldBorder Area diameter", "area", null, 150, Set.of(150, 250, 350), true);
@@ -113,6 +116,9 @@ public class WorldBorderArea extends Area {
 		return location.getWorld().getWorldBorder().isInside(location);
 	}
 
+	/**
+	 * Builder for a {@link WorldBorderArea}.
+	 */
 	public static class Builder extends Area.Builder<WorldBorderArea> {
 		private final Game game;
 		private Integer diameter;

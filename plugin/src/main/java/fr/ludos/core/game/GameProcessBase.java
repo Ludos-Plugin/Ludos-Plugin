@@ -4,6 +4,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
+/**
+ * An {@link GameProcess} implementation that can be initialized, started, stopped and de-initialized.
+ */
 public abstract class GameProcessBase implements GameProcess {
 	private boolean started = false;
 	public final boolean isStarted() {

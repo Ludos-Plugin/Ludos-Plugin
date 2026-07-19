@@ -13,6 +13,9 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Utility;
 
+/**
+ * {@link ConfigOptions} implemented as a Collection of sub-{@link ConfigOptions}.
+ */
 public abstract class ConfigOptionsCollection extends ConfigOptions implements ConfigEntryInterface {
 	private final @Nullable String namespace;
 	public @Nullable String getNamespace() {

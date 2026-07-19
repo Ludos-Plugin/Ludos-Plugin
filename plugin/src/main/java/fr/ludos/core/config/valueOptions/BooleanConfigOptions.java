@@ -6,6 +6,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * {@link ValueConfigOptions} for {@link Boolean}s.
+ */
 public class BooleanConfigOptions extends ValueConfigOptions<Boolean> {
 	public final static String FALSE_STRING = "false";
 	public final static String TRUE_STRING = "true";

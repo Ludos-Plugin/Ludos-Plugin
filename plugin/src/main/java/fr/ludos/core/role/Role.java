@@ -40,7 +40,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 /**
  * The Role class contains runtime data for the Role itself as well as the events for the Role-users
- * It contains events and Data.
+ * It contains events and State.
  */
 public abstract class Role extends GameProcessBase {
 	public static final String NAMESPACE = "role";

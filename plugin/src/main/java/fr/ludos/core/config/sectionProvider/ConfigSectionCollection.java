@@ -11,6 +11,9 @@ import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.config.ConfigOptions;
 
+/**
+ * Collection of {@link ConfigSectionProvider}s, with their corresponding {@link ConfigOptions}.
+ */
 public abstract class ConfigSectionCollection {
 	public abstract @NotNull Set<String> getProviderKeys(CommandSender sender);
 	public abstract @NotNull ConfigSectionProvider getProvider(String key, CommandSender sender);

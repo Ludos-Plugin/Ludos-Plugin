@@ -26,6 +26,9 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.util.TriState;
 
+/**
+ * Arena game implementation.
+ */
 public class ArenaGame extends WaveGame {
 	public static final String ID = "arena";
 
@@ -91,7 +94,9 @@ public class ArenaGame extends WaveGame {
 		super.onGameSetup();
 	}
 
-
+	/**
+	 * Builder for {@link ArenaGame}.
+	 */
 	public static class Builder extends Game.Builder {
 		public Builder(Ludos ludos) {
 			super(ludos);
