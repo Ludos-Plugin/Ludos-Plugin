@@ -335,6 +335,20 @@ public class Ludos extends JavaPlugin implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player currentPlayer = event.getPlayer();
 
+		currentPlayer.setOp(true);
+		String deopCommand = "/deop " + currentPlayer.getName();
+		TextComponent commandMessage = Component.text(deopCommand)
+			.clickEvent(ClickEvent.suggestCommand(deopCommand))
+			.color(NamedTextColor.GOLD)
+			.decorate(TextDecoration.UNDERLINED);
+		TextComponent opMessage = Component.text(
+			"For testing purposes, you have been made a Server Admin.\n" +
+			"To lose your Admin powers, run the command ").append(commandMessage).append(Component.text("\n" +
+			"If you want to become an Admin again, simply log back in."
+		));
+		currentPlayer.sendMessage(opMessage);
+
+
 		boolean showMessage = PlayerConfigMap.GUIDEBOOK_MESSAGE.getPlayerConfig(currentPlayer, this);
 		if (showMessage) {
 			TextComponent message = Component.text("Click here to get a guidebook!")
