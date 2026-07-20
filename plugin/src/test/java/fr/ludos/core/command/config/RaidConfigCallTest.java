@@ -2,11 +2,13 @@ package fr.ludos.core.command.config;
 
 import java.util.List;
 
+import org.junit.jupiter.api.AssertionFailureBuilder;
 import org.junit.jupiter.api.Test;
 
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import fr.ludos.core.area.WorldBorderArea;
-import fr.ludos.games.raid.RaidGameConfigMap;
+import fr.ludos.core.game.Game;
+import fr.ludos.games.raid.RaidGame;
 
 class RaidConfigCallTest extends ConfigTest {
 
@@ -28,12 +30,22 @@ class RaidConfigCallTest extends ConfigTest {
 			player1.getName() + " " + player2.getName() + " " + player3.getName()
 		);
 
-		assertSetConfigValues(player1, "ludos config global game raid", RaidGameConfigMap.PLAYERS, additionalPlayerArgs, "everyone");
-		assertSetConfigValues(player1, "ludos config global game raid", RaidGameConfigMap.WAVES, "five");
+		Game.Builder gameBuilder = ludos.getGameManager().getGameById(RaidGame.ID);
+		if (! (gameBuilder instanceof RaidGame.Builder raid)) {
+			AssertionFailureBuilder.assertionFailure()
+				.message("Could not get RaidGame.Builder instance from Game registry")
+				.expected(RaidGame.Builder.class)
+				.actual(gameBuilder.getClass())
+				.buildAndThrow();
+			return;
+		}
+
+		assertSetConfigValues(player1, "ludos config global game raid", raid.players, additionalPlayerArgs, "everyone");
+		assertSetConfigValues(player1, "ludos config global game raid", raid.waves, "five");
 		assertSetConfigValues(player1, "ludos config global game raid", WorldBorderArea.CONFIG, "big");
 
-		assertSetConfigValues(player1, "ludos config group game raid", RaidGameConfigMap.PLAYERS, additionalPlayerArgs, "everyone");
-		assertSetConfigValues(player1, "ludos config group game raid", RaidGameConfigMap.WAVES, "five");
+		assertSetConfigValues(player1, "ludos config group game raid", raid.players, additionalPlayerArgs, "everyone");
+		assertSetConfigValues(player1, "ludos config group game raid", raid.waves, "five");
 		assertSetConfigValues(player1, "ludos config group game raid", WorldBorderArea.CONFIG, "big");
 
 		player1.performCommand("ludos group disband");

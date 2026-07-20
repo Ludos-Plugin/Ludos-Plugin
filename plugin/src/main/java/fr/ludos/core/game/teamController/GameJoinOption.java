@@ -1,7 +1,6 @@
 package fr.ludos.core.game.teamController;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import fr.ludos.core.game.Game;
@@ -14,12 +13,6 @@ public enum GameJoinOption {
 	auto {},
 	manual {},
 	none {};
-
-	public static List<String> getOptions() {
-		return Arrays.stream(GameJoinOption.values())
-			.map(GameJoinOption::toString)
-			.collect(Collectors.toList());
-	}
 
 	public static String getUsage() {
 		StringBuilder sb = new StringBuilder();

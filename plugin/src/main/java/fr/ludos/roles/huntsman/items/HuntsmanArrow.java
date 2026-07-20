@@ -20,7 +20,6 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -173,7 +172,7 @@ public class HuntsmanArrow extends SpecialItem {
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HuntsmanRole.ID);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
 		}
 	}
 }

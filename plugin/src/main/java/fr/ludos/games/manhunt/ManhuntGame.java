@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
@@ -28,7 +29,13 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.config.ConfigOptionsCollection;
+import fr.ludos.core.config.ConfigOptionsMap;
+import fr.ludos.core.config.valueOptions.MultipleGroupPlayerConfigOptions;
+import fr.ludos.core.config.valueOptions.NumberConfigOptions;
+import fr.ludos.core.config.valueOptions.SingleGroupPlayerConfigOptions;
+import fr.ludos.core.config.valueOptions.ValueConfigOptions;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
@@ -103,11 +110,11 @@ public class ManhuntGame extends Game {
 			.build();
 		this.teamController = new ManhuntTeamController(
 			this,
-			ManhuntGameConfigMap.PLAYERS.getGameConfig(group, builder),
-			ManhuntGameConfigMap.PREY.getGameConfig(group, builder)
+			builder.players.getGameConfig(group, builder),
+			builder.prey.getGameConfig(group, builder)
 		);
 
-		timer = new ManhuntTimer(this, ManhuntGameConfigMap.REVEAL_PERIOD.getGameConfig(group, builder));
+		timer = new ManhuntTimer(this, builder.revealPeriod.getGameConfig(group, builder));
 		compassEvents = new ManhuntCompass.Events(this);
 	}
 
@@ -220,8 +227,20 @@ public class ManhuntGame extends Game {
 	 * Builder for {@link ManhuntGame}.
 	 */
 	public static class Builder extends Game.Builder {
-		public Builder(Ludos ludos) {
-			super(ludos);
+		public final ValueConfigOptions<Set<OfflinePlayer>> players =
+			new MultipleGroupPlayerConfigOptions(getManager().getLudos().getGroupManager(), "Players", "players", "all");
+
+		public final ValueConfigOptions<OfflinePlayer> prey =
+			new SingleGroupPlayerConfigOptions(getManager().getLudos().getGroupManager(), "Prey Player", "prey", "random");
+
+		public final ValueConfigOptions<Integer> revealPeriod =
+			new NumberConfigOptions("Reveal period duration seconds", "reveal", null, 180, Set.of(60, 120, 180, 240, 300, 360), true);
+
+		public final ConfigOptionsMap config =
+			new ConfigOptionsMap(ID, Set.of(players, prey, WorldBorderArea.CONFIG, revealPeriod));
+
+		public Builder(GameManager manager) {
+			super(manager);
 		}
 
 		@Override
@@ -266,7 +285,7 @@ public class ManhuntGame extends Game {
 
 		@Override
 		public ConfigOptionsCollection getConfig() {
-			return ManhuntGameConfigMap.INSTANCE;
+			return config;
 		}
 
 		@Override

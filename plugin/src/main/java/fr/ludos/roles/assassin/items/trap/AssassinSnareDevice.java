@@ -33,7 +33,6 @@ import fr.ludos.core.item.BranchItem;
 import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -237,7 +236,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, AssassinRole.ID);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

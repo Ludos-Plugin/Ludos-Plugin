@@ -46,7 +46,7 @@ public class GroupKick implements Subcommand {
 		}
 		if (args.length < 1) return false;
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
@@ -75,7 +75,7 @@ public class GroupKick implements Subcommand {
 		}
 
 		if (success) {
-			ludos.saveGroupsConfig();
+			ludos.saveConfig();
 		}
 
 		return true;
@@ -84,7 +84,7 @@ public class GroupKick implements Subcommand {
 	public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (!(sender instanceof Player player)) return null;
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) return null;
 
 		if (! group.isLeader(player)) return null;

@@ -64,7 +64,7 @@ public class HuntsmanRole extends Role {
 
 	@Override
 	protected Boolean isPlayerValidInternal(OfflinePlayer player) {
-		return Role.isPlayerRole(player, ID);
+		return getBuilder().getManager().isPlayerRole(player, ID);
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class HuntsmanRole extends Role {
 		}
 
 		public Builder(Ludos ludos) {
-			super(ludos);
+			super(ludos.getRoleManager(), ludos);
 		}
 
 

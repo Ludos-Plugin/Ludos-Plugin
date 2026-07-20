@@ -17,6 +17,11 @@ import fr.ludos.core.command.Subcommand;
  */
 public class LudosGuidebook implements Subcommand {
 	private final static String ID = "guidebook";
+	private final Ludos ludos;
+
+	public LudosGuidebook(Ludos ludos) {
+		this.ludos = ludos;
+	}
 
 	@Override
 	public String id() {
@@ -31,7 +36,7 @@ public class LudosGuidebook implements Subcommand {
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		Player player = CommandUtility.getPlayerFromArgsOrSender(args, 0, sender);
 		if (player != null) {
-			ItemStack book = Ludos.createGuidebook();
+			ItemStack book = ludos.createGuidebook();
 			player.getInventory().addItem(book);
 		}
 		return true;

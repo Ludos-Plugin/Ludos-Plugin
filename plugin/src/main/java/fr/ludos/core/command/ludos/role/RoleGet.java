@@ -10,12 +10,19 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.role.Role;
+import fr.ludos.core.role.RoleManager;
 
 /**
  * {@link Subcommand} to get a Player's current {@link Role} if it was set, or "none".
  */
 public class RoleGet implements Subcommand {
 	private final static String ID = "get";
+
+	private final RoleManager manager;
+
+	public RoleGet(RoleManager manager) {
+		this.manager = manager;
+	}
 
 	@Override
 	public String id() {
@@ -34,7 +41,7 @@ public class RoleGet implements Subcommand {
 			return true;
 		}
 
-		Role.Builder getRole = Role.getPlayerRole(getTarget);
+		Role.Builder getRole = manager.getPlayerRole(getTarget);
 		sender.sendMessage(getRole == null ? Role.NONE_LABEL : getRole.getId());
 		return true;
 	}

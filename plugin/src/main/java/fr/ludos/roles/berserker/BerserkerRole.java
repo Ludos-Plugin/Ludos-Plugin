@@ -83,7 +83,7 @@ public class BerserkerRole extends Role {
 		particleTask = new BukkitRunnable() {
 			@Override
 			public void run() {
-				for (Player player : Role.getPlayersOfRole(ID)) {
+				for (Player player : getBuilder().getManager().getPlayersOfRole(ID)) {
 					if (player == null || !player.isOnline()) continue;
 					spawnRageParticles(player);
 				}
@@ -104,11 +104,11 @@ public class BerserkerRole extends Role {
 
 	@EventHandler
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
-		if (!(event.getDamager() instanceof Player player)) return;
-		if (!(event.getEntity() instanceof LivingEntity target)) return;
-		if (!Role.isPlayerRole(player, ID)) return;
+		if (! (event.getDamager() instanceof Player player)) return;
+		if (! (event.getEntity() instanceof LivingEntity target)) return;
+		if (! getBuilder().getManager().isPlayerRole(player, ID)) return;
 
-		if (!isRaging(player)) return;
+		if (! isRaging(player)) return;
 
 		double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
 		if (maxHealth <= 0) return;
@@ -126,9 +126,9 @@ public class BerserkerRole extends Role {
 		if (axeEvents == null) return;
 
 		Action action = event.getAction();
-		if (!action.isRightClick()) return;
+		if (! action.isRightClick()) return;
 
-		if (!Role.isPlayerRole(event.getPlayer(), ID)) return;
+		if (! getBuilder().getManager().isPlayerRole(event.getPlayer(), ID)) return;
 
 		Player player = event.getPlayer();
 
@@ -209,7 +209,7 @@ public class BerserkerRole extends Role {
 	public static class Builder extends Role.Builder {
 
 		public Builder(Ludos ludos) {
-			super(ludos);
+			super(ludos.getRoleManager(), ludos);
 		}
 
 		@Override

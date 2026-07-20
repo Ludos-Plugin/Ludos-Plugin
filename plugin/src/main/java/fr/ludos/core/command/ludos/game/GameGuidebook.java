@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.game.Game;
@@ -18,6 +19,12 @@ import fr.ludos.core.game.Game;
  */
 public class GameGuidebook implements Subcommand {
 	private final static String ID = "guidebook";
+
+	private final Ludos ludos;
+
+	public GameGuidebook(Ludos ludos) {
+		this.ludos = ludos;
+	}
 
 	@Override
 	public String id() {
@@ -33,7 +40,7 @@ public class GameGuidebook implements Subcommand {
 		if (args.length < 1) return false;
 
 		String guidebookGameId = args[0].toLowerCase();
-		Game.Builder guidebookGame = Game.getRegistered().get(guidebookGameId);
+		Game.Builder guidebookGame = ludos.getGameManager().getRegistered().get(guidebookGameId);
 		if (guidebookGame == null) {
 			sender.sendMessage("Game not found: " + guidebookGameId);
 			return true;
@@ -52,7 +59,7 @@ public class GameGuidebook implements Subcommand {
 	@Override
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length == 1)
-			return Game.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+			return ludos.getGameManager().getRegistered().keySet().stream().sorted().collect(Collectors.toList());
 
 		if (args.length == 2)
 			return CommandUtility.getOnlinePlayerNames();
@@ -62,7 +69,7 @@ public class GameGuidebook implements Subcommand {
 	@Override
 	public String getUsage() {
 		return "<" +
-			Game.getRegistered().keySet().stream().sorted()
+			ludos.getGameManager().getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))
 			+ "> [player]";
 	}

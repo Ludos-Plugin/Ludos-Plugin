@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import fr.ludos.core.Ludos;
 import fr.ludos.core.command.HelpSubcommand;
-import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.SubcommandHandler;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.SpecialItem;
@@ -15,18 +15,13 @@ import fr.ludos.core.item.SpecialItem;
  * Subcommand meant for Admins to cheat during Ludos games, for debugging purposes.
  */
 public final class CheatsSubcommand extends SubcommandHandler {
-	public CheatsSubcommand() {
-		super("cheats", "Use Ludos cheats", true, getSubcommands());
-	}
 
-	private static final ArrayList<Subcommand> getSubcommands() {
-		ArrayList<Subcommand> subcommands = new ArrayList<>() {{
-			add(new CheatsLevel());
-			add(new CheatsXp());
-		}};
-		HelpSubcommand help = new HelpSubcommand("cheats", subcommands);
-		subcommands.add(help);
-		return subcommands;
+	public CheatsSubcommand(Ludos ludos) {
+		super("cheats", "Use Ludos cheats", true, new ArrayList<>() {{
+			add(new CheatsLevel(ludos));
+			add(new CheatsXp(ludos));
+			add(new HelpSubcommand("cheats", this));
+		}});
 	}
 
 	public static @Nullable Integer parsePositiveInt(String raw) {

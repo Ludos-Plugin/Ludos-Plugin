@@ -32,7 +32,6 @@ import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelValue;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -226,7 +225,7 @@ public class RampartShield extends LevelItem<RampartShieldLevels> {
 				@Override
 				public void run() {
 					Player[] rampartPlayers = getGame().getGroup().getOnlinePlayers().stream()
-						.filter(Role.ofRole(RampartRole.ID))
+						.filter(game.getLudos().getRoleManager().ofRole(RampartRole.ID))
 						.toArray(Player[]::new);
 
 					for (Player player : rampartPlayers) {
@@ -295,7 +294,7 @@ public class RampartShield extends LevelItem<RampartShieldLevels> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, RampartRole.ID);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, RampartRole.ID);
 		}
 
 		@EventHandler

@@ -12,11 +12,7 @@ import fr.ludos.core.command.SubcommandHandler;
  */
 public final class GroupSubcommand extends SubcommandHandler {
 	public GroupSubcommand(Ludos ludos) {
-		super("group", "Manage Ludos Groups", false, getSubcommands(ludos));
-	}
-
-	private static final ArrayList<Subcommand> getSubcommands(Ludos ludos) {
-		ArrayList<Subcommand> subcommands = new ArrayList<>() {{
+		super("group", "Manage Ludos Groups", false, new ArrayList<>() {{
 			add(new GroupCreate(ludos));
 			add(new GroupDisband(ludos));
 			add(new GroupJoin(ludos));
@@ -24,10 +20,8 @@ public final class GroupSubcommand extends SubcommandHandler {
 			add(new GroupLeave(ludos));
 			add(new GroupKick(ludos));
 			add(new GroupConfig(ludos));
-			add(new GroupInfo());
-		}};
-		HelpSubcommand help = new HelpSubcommand("group", subcommands);
-		subcommands.add(help);
-		return subcommands;
+			add(new GroupInfo(ludos));
+			add(new HelpSubcommand("group", this));
+		}});
 	}
 }

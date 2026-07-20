@@ -25,7 +25,6 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -105,7 +104,7 @@ public class TeleportScroll extends SpecialItem {
 		protected void onItemStop() {
 			super.onItemStop();
 
-			for (Player player : Role.getPlayersOfRole(AssassinRole.ID)) {
+			for (Player player : game.getLudos().getRoleManager().getPlayersOfRole(AssassinRole.ID)) {
 				var healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
 				if (healthAttr == null) continue;
 				new ArrayList<>(healthAttr.getModifiers()).stream()
@@ -204,7 +203,7 @@ public class TeleportScroll extends SpecialItem {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, AssassinRole.ID);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

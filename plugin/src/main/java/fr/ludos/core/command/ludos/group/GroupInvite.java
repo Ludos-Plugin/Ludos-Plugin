@@ -46,7 +46,7 @@ public class GroupInvite implements Subcommand {
 			return true;
 		}
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
@@ -80,7 +80,7 @@ public class GroupInvite implements Subcommand {
 			}
 		}
 		if (hasJoined) {
-			ludos.saveGroupsConfig();
+			ludos.saveConfig();
 		}
 
 		if (targets.size() > 0) {
@@ -93,7 +93,7 @@ public class GroupInvite implements Subcommand {
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (! (sender instanceof Player player)) return null;
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) return null;
 
 		HashSet<Player> onlines = ludos.getServer().getOnlinePlayers()

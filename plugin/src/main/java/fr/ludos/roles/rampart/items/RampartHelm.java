@@ -14,7 +14,6 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -98,7 +97,7 @@ public class RampartHelm extends SpecialItem {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, RampartRole.ID);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, RampartRole.ID);
 		}
 	}
 }

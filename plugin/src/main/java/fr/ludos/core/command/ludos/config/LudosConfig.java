@@ -18,7 +18,12 @@ public class LudosConfig implements Subcommand {
 	private final ScopeConfigMap map;
 
 	public LudosConfig(Ludos ludos) {
-		this.map = new ScopeConfigMap(ludos, GlobalScopedConfigMap.INSTANCE, GroupScopedConfigMap.INSTANCE, PlayerScopedConfigMap.INSTANCE);
+		this.map = new ScopeConfigMap(
+			ludos,
+			ludos.globalConfigMap,
+			ludos.groupConfigMap,
+			ludos.playerConfigMap
+		);
 	}
 
 	@Override

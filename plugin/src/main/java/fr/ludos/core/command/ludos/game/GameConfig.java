@@ -10,8 +10,8 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.ScopeConfigMap;
-import fr.ludos.core.command.ludos.config.game.GameConfigMap;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.game.GameManager;
 
 /**
  * {@link Subcommand} for {@link Game}-specific configuration.
@@ -19,10 +19,12 @@ import fr.ludos.core.game.Game;
 public class GameConfig implements Subcommand {
 	private final static String ID = "config";
 
+	private final GameManager gameManager;
 	private final ScopeConfigMap map;
 
 	public GameConfig(Ludos ludos) {
-		this.map = new ScopeConfigMap(ludos, GameConfigMap.INSTANCE);
+		this.gameManager = ludos.getGameManager();
+		this.map = new ScopeConfigMap(ludos, gameManager.configMap);
 	}
 
 	@Override
@@ -45,7 +47,7 @@ public class GameConfig implements Subcommand {
 	@Override
 	public String getUsage() {
 		return "<" +
-			Game.getRegistered().keySet().stream().sorted()
+			gameManager.getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))
 			+ "> [name] [option]";
 	}

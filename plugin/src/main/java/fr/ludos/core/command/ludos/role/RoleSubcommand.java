@@ -2,29 +2,22 @@ package fr.ludos.core.command.ludos.role;
 
 import java.util.ArrayList;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.HelpSubcommand;
-import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.SubcommandHandler;
+import fr.ludos.core.role.RoleManager;
 
 /**
  * Subcommand encapsulating all Role-specific Ludos subcommands.
  */
 public final class RoleSubcommand extends SubcommandHandler {
-	public RoleSubcommand(Ludos ludos) {
-		super("role", "Manage Ludos Roles", false, getSubcommands(ludos));
-	}
-
-	private static final ArrayList<Subcommand> getSubcommands(Ludos ludos) {
-		ArrayList<Subcommand> subcommands = new ArrayList<>() {{
-			add(new RoleGet());
-			add(new RoleSet(ludos));
-			add(new RoleReset(ludos));
-			add(new RoleConfig(ludos));
-			add(new RoleGuidebook());
-		}};
-		HelpSubcommand help = new HelpSubcommand("role", subcommands);
-		subcommands.add(help);
-		return subcommands;
+	public RoleSubcommand(RoleManager manager) {
+		super("role", "Manage Ludos Roles", false, new ArrayList<>() {{
+			add(new RoleGet(manager));
+			add(new RoleSet(manager));
+			add(new RoleReset(manager));
+			add(new RoleConfig(manager));
+			add(new RoleGuidebook(manager));
+			add(new HelpSubcommand("role", this));
+		}});
 	}
 }

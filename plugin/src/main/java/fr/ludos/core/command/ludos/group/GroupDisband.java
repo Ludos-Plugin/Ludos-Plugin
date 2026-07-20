@@ -39,7 +39,7 @@ public class GroupDisband implements Subcommand {
 			return true;
 		}
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
@@ -53,7 +53,7 @@ public class GroupDisband implements Subcommand {
 
 		group.disband();
 
-		ludos.saveGroupsConfig();
+		ludos.saveConfig();
 
 		return true;
 	}

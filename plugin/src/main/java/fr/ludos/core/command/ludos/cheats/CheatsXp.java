@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
@@ -19,6 +20,11 @@ import fr.ludos.core.item.level.LevelItemInterface;
  */
 public class CheatsXp implements Subcommand {
 	private final static String ID = "xp";
+	private final Ludos ludos;
+
+	public CheatsXp(Ludos ludos) {
+		this.ludos = ludos;
+	}
 
 	@Override
 	public String id() {
@@ -48,7 +54,7 @@ public class CheatsXp implements Subcommand {
 			return true;
 		}
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;

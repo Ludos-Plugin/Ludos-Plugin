@@ -53,7 +53,7 @@ public class AssassinRole extends Role {
 		stealthTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), () -> {
 			long now = System.currentTimeMillis();
 			List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
-				.filter((player) -> Role.isPlayerRole(player, ID))
+				.filter((player) -> getBuilder().getManager().isPlayerRole(player, ID))
 				.collect(Collectors.toUnmodifiableList());
 			for (Player player : players) {
 				if (!player.isOnline()) continue;
@@ -93,7 +93,7 @@ public class AssassinRole extends Role {
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event) {
 		Player player = event.getPlayer();
-		if (!Role.isPlayerRole(player, AssassinRole.ID)) return;
+		if (!getBuilder().getManager().isPlayerRole(player, AssassinRole.ID)) return;
 
 		// Ignorer les rotations (regarder autour sans bouger)
 		if (event.getFrom().getBlockX() == event.getTo().getBlockX() &&
@@ -110,7 +110,7 @@ public class AssassinRole extends Role {
 	@EventHandler
 	public void onInvisibleDaggerHit(EntityDamageByEntityEvent event) {
 		if (! (event.getDamager() instanceof Player player)) return;
-		if (! Role.isPlayerRole(player, AssassinRole.ID)) return;
+		if (! getBuilder().getManager().isPlayerRole(player, AssassinRole.ID)) return;
 
 		if (!player.hasPotionEffect(PotionEffectType.INVISIBILITY)) return;
 
@@ -119,7 +119,7 @@ public class AssassinRole extends Role {
 
 	@Override
 	protected Boolean isPlayerValidInternal(OfflinePlayer player) {
-		return Role.isPlayerRole(player, ID);
+		return getBuilder().getManager().isPlayerRole(player, ID);
 	}
 
 	/**
@@ -133,7 +133,7 @@ public class AssassinRole extends Role {
 		}
 
 		public Builder(Ludos ludos) {
-			super(ludos);
+			super(ludos.getRoleManager(), ludos);
 		}
 
 

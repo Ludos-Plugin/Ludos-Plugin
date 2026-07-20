@@ -70,7 +70,7 @@ public class HarvesterRole extends Role {
 
 	public void awardBreak(Player player, Block block, Game game) {
 		if (player == null || block == null) return;
-		if (!Role.isPlayerRole(player, ID)) return;
+		if (! getBuilder().getManager().isPlayerRole(player, ID)) return;
 
 		Inventory inventory = player.getInventory();
 		if (inventory == null) return;
@@ -135,7 +135,7 @@ public class HarvesterRole extends Role {
 		}
 
 		public Builder(Ludos ludos) {
-			super(ludos);
+			super(ludos.getRoleManager(), ludos);
 		}
 
 		@Override

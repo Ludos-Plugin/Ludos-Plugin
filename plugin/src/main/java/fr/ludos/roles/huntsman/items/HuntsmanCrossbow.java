@@ -33,7 +33,6 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.MultiLevelBranchItem;
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelValue;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -215,7 +214,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HuntsmanRole.ID);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
 		}
 	}
 }

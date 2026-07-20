@@ -49,7 +49,7 @@ public class GroupJoin implements Subcommand {
 			return true;
 		}
 
-		Group group = Group.getGroupOfPlayer(leader);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(leader);
 		if (group == null) {
 			sender.sendMessage(leader.getName() + " is not in a group.");
 			return true;
@@ -58,7 +58,7 @@ public class GroupJoin implements Subcommand {
 		AddPlayerResult res = group.requestAddPlayer(player, AddPlayerMethod.Join);
 		switch (res) {
 			case Succeeded:
-				ludos.saveGroupsConfig();
+				ludos.saveConfig();
 				break;
 			case Requested:
 				player.sendMessage("Requested to join " + leaderName + "'s group.");

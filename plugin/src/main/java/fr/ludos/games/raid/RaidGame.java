@@ -1,10 +1,12 @@
 package fr.ludos.games.raid;
 
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
@@ -12,7 +14,12 @@ import org.bukkit.WorldType;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
 import fr.ludos.core.config.ConfigOptionsCollection;
+import fr.ludos.core.config.ConfigOptionsMap;
+import fr.ludos.core.config.valueOptions.MultipleGroupPlayerConfigOptions;
+import fr.ludos.core.config.valueOptions.NumberConfigOptions;
+import fr.ludos.core.config.valueOptions.ValueConfigOptions;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
@@ -62,7 +69,7 @@ public class RaidGame extends WaveGame {
 
 		this.waveController = new RaidWaveController(
 			this,
-			RaidGameConfigMap.WAVES.getGameConfig(group, builder)
+			builder.waves.getGameConfig(group, builder)
 		);
 
 		this.worldManager = WorldManager.within(this, returnLocation)
@@ -83,7 +90,7 @@ public class RaidGame extends WaveGame {
 
 		this.teamController = new RaidTeamController(
 			this,
-			RaidGameConfigMap.PLAYERS.getGameConfig(group, builder)
+			builder.players.getGameConfig(group, builder)
 		);
 	}
 
@@ -91,8 +98,18 @@ public class RaidGame extends WaveGame {
 	 * Builder for {@link RaidGame}.
 	 */
 	public static class Builder extends Game.Builder {
-		public Builder(Ludos ludos) {
-			super(ludos);
+		public final ValueConfigOptions<Set<OfflinePlayer>> players =
+			new MultipleGroupPlayerConfigOptions(getManager().getLudos().getGroupManager(), "Players", "players", "all");
+
+		public final ValueConfigOptions<Integer> waves =
+			new NumberConfigOptions("Number of Waves", "waves", null, 0, true);
+
+		public final ConfigOptionsMap config =
+			new ConfigOptionsMap(ID, Set.of(players, waves, WorldBorderArea.CONFIG));
+
+
+		public Builder(GameManager manager) {
+			super(manager);
 		}
 
 		@Override
@@ -125,7 +142,7 @@ public class RaidGame extends WaveGame {
 
 		@Override
 		public ConfigOptionsCollection getConfig() {
-			return RaidGameConfigMap.INSTANCE;
+			return config;
 		}
 
 		@Override
