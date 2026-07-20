@@ -22,6 +22,9 @@ import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.item.SpecialItem;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+/**
+ * Team controller for {@link RaidGame}.
+ */
 public final class RaidTeamController extends GameTeamController {
 	private final Set<Player> selectedPlayers;
 
@@ -101,10 +104,9 @@ public final class RaidTeamController extends GameTeamController {
 
 		Location teammateLocation = Utility.snapToHighestY(getLocationAroundTeammate(team), true);
 
-		String name = player.getName();
-		playersTeam.removeEntry(name);
-		spectatorsTeam.removeEntry(name);
-		team.addEntry(name);
+		playersTeam.removePlayer(player);
+		spectatorsTeam.removePlayer(player);
+		team.addPlayer(player);
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;

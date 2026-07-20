@@ -28,7 +28,14 @@ import fr.ludos.core.Utility;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.monster.SpecialMonster;
 
+/**
+ * Base class for raid boss monster implementations.
+ * @param <TEntity> Specific type of the underlying {@link LivingEntity} of the Monster.
+ */
 public abstract class RaidMonsterBoss<TEntity extends LivingEntity> extends SpecialMonster<TEntity> {
+	/**
+	 * Elemental types for raid boss mechanics.
+	 */
 	public enum Element {
 		EARTH,
 		WATER,

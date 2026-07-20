@@ -11,10 +11,10 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 
-// import net.minecraft.network.protocol.game.*;
-// import net.minecraft.network.syncher.*;
-// import net.minecraft.server.level.ServerPlayer;
 
+/**
+ * Player packet implementation for Minecraft 1.19.
+ */
 public final class PlayerPackets_1_19 implements PlayerPackets {
 
 	@Override

@@ -14,6 +14,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 
+/**
+ * Controller for managing waves in the {@link ArenaGame}.
+ */
 public final class ArenaWaveController extends WaveController {
 	private final ArenaGame game;
 
@@ -87,8 +90,8 @@ public final class ArenaWaveController extends WaveController {
 	protected void evaluateWaveState() {
 		ArenaTeamController teamController = game.getTeamController();
 
-		long alivePrimary = Utility.getTeamAlivePlayers(teamController.getCombatTeam(0)).count();
-		long aliveSecondary = Utility.getTeamAlivePlayers(teamController.getCombatTeam(1)).count();
+		long alivePrimary = Utility.getTeamAlivePlayers(teamController.getCombatTeam(0), game.getPlugin().getServer()).count();
+		long aliveSecondary = Utility.getTeamAlivePlayers(teamController.getCombatTeam(1), game.getPlugin().getServer()).count();
 		if (alivePrimary > 0 && aliveSecondary > 0) return;
 
 		int currentRound = getCurrentWaveNumber();

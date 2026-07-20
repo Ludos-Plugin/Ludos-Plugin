@@ -14,6 +14,11 @@ import java.util.stream.Stream;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
 
+/**
+ * Loads custom item models from a resource pack folder and registers them with
+ * the custom model registry. This class scans model JSON files, maps them to
+ * Materials and providers, and keeps lookup structures for runtime access.
+ */
 public final class ResourcePackLoader {
 	// private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -163,6 +168,17 @@ public final class ResourcePackLoader {
 	//     return str.isEmpty() ? str : str.substring(0, 1).toUpperCase() + str.substring(1);
 	// }
 
+	/**
+	 * Represents a loaded custom model with associated metadata.
+	 *
+	 * @param itemType the texture identifier for the provider
+	 * @param variant the model variant extracted from the file name
+	 * @param mode the model mode extracted from the file name
+	 * @param material the material associated with this custom model
+	 * @param modelId the registered custom model data identifier
+	 * @param modelPath the path to the model JSON file
+	 * @param providerPath the provider texture path for this model
+	 */
 	public record ModelData(String itemType, String variant, String mode, Material material,
 		int modelId, Path modelPath, String providerPath) {}
 }

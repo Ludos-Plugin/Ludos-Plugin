@@ -8,6 +8,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
+/**
+ * Applies and refreshes texture-related item meta for special items held by a player.
+ */
 public final class TextureApplier {
 	private static final NamespacedKey ID_KEY = new NamespacedKey("ludos", "id");
 

@@ -24,12 +24,13 @@ import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelValue;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Assassin Dagger, for use by any Player with {@link AssassinRole}.
+ */
 public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 	public static final String ID = "assassin_dagger";
 
@@ -88,7 +89,9 @@ public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 		return lore;
 	}
 
-
+	/**
+	 * Events for the {@link AssassinDagger}.
+	 */
 	public static class Events extends LevelItem.Events<AssassinDagger, AssassinDaggerLevels> {
 		private static final List<AssassinDaggerLevels> LEVELS = List.of(AssassinDaggerLevels.values());
 
@@ -142,7 +145,7 @@ public class AssassinDagger extends LevelItem<AssassinDaggerLevels> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, AssassinRole.id);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

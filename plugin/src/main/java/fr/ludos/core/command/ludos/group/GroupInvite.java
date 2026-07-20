@@ -1,8 +1,8 @@
 package fr.ludos.core.command.ludos.group;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bukkit.command.Command;
@@ -13,20 +13,24 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.group.Group.JoinMethod;
+import fr.ludos.core.group.Group.AddPlayerMethod;
 
+/**
+ * {@link Subcommand} to invite players to the current {@link Group}, as the Group Leader, or an explicitly allowed member.
+ */
 public class GroupInvite implements Subcommand {
-	private final static String id = "invite";
+	private final static String ID = "invite";
 
-	private final Ludos plugin;
-	public GroupInvite(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public GroupInvite(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -42,30 +46,30 @@ public class GroupInvite implements Subcommand {
 			return true;
 		}
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
 		}
 
-		Set<Player> targets = CommandUtility.getPlayersFromArgs(args, 0, sender).stream()
+		List<Player> targets = CommandUtility.getPlayersFromArgs(args, sender).stream()
 			.filter(p -> ! group.isPlayer(p))
-			.collect(Collectors.toSet());
+			.collect(Collectors.toCollection(ArrayList::new));
 
 		if (targets.isEmpty()) {
 			sender.sendMessage("No valid player names provided.");
 			return true;
 		}
 
-		boolean membersCanInvite = GroupConfigs.getGroupRightsOption(group.getConfig()).canInvite();
+		boolean membersCanInvite = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canInvite();
 		if (! group.isLeader(player) && ! membersCanInvite) {
 			sender.sendMessage("Only the group leader can invite new members.");
 			return true;
 		}
 
 		boolean hasJoined = false;
-		for (Player target : targets) {
-			switch (group.requestPlayerJoin(target, JoinMethod.Invite)) {
+		for (Player target : targets.stream().toList()) {
+			switch (group.requestAddPlayer(target, AddPlayerMethod.Invite)) {
 				case Succeeded:
 					hasJoined = true;
 				case Failed:
@@ -76,7 +80,7 @@ public class GroupInvite implements Subcommand {
 			}
 		}
 		if (hasJoined) {
-			plugin.saveConfig();
+			ludos.saveConfig();
 		}
 
 		if (targets.size() > 0) {
@@ -89,10 +93,10 @@ public class GroupInvite implements Subcommand {
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (! (sender instanceof Player player)) return null;
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) return null;
 
-		HashSet<Player> onlines = plugin.getServer().getOnlinePlayers()
+		HashSet<Player> onlines = ludos.getServer().getOnlinePlayers()
 			.stream()
 			.collect(Collectors.toCollection(HashSet::new));
 		onlines.removeAll(group.getPlayers());

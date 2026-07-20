@@ -14,6 +14,10 @@ import fr.ludos.core.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+/**
+ * Controller for managing waves in a {@link WaveGame}.
+ * Handles wave progression, scheduling, loadouts and related events.
+ */
 public abstract class WaveController extends GameProcessBase {
 	private boolean scheduled = false;
 
@@ -46,7 +50,6 @@ public abstract class WaveController extends GameProcessBase {
 	}
 
 	protected WaveController(WaveGame game, int maxWaves, @Nullable WaveLoadoutService loadout) {
-		if (maxWaves <= 0) throw new IllegalArgumentException("Cannot have fewer waves than 1");
 		this.game = game;
 		this.maxWaves = maxWaves;
 		this.loadout = loadout;
@@ -95,7 +98,7 @@ public abstract class WaveController extends GameProcessBase {
 
 		scheduled = true;
 		long delay = 20 * 2;
-		if (wave >= maxWaves) {
+		if (maxWaves > 0 && wave >= maxWaves) {
 			Bukkit.broadcast(getCompletionText());
 			Bukkit.getScheduler().runTaskLater(getPlugin(), this::stop, delay);
 		}

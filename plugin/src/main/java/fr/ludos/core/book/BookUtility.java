@@ -15,7 +15,9 @@ import net.kyori.adventure.text.minimessage.internal.parser.node.ValueNode;
 import net.kyori.adventure.text.minimessage.tree.Node;
 import net.kyori.adventure.text.minimessage.tree.Node.Root;
 
-
+/**
+ * Class used to process the truncation of {@link Component}-based pages, meant for use within Minecraft Books.
+ */
 final class PageTruncator {
 	private final MiniMessage mm = MiniMessage.miniMessage();
 
@@ -210,6 +212,9 @@ final class PageTruncator {
 	}
 }
 
+/**
+ * Various utilities for Minecraft Books.
+ */
 public class BookUtility {
 	public static final int MC_CHAR_WIDTH_DEFAULT = 5; // Default width for unknown characters
 	public static final int MC_SPACE_CHAR_WIDTH = 3;
@@ -230,11 +235,11 @@ public class BookUtility {
 	public static final int MC_OPEN_BRACKET_CHAR_WIDTH = 3;
 	public static final int MC_CLOSE_BRACKET_CHAR_WIDTH = 3;
 	public static final int MC_BACKTICK_CHAR_WIDTH = 2;
-	public static final int MC_f_CHAR_WIDTH = 4;
-	public static final int MC_i_CHAR_WIDTH = 1;
-	public static final int MC_k_CHAR_WIDTH = 4;
-	public static final int MC_l_CHAR_WIDTH = 2;
-	public static final int MC_t_CHAR_WIDTH = 3;
+	public static final int MC_LOWERCASE_F_CHAR_WIDTH = 4;
+	public static final int MC_LOWERCASE_I_CHAR_WIDTH = 1;
+	public static final int MC_LOWERCASE_K_CHAR_WIDTH = 4;
+	public static final int MC_LOWERCASE_L_CHAR_WIDTH = 2;
+	public static final int MC_LOWERCASE_T_CHAR_WIDTH = 3;
 	public static final int MC_OPEN_CURLY_BRACKET_CHAR_WIDTH = 3;
 	public static final int MC_CLOSE_CURLY_BRACKET_CHAR_WIDTH = 3;
 	public static final int MC_PIPE_CHAR_WIDTH = 1;
@@ -260,11 +265,11 @@ public class BookUtility {
 		put('[', MC_OPEN_BRACKET_CHAR_WIDTH);
 		put(']', MC_CLOSE_BRACKET_CHAR_WIDTH);
 		put('`', MC_BACKTICK_CHAR_WIDTH);
-		put('f', MC_f_CHAR_WIDTH);
-		put('i', MC_i_CHAR_WIDTH);
-		put('k', MC_k_CHAR_WIDTH);
-		put('l', MC_l_CHAR_WIDTH);
-		put('t', MC_t_CHAR_WIDTH);
+		put('f', MC_LOWERCASE_F_CHAR_WIDTH);
+		put('i', MC_LOWERCASE_I_CHAR_WIDTH);
+		put('k', MC_LOWERCASE_K_CHAR_WIDTH);
+		put('l', MC_LOWERCASE_L_CHAR_WIDTH);
+		put('t', MC_LOWERCASE_T_CHAR_WIDTH);
 		put('{', MC_OPEN_CURLY_BRACKET_CHAR_WIDTH);
 		put('}', MC_CLOSE_CURLY_BRACKET_CHAR_WIDTH);
 		put('|', MC_PIPE_CHAR_WIDTH);

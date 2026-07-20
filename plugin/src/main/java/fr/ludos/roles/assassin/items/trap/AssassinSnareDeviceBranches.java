@@ -15,7 +15,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Default {@link BranchItemInterface.Branch}es for the {@link AssassinSnareDevice}.
+ */
 public enum AssassinSnareDeviceBranches implements AssassinSnare {
 	REVEALING (
 		Component.text("Revealing")
@@ -87,7 +89,7 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 	};
 
 
-	public final static AssassinSnareDeviceBranches[] values = AssassinSnareDeviceBranches.values();
+	public final static AssassinSnareDeviceBranches[] VALUES = AssassinSnareDeviceBranches.values();
 
 	private final Component name;
 	@Override
@@ -124,7 +126,7 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 
 	@Override
 	public String id() {
-		return this.name().toLowerCase();
+		return name();
 	}
 
 	@Override

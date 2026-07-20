@@ -20,14 +20,15 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * A simple non-throwable, infinite source of arrows, notably for {@link HuntsmanBow}s and {@link HuntsmanCrossbow}s.
+ */
 public class HuntsmanArrow extends SpecialItem {
-	private final static String ID = "manhuntHuntsmanArrow";
+	public final static String ID = "huntsman_arrow";
 
 	// private final static Map<UUID, HuntsmanArrow> cachedItems = new HashMap<>();
 
@@ -76,7 +77,9 @@ public class HuntsmanArrow extends SpecialItem {
 		return new ArrayList<>();
 	}
 
-
+	/**
+	 * Events for the {@link HuntsmanArrow}.
+	 */
 	public static class Events extends SpecialItem.Events<HuntsmanArrow> {
 		private final Integer arrowMagazineSize;
 		private final int reloadTime;
@@ -169,7 +172,7 @@ public class HuntsmanArrow extends SpecialItem {
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HuntsmanRole.id);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
 		}
 	}
 }

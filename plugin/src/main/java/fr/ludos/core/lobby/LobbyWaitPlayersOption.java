@@ -10,6 +10,9 @@ import org.bukkit.OfflinePlayer;
 import fr.ludos.core.Utility;
 import fr.ludos.core.group.Group;
 
+/**
+ * Which of the Group's player's to wait for, when in a Game's lobby.
+ */
 public enum LobbyWaitPlayersOption {
 	online () {
 		@Override

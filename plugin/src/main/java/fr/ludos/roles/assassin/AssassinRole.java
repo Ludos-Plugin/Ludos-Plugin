@@ -29,9 +29,11 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-
+/**
+ * Implementation of the Assassin {@link Role}.
+ */
 public class AssassinRole extends Role {
-	public static final String id = "assassin";
+	public static final String ID = "assassin";
 
 	private static final int INVISIBILITY_DURATION = 300;
 	private static final long STATIONARY_DURATION_MS = 3000;
@@ -51,7 +53,7 @@ public class AssassinRole extends Role {
 		stealthTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), () -> {
 			long now = System.currentTimeMillis();
 			List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
-				.filter((player) -> Role.isPlayerRole(player, id))
+				.filter((player) -> getBuilder().getManager().isPlayerRole(player, ID))
 				.collect(Collectors.toUnmodifiableList());
 			for (Player player : players) {
 				if (!player.isOnline()) continue;
@@ -80,10 +82,10 @@ public class AssassinRole extends Role {
 		switch (builder.getId()) {
 			default:
 				return new LinkedHashMap<>() {{
-					put("dagger", new AssassinDagger.Events(game));
-					put("boots", new AssassinBoots.Events(game));
-					put("teleport_scroll", new TeleportScroll.Events(game));
-					put("snare", new AssassinSnareDevice.Events(game));
+					put(AssassinDagger.ID, new AssassinDagger.Events(game));
+					put(AssassinBoots.ID, new AssassinBoots.Events(game));
+					put(TeleportScroll.ID, new TeleportScroll.Events(game));
+					put(AssassinSnareDevice.ID, new AssassinSnareDevice.Events(game));
 				}};
 		}
 	}
@@ -91,7 +93,7 @@ public class AssassinRole extends Role {
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event) {
 		Player player = event.getPlayer();
-		if (!Role.isPlayerRole(player, AssassinRole.id)) return;
+		if (!getBuilder().getManager().isPlayerRole(player, AssassinRole.ID)) return;
 
 		// Ignorer les rotations (regarder autour sans bouger)
 		if (event.getFrom().getBlockX() == event.getTo().getBlockX() &&
@@ -108,7 +110,7 @@ public class AssassinRole extends Role {
 	@EventHandler
 	public void onInvisibleDaggerHit(EntityDamageByEntityEvent event) {
 		if (! (event.getDamager() instanceof Player player)) return;
-		if (! Role.isPlayerRole(player, AssassinRole.id)) return;
+		if (! getBuilder().getManager().isPlayerRole(player, AssassinRole.ID)) return;
 
 		if (!player.hasPotionEffect(PotionEffectType.INVISIBILITY)) return;
 
@@ -117,19 +119,21 @@ public class AssassinRole extends Role {
 
 	@Override
 	protected Boolean isPlayerValidInternal(OfflinePlayer player) {
-		return Role.isPlayerRole(player, id);
+		return getBuilder().getManager().isPlayerRole(player, ID);
 	}
 
-
+	/**
+	 * Builder for the {@link AssassinRole}.
+	 */
 	public static class Builder extends Role.Builder {
 
 		@Override
 		public String getId() {
-			return id;
+			return ID;
 		}
 
-		public Builder(Ludos plugin) {
-			super(plugin);
+		public Builder(Ludos ludos) {
+			super(ludos.getRoleManager(), ludos);
 		}
 
 

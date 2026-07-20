@@ -18,14 +18,17 @@ import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.core.Ludos;
 
+/**
+ * Manages texture providers, resource pack synchronization, and texture commands.
+ */
 public final class TextureManager implements CommandExecutor {
-	private final Ludos plugin;
+	private final Ludos ludos;
 	private final ResourcePackLoader loader;
 	private final List<TextureProvider> allProviders = new ArrayList<>();
 
-	public TextureManager(Ludos plugin) {
-		this.plugin = plugin;
-		this.loader = new ResourcePackLoader(plugin);
+	public TextureManager(Ludos ludos) {
+		this.ludos = ludos;
+		this.loader = new ResourcePackLoader(ludos);
 
 		initialize();
 	}
@@ -33,38 +36,38 @@ public final class TextureManager implements CommandExecutor {
 	private void initialize() {
 		syncResourcePackFromPolymerSource();
 		loader.load(Collections.emptyList());
-		plugin.getLogger().info("TextureManager initialized");
+		ludos.getLogger().info("TextureManager initialized");
 	}
 
 	private void syncResourcePackFromPolymerSource() {
-		Path pluginDataFolder = plugin.getDataFolder().toPath().toAbsolutePath().normalize();
+		Path pluginDataFolder = ludos.getDataFolder().toPath().toAbsolutePath().normalize();
 		Path pluginsDir = pluginDataFolder.getParent();
 
 		if (pluginsDir == null) {
-			plugin.getLogger().warning("Unable to resolve plugins directory from: " + pluginDataFolder);
+			ludos.getLogger().warning("Unable to resolve plugins directory from: " + pluginDataFolder);
 			return;
 		}
 
 		Path serverRoot = pluginsDir.getParent();
 		if (serverRoot == null) {
 			serverRoot = Path.of(".").toAbsolutePath().normalize();
-			plugin.getLogger().warning("Unable to resolve server root from plugins directory, fallback to: " + serverRoot);
+			ludos.getLogger().warning("Unable to resolve server root from plugins directory, fallback to: " + serverRoot);
 		}
 
 		Path sourceAssets = serverRoot.resolve("config/polymer/source_assets");
 		Path destination = pluginDataFolder.resolve("resourcepack");
 
 		if (!Files.isDirectory(sourceAssets)) {
-			plugin.getLogger().warning("Polymer source assets not found at: " + sourceAssets);
+			ludos.getLogger().warning("Polymer source assets not found at: " + sourceAssets);
 			return;
 		}
 
 		try {
 			deleteDirectory(destination);
 			copyDirectory(sourceAssets, destination);
-			plugin.getLogger().info("Resource pack synced from Polymer source assets");
+			ludos.getLogger().info("Resource pack synced from Polymer source assets");
 		} catch (IOException e) {
-			plugin.getLogger().warning("Failed to sync resource pack: " + e.getMessage());
+			ludos.getLogger().warning("Failed to sync resource pack: " + e.getMessage());
 		}
 	}
 
@@ -133,7 +136,7 @@ public final class TextureManager implements CommandExecutor {
 		loader.findBestModel(provider, variant, mode)
 			  .ifPresentOrElse(
 				  model -> CustomModelRegistry.apply(item, key),
-				  () -> plugin.getLogger().warning("No model found for: " + key)
+				  () -> ludos.getLogger().warning("No model found for: " + key)
 			  );
 	}
 
@@ -145,7 +148,7 @@ public final class TextureManager implements CommandExecutor {
 			loader.load(allProviders);
 		}
 
-		plugin.getLogger().info("TextureManager reloaded with " + allProviders.size() + " providers");
+		ludos.getLogger().info("TextureManager reloaded with " + allProviders.size() + " providers");
 	}
 
 	@Override

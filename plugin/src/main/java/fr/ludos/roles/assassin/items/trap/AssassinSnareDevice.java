@@ -33,13 +33,15 @@ import fr.ludos.core.item.BranchItem;
 import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * Implementation of the Assassin Snare Device, for use by any Player with {@link AssassinRole}.
+ */
 public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
-	private final static String ID = "trapperSnareGrimoire";
+	public final static String ID = "assassin_snare_grimoire";
 
 	// private final static Map<UUID, TrapperSnareDevice> cachedItems = new HashMap<>();
 
@@ -95,7 +97,9 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 		item.setVelocity(player.getLocation().getDirection().multiply(2));
 	}
 
-
+	/**
+	 * Events for the {@link AssassinSnareDevice}.
+	 */
 	public static class Events extends BranchItem.Events<AssassinSnareDevice, AssassinSnare> {
 		private BukkitTask trapTask = null;
 		public final Map<Player, Map<AssassinSnare, ArrayList<AssassinTrap>>> traps = new HashMap<>();
@@ -129,7 +133,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 								Vector range = trap.getRange();
 								List<LivingEntity> targets = trap.getLocation()
 									.getNearbyLivingEntities(range.getX(), range.getY(), range.getZ()).stream()
-									.filter(Utility.isEntityAlive)
+									.filter(Utility.IS_ENTITY_ALIVE)
 									.filter(teamController.isEntityAllyOfEntity(player))
 									.collect(Collectors.toList());
 
@@ -232,7 +236,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, AssassinRole.id);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

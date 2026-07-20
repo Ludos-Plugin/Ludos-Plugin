@@ -37,7 +37,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * A {@link SpecialItemInterface} wrapper for an Item ({@link ItemStack}).
+ */
 public abstract class SpecialItem implements SpecialItemInterface {
 	public static final int USAGE_COOLDOWN = 4;
 
@@ -68,9 +70,9 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		UUID itemId = UUID.randomUUID();
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
-		container.set(ownerKey, PersistentDataType.STRING, owner.getUniqueId().toString());
-		container.set(typeIdKey, PersistentDataType.STRING, getTypeId());
-		container.set(itemIdKey, PersistentDataType.STRING, itemId.toString());
+		container.set(OWNER_KEY, PersistentDataType.STRING, owner.getUniqueId().toString());
+		container.set(TYPE_ID_KEY, PersistentDataType.STRING, getTypeId());
+		container.set(ITEM_ID_KEY, PersistentDataType.STRING, itemId.toString());
 
 		stack.setItemMeta(meta);
 
@@ -120,8 +122,11 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	}
 
 	/**
-	 * @param inventory
-	 * @return true if the provided inventory contains a SpecialItem of type T
+	 * Check for the presence of any number of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
+	 * @param inventory The inventory to search the {@link SpecialItem} in
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}.<br>
+	 * @return Whether or not the provided inventory contains at least one instance of {@link SpecialItem} type T
 	 */
 	public static <T extends SpecialItem> Boolean containedIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		ItemStack[] items = inventory.getContents();
@@ -139,7 +144,11 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	}
 
 	/**
-	 * @param inventory
+	 * Find a single instance of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
+	 * @param inventory The inventory to search the {@link SpecialItem} in
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}.<br>
+	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
 	 * @return The first Special Item of type T found in the inventory or null if there is none
 	 */
 	@Nullable
@@ -147,13 +156,25 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		return findIn(Arrays.asList(inventory.getContents()), constructor);
 	}
 	/**
-	 * @param inventory
+	 * Find all instances of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
+	 * @param inventory The inventory to search the {@link SpecialItem} in
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}.<br>
+	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
 	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
 	 */
 	public static <T extends SpecialItem> List<T> findAllIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		return findAllIn(Arrays.asList(inventory.getContents()), constructor);
 	}
 
+	/**
+	 * Find a single instance of the {@link SpecialItem} type T in the given items iterable, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
+	 * @param items The items to search the {@link SpecialItem} in
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}.<br>
+	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
+	 * @return The first Special Item of type T found in the inventory or null if there is none
+	 */
 	public static <T extends SpecialItem> T findIn(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
 		for (ItemStack item : items) {
 			if (item == null) continue;
@@ -164,6 +185,14 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 		return null;
 	}
+	/**
+	 * Find all instances of the {@link SpecialItem} type T in the given items iterable, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
+	 * @param items The items to search the {@link SpecialItem} in
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}.<br>
+	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
+	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
+	 */
 	public static <T extends SpecialItem> List<T> findAllIn(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
 		ArrayList<T> results = new ArrayList<>();
 		for (ItemStack item : items) {
@@ -187,7 +216,10 @@ public abstract class SpecialItem implements SpecialItemInterface {
 			.decoration(TextDecoration.ITALIC, false);
 	}
 
-
+	/**
+	 * Events for the {@link T} {@link SpecialItem} type.
+	 * @param <T> The {@link SpecialItem} Type to work on.
+	 */
 	public static abstract class Events<T extends SpecialItem> extends GameEvents {
 		private final Info info;
 
@@ -382,6 +414,11 @@ public abstract class SpecialItem implements SpecialItemInterface {
 			refreshPlayerInventory(event.getPlayer());
 		}
 
+		/**
+		 * Configuration for {@link SpecialItem.Events}, such as its default slot and whether or not it can be dropped.
+		 * @param slot The default {@link ItemSlot} that the Item will attempt to place itself in
+		 * @param canDrop Whether or not the {@link SpecialItem} instance can be dropped by its {@link SpecialItem#owner}
+		 */
 		public static final record Info(
 			@Nullable ItemSlot slot,
 			boolean canDrop

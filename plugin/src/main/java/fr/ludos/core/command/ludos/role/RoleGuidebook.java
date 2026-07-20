@@ -12,13 +12,23 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.role.Role;
+import fr.ludos.core.role.RoleManager;
 
+/**
+ * {@link Subcommand} to obtain a Ludos Guidebook for the specified {@link Role}.
+ */
 public class RoleGuidebook implements Subcommand {
-	private final static String id = "guidebook";
+	private final static String ID = "guidebook";
+
+	private final RoleManager manager;
+
+	public RoleGuidebook(RoleManager manager) {
+		this.manager = manager;
+	}
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -30,7 +40,7 @@ public class RoleGuidebook implements Subcommand {
 		if (args.length < 1) return false;
 
 		String guidebookRoleId = args[0].toLowerCase();
-		Role.Builder guidebookRole = Role.getRoleById(guidebookRoleId);
+		Role.Builder guidebookRole = manager.getRoleById(guidebookRoleId);
 		if (guidebookRole == null) {
 			sender.sendMessage("Invalid Role");
 			return true;
@@ -49,7 +59,9 @@ public class RoleGuidebook implements Subcommand {
 	@Override
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length == 1)
-			return Role.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+			return manager.getRegistered().keySet().stream()
+				.sorted()
+				.collect(Collectors.toList());
 
 		if (args.length == 2)
 			return CommandUtility.getOnlinePlayerNames();
@@ -59,7 +71,7 @@ public class RoleGuidebook implements Subcommand {
 	@Override
 	public String getUsage() {
 		return "<" +
-			Role.getRegistered().keySet().stream().sorted()
+			manager.getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))
 			+ "> [player]";
 	}

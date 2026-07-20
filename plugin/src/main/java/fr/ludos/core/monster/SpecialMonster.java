@@ -12,6 +12,11 @@ import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.core.game.Game;
 
+/**
+ * Base class for special monsters managed by the Ludos.
+ *
+ * @param <TEntity> the type of living entity used for the monster
+ */
 public abstract class SpecialMonster<TEntity extends LivingEntity> {
 	private final String typeId;
 	private final Game game;

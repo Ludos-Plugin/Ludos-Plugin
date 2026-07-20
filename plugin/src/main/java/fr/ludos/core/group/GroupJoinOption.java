@@ -4,9 +4,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Behaviour for a Player attempting to join a {@link Group}.
+ */
 public enum GroupJoinOption {
-	auto {},
-	need_accept {};
+	auto_accept {},
+	manual_accept {};
 
 	public static List<String> getOptions() {
 		return Arrays.stream(GroupJoinOption.values())

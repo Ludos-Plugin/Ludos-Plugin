@@ -12,6 +12,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Encapsulation of a set of Subcommands, for use by parent Commands.
+ */
 public final class SubcommandManager implements CommandExecutor, TabCompleter, CommandUsageProvider  {
 	private final Map<String, Subcommand> subcommands;
 	// private Predicate<Subcommand, CommandSender> filter;
@@ -34,17 +37,11 @@ public final class SubcommandManager implements CommandExecutor, TabCompleter, C
 
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		if (args.length == 0) {
-			System.out.println("0");
-			return false;
-		}
+		if (args.length == 0) return false;
 
 		String arg = args[0].toLowerCase();
 		Subcommand option = subcommands.get(arg);
-		if (option == null) {
-			System.out.println("No option");
-			return false;
-		}
+		if (option == null) return false;
 
 		return option.onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
 	}

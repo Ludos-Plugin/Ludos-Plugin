@@ -26,15 +26,16 @@ import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelBranchItem;
 import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelValue;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.harvester.HarvesterRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Huntsman Pick, for use by any Player with {@link HarvesterRole}.
+ */
 public final class HarvesterPick extends LevelBranchItem<HarvesterPickBranch, HarvesterPickLevels> {
-	private static final String ID = "manhuntHarvesterPick";
+	public static final String ID = "harvester_pick";
 	public final Events events;
 
 	// private final static Map<UUID, HarvesterPick> cachedItems = new HashMap<>();
@@ -144,7 +145,9 @@ public final class HarvesterPick extends LevelBranchItem<HarvesterPickBranch, Ha
 		}
 	}
 
-
+	/**
+	 * Events for the {@link HarvesterPick}.
+	 */
 	public static final class Events extends LevelBranchItem.Events<HarvesterPick, HarvesterPickBranch, HarvesterPickLevels> {
 		private static final List<HarvesterPickBranch> DEFAULT_BRANCHES = Arrays.asList(HarvesterPickBranches.values());
 		private static final List<HarvesterPickLevels> LEVELS = List.of(HarvesterPickLevels.values());
@@ -197,7 +200,7 @@ public final class HarvesterPick extends LevelBranchItem<HarvesterPickBranch, Ha
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HarvesterRole.id);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, HarvesterRole.ID);
 		}
 	}
 }

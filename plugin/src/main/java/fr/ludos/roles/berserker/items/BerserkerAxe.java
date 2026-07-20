@@ -27,21 +27,25 @@ import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelValue;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.berserker.BerserkerRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Berserker Axe, for use by any Player with {@link BerserkerRole}.
+ */
 public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
-	public static final String ID = "berserkerAxe";
+	public static final String ID = "berserker_axe";
 
 	@Override
 	public String getTypeId() {
 		return ID;
 	}
 
+	/**
+	 * The variant of a {@link BerserkerAxe}.
+	 */
 	public enum Variant {
 		FIRST(0),
 		SECOND(1);
@@ -60,9 +64,9 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		}
 	}
 
-	public static final String VARIANT_KEY = "variant";
+	public static final String VARIANT_KEY_STRING = "variant";
 
-	private final static NamespacedKey variantKey = new NamespacedKey(Ludos.namespace, VARIANT_KEY);
+	private final static NamespacedKey VARIANT_KEY = new NamespacedKey(Ludos.NAMESPACE, VARIANT_KEY_STRING);
 
 	private final Variant variant;
 	public Variant getVariant() {
@@ -79,9 +83,9 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
-		if (! container.has(variantKey, PersistentDataType.INTEGER) ) return null;
+		if (! container.has(VARIANT_KEY, PersistentDataType.INTEGER) ) return null;
 
-		return Variant.fromKey(container.get(variantKey, PersistentDataType.INTEGER));
+		return Variant.fromKey(container.get(VARIANT_KEY, PersistentDataType.INTEGER));
 	}
 
 
@@ -131,7 +135,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		super.onInitialize();
 		ItemMeta meta = getStack().getItemMeta();
 
-		meta.getPersistentDataContainer().set(variantKey, PersistentDataType.INTEGER, variant.key());
+		meta.getPersistentDataContainer().set(VARIANT_KEY, PersistentDataType.INTEGER, variant.key());
 
 		// Set damage to sword baseline: 1 (base) + 5 = 6 damage, same as iron sword
 		if (variant == Variant.FIRST) {
@@ -183,7 +187,9 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		return lore;
 	}
 
-
+	/**
+	 * Events for the {@link BerserkerAxe}.
+	 */
 	public static class Events extends LevelItem.Events<BerserkerAxe, BerserkerAxeLevels> {
 		private static final List<BerserkerAxeLevels> LEVELS = List.of(BerserkerAxeLevels.values());
 		private final BerserkerRole role;
@@ -263,7 +269,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, BerserkerRole.ID);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, BerserkerRole.ID);
 		}
 	}
 }

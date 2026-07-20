@@ -20,13 +20,13 @@ class GroupPermissionTest extends GroupTest {
 		PlayerMock player2 = createPlayer("Player2");
 		PlayerMock player3 = createPlayer("Player3");
 
-		createGroupWithInvite(player1, java.util.Collections.singletonList(player2));
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
 		player2.performCommand("ludos group join " + player1.getName());
 		assertEquals("You have joined " + player1.getName() + "'s group.", player2.nextMessage(), "Join should be accepted after invite");
 		assertEquals(player2.getName() + " has joined the group.", player1.nextMessage(), "Leader should be notified on join");
 
-		player1.performCommand("ludos group config member_authorisation " + GroupRightsOption.none.name());
-		assertEquals("Members Authorisation Option set to none", player1.nextMessage(), "Could not set group rights");
+		player1.performCommand("ludos group config group member_authorisation " + GroupRightsOption.none.name());
+		assertEquals("Members authorisation set to none", player1.nextMessage(), "Could not set group rights");
 
 		player2.performCommand("ludos group invite " + player3.getName());
 		assertEquals("Only the group leader can invite new members.", player2.nextMessage(), "Member should not be allowed to invite when rights are none");
@@ -37,16 +37,16 @@ class GroupPermissionTest extends GroupTest {
 		PlayerMock player1 = createPlayer("Player1");
 		PlayerMock player2 = createPlayer("Player2");
 
-		createGroupWithInvite(player1, Collections.singletonList(player2));
-		joinGroup(player2, player1);
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
+		assertJoinGroup(player2, player1);
 
 		PlayerMock player3 = createPlayer("Player3");
 
-		invitePlayerToGroup(player1, Collections.singletonList(player3));
-		joinGroup(player3, player1);
+		assertInvitePlayerToGroup(player1, Collections.singletonList(player3));
+		assertJoinGroup(player3, player1);
 
-		player1.performCommand("ludos group config member_authorisation " + GroupRightsOption.none.name());
-		assertEquals("Members Authorisation Option set to " + GroupRightsOption.none.name(), player1.nextMessage(), "Could not set group rights");
+		player1.performCommand("ludos group config group member_authorisation " + GroupRightsOption.none.name());
+		assertEquals("Members authorisation set to " + GroupRightsOption.none.name(), player1.nextMessage(), "Could not set group rights");
 
 		player2.performCommand("ludos group kick " + player3.getName());
 		assertEquals("Only the group leader can kick members.", player2.nextMessage(), "Member should not be allowed to kick when rights are none");
@@ -58,11 +58,11 @@ class GroupPermissionTest extends GroupTest {
 		PlayerMock player1 = createPlayer("Player1");
 		PlayerMock player2 = createPlayer("Player2");
 
-		createGroupWithInvite(player1, Collections.singletonList(player2));
-		joinGroup(player2, player1);
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
+		assertJoinGroup(player2, player1);
 
-		player1.performCommand("ludos group config member_authorisation " + rights);
-		assertEquals("Members Authorisation Option set to " + rights, player1.nextMessage(), "Could not set group rights");
+		player1.performCommand("ludos group config group member_authorisation " + rights);
+		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
 
 		PlayerMock player3 = createPlayer("Player3");
 
@@ -77,16 +77,16 @@ class GroupPermissionTest extends GroupTest {
 		PlayerMock player1 = createPlayer("Player1");
 		PlayerMock player2 = createPlayer("Player2");
 
-		createGroupWithInvite(player1, Collections.singletonList(player2));
-		joinGroup(player2, player1);
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
+		assertJoinGroup(player2, player1);
 
 		PlayerMock player3 = createPlayer("Player3");
-		invitePlayerToGroup(player1, Collections.singletonList(player3));
+		assertInvitePlayerToGroup(player1, Collections.singletonList(player3));
 
-		joinGroup(player3, player1);
+		assertJoinGroup(player3, player1);
 
-		player1.performCommand("ludos group config member_authorisation " + rights);
-		assertEquals("Members Authorisation Option set to " + rights, player1.nextMessage(), "Could not set group rights");
+		player1.performCommand("ludos group config group member_authorisation " + rights);
+		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
 
 		player2.performCommand("ludos group kick " + player3.getName());
 		assertEquals("Player3 has left the group.", player2.nextMessage(), "Member could not kick another member, even with " + rights + " group authorisation.");
@@ -98,14 +98,14 @@ class GroupPermissionTest extends GroupTest {
 		PlayerMock player1 = createPlayer("Player1");
 		PlayerMock player2 = createPlayer("Player2");
 
-		createGroupWithInvite(player1, Collections.singletonList(player2));
-		joinGroup(player2, player1);
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
+		assertJoinGroup(player2, player1);
 
-		player1.performCommand("ludos group config member_authorisation " + rights);
-		assertEquals("Members Authorisation Option set to " + rights, player1.nextMessage(), "Could not set group rights");
+		player1.performCommand("ludos group config group member_authorisation " + rights);
+		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
 
-		player2.performCommand("ludos group config member_authorisation none");
-		assertEquals("Members Authorisation Option set to none", player2.nextMessage(), "Member should be allowed to configure the group when rights permit it");
+		player2.performCommand("ludos group config group member_authorisation none");
+		assertEquals("Members authorisation set to none", player2.nextMessage(), "Member should be allowed to configure the group when rights permit it");
 	}
 
 	@Test
@@ -113,10 +113,10 @@ class GroupPermissionTest extends GroupTest {
 		PlayerMock player1 = createPlayer("Player1");
 		PlayerMock player2 = createPlayer("Player2");
 
-		createGroupWithInvite(player1, Collections.singletonList(player2));
-		joinGroup(player2, player1);
+		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
+		assertJoinGroup(player2, player1);
 
-		Group group = Group.getGroupOfPlayer(player1);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player1);
 		assertTrue(group != null && group.isMember(player2), "Player should be a member after joining");
 	}
 }

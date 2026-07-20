@@ -2,37 +2,22 @@ package fr.ludos.core.role;
 
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
-import org.bukkit.permissions.ServerOperator;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.book.BookUtility;
+import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
 import fr.ludos.core.game.GameProcessBase;
-import fr.ludos.core.group.Group;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -42,31 +27,11 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 /**
  * The Role class contains runtime data for the Role itself as well as the events for the Role-users
- * It contains events and Data.
+ * It contains events and State.
  */
 public abstract class Role extends GameProcessBase {
-	public static final String noneLabel = "none";
-	private static final String rolesKey = "playerRoles";
-
-	public static Map<String, Builder> getRegistered() {
-		return registered;
-	}
-	private static Map<String, Builder> registered = new HashMap<String, Builder>();
-
-
-	public static List<String> getRoleIds() {
-		return registered.keySet().stream().collect( Collectors.toList() );
-	}
-	public static List<Builder> getRoleBuilders() {
-		return registered.values().stream().collect( Collectors.toList() );
-	}
-
-
-	public static Map<UUID, String> getPlayerRoles() {
-		return playerRoles;
-	}
-	private static Map<UUID, String> playerRoles = new HashMap<UUID, String>();
-
+	public static final String NAMESPACE = "role";
+	public static final String NONE_LABEL = "none";
 
 	private final Game game;
 	public Game getGame() {
@@ -78,6 +43,9 @@ public abstract class Role extends GameProcessBase {
 		return builder;
 	}
 
+	public Ludos getLudos() {
+		return game.getLudos();
+	}
 	public JavaPlugin getPlugin() {
 		return game.getPlugin();
 	}
@@ -88,13 +56,14 @@ public abstract class Role extends GameProcessBase {
 	}
 
 	/**
-	 * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
-	 * It contains configuration for the Role itself.
+	 * Builds an instance of this Role, using the configuration inside the builder, and asigning itself to the given Game.
+	 * @param builder The builder to use for configuration
+	 * @param game The game used for scope
 	 */
 	public Role(Builder builder, Game game) {
 		this.game = game;
 		this.builder = builder;
-		gameEvents = game.modifyEvents(createGameEvents(builder, game));
+		gameEvents = game.digestRoleEvents(builder.getId(), createGameEvents(builder, game));
 	}
 
 	@Override
@@ -141,120 +110,6 @@ public abstract class Role extends GameProcessBase {
 
 	protected abstract LinkedHashMap<String, GameEvents> createGameEvents(Builder builder, Game game);
 
-	public static void loadConfigRoles(Ludos plugin) {
-		ConfigurationSection configSection = plugin.getConfig();
-		if (! configSection.isConfigurationSection(rolesKey)) {
-			configSection.createSection(rolesKey);
-		}
-		ConfigurationSection rolesSection = configSection.getConfigurationSection(rolesKey);
-		if (rolesSection == null) {
-			return;
-		}
-
-		playerRoles = rolesSection.getKeys(false).stream()
-			.filter(Objects::nonNull)
-			.collect(Collectors.toMap(
-				(s) -> UUID.fromString(s),
-				(s) -> {
-					String path = rolesKey + '.' + UUID.fromString(s);
-					String val = plugin.getConfig().getString(path);
-					plugin.getLogger().info("Loaded Role of Player UUID : " + path + " | Role ID : " + val);
-					return val;
-				}
-			));
-	}
-
-	public static void registerRole(Builder constructor) {
-		Role.registered.put(constructor.getId().toLowerCase(), constructor);
-	}
-
-	public static final boolean isAuthorizedToEditRole(ServerOperator operator, OfflinePlayer target, Ludos plugin) {
-		if (operator.isOp() || operator == target) {
-			return true;
-		}
-
-		if (operator instanceof Player player) {
-			final Group group = Group.getGroupOfPlayer(player);
-			if (group != null && group.isLeader(player) && group == Group.getGroupOfPlayer(target)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public static List<Player> getPlayersOfRole(String roleId) {
-		return Role.getPlayerRoles().entrySet().stream()
-			.filter(entry -> (entry.getValue().equals(roleId)))
-			.map(entry -> Bukkit.getPlayer(entry.getKey()))
-			.filter(Objects::nonNull)
-			.collect(Collectors.toList());
-	}
-
-	@Nullable
-	public static String getPlayerRoleId(OfflinePlayer player) {
-		return playerRoles.getOrDefault(player.getUniqueId(), null);
-	}
-
-	@Nullable
-	public static Builder getPlayerRole(OfflinePlayer player) {
-		return registered.getOrDefault(getPlayerRoleId(player), null);
-	}
-
-	@Nullable
-	public static Builder getRoleById(String roleId) {
-		return registered.getOrDefault(roleId, null);
-	}
-
-	public static boolean isPlayerRole(OfflinePlayer player, String roleId) {
-		String playerRoleId = getPlayerRoleId(player);
-		if (roleId == playerRoleId) return true;
-		else if (roleId == null || playerRoleId == null) return false;
-		return roleId.equalsIgnoreCase(playerRoleId);
-	}
-
-	public static Predicate<OfflinePlayer> ofRole(String id) {
-		return (OfflinePlayer p) -> isPlayerRole(p, id);
-	}
-
-	public static void setRole(OfflinePlayer player, String roleId, Ludos plugin) {
-		UUID playerUUID = player.getUniqueId();
-		if ( playerRoles.containsKey(playerUUID) && playerRoles.get(playerUUID).equalsIgnoreCase(roleId) ) return;
-
-		Role.Builder role = getRegistered().get(roleId);
-		if (role == null) return;
-
-		playerRoles.put(playerUUID, roleId);
-
-		plugin.getConfig().set(rolesKey + '.' + playerUUID, roleId);
-		plugin.saveConfig();
-
-		Player online = player.getPlayer();
-		if (online != null) {
-			online.sendMessage("Your role is now " + roleId);
-			System.out.println("Player online!");
-		} else {
-			System.out.println("Player offline!");
-		}
-	}
-
-	public static void removeRole(OfflinePlayer player, Ludos plugin) {
-		UUID playerUUID = player.getUniqueId();
-		if ( ! playerRoles.containsKey(playerUUID) ) return;
-
-		Role.Builder role = getRegistered().get(playerRoles.get(playerUUID));
-		if (role == null) return;
-
-		playerRoles.remove(playerUUID);
-		plugin.getConfig().set(rolesKey + '.' + playerUUID, null);
-		plugin.saveConfig();
-
-		Player online = player.getPlayer();
-		if (online != null) {
-			online.sendMessage("You now have no role");
-		}
-	}
-
 
 	public final Boolean isPlayerValid(OfflinePlayer player) {
 		if (! game.getGroup().isPlayer(player)) return false;
@@ -269,6 +124,15 @@ public abstract class Role extends GameProcessBase {
 	 * It contains configuration for the Role itself.
 	 */
 	public static abstract class Builder {
+		private final RoleManager manager;
+		public final RoleManager getManager() {
+			return manager;
+		}
+
+		public final Ludos getLudos() {
+			return manager.getLudos();
+		}
+
 		private final JavaPlugin plugin;
 		public final JavaPlugin getPlugin() { return plugin; }
 
@@ -328,12 +192,13 @@ public abstract class Role extends GameProcessBase {
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
 
-		public boolean executeRoleConfig(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) { return false; }
-		public List<String> roleConfigTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) { return null; }
-		public String getRoleConfigUsage(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label) { return null; }
+		public ConfigOptionsCollection getConfig() {
+			return null;
+		}
 
 
-		public Builder(JavaPlugin plugin) {
+		public Builder(RoleManager manager, JavaPlugin plugin) {
+			this.manager = manager;
 			this.plugin = plugin;
 		}
 

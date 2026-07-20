@@ -30,6 +30,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.util.TriState;
 
+/**
+ * Manages a dedicated world for the {@link Game} process and its related area.
+ */
 public final class WorldManager extends GameProcessBase {
 	private final Builder builder;
 	@Override
@@ -244,7 +247,9 @@ public final class WorldManager extends GameProcessBase {
 		worldFolder.delete();
 	}
 
-
+	/**
+	 * Builder for {@link WorldManager}.
+	 */
 	public static final class Builder {
 		private final Game game;
 		private Location returnLocation;

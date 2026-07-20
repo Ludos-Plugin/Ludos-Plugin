@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * The kinds of Authorisation that a {@link Group}'s members have.
+ */
 public enum GroupRightsOption {
 	none,
 	invite {

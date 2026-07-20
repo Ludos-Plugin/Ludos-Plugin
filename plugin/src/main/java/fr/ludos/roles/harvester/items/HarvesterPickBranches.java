@@ -9,10 +9,14 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.SpecialItemInterface;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+/**
+ * Default {@link BranchItemInterface.Branch}es for the {@link HarvesterPick}.
+ */
 public enum HarvesterPickBranches implements HarvesterPickBranch {
 	Pickaxe (
 		Component.text("Pickaxe").color(NamedTextColor.AQUA),
@@ -92,7 +96,7 @@ public enum HarvesterPickBranches implements HarvesterPickBranch {
 
 	@Override
 	public String id() {
-		return super.name();
+		return name();
 	}
 
 	public abstract void onBreakBlock(HarvesterPick pick, BlockBreakEvent event);

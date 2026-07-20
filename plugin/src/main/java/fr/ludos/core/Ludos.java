@@ -1,10 +1,17 @@
 package fr.ludos.core;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -19,14 +26,20 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.command.ludos.LudosCommand;
+import fr.ludos.core.command.ludos.config.GlobalScopedConfigMap;
+import fr.ludos.core.command.ludos.config.GroupScopedConfigMap;
+import fr.ludos.core.command.ludos.config.PlayerScopedConfigMap;
+import fr.ludos.core.command.ludos.config.ludos.LudosConfigMap;
+import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
 import fr.ludos.core.game.Game;
-import fr.ludos.core.group.Group;
+import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.GroupManager;
 import fr.ludos.core.item.texture.TextureListener;
 import fr.ludos.core.item.texture.TextureManager;
 import fr.ludos.core.packets.player.PlayerPackets;
 import fr.ludos.core.packets.player.PlayerPacketsFactory;
 import fr.ludos.core.role.Role;
+import fr.ludos.core.role.RoleManager;
 import fr.ludos.games.arena.ArenaGame;
 import fr.ludos.games.manhunt.ManhuntGame;
 import fr.ludos.games.raid.RaidGame;
@@ -34,23 +47,81 @@ import fr.ludos.roles.assassin.AssassinRole;
 import fr.ludos.roles.berserker.BerserkerRole;
 import fr.ludos.roles.harvester.HarvesterRole;
 import fr.ludos.roles.huntsman.HuntsmanRole;
-import fr.ludos.roles.tank.TankRole;
+import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * The main Ludos plugin.
+ * Contains Configuration file utility functions.
+ */
 public class Ludos extends JavaPlugin implements Listener {
+	private final File playersFile = new File(getDataFolder(), "players.yml");
+	private final FileConfiguration playersData = YamlConfiguration.loadConfiguration(playersFile);
 
-	public static final String namespace = "ludos";
+	public static final String NAMESPACE = "ludos";
 
 	private final GroupManager groupManager = new GroupManager(this);
+	private final GameManager gameManager = new GameManager(this);
+	private final RoleManager roleManager = new RoleManager(this);
+
 	private final TextureManager textureManager = new TextureManager(this);
 	private final TextureListener textureListener = new TextureListener(this);
 	public final PlayerPackets playerPackets = PlayerPacketsFactory.createHandler();
 
-	public Ludos() { }
+	public final PlayerScopedConfigMap playerConfigMap = new PlayerScopedConfigMap(this);
+	public final GroupScopedConfigMap groupConfigMap = new GroupScopedConfigMap(this);
+	public final GlobalScopedConfigMap globalConfigMap = new GlobalScopedConfigMap(this);
+
+	public final GroupManager getGroupManager() {
+		return this.groupManager;
+	}
+	public final GameManager getGameManager() {
+		return this.gameManager;
+	}
+	public final RoleManager getRoleManager() {
+		return this.roleManager;
+	}
+
+	public ConfigurationSection getPluginConfig() {
+		return Utility.getOrCreateConfigSection(getConfig(), LudosConfigMap.INSTANCE.getNamespace());
+	}
+	public ConfigurationSection getGlobalRoleConfig(Role.Builder role) {
+		return Utility.getOrCreateConfigSection(getConfig(), roleManager.configMap.getNamespace() + "." + role.getId());
+	}
+	public ConfigurationSection getGlobalPlayerConfig() {
+		return Utility.getOrCreateConfigSection(getConfig(), PlayerConfigMap.INSTANCE.getNamespace());
+	}
+
+	public final FileConfiguration getPlayersConfig() {
+		return playersData;
+	}
+	public ConfigurationSection getPlayerConfigSection(OfflinePlayer player) {
+		return Utility.getOrCreateConfigSection(playersData, player.getUniqueId().toString());
+	}
+	public ConfigurationSection getPlayerScopedConfig(OfflinePlayer player) {
+		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), "config");
+	}
+	public ConfigurationSection getPlayerScopedConfig(OfflinePlayer player, String path) {
+		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), "config." + path);
+	}
+	public ConfigurationSection getPlayerRoleConfig(OfflinePlayer player, Role.Builder role) {
+		return getPlayerScopedConfig(player, roleManager.configMap.getNamespace() + "." + role.getId());
+	}
+	public ConfigurationSection getPlayerConfig(OfflinePlayer player) {
+		return getPlayerScopedConfig(player, PlayerConfigMap.INSTANCE.getNamespace());
+	}
+
+	public void savePlayersConfig() {
+		try {
+			playersData.save(playersFile);
+		} catch (IOException ex) {
+			getLogger().log(Level.SEVERE, "Could not save players to " + playersFile, ex);
+		}
+	}
 
 	public TextureManager getTextureManager() {
 		return textureManager;
@@ -59,18 +130,18 @@ public class Ludos extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		super.onEnable();
-		Role.loadConfigRoles(this);
-		Group.loadConfigGroups(this);
+		roleManager.loadConfigRoles();
+		groupManager.loadConfigGroups();
 
-		Game.registerGame(new ManhuntGame.Builder(this));
-		Game.registerGame(new ArenaGame.Builder(this));
-		Game.registerGame(new RaidGame.Builder(this));
+		gameManager.registerGame(new ManhuntGame.Builder(gameManager));
+		gameManager.registerGame(new ArenaGame.Builder(gameManager));
+		gameManager.registerGame(new RaidGame.Builder(gameManager));
 
-		Role.registerRole(new HuntsmanRole.Builder(this));
-		Role.registerRole(new HarvesterRole.Builder(this));
-		Role.registerRole(new TankRole.Builder(this));
-		Role.registerRole(new AssassinRole.Builder(this));
-		Role.registerRole(new BerserkerRole.Builder(this));
+		roleManager.registerRole(new HuntsmanRole.Builder(this));
+		roleManager.registerRole(new HarvesterRole.Builder(this));
+		roleManager.registerRole(new RampartRole.Builder(this));
+		roleManager.registerRole(new AssassinRole.Builder(this));
+		roleManager.registerRole(new BerserkerRole.Builder(this));
 
 		String commandLabel = "ludos";
 		PluginCommand cmd = getCommand(commandLabel);
@@ -93,16 +164,16 @@ public class Ludos extends JavaPlugin implements Listener {
 	@Override
 	public void onDisable() {
 		super.onDisable();
-		for (Game game : Game.getActiveGames()) {
+		for (Game game : gameManager.getActiveGames()) {
 			game.stop();
 		}
 		HandlerList.unregisterAll((Plugin) this);
 	}
 
-	public static ItemStack createGuidebook() {
+	public ItemStack createGuidebook() {
 		final int gameHeaderPageIdx = 2;
 
-		final List<Game.Builder> gameBuilders = Game.getGameBuilders();
+		final List<Game.Builder> gameBuilders = gameManager.getGameBuilders();
 		final int gameHeaderPageCount = ((2 + gameBuilders.size() * 2) + BookUtility.MC_BOOK_LINE_COUNT - 1) / BookUtility.MC_BOOK_LINE_COUNT;
 
 		int gamePageOffset = 0;
@@ -141,7 +212,7 @@ public class Ludos extends JavaPlugin implements Listener {
 
 		final int roleHeaderPageIdx = gameHeaderPageIdx + gameHeaderPageCount + gamePageOffset;
 
-		final List<Role.Builder> roleBuilders = Role.getRoleBuilders();
+		final List<Role.Builder> roleBuilders = roleManager.getBuilders();
 		final int roleHeaderPageCount = ((2 + roleBuilders.size() * 2) + BookUtility.MC_BOOK_LINE_COUNT - 1) / BookUtility.MC_BOOK_LINE_COUNT;
 
 		int rolePageOffset = 0;
@@ -240,10 +311,13 @@ public class Ludos extends JavaPlugin implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player currentPlayer = event.getPlayer();
 
-		TextComponent message = Component.text("Click here to get a guidebook!")
-			.color(NamedTextColor.GOLD)
-			.decoration(TextDecoration.UNDERLINED, true)
-			.clickEvent(ClickEvent.runCommand("/ludos guidebook"));
-		currentPlayer.sendMessage(message);
+		boolean showMessage = PlayerConfigMap.GUIDEBOOK_MESSAGE.getPlayerConfig(currentPlayer, this);
+		if (showMessage) {
+			TextComponent message = Component.text("Click here to get a guidebook!")
+				.color(NamedTextColor.GOLD)
+				.decoration(TextDecoration.UNDERLINED, true)
+				.clickEvent(ClickEvent.runCommand("/ludos guidebook"));
+			currentPlayer.sendMessage(message);
+		}
 	}
 }

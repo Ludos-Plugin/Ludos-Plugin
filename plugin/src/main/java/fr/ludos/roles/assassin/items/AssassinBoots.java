@@ -21,11 +21,13 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * Implementation of the Assassin Boots, for use by any Player with {@link AssassinRole}.
+ */
 public class AssassinBoots extends SpecialItem {
 	public static final String ID = "assassin_boots";
 
@@ -80,7 +82,9 @@ public class AssassinBoots extends SpecialItem {
 		));
 	}
 
-
+	/**
+	 * Events for the {@link AssassinBoots}.
+	 */
 	public static class Events extends SpecialItem.Events<AssassinBoots> {
 		public Events(Game game) {
 			super(game, new Events.Info(ItemSlot.BOOTS));
@@ -126,7 +130,7 @@ public class AssassinBoots extends SpecialItem {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, AssassinRole.id);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

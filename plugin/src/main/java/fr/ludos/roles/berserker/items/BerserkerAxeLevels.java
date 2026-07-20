@@ -8,9 +8,12 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.item.level.LevelItem;
+import fr.ludos.core.item.level.LevelItemInterface;
 
-public enum BerserkerAxeLevels implements LevelItem.Level<BerserkerAxeLevels> {
+/**
+ * Default {@link LevelItemInterface.Level}s for the {@link BerserkerAxe}.
+ */
+public enum BerserkerAxeLevels implements LevelItemInterface.Level<BerserkerAxeLevels> {
 	IRON(Material.IRON_AXE, Material.GOLDEN_AXE, 0, Collections.emptyMap(), 20),
 	IRON2(Material.IRON_AXE, Material.GOLDEN_AXE, 0.5, Collections.singletonMap(Enchantment.DAMAGE_ALL, 1), 40),
 	GOLD(Material.GOLDEN_AXE, Material.DIAMOND_AXE, 1, Collections.singletonMap(Enchantment.DAMAGE_ALL, 1), 60),

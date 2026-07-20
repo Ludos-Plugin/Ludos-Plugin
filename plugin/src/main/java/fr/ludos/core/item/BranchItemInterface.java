@@ -16,9 +16,13 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-public interface BranchItemInterface<TBranch extends BranchItem.Branch> extends SpecialItemInterface {
+/**
+ * Special Item with different "branches" (firing modes, switching between abilities...).
+ * @param <TBranch> The type that a Branch needs to implement/extend to be used as a Branch for this type.
+ */
+public interface BranchItemInterface<TBranch extends BranchItemInterface.Branch> extends SpecialItemInterface {
 	public static final String BRANCH_KEY_STRING = "branch";
-	public static final NamespacedKey BRANCH_KEY = new NamespacedKey(Ludos.namespace, BRANCH_KEY_STRING);
+	public static final NamespacedKey BRANCH_KEY = new NamespacedKey(Ludos.NAMESPACE, BRANCH_KEY_STRING);
 
 	public TBranch getBranch();
 	public void onSetBranch(TBranch branch);
@@ -40,11 +44,11 @@ public interface BranchItemInterface<TBranch extends BranchItem.Branch> extends 
 	/**
 	 * Utility function to handle branch switching when player switches branches.
 	 * @param <TItem> The type of the item, must extend SpecialItem
-	 * @param <TBranch> The type of the branch, must be an enum that implements BranchItem.Branch
+	 * @param <TBranch> The type of the branch, must be an enum that implements {@link BranchItemInterface.Branch}
 	 * @param item The item whose branch is being switched
 	 * @param newBranch The new branch to switch to
 	 */
-	public static <TItem extends SpecialItem & BranchItemInterface<TBranch>, TBranch extends BranchItem.Branch> void setItemBranch(TItem item, TBranch newBranch) {
+	public static <TItem extends SpecialItem & BranchItemInterface<TBranch>, TBranch extends BranchItemInterface.Branch> void setItemBranch(TItem item, TBranch newBranch) {
 		final TBranch oldBranch = item.getBranch();
 
 		saveBranchId(item, newBranch.id());
@@ -92,7 +96,9 @@ public interface BranchItemInterface<TBranch extends BranchItem.Branch> extends 
 			.decoration(TextDecoration.ITALIC, false);
 	}
 
-
+	/**
+	 * A strategy-pattern like system for {@link SpecialItem}s to switch between, at will.
+	 */
 	public static interface Branch {
 		public String id();
 		public Component getName();

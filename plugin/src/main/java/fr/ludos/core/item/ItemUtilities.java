@@ -5,7 +5,9 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 
-
+/**
+ * Utilites for {@link ItemStack}s and related.
+ */
 public class ItemUtilities {
 
 	public static Boolean isBreakable(Block block) {

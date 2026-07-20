@@ -34,6 +34,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * Boss implementation for the Golden Knight enemy.
+ */
 public class GoldenKnightBoss extends RaidMonsterBoss<WitherSkeleton> {
 
 	private enum CombatProfile {

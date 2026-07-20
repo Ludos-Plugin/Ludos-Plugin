@@ -11,17 +11,20 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
 
+/**
+ * {@link Subcommand} to leave the current {@link Group}, as any Group member.
+ */
 public class GroupLeave implements Subcommand {
-	private final static String id = "leave";
+	private final static String ID = "leave";
 
-	private final Ludos plugin;
-	public GroupLeave(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public GroupLeave(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -35,7 +38,7 @@ public class GroupLeave implements Subcommand {
 			return true;
 		}
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
@@ -43,7 +46,7 @@ public class GroupLeave implements Subcommand {
 
 		group.removePlayer(player, false);
 
-		plugin.saveConfig();
+		ludos.saveConfig();
 
 		return true;
 	}

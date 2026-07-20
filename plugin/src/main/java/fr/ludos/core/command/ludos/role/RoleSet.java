@@ -9,22 +9,25 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.role.Role;
+import fr.ludos.core.role.RoleManager;
 
+/**
+ * {@link Subcommand} for setting a Player's own role.
+ */
 public class RoleSet implements Subcommand {
-	private final static String id = "set";
+	private final static String ID = "set";
 
-	private final Ludos plugin;
-	public RoleSet(Ludos plugin) {
-		this.plugin = plugin;
+	private final RoleManager manager;
+	public RoleSet(RoleManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -36,7 +39,7 @@ public class RoleSet implements Subcommand {
 		if (args.length < 1) return false;
 
 		String roleId = args[0].toLowerCase();
-		Role.Builder setRole = Role.getRoleById(roleId);
+		Role.Builder setRole = manager.getRoleById(roleId);
 		if (setRole == null) {
 			sender.sendMessage("Role not found: " + roleId);
 			return true;
@@ -49,7 +52,7 @@ public class RoleSet implements Subcommand {
 					return true;
 				}
 
-				Role.setRole(player, roleId, plugin);
+				manager.setRole(player, roleId);
 				break;
 			case 2:
 				OfflinePlayer target = CommandUtility.getOfflinePlayerFromArg(args, 1, sender);
@@ -58,8 +61,8 @@ public class RoleSet implements Subcommand {
 					return true;
 				}
 
-				if (Role.isAuthorizedToEditRole(sender, target, plugin)) {
-					Role.setRole(target, roleId, plugin);
+				if (manager.isAuthorizedToEditRole(sender, target)) {
+					manager.setRole(target, roleId);
 					if (sender != target) {
 						sender.sendMessage("The role of Player " + target.getName() + " is now " + roleId);
 					}
@@ -76,7 +79,9 @@ public class RoleSet implements Subcommand {
 	@Override
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length == 1)
-			return Role.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+			return manager.getRegistered().keySet().stream()
+				.sorted()
+				.collect(Collectors.toList());
 
 		if (args.length == 2)
 			return CommandUtility.getOnlinePlayerNames();

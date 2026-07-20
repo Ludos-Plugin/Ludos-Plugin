@@ -25,11 +25,13 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * Implementation of the Assassin Teleport Scroll, for use by any Player with {@link AssassinRole}.
+ */
 public class TeleportScroll extends SpecialItem {
 	public static final String ID = "teleport_scroll";
 
@@ -84,6 +86,9 @@ public class TeleportScroll extends SpecialItem {
 		));
 	}
 
+	/**
+	 * Events for the {@link TeleportScroll}.
+	 */
 	public static class Events extends SpecialItem.Events<TeleportScroll> {
 		private static final int COOLDOWN = 20 * 30; // 30 secondes
 		private static final int MAX_ATTEMPTS = 100;
@@ -99,7 +104,7 @@ public class TeleportScroll extends SpecialItem {
 		protected void onItemStop() {
 			super.onItemStop();
 
-			for (Player player : Role.getPlayersOfRole(AssassinRole.id)) {
+			for (Player player : game.getLudos().getRoleManager().getPlayersOfRole(AssassinRole.ID)) {
 				var healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
 				if (healthAttr == null) continue;
 				new ArrayList<>(healthAttr.getModifiers()).stream()
@@ -198,7 +203,7 @@ public class TeleportScroll extends SpecialItem {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, AssassinRole.id);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

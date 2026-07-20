@@ -5,6 +5,11 @@ import java.util.function.Function;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A simple pair record for holding a Level and XP value simultaneously.
+ * @param level
+ * @param xp
+ */
 public final record LevelValue(int level, double xp) implements Serializable {
 	public LevelValue(int level) {
 		this(level, 0.0);

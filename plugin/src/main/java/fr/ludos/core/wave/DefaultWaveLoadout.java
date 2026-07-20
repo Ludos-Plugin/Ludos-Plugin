@@ -10,7 +10,16 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 
+/**
+ * Default implementation of a wave loadout providing the base kit
+ * applied to players when a wave starts.
+ */
 public class DefaultWaveLoadout extends WaveLoadoutService {
+	/**
+	 * Constructs the default wave loadout for the given game.
+	 *
+	 * @param game the game instance
+	 */
 	public DefaultWaveLoadout(Game game) {
 		super(game);
 	}

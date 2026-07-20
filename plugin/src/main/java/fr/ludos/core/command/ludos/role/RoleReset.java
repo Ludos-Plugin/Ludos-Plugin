@@ -7,22 +7,24 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
-import fr.ludos.core.role.Role;
+import fr.ludos.core.role.RoleManager;
 
+/**
+ * {@link Subcommand} for resetting a Player's own role.
+ */
 public class RoleReset implements Subcommand {
-	private final static String id = "reset";
+	private final static String ID = "reset";
 
-	private final Ludos plugin;
-	public RoleReset(Ludos plugin) {
-		this.plugin = plugin;
+	private final RoleManager manager;
+	public RoleReset(RoleManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -37,15 +39,15 @@ public class RoleReset implements Subcommand {
 			return true;
 		}
 
-		if (Role.isAuthorizedToEditRole(sender, target, plugin)) {
-			if (Role.getPlayerRole(target) == null) return true;
+		if (manager.isAuthorizedToEditRole(sender, target)) {
+			if (manager.getPlayerRole(target) == null) return true;
 
 			sender.sendMessage(
 				sender == target ?
 				"Your role was reset" :
 				"The role of player " + target.getName() + " was reset"
 			);
-			Role.removeRole(target, plugin);
+			manager.unsetRole(target);
 		} else {
 			sender.sendMessage("You are not authorized to reset this player's role");
 		}

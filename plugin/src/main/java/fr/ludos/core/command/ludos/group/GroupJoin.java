@@ -11,20 +11,23 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.group.Group.JoinMethod;
-import fr.ludos.core.group.Group.JoinResult;
+import fr.ludos.core.group.Group.AddPlayerMethod;
+import fr.ludos.core.group.Group.AddPlayerResult;
 
+/**
+ * {@link Subcommand} to request joining a Player's {@link Group}.
+ */
 public class GroupJoin implements Subcommand {
-	private final static String id = "join";
+	private final static String ID = "join";
 
-	private final Ludos plugin;
-	public GroupJoin(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public GroupJoin(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -40,22 +43,22 @@ public class GroupJoin implements Subcommand {
 		if (args.length < 1) return false;
 
 		String leaderName = args[0];
-		Player leader = plugin.getServer().getPlayerExact(leaderName);
+		Player leader = ludos.getServer().getPlayerExact(leaderName);
 		if (leader == null) {
 			sender.sendMessage("Player not found: " + leaderName);
 			return true;
 		}
 
-		Group group = Group.getGroupOfPlayer(leader);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(leader);
 		if (group == null) {
 			sender.sendMessage(leader.getName() + " is not in a group.");
 			return true;
 		}
 
-		JoinResult res = group.requestPlayerJoin(player, JoinMethod.Join);
+		AddPlayerResult res = group.requestAddPlayer(player, AddPlayerMethod.Join);
 		switch (res) {
 			case Succeeded:
-				plugin.saveConfig();
+				ludos.saveConfig();
 				break;
 			case Requested:
 				player.sendMessage("Requested to join " + leaderName + "'s group.");

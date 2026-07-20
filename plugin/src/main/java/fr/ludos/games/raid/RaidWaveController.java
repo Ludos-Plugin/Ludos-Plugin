@@ -46,7 +46,13 @@ import fr.ludos.games.raid.monsters.RaidMonsterBoss;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+/**
+ * Controller for {@link RaidGame} wave behavior.
+ */
 public final class RaidWaveController extends WaveController {
+	/**
+	 * Themes used for raid worlds.
+	 */
 	public enum WaveTheme {
 		EARTH("Earth", () -> new WorldCreator("raid_earth_" + UUID.randomUUID())
 			.environment(World.Environment.NORMAL)

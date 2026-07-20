@@ -25,9 +25,12 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+/**
+ * A {@link SpecialItemInterface} with the ability to store a Level and XP through {@link LevelState}(s).
+ */
 public interface LevelItemInterface extends SpecialItemInterface {
-	public static final String LEVEL = "level";
-	public static final NamespacedKey levelKey = new NamespacedKey(Ludos.namespace, LEVEL);
+	public static final String LEVEL_KEY_STRING = "level";
+	public static final NamespacedKey LEVEL_KEY = new NamespacedKey(Ludos.NAMESPACE, LEVEL_KEY_STRING);
 
 	public static final String MAX_LVL_LABEL = "MAX";
 	public LevelState levelState();
@@ -60,12 +63,11 @@ public interface LevelItemInterface extends SpecialItemInterface {
 
 
 	/**
-	 * Utility function to handle level switching when player switches leveles.
-	 * @param <TItem> The type of the item, must extend SpecialItem
-	 * @param <TLevel> The type of the level, must be an enum that implements LevelItem.Level
+	 * Utility function to handle level switching when player switches levels.
+	 * @param <TItem> The type of the item, must extend {@link SpecialItem}
+	 * @param <TLevel> The type of the level, must be an enum that implements {@link LevelItemInterface.Level}
 	 * @param item The item whose level is being switched
-	 * @param newLevel The new level to switch to
-	 * @param newXp The new XP value to set
+	 * @param level The new level to switch to
 	 */
 	public static <TItem extends SpecialItem & LevelItemInterface, TLevel extends Enum<TLevel> & Level<TLevel>> void setItemLevel(TItem item, LevelValue level) {
 		final int oldLevel = item.level();
@@ -83,13 +85,12 @@ public interface LevelItemInterface extends SpecialItemInterface {
 
 	/**
 	 * Utility function to handle level switching when player switches items.
-	 * @param <TItem> The type of the item, must extend SpecialItem
-	 * @param <TLevel> The type of the level, must be an enum that implements LevelItem.Level
+	 * @param <TItem> The type of the item, must extend {@link SpecialItem}
+	 * @param <TLevel> The type of the level, must be an enum that implements {@link LevelItemInterface.Level}
 	 * @param event The PlayerItemHeldEvent to handle
-	 * @param getItem An "SpecialItem from ItemStack" function, used to get the item being switched from/to
-	 * @param getLevel A "Level from Item" function, used to get the level of the item being switched from/to
+	 * @param getItem A "{@link SpecialItem} from {@link ItemStack}" function, used to get the item being switched from/to
 	 */
-	public static <TItem extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & LevelItem.Level<TLevel>> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem) {
+	public static <TItem extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & LevelItemInterface.Level<TLevel>> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem) {
 		Player player = event.getPlayer();
 
 		TItem oldItem = getItem.apply(player.getInventory().getItem(event.getPreviousSlot()));
@@ -106,7 +107,7 @@ public interface LevelItemInterface extends SpecialItemInterface {
 
 	public static void saveLevelValue(SpecialItem item, LevelValue levelValue) {
 		ItemMeta meta = item.getStack().getItemMeta();
-		meta.getPersistentDataContainer().set(LevelItem.levelKey, LevelValuePersistentDataType.INSTANCE, levelValue);
+		meta.getPersistentDataContainer().set(LevelItem.LEVEL_KEY, LevelValuePersistentDataType.INSTANCE, levelValue);
 		item.getStack().setItemMeta(meta);
 	}
 	public static void saveLevelState(SpecialItem item, LevelState levelState) {
@@ -115,16 +116,16 @@ public interface LevelItemInterface extends SpecialItemInterface {
 
 	public static void saveLevelValues(SpecialItem item, Map<String, LevelValue> levelValues) {
 		ItemMeta meta = item.getStack().getItemMeta();
-		meta.getPersistentDataContainer().set(LevelItem.levelKey, LevelValueMapPersistentDataType.INSTANCE, levelValues);
+		meta.getPersistentDataContainer().set(LevelItem.LEVEL_KEY, LevelValueMapPersistentDataType.INSTANCE, levelValues);
 		item.getStack().setItemMeta(meta);
 	}
 
 	public static LevelValue levelFromItemStack(ItemStack stack, Game game) {
 		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
 
-		if ( ! container.has(levelKey, LevelValuePersistentDataType.INSTANCE) ) return null;
+		if ( ! container.has(LEVEL_KEY, LevelValuePersistentDataType.INSTANCE) ) return null;
 
-		return container.get(levelKey, LevelValuePersistentDataType.INSTANCE);
+		return container.get(LEVEL_KEY, LevelValuePersistentDataType.INSTANCE);
 	}
 
 	public static <T extends SpecialItem & LevelItemInterface> LevelState initializeLevelState(
@@ -218,7 +219,10 @@ public interface LevelItemInterface extends SpecialItemInterface {
 		return getLevelLoreField(item.level());
 	}
 
-
+	/**
+	 * Events for {@link LevelItemInterface}.
+	 * @param <T> The type of {@link Level} the item uses
+	 */
 	public static interface Level<T extends Level<T>> {
 		public double xpThreshold();
 

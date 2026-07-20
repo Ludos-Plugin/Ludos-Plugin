@@ -1,9 +1,11 @@
 package fr.ludos.core.game;
 
-import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
+/**
+ * An abstract {@link TwoStepGameProcess} implementation.
+ */
 public abstract class TwoStepGameProcessBase implements TwoStepGameProcess {
 	private boolean started = false;
 	public final boolean isStarted() {
@@ -25,7 +27,7 @@ public abstract class TwoStepGameProcessBase implements TwoStepGameProcess {
 	protected abstract JavaPlugin getPlugin();
 
 
-	public void setup() {
+	public void setUp() {
 		if (setup) return;
 		setup = true;
 
@@ -41,7 +43,7 @@ public abstract class TwoStepGameProcessBase implements TwoStepGameProcess {
 
 		onInit();
 
-		Bukkit.getPluginManager().registerEvents(this, getPlugin());
+		getPlugin().getServer().getPluginManager().registerEvents(this, getPlugin());
 
 		onStart();
 	}
@@ -59,21 +61,16 @@ public abstract class TwoStepGameProcessBase implements TwoStepGameProcess {
 			onDeinit();
 		}
 
-		setdown();
+		tearDown();
 	}
 	protected void onDeinit() { }
 	protected void onStop() { }
 
-	public void setdown() {
+	public void tearDown() {
 		if (! setup) return;
 		setup = false;
 
-		onSetdown();
+		onTeardown();
 	}
-	protected void onSetdown() { }
-
-	public void restart() {
-		stop();
-		start();
-	}
+	protected void onTeardown() { }
 }

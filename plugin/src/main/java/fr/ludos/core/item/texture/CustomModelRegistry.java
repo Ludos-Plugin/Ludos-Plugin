@@ -5,18 +5,21 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * Registry for custom model data mappings used by texture providers.
+ */
 public final class CustomModelRegistry {
-	private static final ConcurrentHashMap<String, Integer> registry = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<String, Integer> REGISTRY = new ConcurrentHashMap<>();
 
 	public static int register(String key, TextureProvider provider) {
-		return registry.computeIfAbsent(key, k -> provider.calculateCustomModelData(k));
+		return REGISTRY.computeIfAbsent(key, k -> provider.calculateCustomModelData(k));
 	}
 
 	public static <T extends TextureProvider> void apply(ItemStack item, T textureProvider) {
 		if (item == null || item.getItemMeta() == null || textureProvider == null) return;
 
 		String id = textureProvider.getTextureId();
-		Integer modelId = registry.get(id);
+		Integer modelId = REGISTRY.get(id);
 
 		if (modelId == null) return;
 
@@ -28,7 +31,7 @@ public final class CustomModelRegistry {
 	public static void apply(ItemStack item, String id) {
 		if (item == null || item.getItemMeta() == null) return;
 
-		Integer modelId = registry.get(id);
+		Integer modelId = REGISTRY.get(id);
 
 		if (modelId == null) return;
 
@@ -38,18 +41,18 @@ public final class CustomModelRegistry {
 	}
 
 	public static Integer get(String id) {
-		return registry.get(id);
+		return REGISTRY.get(id);
 	}
 
 	public static boolean has(String id) {
-		return registry.containsKey(id);
+		return REGISTRY.containsKey(id);
 	}
 
 	public static Set<String> getAllKeys() {
-		return registry.keySet();
+		return REGISTRY.keySet();
 	}
 
 	public static void clear() {
-		registry.clear();
+		REGISTRY.clear();
 	}
 }

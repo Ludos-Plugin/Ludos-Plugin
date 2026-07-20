@@ -26,6 +26,9 @@ import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.item.SpecialItem;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+/**
+ * Controller for {@link ArenaGame} teams, handling team selection and setup.
+ */
 public final class ArenaTeamController extends GameTeamController {
 	private static final int PRIMARY_TEAM_INDEX = 0;
 	private static final int SECONDARY_TEAM_INDEX = 1;
@@ -241,13 +244,12 @@ public final class ArenaTeamController extends GameTeamController {
 		);
 		teammateLocation = Utility.snapToHighestY(teammateLocation, true);
 
-		String name = player.getName();
 		for (Team team : combatTeams) {
-			team.removeEntry(name);
+			team.removePlayer(player);
 		}
-		spectatorTeam.removeEntry(name);
+		spectatorTeam.removePlayer(player);
 
-		destination.addEntry(name);
+		destination.addPlayer(player);
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;
@@ -290,7 +292,7 @@ public final class ArenaTeamController extends GameTeamController {
 		} else if (primarySize > secondarySize) {
 			moveToTeam(player, secondaryTeam);
 		} else {
-			moveToTeam(player, getGame().random.nextFloat() < 0.5 ? primaryTeam : secondaryTeam);
+			moveToTeam(player, getGame().getRandom().nextFloat() < 0.5 ? primaryTeam : secondaryTeam);
 		}
 	}
 

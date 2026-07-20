@@ -33,14 +33,15 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.MultiLevelBranchItem;
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelValue;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Huntsman Crossbow, for use by any Player with {@link HuntsmanRole}.
+ */
 public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranch> {
-	public static final String ID = "manhuntHuntsmanCrossbow";
+	public static final String ID = "huntsman_crossbow";
 
 	// private final static Map<UUID, HuntsmanCrossbow> cachedItems = new HashMap<>();
 
@@ -102,21 +103,23 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 		return lore;
 	}
 
-
+	/**
+	 * Events for the {@link HuntsmanCrossbow}.
+	 */
 	public static class Events extends MultiLevelBranchItem.Events<HuntsmanCrossbow, HuntsmanCrossbowBranch> {
-		private static final List<HuntsmanCrossbowBranch> branches = Arrays.asList(HuntsmanCrossbowBranches.values());
+		private static final List<HuntsmanCrossbowBranch> BRANCHES = Arrays.asList(HuntsmanCrossbowBranches.values());
 
 		public static final String ARROW_TYPE = "arrow_type";
-		public final NamespacedKey arrowTypeKey = new NamespacedKey(Ludos.namespace, ARROW_TYPE);
+		public final NamespacedKey arrowTypeKey = new NamespacedKey(Ludos.NAMESPACE, ARROW_TYPE);
 
 		public static final String ARROW_LEVEL = "arrow_level";
-		public final NamespacedKey arrowLevelKey = new NamespacedKey(Ludos.namespace, ARROW_LEVEL);
+		public final NamespacedKey arrowLevelKey = new NamespacedKey(Ludos.NAMESPACE, ARROW_LEVEL);
 
 		// private BukkitTask saturationTask;
 
 
 		public Events(Game game) {
-			super(branches, game, new Events.Info(ItemSlot.HOTBAR_2));
+			super(BRANCHES, game, new Events.Info(ItemSlot.HOTBAR_2));
 		}
 
 
@@ -171,9 +174,12 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 			PersistentDataContainer container = arrow.getPersistentDataContainer();
 			if (container.has(arrowTypeKey, PersistentDataType.STRING) && container.has(arrowLevelKey, PersistentDataType.INTEGER)) {
-				HuntsmanCrossbowBranch branch = getBranches().get(container.get(arrowTypeKey, PersistentDataType.STRING));
+				String branchKey = container.get(arrowTypeKey, PersistentDataType.STRING);
+				int levelIdx = container.get(arrowLevelKey, PersistentDataType.INTEGER);
+
+				HuntsmanCrossbowBranch branch = getBranches().get(branchKey);
 				if (branch != null) {
-					branch.processLandedArrow(arrow, player, container.get(arrowLevelKey, PersistentDataType.INTEGER), event);
+					branch.processLandedArrow(arrow, player, levelIdx, event);
 				}
 			}
 
@@ -208,7 +214,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HuntsmanRole.id);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
 		}
 	}
 }

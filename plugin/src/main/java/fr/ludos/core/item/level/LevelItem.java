@@ -13,7 +13,11 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 
-public abstract class LevelItem<TLevel extends LevelItem.Level<TLevel>> extends SpecialItem implements LevelItemInterface {
+/**
+ * A {@link LevelItemInterface} wrapper for {@link ItemStack}s.
+ * @param <TLevel> The type of {@link LevelItemInterface.Level} the item uses
+ */
+public abstract class LevelItem<TLevel extends LevelItemInterface.Level<TLevel>> extends SpecialItem implements LevelItemInterface {
 	private final LevelState levelState;
 	public LevelState levelState() {
 		return levelState;
@@ -59,6 +63,11 @@ public abstract class LevelItem<TLevel extends LevelItem.Level<TLevel>> extends 
 		return lore;
 	}
 
+	/**
+	 * Events for {@link LevelItem}.
+	 * @param <T> The type of {@link LevelItem}
+	 * @param <TLevel> The type of {@link Level} the item uses
+	 */
 	public static abstract class Events<T extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & Level<TLevel>> extends SpecialItem.Events<T> {
 		protected final Map<Player, LevelValue> deadPlayerLevels = new HashMap<>();
 

@@ -22,15 +22,16 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.berserker.BerserkerRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Berserker Rage Brew, for use by any Player with {@link BerserkerRole}.
+ */
 public class BerserkerRageBrew extends SpecialItem {
-	public static final String ID = "berserkerRageBrew";
+	public static final String ID = "berserker_rage_brew";
 
 	@Override
 	public String getTypeId() {
@@ -91,7 +92,9 @@ public class BerserkerRageBrew extends SpecialItem {
 		);
 	}
 
-
+	/**
+	 * Events for the {@link BerserkerRageBrew}.
+	 */
 	public static class Events extends SpecialItem.Events<BerserkerRageBrew> {
 		private final Map<UUID, Long> cooldowns = new HashMap<>();
 		private static final long COOLDOWN_MS = 30_000;
@@ -128,7 +131,7 @@ public class BerserkerRageBrew extends SpecialItem {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, BerserkerRole.ID);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, BerserkerRole.ID);
 		}
 
 		@EventHandler

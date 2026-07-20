@@ -8,17 +8,26 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
-import fr.ludos.core.command.ludos.group.GroupConfigs;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 
+/**
+ * {@link Subcommand} to start a given {@link Game}, as a {@link Group} leader.
+ */
 public class GameStart implements Subcommand {
-	private final static String id = "start";
+	private final static String ID = "start";
+	private final Ludos ludos;
+
+	public GameStart(Ludos ludos) {
+		this.ludos = ludos;
+	}
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -35,36 +44,36 @@ public class GameStart implements Subcommand {
 		}
 
 		String startGameId = args[0].toLowerCase();
-		if ( !Game.getRegistered().containsKey(startGameId) ) {
+		if ( !ludos.getGameManager().getRegistered().containsKey(startGameId) ) {
 			sender.sendMessage("Game not found: " + startGameId);
 			return true;
 		}
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
 		}
 
-		boolean membersCanRunGames = GroupConfigs.getGroupRightsOption(group.getConfig()).canRunGames();
+		boolean membersCanRunGames = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canRunGames();
 		if (! group.isLeader(player) && ! membersCanRunGames) {
 			sender.sendMessage("Only the group leader can start games.");
 			return true;
 		}
 
-		Game.startGame(startGameId, group);
+		ludos.getGameManager().startGame(startGameId, group);
 		return true;
 	}
 	@Override
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length == 1)
-			return Game.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+			return ludos.getGameManager().getRegistered().keySet().stream().sorted().collect(Collectors.toList());
 		return null;
 	}
 	@Override
 	public String getUsage() {
 		return "<" +
-			Game.getRegistered().keySet().stream().sorted()
+			ludos.getGameManager().getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))
 			+ ">";
 	}

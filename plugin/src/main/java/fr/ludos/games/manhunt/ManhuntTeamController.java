@@ -24,14 +24,15 @@ import org.bukkit.scoreboard.Team;
 
 import fr.ludos.core.Utility;
 import fr.ludos.core.area.Area;
-import fr.ludos.core.command.ludos.group.GroupConfigs;
 import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 
-
+/**
+ * Controller for {@link ManhuntGame} teams, handling team selection and setup.
+ */
 public final class ManhuntTeamController extends GameTeamController {
 	public Team hunterTeam;
 	public Team preyTeam;
@@ -44,10 +45,10 @@ public final class ManhuntTeamController extends GameTeamController {
 
 
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<OfflinePlayer> players, @Nullable OfflinePlayer prey) {
-		super(game, GroupConfigs.getGameJoinOption(game.getGroup().getConfig()));
+		super(game);
 
 		Set<Player> finalPlayers = game.getGroup().getOnlinePlayers();
-		if (players != null) {
+		if (players != null && ! players.isEmpty()) {
 			finalPlayers = finalPlayers.stream()
 				.filter(p -> players.contains(p))
 				.collect(Collectors.toSet());
@@ -209,7 +210,7 @@ public final class ManhuntTeamController extends GameTeamController {
 			? Utility.snapToHighestY(area.pickRandom(0.0, 0.2), true)
 			: getGame().getWorldManager().getWorld().getSpawnLocation();
 
-		preyTeam.addEntry(player.getName());
+		preyTeam.addPlayer(player);
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;
@@ -239,7 +240,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 		Location hunterLocation = Utility.snapToHighestY(getLocationAroundTeammate(hunterTeam), true);
 
-		hunterTeam.addEntry(player.getName());
+		hunterTeam.addPlayer(player);
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;
@@ -269,7 +270,7 @@ public final class ManhuntTeamController extends GameTeamController {
 			? Utility.snapToHighestY(area.pickRandom(0.0, 1.0), true)
 			: getGame().getWorldManager().getWorld().getSpawnLocation();
 
-		spectatorTeam.addEntry(player.getName());
+		spectatorTeam.addPlayer(player);
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;

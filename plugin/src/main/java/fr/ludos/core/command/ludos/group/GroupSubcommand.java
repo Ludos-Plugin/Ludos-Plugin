@@ -7,24 +7,21 @@ import fr.ludos.core.command.HelpSubcommand;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.SubcommandHandler;
 
+/**
+ * {@link Subcommand} encapsulating all {@link Group}-specific Ludos subcommands.
+ */
 public final class GroupSubcommand extends SubcommandHandler {
-	public GroupSubcommand(Ludos plugin) {
-		super("group", "Manage Ludos Groups", false, getSubcommands(plugin));
-	}
-
-	private static final ArrayList<Subcommand> getSubcommands(Ludos plugin) {
-		ArrayList<Subcommand> subcommands = new ArrayList<>() {{
-			add(new GroupCreate(plugin));
-			add(new GroupDisband(plugin));
-			add(new GroupJoin(plugin));
-			add(new GroupInvite(plugin));
-			add(new GroupLeave(plugin));
-			add(new GroupKick(plugin));
-			add(new GroupConfig(plugin));
-			add(new GroupInfo());
-		}};
-		HelpSubcommand help = new HelpSubcommand("group", subcommands);
-		subcommands.add(help);
-		return subcommands;
+	public GroupSubcommand(Ludos ludos) {
+		super("group", "Manage Ludos Groups", false, new ArrayList<>() {{
+			add(new GroupCreate(ludos));
+			add(new GroupDisband(ludos));
+			add(new GroupJoin(ludos));
+			add(new GroupInvite(ludos));
+			add(new GroupLeave(ludos));
+			add(new GroupKick(ludos));
+			add(new GroupConfig(ludos));
+			add(new GroupInfo(ludos));
+			add(new HelpSubcommand("group", this));
+		}});
 	}
 }

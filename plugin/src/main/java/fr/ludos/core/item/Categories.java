@@ -10,7 +10,13 @@ import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * Categories for {@link ItemStack}s.
+ */
 public final class Categories {
+	/**
+	 * Groupings for Items.
+	 */
 	public enum Group {
 		HELMETS,
 		CHESTPLATES,
@@ -28,7 +34,7 @@ public final class Categories {
 		IMPORTANT_DURABILITY
 	}
 
-	private static final Map<Group, Set<Material>> groups = new EnumMap<>(Group.class);
+	private static final Map<Group, Set<Material>> GROUPS = new EnumMap<>(Group.class);
 
 	public static final Set<Material> HELMETS = register(Group.HELMETS,
 		Material.LEATHER_HELMET,
@@ -125,7 +131,7 @@ public final class Categories {
 	public static final Set<Material> IMPORTANT_DURABILITY = register(Group.IMPORTANT_DURABILITY, union(ARMOR, WEAPONS, TOOLS));
 
 	public static Set<Material> get(Group group) {
-		return groups.getOrDefault(group, Collections.emptySet());
+		return GROUPS.getOrDefault(group, Collections.emptySet());
 	}
 
 	public static boolean is(Group group, Material material) {
@@ -146,7 +152,7 @@ public final class Categories {
 		}
 
 		Set<Material> view = Collections.unmodifiableSet(values);
-		groups.put(group, view);
+		GROUPS.put(group, view);
 		return view;
 	}
 

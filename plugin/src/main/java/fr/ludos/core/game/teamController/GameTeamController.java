@@ -3,7 +3,6 @@ package fr.ludos.core.game.teamController;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -13,8 +12,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
@@ -26,11 +23,15 @@ import org.bukkit.scoreboard.Team;
 
 import fr.ludos.core.Utility;
 import fr.ludos.core.area.Area;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameProcessBase;
 
 
-
+/**
+ * A controller to manage different {@link Team}s, during a {@link Game}.<br>
+ * Contains various utility functions to manager players and entities.
+ */
 public abstract class GameTeamController extends GameProcessBase {
 	private final Game game;
 	public final Game getGame() {
@@ -50,7 +51,7 @@ public abstract class GameTeamController extends GameProcessBase {
 		this.joinOption = joinOption;
 	}
 	public GameTeamController(Game game) {
-		this(game, GameJoinOption.auto);
+		this(game, GroupConfigMap.GAME_JOIN.getGroupConfig(game.getGroup()));
 	}
 
 	public abstract Collection<Team> getTeams();
@@ -58,7 +59,7 @@ public abstract class GameTeamController extends GameProcessBase {
 	public final Set<Entity> getEntities() {
 		Set<Entity> all = new HashSet<>();
 		for (Team team : getTeams()) {
-			all.addAll(Utility.getTeamEntities(team).toList());
+			all.addAll(Utility.getTeamEntities(team, game.getPlugin().getServer()).toList());
 		}
 		return all;
 	}
@@ -79,14 +80,13 @@ public abstract class GameTeamController extends GameProcessBase {
 		return getPlayersStream().collect(Collectors.toSet());
 	}
 	public final Stream<Player> getOnlinePlayersStream() {
-		return Utility.getOnline(getPlayers().stream());
+		return Utility.getOnline(getPlayersStream());
 	}
 	public final Set<Player> getOnlinePlayers() {
 		return getOnlinePlayersStream().collect(Collectors.toSet());
 	}
 	public final Stream<Player> getAlivePlayersStream() {
-		return getOnlinePlayersStream()
-			.filter(p -> p.getGameMode() == GameMode.SURVIVAL && ! p.isDead());
+		return getOnlinePlayersStream().filter(Utility.IS_PLAYER_ALIVE);
 	}
 	public final Set<Player> getAlivePlayers() {
 		return getAlivePlayersStream().collect(Collectors.toSet());
@@ -94,31 +94,28 @@ public abstract class GameTeamController extends GameProcessBase {
 
 	public final Stream<Entity> getTeamEntitiesStream(@Nullable Team team) {
 		if (team == null) return Stream.of();
-		return Utility.getTeamEntities(team);
+		return Utility.getTeamEntities(team, game.getPlugin().getServer());
 	}
 	public final Set<Entity> getTeamEntities(Team team) {
 		return getTeamEntitiesStream(team)
 			.collect(Collectors.toSet());
 	}
 	public final Stream<OfflinePlayer> getTeamPlayersStream(Team team) {
-		return team.getEntries().stream()
-			.map(Bukkit::getOfflinePlayer)
-			.filter(Objects::nonNull);
+		return Utility.getTeamPlayers(team, game.getPlugin().getServer());
 	}
 	public final Set<OfflinePlayer> getTeamPlayers(Team team) {
 		return getTeamPlayersStream(team)
 			.collect(Collectors.toSet());
 	}
 	public final Stream<Player> getTeamOnlinePlayersStream(Team team) {
-		return Utility.getOnline(getTeamPlayersStream(team));
+		return Utility.getTeamOnlinePlayers(team, game.getPlugin().getServer());
 	}
 	public final Set<Player> getTeamOnlinePlayers(Team team) {
 		return getTeamOnlinePlayersStream(team)
 			.collect(Collectors.toSet());
 	}
 	public final Stream<Player> getTeamAlivePlayersStream(Team team) {
-		return getTeamOnlinePlayersStream(team)
-			.filter(p -> p.getGameMode() == GameMode.SURVIVAL && ! p.isDead());
+		return Utility.getTeamAlivePlayers(team, game.getPlugin().getServer());
 	}
 	public final Set<Player> getTeamAlivePlayers(Team team) {
 		return getTeamAlivePlayersStream(team)
@@ -178,7 +175,7 @@ public abstract class GameTeamController extends GameProcessBase {
 	public final Player pickRandomPlayer() {
 		List<Player> players = getAlivePlayersStream().toList();
 		if (players.isEmpty()) return null;
-		return players.get(game.random.nextInt(players.size()));
+		return players.get(game.getRandom().nextInt(players.size()));
 	}
 
 	public final Location getLocationAroundTeammate(Team team) {
@@ -214,7 +211,7 @@ public abstract class GameTeamController extends GameProcessBase {
 
 	public final void addPlayer(OfflinePlayer player) {
 		Player onlinePlayer = player.getPlayer();
-		if (joinOption == GameJoinOption.none && onlinePlayer != null) {
+		if (onlinePlayer != null && joinOption == GameJoinOption.none) {
 			onlinePlayer.sendMessage("Joining is not enabled for this game session.");
 			return;
 		}

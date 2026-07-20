@@ -11,7 +11,7 @@ import fr.ludos.core.role.Role;
 
 class RoleAssignmentTest extends RoleTest {
 	private final Role.Builder getValidRole() {
-		Role.Builder role = Role.getRoleBuilders().get(0);
+		Role.Builder role = ludos.getRoleManager().getBuilders().get(0);
 		assertNotNull(role, "Could not find valid role");
 		return role;
 	}
@@ -21,7 +21,7 @@ class RoleAssignmentTest extends RoleTest {
 		PlayerMock player1 = createPlayer("Player1");
 
 		player1.performCommand("ludos role get");
-		assertEquals(Role.noneLabel, player1.nextMessage(), "Role is not unset by default");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role is not unset by default");
 
 		Role.Builder role = getValidRole();
 		player1.performCommand("ludos role set " + role.getId());
@@ -30,16 +30,16 @@ class RoleAssignmentTest extends RoleTest {
 		player1.performCommand("ludos role get");
 		assertEquals(role.getId(), player1.nextMessage(), "Role was not persisted after being set");
 
-		assertEquals(role, Role.getPlayerRole(player1), "Role appears set but isn't");
+		assertEquals(role, ludos.getRoleManager().getPlayerRole(player1), "Role appears set but isn't");
 
 		player1.performCommand("ludos role reset");
 		assertEquals("Your role was reset", player1.nextMessage(), "Role reset message was not sent");
 		assertEquals("You now have no role", player1.nextMessage(), "None role message was not sent");
 
 		player1.performCommand("ludos role get");
-		assertEquals(Role.noneLabel, player1.nextMessage(), "Role was not unset");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was not unset");
 
-		assertNull(Role.getPlayerRole(player1), "Role appears unset but isn't");
+		assertNull(ludos.getRoleManager().getPlayerRole(player1), "Role appears unset but isn't");
 	}
 
 	@Test
@@ -47,21 +47,21 @@ class RoleAssignmentTest extends RoleTest {
 		PlayerMock player1 = createPlayer("Player1");
 
 		String invalidRoleId = "invalidRole";
-		Role.Builder role = Role.getRoleById(invalidRoleId);
+		Role.Builder role = ludos.getRoleManager().getRoleById(invalidRoleId);
 		assertNull(role, "Invalid role ID should not return a valid role builder");
 
 		player1.performCommand("ludos role set " + invalidRoleId);
 		assertEquals("Role not found: " + invalidRoleId.toLowerCase(), player1.nextMessage(), "Role was not set");
 
 		player1.performCommand("ludos role get");
-		assertEquals(Role.noneLabel, player1.nextMessage(), "Role was set despite being invalid");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was set despite being invalid");
 
 		player1.performCommand("ludos role reset");
 		assertEquals(null, player1.nextMessage(), "Role was reset, despite being already unset");
 
 		player1.performCommand("ludos role get");
-		assertEquals(Role.noneLabel, player1.nextMessage(), "Role was not reset");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was not reset");
 
-		assertNull(Role.getPlayerRole(player1), "Role appears unset but isn't");
+		assertNull(ludos.getRoleManager().getPlayerRole(player1), "Role appears unset but isn't");
 	}
 }

@@ -1,7 +1,6 @@
 package fr.ludos.core.command.ludos.group;
 
 import java.util.List;
-import java.util.Set;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -12,19 +11,22 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.group.Group.JoinMethod;
+import fr.ludos.core.group.Group.AddPlayerMethod;
 
+/**
+ * {@link Subcommand} to create a new {@link Group}, and join it as leader.
+ */
 public class GroupCreate implements Subcommand {
-	private final static String id = "create";
+	private final static String ID = "create";
 
-	private final Ludos plugin;
-	public GroupCreate(Ludos plugin) {
-		this.plugin = plugin;
+	private final Ludos ludos;
+	public GroupCreate(Ludos ludos) {
+		this.ludos = ludos;
 	}
 
 	@Override
 	public String id() {
-		return id;
+		return ID;
 	}
 
 	@Override
@@ -38,14 +40,14 @@ public class GroupCreate implements Subcommand {
 			return true;
 		}
 
-		Group group = Group.createGroup(player, null, plugin);
+		Group group = ludos.getGroupManager().createGroup(player, null);
 
-		Set<Player> members = CommandUtility.getPlayersFromArgs(args, 0, sender);
+		List<Player> members = CommandUtility.getPlayersFromArgs(args, sender);
 		for (Player member : members) {
-			group.requestPlayerJoin(member, JoinMethod.Invite);
+			group.requestAddPlayer(member, AddPlayerMethod.Invite);
 		}
 
-		plugin.saveConfig();
+		ludos.saveConfig();
 
 		return true;
 	}

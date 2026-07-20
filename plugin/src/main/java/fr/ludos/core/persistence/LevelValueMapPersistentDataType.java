@@ -12,7 +12,9 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.item.level.LevelValue;
 
-
+/**
+ * Persistent data type for serializing and deserializing maps of {@link LevelValue}s.
+ */
 public class LevelValueMapPersistentDataType extends PersistentMapDataType<String, LevelValue> {
 
 	public static final LevelValueMapPersistentDataType INSTANCE = new LevelValueMapPersistentDataType();

@@ -6,6 +6,9 @@ import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 
 
+/**
+ * Persistent data type for converting between double arrays and long arrays.
+ */
 public class DoubleArrayPersistentDataType implements PersistentDataType<long[], double[]> {
 
 	public static final DoubleArrayPersistentDataType INSTANCE = new DoubleArrayPersistentDataType();

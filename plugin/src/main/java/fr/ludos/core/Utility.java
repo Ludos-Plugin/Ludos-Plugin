@@ -23,6 +23,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
@@ -30,6 +31,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.LivingEntity;
@@ -43,8 +45,11 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
+/**
+ * Various utility functions for Ludos.
+ */
 public class Utility {
-	private static final Random random = new Random();
+	private static final Random RANDOM = new Random();
 
 	public static Location getLocationAround(Location searchOrigin, int min, int max, Location fallback) {
 		return getLocationAround(searchOrigin, min, max, fallback, 0);
@@ -114,7 +119,7 @@ public class Utility {
 		int biomeSearchRetries = retries;
 
 		do {
-			Biome randomBiome = biomes.stream().skip(random.nextInt(biomes.size())).findFirst().orElse(null);
+			Biome randomBiome = biomes.stream().skip(RANDOM.nextInt(biomes.size())).findFirst().orElse(null);
 			biomes.remove(randomBiome);
 
 			biomeLocation = world.locateNearestBiome(searchOrigin, randomBiome, biomeSearchSize, 16);
@@ -130,8 +135,8 @@ public class Utility {
 	public static Location getLocationAround(Location searchOrigin, int min, int max, Location fallback, int retries) {
 		Location location = searchOrigin.clone();
 		do {
-			location.setX(searchOrigin.getBlockX() + random.nextInt(min, max + 1) * (random.nextBoolean() ? 1 : -1) + 0.5);
-			location.setZ(searchOrigin.getBlockZ() + random.nextInt(min, max + 1) * (random.nextBoolean() ? 1 : -1) + 0.5);
+			location.setX(searchOrigin.getBlockX() + RANDOM.nextInt(min, max + 1) * (RANDOM.nextBoolean() ? 1 : -1) + 0.5);
+			location.setZ(searchOrigin.getBlockZ() + RANDOM.nextInt(min, max + 1) * (RANDOM.nextBoolean() ? 1 : -1) + 0.5);
 
 			retries--;
 		}
@@ -415,29 +420,36 @@ public class Utility {
 	}
 
 
-	public final static Predicate<Player> isPlayerInNormalGamemode = (p) -> p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE;
-	public final static Predicate<LivingEntity> isEntityAlive = (p) -> ! p.isDead() && (p instanceof Player player ? isPlayerInNormalGamemode.test(player) : true);
-	public final static Predicate<Player> isPlayerAlive = (p) -> isPlayerInNormalGamemode.test(p) && ! p.isDead();
+	public final static Predicate<Player> IS_PLAYER_IN_NORMAL_GAMEMODE = (p) -> p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE;
+	public final static Predicate<LivingEntity> IS_ENTITY_ALIVE = (p) -> ! p.isDead() && (p instanceof Player player ? IS_PLAYER_IN_NORMAL_GAMEMODE.test(player) : true);
+	public final static Predicate<Player> IS_PLAYER_ALIVE = (p) -> IS_PLAYER_IN_NORMAL_GAMEMODE.test(p) && ! p.isDead();
 
-	public static Stream<Entity> getTeamEntities(Team team) {
+	public static Stream<Entity> getTeamEntities(Team team, Server server) {
 		return team.getEntries().stream()
 			.map(e -> {
 				try {
 					UUID uuid = UUID.fromString(e);
-					return Bukkit.getEntity(uuid);
+					return server.getEntity(uuid);
 				} catch (IllegalArgumentException err) {
-					return Bukkit.getPlayer(e);
+					return server.getPlayer(e);
 				}
 			});
 	}
-	public static Stream<OfflinePlayer> getTeamPlayers(Team team) {
+	public static Stream<OfflinePlayer> getTeamPlayers(Team team, Server server) {
 		return team.getEntries().stream()
-			.map(Bukkit::getPlayer);
+			.map(server::getPlayer);
 	}
-	public static Stream<Player> getTeamOnlinePlayers(Team team) {
-		return getOnline(getTeamPlayers(team));
+	public static Stream<Player> getTeamOnlinePlayers(Team team, Server server) {
+		return getOnline(getTeamPlayers(team, server));
 	}
-	public static Stream<Player> getTeamAlivePlayers(Team team) {
-		return getTeamOnlinePlayers(team).filter(isPlayerAlive);
+	public static Stream<Player> getTeamAlivePlayers(Team team, Server server) {
+		return getTeamOnlinePlayers(team, server).filter(IS_PLAYER_ALIVE);
+	}
+
+
+	public final static ConfigurationSection getOrCreateConfigSection(ConfigurationSection config, String path) {
+		ConfigurationSection deeper = config.getConfigurationSection(path);
+		if (deeper != null) return deeper;
+		return config.createSection(path);
 	}
 }

@@ -3,10 +3,14 @@ package fr.ludos.roles.assassin.items.trap;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+/**
+ * An {@link AssassinTrap} constituted by a single {@link Block}.
+ */
 public abstract class BlockTrap extends AssassinTrap {
 	private final Material type;
 	protected Material getType() {

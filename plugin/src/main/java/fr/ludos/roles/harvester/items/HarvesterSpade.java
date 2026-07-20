@@ -31,22 +31,23 @@ import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelValue;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.harvester.HarvesterRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-
+/**
+ * Implementation of the Huntsman Spade, for use by any Player with {@link HarvesterRole}.
+ */
 public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
-	private static final String ID = "manhuntHarvesterSpade";
+	public static final String ID = "harvester_spade";
 
 	// private final static Map<UUID, HarvesterSpade> cachedItems = new HashMap<>();
 
 	private static final int COOLDOWN_SECONDS = 20;
 	private static final int TUNNEL_LENGTH = 10;
 
-	private final static Map<Player, List<List<BlockState>>> tunnelBlocks = new HashMap<>();
+	private final static Map<Player, List<List<BlockState>>> TUNNEL_BLOCKS = new HashMap<>();
 
 
 	public static HarvesterSpade fromItemStack(List<HarvesterSpadeLevels> levels, ItemStack stack, Game game) throws IllegalArgumentException {
@@ -109,7 +110,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 	public void useAbility() {
 		if (! refreshUseCooldown()) return;
-		boolean tunnelActive = tunnelBlocks.containsKey(getOwner());
+		boolean tunnelActive = TUNNEL_BLOCKS.containsKey(getOwner());
 
 
 		if (tunnelActive) {
@@ -131,11 +132,11 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 
 	private boolean digTunnel() {
-		if (tunnelBlocks.containsKey(getOwner())) return false;
+		if (TUNNEL_BLOCKS.containsKey(getOwner())) return false;
 
 		List<Block> lastTwoTargetBlocks = getOwner().getLastTwoTargetBlocks(null, 12);
 		if (lastTwoTargetBlocks.size() != 2) return false;
-		tunnelBlocks.put(getOwner(), null);
+		TUNNEL_BLOCKS.put(getOwner(), null);
 
 
 		Block targetBlock = lastTwoTargetBlocks.get(1);
@@ -182,7 +183,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 				current++;
 				if (current >= digBlocks.size()) {
-					tunnelBlocks.put(getOwner(), digBlocksState);
+					TUNNEL_BLOCKS.put(getOwner(), digBlocksState);
 					cancel();
 				}
 			}
@@ -193,9 +194,9 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 
 	private boolean revertTunnel() {
-		List<List<BlockState>> blocks = tunnelBlocks.get(getOwner());
+		List<List<BlockState>> blocks = TUNNEL_BLOCKS.get(getOwner());
 		if (blocks == null) return false;
-		tunnelBlocks.put(getOwner(), null);
+		TUNNEL_BLOCKS.put(getOwner(), null);
 
 
 		new BukkitRunnable() {
@@ -215,7 +216,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 
 				current++;
 				if (current >= blocks.size()) {
-					tunnelBlocks.remove(getOwner());
+					TUNNEL_BLOCKS.remove(getOwner());
 					cancel();
 				}
 			}
@@ -227,7 +228,9 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 		return true;
 	}
 
-
+	/**
+	 * Events for the {@link HarvesterSpade}.
+	 */
 	public static class Events extends LevelItem.Events<HarvesterSpade, HarvesterSpadeLevels> {
 		private static final List<HarvesterSpadeLevels> LEVELS = List.of(HarvesterSpadeLevels.values());
 		public final HarvesterRole role;
@@ -240,17 +243,6 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 		@Override
 		public List<HarvesterSpadeLevels> getLevels() {
 			return LEVELS;
-		}
-
-
-		public class BlockBreak {
-			Location location;
-			Material material;
-
-			public BlockBreak(Location location, Material material){
-				this.location = location;
-				this.material = material;
-			}
 		}
 
 		@EventHandler
@@ -291,7 +283,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 		}
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HarvesterRole.id);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, HarvesterRole.ID);
 		}
 	}
 }
