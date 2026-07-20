@@ -2,7 +2,6 @@ package fr.ludos.core.group;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,12 +19,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemorySection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.role.Role;
@@ -37,55 +33,39 @@ import net.kyori.adventure.text.format.NamedTextColor;
  * A structure to encapsulate a Group of Players. Meant for {@link Game} instances.
  */
 public final class Group {
-	public static final String LEADER_KEY = "leader";
-	public static final String MEMBERS_KEY = "members";
-
-	/**
-	 * The method by which the request for a Player to be added to a Group was made.
-	 */
-	public enum AddPlayerMethod {
-		Join,
-		Invite
-	}
-
-	/**
-	 * The result of a {@link Group#requestAddPlayer} operation.
-	 */
-	public enum AddPlayerResult {
-		Succeeded,
-		Requested,
-		Failed
-	}
-
-	private static final Set<Group> GROUPS = new HashSet<>();
-	public static final Set<Group> getGroups() {
-		return Collections.unmodifiableSet(GROUPS);
-	}
-
-	private static final Map<UUID, Group> PLAYER_GROUP_MAP = new HashMap<>();
-	public static Group getGroupOfPlayer(@NotNull UUID playerId) {
-		return PLAYER_GROUP_MAP.get(Objects.requireNonNull(playerId, "Player Id cannot be null"));
-	}
-	public static Group getGroupOfPlayer(@NotNull OfflinePlayer player) {
-		return PLAYER_GROUP_MAP.get(Objects.requireNonNull(player, "Player cannot be null").getUniqueId());
-	}
-
-	private final Ludos ludos;
-	public Ludos getLudos() {
-		return ludos;
-	}
+	GroupManager groupManager;
+	private @Nullable Game game;
 
 	private UUID id;
+
+	private UUID leaderId;
+	private final Set<UUID> memberIds;
+
+	private Map<UUID, AddPlayerMethod> joinRequests = new HashMap<>();
+
+
+
+	public GroupManager getManager() {
+		return groupManager;
+	}
 	public final UUID getId() {
 		return id;
 	}
-
-	private UUID leaderId;
-	public final OfflinePlayer getLeader() {
-		return Bukkit.getOfflinePlayer(leaderId);
+	public @Nullable Game getGame() {
+		return game;
 	}
 
-	private final Set<UUID> memberIds;
+	public final UUID getLeaderId() {
+		return leaderId;
+	}
+	public final OfflinePlayer getLeader() {
+		if (leaderId == null) return null;
+		return Bukkit.getOfflinePlayer(leaderId);
+	}
+	public final Set<UUID> getMemberIds() {
+		return memberIds.stream()
+			.collect(Collectors.toSet());
+	}
 	public final Set<OfflinePlayer> getMembers() {
 		return memberIds.stream()
 			.map(Bukkit::getOfflinePlayer)
@@ -99,14 +79,8 @@ public final class Group {
 			.collect(Collectors.toSet());
 	}
 
-	private Map<OfflinePlayer, AddPlayerMethod> joinRequests = new HashMap<>();
-	public Map<OfflinePlayer, AddPlayerMethod> getJoinRequests() {
+	public Map<UUID, AddPlayerMethod> getJoinRequests() {
 		return this.joinRequests;
-	}
-
-	private @Nullable Game game;
-	public @Nullable Game getGame() {
-		return game;
 	}
 	public void setGame(@Nullable Game game) {
 		this.game = game;
@@ -139,17 +113,17 @@ public final class Group {
 	}
 
 
-	private Group(UUID id, @NotNull OfflinePlayer leader, @NotNull Collection<OfflinePlayer> members, Ludos ludos) {
+	public Group(UUID id, @NotNull OfflinePlayer leader, @Nullable Collection<OfflinePlayer> members) {
 		this.id = id;
-		this.ludos = ludos;
 		this.leaderId = leader.getUniqueId();
-		this.memberIds = members.stream()
-			.map(OfflinePlayer::getUniqueId)
-			.collect(Collectors.toCollection(HashSet::new));
+		this.memberIds = members != null
+			? members.stream()
+				.map(OfflinePlayer::getUniqueId)
+				.collect(Collectors.toCollection(HashSet::new))
+			: new HashSet<>();
 	}
-	private Group(@NotNull OfflinePlayer leader, @NotNull Collection<OfflinePlayer> members, Ludos ludos) {
-		this(UUID.randomUUID(), leader, members, ludos);
-		writeAllToConfig();
+	public Group(@NotNull OfflinePlayer leader, @Nullable Collection<OfflinePlayer> members) {
+		this(UUID.randomUUID(), leader, members);
 	}
 
 
@@ -189,67 +163,13 @@ public final class Group {
 		return player.getUniqueId().equals(leaderId) || memberIds.contains(player.getUniqueId());
 	}
 
-
-	private static void initializeGroup(Group group) {
-		for (OfflinePlayer member : group.getMembers()) {
-			PLAYER_GROUP_MAP.put(member.getUniqueId(), group);
-		}
-		OfflinePlayer leader = group.getLeader();
-		if (leader != null) {
-			PLAYER_GROUP_MAP.put(leader.getUniqueId(), group);
-		}
-		GROUPS.add(group);
-	}
-	private static void deinitializeGroup(Group group) {
-		for (OfflinePlayer member : group.getMembers()) {
-			PLAYER_GROUP_MAP.remove(member.getUniqueId());
-		}
-		OfflinePlayer leader = group.getLeader();
-		if (leader != null) {
-			PLAYER_GROUP_MAP.remove(leader.getUniqueId());
-		}
-		GROUPS.remove(group);
-	}
-
-	public final static Group createGroup(@NotNull OfflinePlayer leader, @Nullable Set<OfflinePlayer> members, Ludos ludos) {
-		if (leader == null) {
-			throw new IllegalArgumentException("Leader cannot be null");
-		}
-
-		Group oldGroup = getGroupOfPlayer(leader);
-		if (oldGroup != null) {
-			oldGroup.removePlayer(leader, false);
-		}
-
-
-		Group group = new Group(leader, members == null ? Collections.emptySet() : members, ludos);
-		initializeGroup(group);
-
-
-		Component creationMessage = Component.text("You have created a new group.");
-		Player onlineLeader = leader.getPlayer();
-		if (onlineLeader != null) {
-			onlineLeader.sendMessage(creationMessage);
-		}
-
-		Component joinMessage = Component.text("You have joined " + leader.getName() + "'s group.");
-		for (OfflinePlayer member : group.getMembers()) {
-			Player onlineMember = member.getPlayer();
-			if (onlineMember != null) {
-				onlineMember.sendMessage(joinMessage);
-			}
-		}
-
-		return group;
-	}
-
 	public final void disband() {
 		Game game = getGame();
 		if (game != null) {
 			game.stop();
 		}
 
-		deinitializeGroup(this);
+		getManager().removeGroup(this);
 
 		Component disbandMessage = Component.text("Your group has been disbanded.");
 
@@ -267,8 +187,6 @@ public final class Group {
 			}
 		}
 		this.memberIds.clear();
-
-		removeConfigGroup();
 	}
 	private final boolean electNewLeader() {
 		Set<UUID> currentMemberIds = memberIds;
@@ -278,7 +196,7 @@ public final class Group {
 
 		this.leaderId = newLeaderId;
 		memberIds.remove(newLeaderId);
-		writeAllToConfig();
+		getManager().writeAllToConfig(this);
 
 		Component promotionMessage = Component.text("You have been promoted to group leader.");
 		Player onlineLeader = Bukkit.getPlayer(newLeaderId);
@@ -300,7 +218,7 @@ public final class Group {
 		if (electNewLeader()) {
 			Player onlineLeader = oldLeader.getPlayer();
 			memberIds.add(oldLeader.getUniqueId());
-			writeMembersToConfig();
+			getManager().writeMembersToConfig(this);
 
 			Component demoteMessage = Component.text(getLeader().getName() + " has been promoted to leader.");
 			onlineLeader.sendMessage(demoteMessage);
@@ -323,7 +241,7 @@ public final class Group {
 			return false;
 		}
 
-		Group currentGroup = getGroupOfPlayer(player);
+		Group currentGroup = getManager().getGroupOfPlayer(player);
 		if (currentGroup != null) {
 			currentGroup.removePlayer(player, false);
 		}
@@ -347,19 +265,19 @@ public final class Group {
 
 	private final void addMemberInternal(OfflinePlayer player) {
 		memberIds.add(player.getUniqueId());
-		PLAYER_GROUP_MAP.put(player.getUniqueId(), this);
+		getManager().setPlayerGroup(player, this);
 	}
 	private final void addMemberInternalPersistent(OfflinePlayer player) {
 		addMemberInternal(player);
-		writeMembersToConfig();
+		getManager().writeMembersToConfig(this);
 	}
 	private final void removeMemberInternal(OfflinePlayer player) {
 		memberIds.remove(player.getUniqueId());
-		PLAYER_GROUP_MAP.remove(player.getUniqueId());
+		getManager().unsetPlayerGroup(player);
 	}
 	private final void removeMemberInternalPersistent(OfflinePlayer player) {
 		removeMemberInternal(player);
-		writeMembersToConfig();
+		getManager().writeMembersToConfig(this);
 	}
 	public final boolean removePlayer(OfflinePlayer player, boolean kick) {
 		boolean wasLeader = isLeader(player);
@@ -412,10 +330,10 @@ public final class Group {
 
 		GroupJoinOption joinBehaviour = GroupConfigMap.GROUP_JOIN.getGroupConfig(this);
 
-		AddPlayerMethod currentMethod = joinRequests.get(player);
+		AddPlayerMethod currentMethod = joinRequests.get(player.getUniqueId());
 		boolean consentIsTwoSided = currentMethod != null && currentMethod != method;
 		if (joinBehaviour == GroupJoinOption.auto_accept || consentIsTwoSided) {
-			joinRequests.remove(player);
+			joinRequests.remove(player.getUniqueId());
 			addPlayer(player);
 			return AddPlayerResult.Succeeded;
 		}
@@ -441,7 +359,7 @@ public final class Group {
 					onlineLeader.sendMessage(joinRequestMessage);
 				}
 
-				joinRequests.put(player, AddPlayerMethod.Join);
+				joinRequests.put(player.getUniqueId(), AddPlayerMethod.Join);
 				break;
 			case Invite:
 				Component invitationMessage = Component.text("You have been invited to join " + leader.getName() + "'s group. Click ")
@@ -455,100 +373,52 @@ public final class Group {
 					.append(Component.text(" to join."));
 				player.sendMessage(invitationMessage);
 
-				joinRequests.put(player, AddPlayerMethod.Invite);
+				joinRequests.put(player.getUniqueId(), AddPlayerMethod.Invite);
 				break;
 		}
 		return AddPlayerResult.Requested;
 	}
 
-	public static @NotNull Group deserialize(UUID id, @NotNull Map<String, Object> data, Ludos ludos) {
-		Object leaderRaw = data.get("leader");
-		if (!(leaderRaw instanceof String leaderName)) {
-			throw new IllegalArgumentException("Invalid leader UUID in group data");
-		}
-		OfflinePlayer leader = Bukkit.getOfflinePlayer(UUID.fromString(leaderName));
-
-		Object membersRaw = data.get("members");
-		List<OfflinePlayer> members;
-		if (membersRaw instanceof List<?> membersList) {
-			members = membersList.stream()
-				.filter(String.class::isInstance)
-				.map(item -> Bukkit.getOfflinePlayer(UUID.fromString((String)item)))
-				.collect(Collectors.toList());
-		} else {
-			members = new ArrayList<>();
-		}
-
-		Group newGroup = new Group(id, leader, members, ludos);
-		initializeGroup(newGroup);
-
-		return newGroup;
-	}
-
-	private void writeLeaderToConfig() {
-		getConfigSection().set(LEADER_KEY, leaderId.toString());
-	}
-	private void writeMembersToConfig() {
-		getConfigSection().set(MEMBERS_KEY, memberIds.stream()
-			.map(UUID::toString)
-			.collect(Collectors.toList())
-		);
-	}
-	private void writeAllToConfig() {
-		writeLeaderToConfig();
-		writeMembersToConfig();
-	}
-
-	public ConfigurationSection getConfigSection() {
-		return ludos.getGroupConfigSection(this);
-	}
 	public ConfigurationSection getConfig() {
-		return ludos.getGroupScopedConfig(this);
+		return getManager().getConfigSection(this);
+	}
+	public ConfigurationSection getScopedConfig() {
+		return getManager().getScopedConfig(this);
 	}
 	public ConfigurationSection getGroupConfig() {
-		return ludos.getGroupConfig(this);
+		return getManager().getGroupConfig(this);
 	}
 	public ConfigurationSection getGameConfig(Game.Builder game) {
-		return ludos.getGroupGameConfig(this, game);
+		return getManager().getGameConfig(this, game);
 	}
 	public ConfigurationSection getRoleConfig(Role.Builder role) {
-		return ludos.getGroupRoleConfig(this, role);
+		return getManager().getRoleConfig(this, role);
 	}
 	public ConfigurationSection getPlayerConfig() {
-		return ludos.getGroupPlayerConfig(this);
-	}
-
-	public final void removeConfigGroup() {
-		FileConfiguration pluginConfig = ludos.getGroupsConfig();
-
-		pluginConfig.set(
-			id.toString(),
-			null
-		);
-	}
-
-	public static void loadConfigGroups(Ludos ludos) {
-		ConfigurationSection configSection = ludos.getGroupsConfig();
-
-		for (Map.Entry<String, Object> groupEntry : configSection.getValues(false).entrySet()) {
-			try {
-				UUID groupUuid = UUID.fromString(groupEntry.getKey());
-				if (groupEntry.getValue() instanceof MemorySection groupData) {
-					try {
-						Group.deserialize(groupUuid, groupData.getValues(true), ludos);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			} catch (Exception e) {
-				continue;
-			}
-		}
+		return getManager().getPlayerConfig(this);
 	}
 
 	public Location pickReturnLocation() {
 		Optional<Player> any = getOnlinePlayers().stream().filter(Player::isOnline).findFirst();
 		if (any.isPresent()) return any.get().getLocation();
 		return Bukkit.getWorlds().get(0).getSpawnLocation();
+	}
+
+
+	/**
+	 * The method by which the request for a Player to be added to a Group was made.
+	 */
+	public enum AddPlayerMethod {
+		Join,
+		Invite
+	}
+
+	/**
+	 * The result of a {@link Group#requestAddPlayer} operation.
+	 */
+	public enum AddPlayerResult {
+		Succeeded,
+		Requested,
+		Failed
 	}
 }

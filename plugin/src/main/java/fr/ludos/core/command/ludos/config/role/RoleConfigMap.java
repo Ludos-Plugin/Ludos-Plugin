@@ -9,25 +9,26 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.config.ConfigOptions;
 import fr.ludos.core.role.Role;
+import fr.ludos.core.role.RoleManager;
 
 /**
  * Config Options Map for Role-specific configuration.
  */
 public class RoleConfigMap extends ConfigOptionsCollection {
-	public static final RoleConfigMap INSTANCE = new RoleConfigMap();
+	private RoleManager manager;
 
-	public RoleConfigMap() {
+	public RoleConfigMap(RoleManager manager) {
 		super("role");
 	}
 
 	@Override
 	public @NotNull Set<@NotNull String> getOptions(CommandSender sender) {
-		return Role.getRoleIds().stream().collect(Collectors.toSet());
+		return manager.getRoleIds().stream().collect(Collectors.toSet());
 	}
 
 	@Override
 	public ConfigOptions getOptionsValue(String name) {
-		Role.Builder role = Role.getRoleById(name);
+		Role.Builder role = manager.getRoleById(name);
 		if (role == null) return null;
 
 		return role.getConfig();

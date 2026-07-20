@@ -104,10 +104,9 @@ public final class RaidTeamController extends GameTeamController {
 
 		Location teammateLocation = Utility.snapToHighestY(getLocationAroundTeammate(team), true);
 
-		String name = player.getName();
-		playersTeam.removeEntry(name);
-		spectatorsTeam.removeEntry(name);
-		team.addEntry(name);
+		playersTeam.removePlayer(player);
+		spectatorsTeam.removePlayer(player);
+		team.addPlayer(player);
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;

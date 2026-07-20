@@ -7,11 +7,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.ScopeConfigMap;
-import fr.ludos.core.command.ludos.config.role.RoleConfigMap;
 import fr.ludos.core.role.Role;
+import fr.ludos.core.role.RoleManager;
 
 /**
  * {@link Subcommand} for {@link Role}-specific configuration.
@@ -19,10 +18,12 @@ import fr.ludos.core.role.Role;
 public class RoleConfig implements Subcommand {
 	private final static String ID = "config";
 
+	private final RoleManager manager;
 	private final ScopeConfigMap map;
 
-	public RoleConfig(Ludos ludos) {
-		this.map = new ScopeConfigMap(ludos, RoleConfigMap.INSTANCE);
+	public RoleConfig(RoleManager manager) {
+		this.manager = manager;
+		this.map = new ScopeConfigMap(manager.getLudos(), manager.configMap);
 	}
 
 	@Override
@@ -45,7 +46,7 @@ public class RoleConfig implements Subcommand {
 	@Override
 	public String getUsage() {
 		return "<" +
-			Role.getRegistered().keySet().stream().sorted()
+			manager.getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))
 			+ "> [name] [option]";
 	}

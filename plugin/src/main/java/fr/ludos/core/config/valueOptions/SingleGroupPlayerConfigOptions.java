@@ -2,6 +2,7 @@ package fr.ludos.core.config.valueOptions;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,19 +16,22 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.group.Group;
+import fr.ludos.core.group.GroupManager;
 
 /**
  * {@link ValueConfigOptions} for a single {@link OfflinePlayer} instance, present in the {@link CommandSender}'s current {@link Group}.
  */
 public final class SingleGroupPlayerConfigOptions extends ValueConfigOptions<OfflinePlayer> {
+	private final GroupManager groupManager;
 	private final boolean excludeSelf;
 
-	public SingleGroupPlayerConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue, boolean excludeSelf) {
+	public SingleGroupPlayerConfigOptions(GroupManager groupManager, @NotNull String name, @NotNull String key, @Nullable String emptyValue, boolean excludeSelf) {
 		super(name, key, emptyValue);
+		this.groupManager = Objects.requireNonNull(groupManager);
 		this.excludeSelf = excludeSelf;
 	}
-	public SingleGroupPlayerConfigOptions(@NotNull String name, @NotNull String key, @Nullable String emptyValue) {
-		this(name, key, emptyValue, false);
+	public SingleGroupPlayerConfigOptions(GroupManager groupManager, @NotNull String name, @NotNull String key, @Nullable String emptyValue) {
+		this(groupManager, name, key, emptyValue, false);
 	}
 
 	public String getterMessage(String value) {
@@ -44,7 +48,7 @@ public final class SingleGroupPlayerConfigOptions extends ValueConfigOptions<Off
 	public Set<String> getValidOptions(CommandSender sender) {
 		if (! (sender instanceof Player player )) return Collections.emptySet();
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = groupManager.getGroupOfPlayer(player);
 		if (group == null) return Collections.emptySet();
 
 		Set<String> res = group.getPlayers().stream()

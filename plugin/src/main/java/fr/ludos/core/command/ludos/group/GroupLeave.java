@@ -38,7 +38,7 @@ public class GroupLeave implements Subcommand {
 			return true;
 		}
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
@@ -46,7 +46,7 @@ public class GroupLeave implements Subcommand {
 
 		group.removePlayer(player, false);
 
-		ludos.saveGroupsConfig();
+		ludos.saveConfig();
 
 		return true;
 	}

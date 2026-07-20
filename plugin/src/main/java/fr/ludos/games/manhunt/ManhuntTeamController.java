@@ -210,7 +210,7 @@ public final class ManhuntTeamController extends GameTeamController {
 			? Utility.snapToHighestY(area.pickRandom(0.0, 0.2), true)
 			: getGame().getWorldManager().getWorld().getSpawnLocation();
 
-		preyTeam.addEntry(player.getName());
+		preyTeam.addPlayer(player);
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;
@@ -240,7 +240,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 		Location hunterLocation = Utility.snapToHighestY(getLocationAroundTeammate(hunterTeam), true);
 
-		hunterTeam.addEntry(player.getName());
+		hunterTeam.addPlayer(player);
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;
@@ -270,7 +270,7 @@ public final class ManhuntTeamController extends GameTeamController {
 			? Utility.snapToHighestY(area.pickRandom(0.0, 1.0), true)
 			: getGame().getWorldManager().getWorld().getSpawnLocation();
 
-		spectatorTeam.addEntry(player.getName());
+		spectatorTeam.addPlayer(player);
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;

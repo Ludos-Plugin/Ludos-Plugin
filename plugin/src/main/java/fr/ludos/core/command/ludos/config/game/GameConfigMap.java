@@ -10,25 +10,27 @@ import fr.ludos.core.config.ConfigOptions;
 import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.config.ConfigOptionsMap;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.game.GameManager;
 
 /**
  * {@link ConfigOptionsMap} for {@link Game}-specific configuration.
  */
 public class GameConfigMap extends ConfigOptionsCollection {
-	public static final GameConfigMap INSTANCE = new GameConfigMap();
+	private final GameManager gameManager;
 
-	public GameConfigMap() {
+	public GameConfigMap(GameManager gameManager) {
 		super("game");
+		this.gameManager = gameManager;
 	}
 
 	@Override
 	public @NotNull Set<@NotNull String> getOptions(CommandSender sender) {
-		return Game.getGameIds().stream().collect(Collectors.toSet());
+		return gameManager.getGameIds().stream().collect(Collectors.toSet());
 	}
 
 	@Override
 	public ConfigOptions getOptionsValue(String name) {
-		Game.Builder game = Game.getGameById(name);
+		Game.Builder game = gameManager.getGameById(name);
 		if (game == null) return null;
 
 		return game.getConfig();

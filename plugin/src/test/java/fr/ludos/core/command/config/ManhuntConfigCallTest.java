@@ -2,11 +2,13 @@ package fr.ludos.core.command.config;
 
 import java.util.List;
 
+import org.junit.jupiter.api.AssertionFailureBuilder;
 import org.junit.jupiter.api.Test;
 
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import fr.ludos.core.area.WorldBorderArea;
-import fr.ludos.games.manhunt.ManhuntGameConfigMap;
+import fr.ludos.core.game.Game;
+import fr.ludos.games.manhunt.ManhuntGame;
 
 class ManhuntConfigCallTest extends ConfigTest {
 
@@ -28,15 +30,25 @@ class ManhuntConfigCallTest extends ConfigTest {
 			player1.getName() + " " + player2.getName() + " " + player3.getName()
 		);
 
-		assertSetConfigValues(player1, "ludos config global game manhunt", ManhuntGameConfigMap.PLAYERS, additionalPlayerArgs, "everyone");
-		assertSetConfigValues(player1, "ludos config global game manhunt", ManhuntGameConfigMap.PREY, "me");
-		assertSetConfigValues(player1, "ludos config global game manhunt", WorldBorderArea.CONFIG, "big");
-		assertSetConfigValues(player1, "ludos config global game manhunt", ManhuntGameConfigMap.REVEAL_PERIOD, "one_minute");
+		Game.Builder gameBuilder = ludos.getGameManager().getGameById(ManhuntGame.ID);
+		if (! (gameBuilder instanceof ManhuntGame.Builder manhunt)) {
+			AssertionFailureBuilder.assertionFailure()
+				.message("Could not get ManhuntGame.Builder instance from Game registry")
+				.expected(ManhuntGame.Builder.class)
+				.actual(gameBuilder.getClass())
+				.buildAndThrow();
+			return;
+		}
 
-		assertSetConfigValues(player1, "ludos config group game manhunt", ManhuntGameConfigMap.PLAYERS, additionalPlayerArgs, "everyone");
-		assertSetConfigValues(player1, "ludos config group game manhunt", ManhuntGameConfigMap.PREY, "me");
+		assertSetConfigValues(player1, "ludos config global game manhunt", manhunt.players, additionalPlayerArgs, "everyone");
+		assertSetConfigValues(player1, "ludos config global game manhunt", manhunt.prey, "me");
+		assertSetConfigValues(player1, "ludos config global game manhunt", WorldBorderArea.CONFIG, "big");
+		assertSetConfigValues(player1, "ludos config global game manhunt", manhunt.revealPeriod, "one_minute");
+
+		assertSetConfigValues(player1, "ludos config group game manhunt", manhunt.players, additionalPlayerArgs, "everyone");
+		assertSetConfigValues(player1, "ludos config group game manhunt", manhunt.prey, "me");
 		assertSetConfigValues(player1, "ludos config group game manhunt", WorldBorderArea.CONFIG, "big");
-		assertSetConfigValues(player1, "ludos config group game manhunt", ManhuntGameConfigMap.REVEAL_PERIOD, "one_minute");
+		assertSetConfigValues(player1, "ludos config group game manhunt", manhunt.revealPeriod, "one_minute");
 
 		player1.performCommand("ludos group disband");
 	}

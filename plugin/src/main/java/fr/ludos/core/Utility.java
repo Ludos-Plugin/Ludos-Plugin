@@ -23,6 +23,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
@@ -423,26 +424,26 @@ public class Utility {
 	public final static Predicate<LivingEntity> IS_ENTITY_ALIVE = (p) -> ! p.isDead() && (p instanceof Player player ? IS_PLAYER_IN_NORMAL_GAMEMODE.test(player) : true);
 	public final static Predicate<Player> IS_PLAYER_ALIVE = (p) -> IS_PLAYER_IN_NORMAL_GAMEMODE.test(p) && ! p.isDead();
 
-	public static Stream<Entity> getTeamEntities(Team team) {
+	public static Stream<Entity> getTeamEntities(Team team, Server server) {
 		return team.getEntries().stream()
 			.map(e -> {
 				try {
 					UUID uuid = UUID.fromString(e);
-					return Bukkit.getEntity(uuid);
+					return server.getEntity(uuid);
 				} catch (IllegalArgumentException err) {
-					return Bukkit.getPlayer(e);
+					return server.getPlayer(e);
 				}
 			});
 	}
-	public static Stream<OfflinePlayer> getTeamPlayers(Team team) {
+	public static Stream<OfflinePlayer> getTeamPlayers(Team team, Server server) {
 		return team.getEntries().stream()
-			.map(Bukkit::getPlayer);
+			.map(server::getPlayer);
 	}
-	public static Stream<Player> getTeamOnlinePlayers(Team team) {
-		return getOnline(getTeamPlayers(team));
+	public static Stream<Player> getTeamOnlinePlayers(Team team, Server server) {
+		return getOnline(getTeamPlayers(team, server));
 	}
-	public static Stream<Player> getTeamAlivePlayers(Team team) {
-		return getTeamOnlinePlayers(team).filter(IS_PLAYER_ALIVE);
+	public static Stream<Player> getTeamAlivePlayers(Team team, Server server) {
+		return getTeamOnlinePlayers(team, server).filter(IS_PLAYER_ALIVE);
 	}
 
 

@@ -30,10 +30,10 @@ public class LudosCommand implements Subcommand {
 		ArrayList<Subcommand> subcommands = new ArrayList<>() {{
 			add(new GroupSubcommand(ludos));
 			add(new GameSubcommand(ludos));
-			add(new RoleSubcommand(ludos));
+			add(new RoleSubcommand(ludos.getRoleManager()));
 			add(new LudosConfig(ludos));
-			add(new CheatsSubcommand());
-			add(new LudosGuidebook());
+			add(new CheatsSubcommand(ludos));
+			add(new LudosGuidebook(ludos));
 		}};
 		HelpSubcommand help = new HelpSubcommand("ludos", subcommands);
 		subcommands.add(help);

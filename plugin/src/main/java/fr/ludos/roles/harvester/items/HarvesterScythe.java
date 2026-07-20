@@ -34,7 +34,6 @@ import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelValue;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.harvester.HarvesterRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -243,7 +242,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, HarvesterRole.ID);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, HarvesterRole.ID);
 		}
 	}
 }

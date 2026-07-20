@@ -34,17 +34,11 @@ public class RampartRole extends Role {
 
 	@Override
 	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
-		return new LinkedHashMap<>() {
-			{
-				put(RampartShield.ID, new RampartShield.Events(game));
-				put(RampartHelm.ID, new RampartHelm.Events(game));
-				put(RampartDash.ID, new RampartDash.Events(game));
-			}
-		};
-	}
-
-	public static void setAttributePlayer(List<Player> players, PotionEffect AbsorbEffect,
-			PotionEffect SlownessEffect) {
+		return new LinkedHashMap<>() {{
+			put(RampartShield.ID, new RampartShield.Events(game));
+			put(RampartHelm.ID, new RampartHelm.Events(game));
+			put(RampartDash.ID, new RampartDash.Events(game));
+		}};
 	}
 
 	@Override
@@ -52,7 +46,7 @@ public class RampartRole extends Role {
 		super.onRoleStart();
 
 		List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
-			.filter(Role.ofRole(ID))
+			.filter(getBuilder().getManager().ofRole(ID))
 			.toList();
 
 		PotionEffect absorbEffect = new PotionEffect(
@@ -74,7 +68,7 @@ public class RampartRole extends Role {
 		super.onRoleStop();
 
 		List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
-			.filter(Role.ofRole(ID))
+			.filter(getBuilder().getManager().ofRole(ID))
 			.toList();
 
 		for (Player player : players) {
@@ -87,7 +81,7 @@ public class RampartRole extends Role {
 	public void onPlayerHit(EntityDamageByEntityEvent event) {
 		if (! (event.getDamager() instanceof Player attacker)) return;
 
-		if (!Role.getPlayersOfRole(ID).contains(attacker)) return;
+		if (! getBuilder().getManager().getPlayersOfRole(ID).contains(attacker)) return;
 
 		Material material = attacker.getInventory().getItemInMainHand().getType();
 
@@ -112,7 +106,7 @@ public class RampartRole extends Role {
 		}
 
 		public Builder(Ludos ludos) {
-			super(ludos);
+			super(ludos.getRoleManager(), ludos);
 		}
 
 		@Override

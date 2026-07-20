@@ -40,14 +40,14 @@ public class GroupCreate implements Subcommand {
 			return true;
 		}
 
-		Group group = Group.createGroup(player, null, ludos);
+		Group group = ludos.getGroupManager().createGroup(player, null);
 
 		List<Player> members = CommandUtility.getPlayersFromArgs(args, sender);
 		for (Player member : members) {
 			group.requestAddPlayer(member, AddPlayerMethod.Invite);
 		}
 
-		ludos.saveGroupsConfig();
+		ludos.saveConfig();
 
 		return true;
 	}

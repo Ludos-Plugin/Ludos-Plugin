@@ -2,10 +2,12 @@ package fr.ludos.games.arena;
 
 import java.time.Duration;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
@@ -14,7 +16,12 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.config.ConfigOptionsCollection;
+import fr.ludos.core.config.ConfigOptionsMap;
+import fr.ludos.core.config.valueOptions.MultipleGroupPlayerConfigOptions;
+import fr.ludos.core.config.valueOptions.NumberConfigOptions;
+import fr.ludos.core.config.valueOptions.ValueConfigOptions;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
@@ -65,7 +72,7 @@ public class ArenaGame extends WaveGame {
 
 		this.waveController = new ArenaWaveController(
 			this,
-			ArenaGameConfigMap.ROUNDS.getGameConfig(group, builder)
+			builder.rounds.getGameConfig(group, builder)
 		);
 
 		this.worldManager = WorldManager.within(this, returnLocation)
@@ -84,8 +91,8 @@ public class ArenaGame extends WaveGame {
 		this.teamController = new ArenaTeamController(
 			this,
 			ArenaModeOption.CONFIG.getGameConfig(group, builder),
-			ArenaGameConfigMap.TEAM_1_PLAYERS.getGameConfig(group, builder),
-			ArenaGameConfigMap.TEAM_2_PLAYERS.getGameConfig(group, builder)
+			builder.team1Players.getGameConfig(group, builder),
+			builder.team2Players.getGameConfig(group, builder)
 		);
 	}
 
@@ -98,8 +105,20 @@ public class ArenaGame extends WaveGame {
 	 * Builder for {@link ArenaGame}.
 	 */
 	public static class Builder extends Game.Builder {
-		public Builder(Ludos ludos) {
-			super(ludos);
+		public final ValueConfigOptions<Set<OfflinePlayer>> team1Players =
+			new MultipleGroupPlayerConfigOptions(getManager().getLudos().getGroupManager(), "Team 1 players", "team_1", "random");
+
+		public final ValueConfigOptions<Set<OfflinePlayer>> team2Players =
+			new MultipleGroupPlayerConfigOptions(getManager().getLudos().getGroupManager(), "Team 2 players", "team_2", "random");
+
+		public final ValueConfigOptions<Integer> rounds =
+			new NumberConfigOptions("Number of Rounds", "rounds", null, 3, true);
+
+		private final ConfigOptionsMap configMap =
+			new ConfigOptionsMap(ID, Set.of(team1Players, team2Players, ArenaModeOption.CONFIG, rounds, WorldBorderArea.CONFIG));
+
+		public Builder(GameManager manager) {
+			super(manager);
 		}
 
 		@Override
@@ -133,7 +152,7 @@ public class ArenaGame extends WaveGame {
 
 		@Override
 		public ConfigOptionsCollection getConfig() {
-			return ArenaGameConfigMap.INSTANCE;
+			return configMap;
 		}
 
 		@Override

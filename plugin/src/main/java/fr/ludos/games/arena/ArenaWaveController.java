@@ -90,8 +90,8 @@ public final class ArenaWaveController extends WaveController {
 	protected void evaluateWaveState() {
 		ArenaTeamController teamController = game.getTeamController();
 
-		long alivePrimary = Utility.getTeamAlivePlayers(teamController.getCombatTeam(0)).count();
-		long aliveSecondary = Utility.getTeamAlivePlayers(teamController.getCombatTeam(1)).count();
+		long alivePrimary = Utility.getTeamAlivePlayers(teamController.getCombatTeam(0), game.getPlugin().getServer()).count();
+		long aliveSecondary = Utility.getTeamAlivePlayers(teamController.getCombatTeam(1), game.getPlugin().getServer()).count();
 		if (alivePrimary > 0 && aliveSecondary > 0) return;
 
 		int currentRound = getCurrentWaveNumber();

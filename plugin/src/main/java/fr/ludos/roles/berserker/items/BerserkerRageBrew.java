@@ -22,7 +22,6 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.role.Role;
 import fr.ludos.roles.berserker.BerserkerRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -132,7 +131,7 @@ public class BerserkerRageBrew extends SpecialItem {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return Role.isPlayerRole(owner, BerserkerRole.ID);
+			return game.getLudos().getRoleManager().isPlayerRole(owner, BerserkerRole.ID);
 		}
 
 		@EventHandler

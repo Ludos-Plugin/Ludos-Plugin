@@ -1,6 +1,5 @@
 package fr.ludos.core.game;
 
-import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -22,7 +21,7 @@ public abstract class GameProcessBase implements GameProcess {
 
 		onInit();
 
-		Bukkit.getPluginManager().registerEvents(this, getPlugin());
+		getPlugin().getServer().getPluginManager().registerEvents(this, getPlugin());
 
 		onStart();
 	}

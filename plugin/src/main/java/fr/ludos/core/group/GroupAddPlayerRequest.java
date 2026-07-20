@@ -4,22 +4,7 @@ import org.bukkit.OfflinePlayer;
 
 /**
  * A pending request to add a Player to a {@link Group}.
+ * @param player The player that was requested to add to the group
+ * @param isFromLeader Whether the request was emitted by the {@link Group} leader or not.
  */
-public final class GroupAddPlayerRequest {
-	private final OfflinePlayer player;
-	public final OfflinePlayer getPlayer() {
-		return player;
-	}
-
-	private final boolean fromLeader;
-	public final boolean isFromLeader() {
-		return fromLeader;
-	}
-
-
-	public GroupAddPlayerRequest(OfflinePlayer player, boolean isFromLeader) {
-		super();
-		this.player = player;
-		this.fromLeader = isFromLeader;
-	}
-}
+public final record GroupAddPlayerRequest(OfflinePlayer player, boolean isFromLeader) {}

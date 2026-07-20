@@ -99,18 +99,18 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		return getValueOrDefault(ludos.getPluginConfig());
 	}
 	public final @Nullable T getGroupConfig(Group group) {
-		return getValueOrDefault(group.getGroupConfig(), group.getLudos().getGlobalGroupConfig());
+		return getValueOrDefault(group.getGroupConfig(), group.getManager().getGlobalGroupConfig());
 	}
 	public final @Nullable T getGameConfig(Group group, Game.Builder game) {
-		return getValueOrDefault(group.getGameConfig(game), group.getLudos().getGlobalGameConfig(game));
+		return getValueOrDefault(group.getGameConfig(game), game.getManager().getGlobalGameConfig(game));
 	}
 	public final @Nullable T getRoleConfig(Group group, Role.Builder role) {
-		return getValueOrDefault(group.getRoleConfig(role), group.getLudos().getGlobalRoleConfig(role));
+		return getValueOrDefault(group.getRoleConfig(role), role.getLudos().getGlobalRoleConfig(role));
 	}
 	public final @Nullable T getRoleConfig(OfflinePlayer player, Ludos ludos, Role.Builder role) {
 		ConfigurationSection playerScopedConfig = ludos.getPlayerRoleConfig(player, role);
 		ConfigurationSection globalScopedConfig = ludos.getGlobalRoleConfig(role);
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			return getValueOrDefault(playerScopedConfig, globalScopedConfig);
 		}
@@ -119,7 +119,7 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	public final @Nullable T getPlayerConfig(OfflinePlayer player, Ludos ludos) {
 		ConfigurationSection playerScopedConfig = ludos.getPlayerConfig(player);
 		ConfigurationSection globalScopedConfig = ludos.getGlobalPlayerConfig();
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			return getValueOrDefault(playerScopedConfig, globalScopedConfig);
 		}

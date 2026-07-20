@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
 
@@ -17,6 +18,11 @@ import fr.ludos.core.group.Group;
  */
 public class GroupInfo implements Subcommand {
 	private final static String ID = "info";
+
+	private final Ludos ludos;
+	public GroupInfo(Ludos ludos) {
+		this.ludos = ludos;
+	}
 
 	@Override
 	public String id() {
@@ -34,7 +40,7 @@ public class GroupInfo implements Subcommand {
 			return true;
 		}
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;

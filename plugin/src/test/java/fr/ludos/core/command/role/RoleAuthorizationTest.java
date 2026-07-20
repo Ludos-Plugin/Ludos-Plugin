@@ -11,7 +11,7 @@ import fr.ludos.core.role.Role;
 
 class RoleAuthorizationTest extends RoleTest {
 	private final Role.Builder getValidRole() {
-		Role.Builder role = Role.getRoleBuilders().get(0);
+		Role.Builder role = ludos.getRoleManager().getBuilders().get(0);
 		assertNotNull(role, "Could not find valid role");
 		return role;
 	}
@@ -31,7 +31,7 @@ class RoleAuthorizationTest extends RoleTest {
 		player1.performCommand("ludos role get " + player2.getName());
 		assertEquals(role.getId(), player1.nextMessage(), "Role was not persisted after being set");
 
-		assertEquals(Role.getPlayerRole(player2), role, "Role appears set but isn't");
+		assertEquals(ludos.getRoleManager().getPlayerRole(player2), role, "Role appears set but isn't");
 
 		player1.performCommand("ludos role reset " + player2.getName());
 		assertEquals("The role of player " + player2.getName() + " was reset", player1.nextMessage(), "Role was not reset");
@@ -39,7 +39,7 @@ class RoleAuthorizationTest extends RoleTest {
 		player1.performCommand("ludos role get");
 		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was not reset");
 
-		assertNull(Role.getPlayerRole(player1), "Role appears unset but isn't");
+		assertNull(ludos.getRoleManager().getPlayerRole(player1), "Role appears unset but isn't");
 	}
 
 	// @Test

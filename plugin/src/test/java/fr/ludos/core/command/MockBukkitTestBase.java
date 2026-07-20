@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
-import org.bukkit.plugin.Plugin;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,16 +29,16 @@ import fr.ludos.core.role.Role;
  */
 public abstract class MockBukkitTestBase {
 	protected static ServerMock server;
-	protected static Plugin plugin;
+	protected static Ludos ludos;
 	protected static World baseWorld;
 
 	@BeforeAll
 	static void setUpServer() {
 		server = MockBukkit.mock();
 
-		plugin = server.getPluginManager().loadPlugin(Ludos.class, new Object[] {});
-		server.getPluginManager().enablePlugin(plugin);
-		assertTrue(plugin.isEnabled(), "Plugin should be enabled");
+		ludos = (Ludos) server.getPluginManager().loadPlugin(Ludos.class, new Object[] {});
+		server.getPluginManager().enablePlugin(ludos);
+		assertTrue(ludos.isEnabled(), "Plugin should be enabled");
 
 		baseWorld = server.addSimpleWorld("default");
 	}
@@ -119,7 +118,7 @@ public abstract class MockBukkitTestBase {
 	protected void assertJoinGroup(PlayerMock player, PlayerMock leader) {
 		clearMessages(player);
 
-		Group leaderGroup = Group.getGroupOfPlayer(leader);
+		Group leaderGroup = ludos.getGroupManager().getGroupOfPlayer(leader);
 		assertNotNull(leaderGroup, "Player attempted to join the group of a player not in a group");
 
 		Set<PlayerMock> groupPlayers = leaderGroup.getMembers().stream()
@@ -140,7 +139,7 @@ public abstract class MockBukkitTestBase {
 	protected void assertGroupInfo(PlayerMock player) {
 		clearMessages(player);
 
-		Group group = Group.getGroupOfPlayer(player);
+		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
 		assertNotNull(group, "Cannot get group info of player not in a group.");
 		OfflinePlayer leader = group.getLeader();
 		assertGroupInfo(player, leader, group.getMembers());
