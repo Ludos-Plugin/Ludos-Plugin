@@ -83,11 +83,3 @@ jobs:
             git tag -f "v$CURRENT"
             git push -f origin "v$CURRENT"
           fi
-    
-      - name: Dispatch release workflow
-        run: |
-          VERSION=${{ steps.version_logic.outputs.version }}
-          echo "Triggering release for v$VERSION"
-          gh workflow run release.yml --ref "v$VERSION"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
