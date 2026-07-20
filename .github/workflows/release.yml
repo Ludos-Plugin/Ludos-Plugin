@@ -54,7 +54,9 @@ jobs:
           else
             # Set value if the previous step SUCCEEDED
             # Use the original output from the changelog step
-            echo "body_value=${{ steps.changelog.outputs.changes }}" >> $GITHUB_OUTPUT
+            echo "body_value<<CL_DELIM" >> $GITHUB_OUTPUT
+            echo "${{ steps.changelog.outputs.changes }}" >> $GITHUB_OUTPUT
+            echo "CL_DELIM" >> $GITHUB_OUTPUT
           fi
 
       - name: Create GitHub Release
