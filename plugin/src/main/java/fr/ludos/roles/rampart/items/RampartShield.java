@@ -251,6 +251,11 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 		}
 
 		@Override
+		public boolean visibleDurability() {
+			return true;
+		}
+
+		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return game.getLudos().getRoleManager().isPlayerRole(owner, RampartRole.ID);
 		}
