@@ -7,23 +7,21 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.ScopeConfigMap;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.group.GroupManager;
 
 /**
  * {@link Subcommand} for {@link Group}-specific configuration.
  */
 public class GroupConfig implements Subcommand {
 	private final static String ID = "config";
-	private final Ludos ludos;
 	private final ScopeConfigMap map;
 
-	public GroupConfig(Ludos ludos) {
-		this.ludos = ludos;
-		this.map = new ScopeConfigMap(ludos, GroupConfigMap.INSTANCE);
+	public GroupConfig(GroupManager manager) {
+		this.map = new ScopeConfigMap(manager.getLudos(), GroupConfigMap.INSTANCE);
 	}
 
 
@@ -34,7 +32,7 @@ public class GroupConfig implements Subcommand {
 
 	@Override
 	public String getDescription() {
-		return "Configure a game for this group.";
+		return "Configure for this group.";
 	}
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -45,9 +43,9 @@ public class GroupConfig implements Subcommand {
 		return map.tabComplete(args, sender);
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "<" +
-			ludos.getGameManager().getRegistered().keySet().stream().sorted()
+			GroupConfigMap.INSTANCE.options().getOptions(sender).stream().sorted()
 				.collect(Collectors.joining(" | "))
 			+ "> [option]";
 	}

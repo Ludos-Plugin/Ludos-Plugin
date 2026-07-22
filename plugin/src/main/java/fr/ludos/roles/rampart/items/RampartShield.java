@@ -1,9 +1,6 @@
 package fr.ludos.roles.rampart.items;
 
 import java.util.List;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
@@ -28,10 +25,7 @@ import org.bukkit.util.Vector;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
-import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItem;
-import fr.ludos.core.item.level.LevelItemInterface;
-import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -40,51 +34,15 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * Implementation of the Rampart Shield, for use by any Player with {@link RampartRole}.
  */
-public class RampartShield extends LevelItem<RampartShieldLevels> {
+public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels> {
 	public static final String ID = "rampart_shield";
 
 	private static final int COOLDOWN_DURATION_SECONDS = 10;
 	private static final Vector ALLY_PROTECTION_RANGE = new Vector(2.0, 2.0, 2.0);
 
 
-	public static @Nullable RampartShield fromItemStack(List<RampartShieldLevels> levels, ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// TrapperDagger cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-		LevelValue levelValue = LevelItemInterface.levelFromItemStack(stack, game);
-		if (levelValue == null) return null;
-
-		RampartShield shield = new RampartShield(levels, levelValue, stack, owner, game);
-		// cachedItems.put(itemId, dagger);
-
-		return shield;
-	}
-
-	public static RampartShield createItem(List<RampartShieldLevels> levels, LevelValue level, Player owner, Game game) {
-		RampartShield shield = new RampartShield(levels, level, createItemStack(), owner, game);
-		shield.initializeItem();
-
-		ItemMeta meta = shield.getStack().getItemMeta();
-		meta.setUnbreakable(false);
-		shield.getStack().setItemMeta(meta);
-
-		// cachedItems.put(itemId, dagger);
-
-		return shield;
-	}
-
-	protected RampartShield(List<RampartShieldLevels> levels, LevelValue level, ItemStack stack, Player owner, Game game) {
-		super(levels, level, stack, owner, game);
-	}
-
-	@Override
-	public String getTypeId() {
-		return ID;
+	RampartShield(LevelItem.ItemData<RampartShieldLevels> info, Events events) {
+		super(info, events);
 	}
 
 	public void hit() {
@@ -197,19 +155,20 @@ public class RampartShield extends LevelItem<RampartShieldLevels> {
 		return lore;
 	}
 
-	private static ItemStack createItemStack() {
-		ItemStack stack = new ItemStack(Material.SHIELD);
-		return stack;
-	}
-
 	/**
 	 * Events for the {@link RampartShield}.
 	 */
 	public static class Events extends LevelItem.Events<RampartShield, RampartShieldLevels> {
 		private static final List<RampartShieldLevels> LEVELS = List.of(RampartShieldLevels.values());
 		private BukkitTask rampartRoutine;
+
 		public Events(Game game) {
 			super(game, new Events.Info(ItemSlot.OFFHAND));
+		}
+
+		@Override
+		public String getTypeId() {
+			return ID;
 		}
 
 		@Override
@@ -282,14 +241,13 @@ public class RampartShield extends LevelItem<RampartShieldLevels> {
 		}
 
 		@Override
-		public RampartShield createItem(LevelValue level, Player owner) {
-			return RampartShield.createItem(LEVELS, level, owner, game);
+		protected RampartShield getItemInternal(LevelItem.ItemData<RampartShieldLevels> info) {
+			return new RampartShield(info, this);
 		}
 
 		@Override
-		@Nullable
-		public RampartShield getItem(ItemStack stack) {
-			return RampartShield.fromItemStack(LEVELS, stack, game);
+		protected RampartShield createItemInternal(LevelData<RampartShieldLevels> data, Player owner) {
+			return new RampartShield(new LevelItem.ItemData<>(data, new SpecialItem.ItemData(new ItemStack(Material.SHIELD), owner)), this);
 		}
 
 		@Override

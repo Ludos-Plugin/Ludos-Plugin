@@ -3,10 +3,7 @@ package fr.ludos.roles.rampart.items;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -34,7 +31,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * Implementation of the Rampart Dash/Charge, for use by any Player with {@link RampartRole}.
  */
-public class RampartDash extends SpecialItem {
+public class RampartDash extends SpecialItem<RampartDash> {
 	public static final String ID = "rampart_dash";
 
 	private static final double DASH_POWER = 1.1;
@@ -45,33 +42,8 @@ public class RampartDash extends SpecialItem {
 	private static final double COLLISION_KNOCKBACK = 1.2;
 	private static final int COOLDOWN_DURATION = 15 * 20;
 
-	protected RampartDash(ItemStack stack, Player owner, Game game) {
-		super(stack, owner, game);
-	}
-
-	public static @Nullable RampartDash fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// TrapperDagger cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-
-		RampartDash dasher = new RampartDash(stack, owner, game);
-		// cachedItems.put(itemId, dagger);
-
-		return dasher;
-	}
-
-	public static RampartDash createItem(Player owner, Game game) {
-		RampartDash dasher = new RampartDash(createItemStack(), owner, game);
-		dasher.initializeItem();
-
-		// cachedItems.put(itemId, dagger);
-
-		return dasher;
+	RampartDash(SpecialItem.ItemData info, Events events) {
+		super(info, events);
 	}
 
 	public void useDash() {
@@ -150,11 +122,6 @@ public class RampartDash extends SpecialItem {
 	}
 
 	@Override
-	public String getTypeId() {
-		return ID;
-	}
-
-	@Override
 	public Component getName() {
 		return Component.text("Rampart Charge")
 				.decoration(TextDecoration.ITALIC, false);
@@ -167,12 +134,6 @@ public class RampartDash extends SpecialItem {
 		return lore;
 	}
 
-	private static ItemStack createItemStack() {
-		ItemStack stack = new ItemStack(Material.FIREWORK_ROCKET);
-
-		return stack;
-	}
-
 	/**
 	 * Events for the {@link RampartDash}.
 	 */
@@ -183,14 +144,24 @@ public class RampartDash extends SpecialItem {
 		}
 
 		@Override
-		@Nullable
-		public RampartDash getItem(ItemStack stack) {
-			return RampartDash.fromItemStack(stack, game);
+		public String getTypeId() {
+			return ID;
 		}
 
 		@Override
-		public RampartDash createItem(Player owner) {
-			return RampartDash.createItem(owner, game);
+		protected RampartDash getItemInternal(fr.ludos.core.item.SpecialItem.ItemData info) {
+			return new RampartDash(info, this);
+		}
+
+		@Override
+		protected RampartDash createItemInternal(Player owner) {
+			return new RampartDash(new SpecialItem.ItemData(createItemStack(), owner), this);
+		}
+
+		private static ItemStack createItemStack() {
+			ItemStack stack = new ItemStack(Material.FIREWORK_ROCKET);
+
+			return stack;
 		}
 
 		@Override
@@ -208,7 +179,7 @@ public class RampartDash extends SpecialItem {
 			Player player = event.getPlayer();
 			ItemStack item = player.getInventory().getItemInMainHand();
 
-			RampartDash dasher = RampartDash.fromItemStack(item, game);
+			RampartDash dasher = getItem(item);
 			if (dasher == null) return;
 			event.setCancelled(true);
 

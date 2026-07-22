@@ -71,3 +71,11 @@ jobs:
           path: |
             plugin/build/reports/tests/test
             plugin/build/test-results/
+
+      - name: Upload Tests Coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-test-coverage
+          path: |
+            plugin/build/reports/coverage/test/html

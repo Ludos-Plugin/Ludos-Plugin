@@ -65,24 +65,20 @@ public interface SpecialItemInterface {
 		);
 	}
 
-	public static @Nullable Player getSpecialItemOwner(ItemStack stack, Game game) {
+	public static @Nullable Player getSpecialItemOwner(ItemStack stack) {
 		if (stack == null) return null;
 
 		ItemMeta meta = stack.getItemMeta();
 		if (meta == null) return null;
 
-
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
 		if (! container.has(OWNER_KEY, PersistentDataType.STRING) ) return null;
-
-		Player owner = Bukkit.getPlayer(
+		return Bukkit.getPlayer(
 			UUID.fromString(
 				container.get(OWNER_KEY, PersistentDataType.STRING)
 			)
 		);
-
-		return owner;
 	}
 	public static Component getActionAnnotation(final @NotNull String keybind, Component action) {
 		return Component.text("Press ")

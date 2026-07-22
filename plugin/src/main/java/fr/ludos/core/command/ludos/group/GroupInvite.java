@@ -10,12 +10,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.Group.AddPlayerMethod;
+import fr.ludos.core.group.GroupManager;
 
 /**
  * {@link Subcommand} to invite players to the current {@link Group}, as the Group Leader, or an explicitly allowed member.
@@ -23,9 +23,9 @@ import fr.ludos.core.group.Group.AddPlayerMethod;
 public class GroupInvite implements Subcommand {
 	private final static String ID = "invite";
 
-	private final Ludos ludos;
-	public GroupInvite(Ludos ludos) {
-		this.ludos = ludos;
+	private final GroupManager manager;
+	public GroupInvite(GroupManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class GroupInvite implements Subcommand {
 			return true;
 		}
 
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
+		Group group = manager.getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
@@ -80,7 +80,7 @@ public class GroupInvite implements Subcommand {
 			}
 		}
 		if (hasJoined) {
-			ludos.saveConfig();
+			manager.saveConfig();
 		}
 
 		if (targets.size() > 0) {
@@ -93,10 +93,10 @@ public class GroupInvite implements Subcommand {
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (! (sender instanceof Player player)) return null;
 
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
+		Group group = manager.getGroupOfPlayer(player);
 		if (group == null) return null;
 
-		HashSet<Player> onlines = ludos.getServer().getOnlinePlayers()
+		HashSet<Player> onlines = manager.getLudos().getServer().getOnlinePlayers()
 			.stream()
 			.collect(Collectors.toCollection(HashSet::new));
 		onlines.removeAll(group.getPlayers());
@@ -106,7 +106,7 @@ public class GroupInvite implements Subcommand {
 			.toList();
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "[player1] [player2] ...";
 	}
 	@Override

@@ -18,9 +18,10 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 /**
  * Special Item with different "branches" (firing modes, switching between abilities...).
+ * @param <T> self type
  * @param <TBranch> The type that a Branch needs to implement/extend to be used as a Branch for this type.
  */
-public interface BranchItemInterface<TBranch extends BranchItemInterface.Branch> extends SpecialItemInterface {
+public interface BranchItemInterface<T extends BranchItemInterface<T, TBranch>, TBranch extends BranchItemInterface.Branch> extends SpecialItemInterface {
 	public static final String BRANCH_KEY_STRING = "branch";
 	public static final NamespacedKey BRANCH_KEY = new NamespacedKey(Ludos.NAMESPACE, BRANCH_KEY_STRING);
 
@@ -43,15 +44,15 @@ public interface BranchItemInterface<TBranch extends BranchItemInterface.Branch>
 
 	/**
 	 * Utility function to handle branch switching when player switches branches.
-	 * @param <TItem> The type of the item, must extend SpecialItem
+	 * @param <T> The type of the item, must extend SpecialItem
 	 * @param <TBranch> The type of the branch, must be an enum that implements {@link BranchItemInterface.Branch}
 	 * @param item The item whose branch is being switched
 	 * @param newBranch The new branch to switch to
 	 */
-	public static <TItem extends SpecialItem & BranchItemInterface<TBranch>, TBranch extends BranchItemInterface.Branch> void setItemBranch(TItem item, TBranch newBranch) {
+	public static <T extends BranchItemInterface<T, TBranch>, TBranch extends BranchItemInterface.Branch> void setItemBranch(BranchItemInterface<T, TBranch> item, TBranch newBranch) {
 		final TBranch oldBranch = item.getBranch();
 
-		saveBranchId(item, newBranch.id());
+		saveBranchId(item.getStack(), newBranch.id());
 
 		item.onSetBranch(newBranch);
 
@@ -63,17 +64,25 @@ public interface BranchItemInterface<TBranch extends BranchItemInterface.Branch>
 		item.update();
 	}
 
-	public static void saveBranchId(SpecialItem item, String branchId) {
-		ItemMeta meta = item.getStack().getItemMeta();
-		meta.getPersistentDataContainer().set(BRANCH_KEY, PersistentDataType.STRING, branchId);
-		item.getStack().setItemMeta(meta);
+	public static void saveBranchId(ItemStack stack, String branchId) {
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) return;
+
+		PersistentDataContainer container = meta.getPersistentDataContainer();
+
+		container.set(BRANCH_KEY, PersistentDataType.STRING, branchId);
+		stack.setItemMeta(meta);
 	}
 
-	public static @Nullable String branchFromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
+	public static @Nullable String branchFromItemStack(ItemStack stack, Game game) {
+		if (stack == null) return null;
+
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) return null;
+
+		PersistentDataContainer container = meta.getPersistentDataContainer();
 
 		if ( ! container.has(BRANCH_KEY, PersistentDataType.STRING) ) return null;
-
 		return container.get(BRANCH_KEY, PersistentDataType.STRING);
 	}
 

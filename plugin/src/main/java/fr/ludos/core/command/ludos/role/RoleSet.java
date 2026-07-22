@@ -55,11 +55,7 @@ public class RoleSet implements Subcommand {
 				manager.setRole(player, roleId);
 				break;
 			case 2:
-				OfflinePlayer target = CommandUtility.getOfflinePlayerFromArg(args, 1, sender);
-				if (target == null) {
-					sender.sendMessage("Player not found.");
-					return true;
-				}
+				OfflinePlayer target = CommandUtility.getOfflinePlayerFromArg(args, 1);
 
 				if (manager.isAuthorizedToEditRole(sender, target)) {
 					manager.setRole(target, roleId);
@@ -89,7 +85,7 @@ public class RoleSet implements Subcommand {
 		return null;
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "<role_id> [player]";
 	}
 	@Override

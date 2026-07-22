@@ -28,9 +28,10 @@ import net.kyori.adventure.text.Component;
 
 /**
  * A {@link SpecialItem} implementation with the ability to hold {@link BranchItemInterface.Branch}es, with each their own {@link LevelState}.
+ * @param <T> self type
  * @param <TBranch> The type of {@link BranchItemInterface.Branch} the item uses
  */
-public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.Branch> extends BranchItem<TBranch> implements LevelItemInterface {
+public abstract class MultiLevelBranchItem<T extends MultiLevelBranchItem<T, TBranch>, TBranch extends MultiLevelBranchItem.Branch> extends BranchItem<T, TBranch> implements LevelItemInterface {
 	private final Map<String, LevelState> levelStates;
 	public Map<String, LevelState> getLevelStates() {
 		return Collections.unmodifiableMap(levelStates);
@@ -67,6 +68,10 @@ public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.
 	}
 	@Override
 	public boolean removeBranch(TBranch branch) {
+		if (branch == getBranch()) {
+			cycleBranch();
+		}
+
 		boolean res = MultiLevelBranchItem.super.removeBranch(branch);
 		if (res) {
 			levelStates.remove(branch.id());
@@ -74,20 +79,30 @@ public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.
 		return res;
 	}
 
-	public static @Nullable Map<String, LevelValue> levelsFromItemStack(ItemStack stack, String id, Game game) {
-		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
+	public static @Nullable Map<String, LevelValue> levelsFromItemStack(ItemStack stack, String id) {
+		if (stack == null) return null;
+
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) return null;
+
+		PersistentDataContainer container = meta.getPersistentDataContainer();
 
 		if ( ! container.has(LevelItem.LEVEL_KEY, LevelValueMapPersistentDataType.INSTANCE) ) return null;
 
 		return container.get(LevelItem.LEVEL_KEY, LevelValueMapPersistentDataType.INSTANCE);
 	}
-	public static void saveLevelStates(SpecialItem item, Map<String, LevelValue> levelValues) {
-		ItemMeta meta = item.getStack().getItemMeta();
+	public static void saveLevelStates(ItemStack stack, Map<String, LevelValue> levelValues) {
+		if (stack == null) return;
+
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) return;
+
 		PersistentDataContainer container = meta.getPersistentDataContainer();
+
 		container.set(LevelItem.LEVEL_KEY, LevelValueMapPersistentDataType.INSTANCE, levelValues);
-		item.getStack().setItemMeta(meta);
+		stack.setItemMeta(meta);
 	}
-	public static <T extends MultiLevelBranchItem<TBranch>, TBranch extends MultiLevelBranchItem.Branch> Component getBranchXpLoreField(T item, TBranch branch) {
+	public static <T extends MultiLevelBranchItem<T, TBranch>, TBranch extends MultiLevelBranchItem.Branch> Component getBranchXpLoreField(MultiLevelBranchItem<T, TBranch> item, TBranch branch) {
 		int maxLevel = branch.maxLevel();
 		LevelState level = item.levelState();
 		int levelNum = level.level();
@@ -98,19 +113,10 @@ public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.
 		return LevelItemInterface.getXpLoreField(isMax, levelThreshold, level.xp());
 	}
 
-	public MultiLevelBranchItem(List<TBranch> branches, Map<String, LevelValue> levels, ItemStack stack, Player owner, Game game) {
-		this(branches.stream().collect(Collectors.toMap(b -> b.id(), b -> b)), branches.get(0), levels, stack, owner, game);
-	}
-	public MultiLevelBranchItem(Map<String, TBranch> branches, Map<String, LevelValue> levels, ItemStack stack, Player owner, Game game) {
-		this(branches, branches.values().iterator().next(), levels, stack, owner, game);
-	}
-	public MultiLevelBranchItem(List<TBranch> branches, TBranch defaultBranch, Map<String, LevelValue> levels, ItemStack stack, Player owner, Game game) {
-		this(branches.stream().collect(Collectors.toMap(b -> b.id(), b -> b)), defaultBranch, levels, stack, owner, game);
-	}
-	public MultiLevelBranchItem(Map<String, TBranch> branches, TBranch defaultBranch, Map<String, LevelValue> levels, ItemStack stack, Player owner, Game game) {
-		super(branches, defaultBranch, stack, owner, game);
+	public MultiLevelBranchItem(ItemData<TBranch> info, Events<T, TBranch> events) {
+		super(new BranchItem.ItemData<>(info.branch, info.info), events);
 
-		Map<String, LevelValue> initialLevels = levels != null ? levels : new HashMap<>();
+		Map<String, LevelValue> initialLevels = info.level.levels;
 
 		this.levelStates = branches.entrySet().stream()
 			.collect(Collectors.toMap(
@@ -120,28 +126,16 @@ public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.
 	}
 
 	protected final LevelState createLevelStateForBranch(TBranch branch, @NotNull LevelValue level) {
-		LevelState state = new LevelState(
+		LevelState state = LevelState.capped(
 			level,
 			branch::xpThreshold,
 			branch.maxLevel()
 		);
 		return LevelItemInterface.initializeLevelState(
-			this,
+			this, this,
 			state,
-			(lvlValue, oldLevel) -> LevelItemInterface.saveLevelValues(this, getLevelValues()),
-			(lvlValue, oldXp) -> LevelItemInterface.saveLevelValues(this, getLevelValues())
-		);
-	}
-
-	@Override
-	public void onInitialize() {
-		super.onInitialize();
-
-		saveLevelStates(this, levelStates.entrySet().stream()
-			.collect(Collectors.toMap(
-				e -> e.getKey(),
-				e -> e.getValue().value()
-			))
+			(lvlValue, oldLevel) -> LevelItemInterface.saveLevelValues(getStack(), getLevelValues()),
+			(lvlValue, oldXp) -> LevelItemInterface.saveLevelValues(getStack(), getLevelValues())
 		);
 	}
 
@@ -149,11 +143,32 @@ public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.
 	public List<Component> getLore() {
 		List<Component> lore = super.getLore();
 
-		lore.add(LevelItemInterface.getBranchLevelLoreField(this));
+		lore.add(LevelItemInterface.getLevelLoreField(this));
 		lore.add(getBranchXpLoreField(this, getBranch()));
 
 		return lore;
 	}
+
+	/**
+	 * .
+	 * @param levels
+	 */
+	public static record MultiLevelData(
+		Map<String, LevelValue> levels
+	) {}
+
+	/**
+	 * .
+	 * @param <TBranch>
+	 * @param level
+	 * @param branch
+	 * @param info
+	 */
+	public static record ItemData<TBranch extends BranchItemInterface.Branch>(
+		MultiLevelData level,
+		BranchData<TBranch> branch,
+		SpecialItem.ItemData info
+	) {}
 
 	/**
 	 * {@link BranchItemInterface.Branch} for {@link MultiLevelBranchItem}s.
@@ -181,7 +196,7 @@ public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.
 	 * @param <T> The type of {@link MultiLevelBranchItem}
 	 * @param <TBranch> The type of {@link Branch} the item uses
 	 */
-	public static abstract class Events<T extends MultiLevelBranchItem<TBranch>, TBranch extends Branch> extends BranchItem.Events<T, TBranch> {
+	public static abstract class Events<T extends MultiLevelBranchItem<T, TBranch>, TBranch extends Branch> extends BranchItem.Events<T, TBranch> {
 		private Map<Player, Map<String, LevelValue>> deadPlayerLevels = new HashMap<>();
 
 		protected Events(Map<String, TBranch> branches, @Nullable TBranch defaultBranch, Game game, Events.Info info) {
@@ -208,11 +223,32 @@ public abstract class MultiLevelBranchItem<TBranch extends MultiLevelBranchItem.
 			deadPlayerLevels.put(player, specialItem.getLevelValues());
 		}
 
-		public abstract T createItem(Player owner, Map<String, LevelValue> levels);
 
+		protected abstract T getItemInternal(ItemData<TBranch> info);
 		@Override
-		public final T createItem(Player owner) {
-			return createItem(owner, deadPlayerLevels.get(owner));
+		protected final T getItemInternal(BranchItem.ItemData<TBranch> info) {
+			final Map<String, LevelValue> levels = MultiLevelBranchItem.levelsFromItemStack(info.info().stack(), getTypeId());
+			if (levels == null) return null;
+
+			return getItemInternal(new ItemData<TBranch>(
+				new MultiLevelData(levels),
+				info.data(),
+				info.info()
+			));
+		}
+
+		protected abstract T createItemInternal(MultiLevelBranchItem.MultiLevelData levels, BranchItem.BranchData<TBranch> data, Player owner);
+		@Override
+		protected final T createItemInternal(BranchItem.BranchData<TBranch> data, Player owner) {
+			T created = createItemInternal(new MultiLevelData(new HashMap<>()), data, owner);
+			saveLevelStates(created.getStack(), created.getLevelStates().entrySet().stream()
+				.collect(Collectors.toMap(
+					e -> e.getKey(),
+					e -> e.getValue().value()
+				))
+			);
+
+			return created;
 		}
 
 		@EventHandler

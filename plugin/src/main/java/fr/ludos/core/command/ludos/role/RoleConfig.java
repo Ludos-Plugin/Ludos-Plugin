@@ -44,7 +44,7 @@ public class RoleConfig implements Subcommand {
 		return map.tabComplete(args, sender);
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "<" +
 			manager.getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))

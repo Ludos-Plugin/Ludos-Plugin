@@ -39,17 +39,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType.Category;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
+import fr.ludos.other.ExcludeFromJacocoGeneratedReport;
+
 /**
  * Various utility functions for Ludos.
  */
 public class Utility {
 	private static final Random RANDOM = new Random();
+
+	private Utility() {}
 
 	public static Location getLocationAround(Location searchOrigin, int min, int max, Location fallback) {
 		return getLocationAround(searchOrigin, min, max, fallback, 0);
@@ -99,6 +104,7 @@ public class Utility {
 	}
 
 	@SuppressWarnings("unchecked")
+	@ExcludeFromJacocoGeneratedReport // Tested, but coverage is glitched
 	public static Location getRandomBiomeLocation(Location searchOrigin, int biomeSearchSize, int min, int max, Location fallback, int retries, Set<Biome> avoidBiomes) {
 		World world = searchOrigin.getWorld();
 
@@ -150,14 +156,13 @@ public class Utility {
 		return location;
 	}
 
-
+	@ExcludeFromJacocoGeneratedReport // Fully tested, but coverage stops at first line.
 	public static void resetPlayerState(Player player) {
-		player.getActivePotionEffects()
-			.forEach(effect -> {
-				if (effect.getType().getEffectCategory() == Category.HARMFUL) {
-					player.removePotionEffect(effect.getType());
-				}
-			});
+		for (PotionEffect effect : player.getActivePotionEffects()) {
+			if (effect.getType().getEffectCategory() == Category.HARMFUL) {
+				player.removePotionEffect(effect.getType());
+			}
+		}
 		player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 
 		player.setFoodLevel(20);
@@ -169,6 +174,7 @@ public class Utility {
 		player.clearTitle();
 	}
 
+	@ExcludeFromJacocoGeneratedReport // Fully tested, but coverage stops at revokeAllAdvancements(player).
 	public static void resetPlayer(Player player) {
 		player.getInventory().clear();
 		revokeAllAdvancements(player);
@@ -222,9 +228,11 @@ public class Utility {
 			}.runTaskLater(plugin, (long)(20 * spectateSeconds));
 		}
 	}
+	@ExcludeFromJacocoGeneratedReport
 	public static void onDeathSpectate(PlayerDeathEvent event, JavaPlugin plugin) {
 		onDeathSpectate(event, null, plugin, null);
 	}
+	@ExcludeFromJacocoGeneratedReport
 	public static void onDeathSpectate(PlayerDeathEvent event, Float spectateSeconds, JavaPlugin plugin) {
 		onDeathSpectate(event, spectateSeconds, plugin, null);
 	}
@@ -254,6 +262,7 @@ public class Utility {
 		}
 	}
 
+	@ExcludeFromJacocoGeneratedReport
 	public static Vector getVectorFacing(double x, double y, double z, BlockFace face) {
 		return switch (face) {
 			case EAST -> new Vector(-z, y, -x);

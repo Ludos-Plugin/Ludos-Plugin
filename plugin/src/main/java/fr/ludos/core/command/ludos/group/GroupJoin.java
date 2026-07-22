@@ -7,12 +7,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.Group.AddPlayerMethod;
 import fr.ludos.core.group.Group.AddPlayerResult;
+import fr.ludos.core.group.GroupManager;
 
 /**
  * {@link Subcommand} to request joining a Player's {@link Group}.
@@ -20,9 +20,9 @@ import fr.ludos.core.group.Group.AddPlayerResult;
 public class GroupJoin implements Subcommand {
 	private final static String ID = "join";
 
-	private final Ludos ludos;
-	public GroupJoin(Ludos ludos) {
-		this.ludos = ludos;
+	private final GroupManager manager;
+	public GroupJoin(GroupManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
@@ -42,26 +42,30 @@ public class GroupJoin implements Subcommand {
 		}
 		if (args.length < 1) return false;
 
-		String leaderName = args[0];
-		Player leader = ludos.getServer().getPlayerExact(leaderName);
-		if (leader == null) {
-			sender.sendMessage("Player not found: " + leaderName);
+		Player target = CommandUtility.getPlayerFromArg(args, 0);
+		if (target == null) {
+			sender.sendMessage("Could not find Player.");
 			return true;
 		}
 
-		Group group = ludos.getGroupManager().getGroupOfPlayer(leader);
+		Group group = manager.getGroupOfPlayer(target);
 		if (group == null) {
-			sender.sendMessage(leader.getName() + " is not in a group.");
+			sender.sendMessage(target.getName() + " is not in a group.");
+			return true;
+		}
+
+		if (group == manager.getGroupOfPlayer(player)) {
+			sender.sendMessage("You are already in this group.");
 			return true;
 		}
 
 		AddPlayerResult res = group.requestAddPlayer(player, AddPlayerMethod.Join);
 		switch (res) {
 			case Succeeded:
-				ludos.saveConfig();
+				manager.saveConfig();
 				break;
 			case Requested:
-				player.sendMessage("Requested to join " + leaderName + "'s group.");
+				player.sendMessage("Requested to join " + target.getName() + "'s group.");
 			default:
 				break;
 		}
@@ -76,7 +80,7 @@ public class GroupJoin implements Subcommand {
 		return null;
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "<memberName>";
 	}
 	@Override

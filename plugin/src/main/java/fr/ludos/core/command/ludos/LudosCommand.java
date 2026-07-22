@@ -28,8 +28,8 @@ public class LudosCommand implements Subcommand {
 
 	public LudosCommand(Ludos ludos) {
 		ArrayList<Subcommand> subcommands = new ArrayList<>() {{
-			add(new GroupSubcommand(ludos));
-			add(new GameSubcommand(ludos));
+			add(new GroupSubcommand(ludos.getGroupManager()));
+			add(new GameSubcommand(ludos.getGameManager()));
 			add(new RoleSubcommand(ludos.getRoleManager()));
 			add(new LudosConfig(ludos));
 			add(new CheatsSubcommand(ludos));
@@ -61,8 +61,8 @@ public class LudosCommand implements Subcommand {
 	}
 
 	@Override
-	public String getUsage() {
-		return manager.getUsage();
+	public String getUsage(@NotNull CommandSender sender) {
+		return manager.getUsage(sender);
 	}
 
 	@Override
