@@ -318,9 +318,10 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 			ItemMeta meta = item.getStack().getItemMeta();
 
-			meta.setUnbreakable(true);
-			meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-
+			if (! visibleDurability()) {
+				meta.setUnbreakable(true);
+				meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+			}
 
 			PersistentDataContainer container = meta.getPersistentDataContainer();
 			container.set(OWNER_KEY, PersistentDataType.STRING, owner.getUniqueId().toString());
@@ -335,6 +336,10 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			CACHED.put(item.getItemId(), item);
 
 			return item;
+		}
+
+		public boolean visibleDurability() {
+			return false;
 		}
 
 		public final Boolean isPlayerValid(OfflinePlayer player) {
