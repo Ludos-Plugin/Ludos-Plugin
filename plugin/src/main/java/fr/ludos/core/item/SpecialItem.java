@@ -338,6 +338,10 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			return item;
 		}
 
+		protected void uncache(T item) {
+			CACHED.remove(item.getItemId());
+		}
+
 		public boolean visibleDurability() {
 			return false;
 		}
@@ -467,9 +471,11 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			if (info.canDrop()) return;
 			ItemStack item = event.getEntity().getItemStack();
 
-			if (getItem(item) == null) return;
+			T found = getItem(item);
+			if (found == null) return;
 
 			event.setCancelled(true);
+			uncache(found);
 		}
 
 

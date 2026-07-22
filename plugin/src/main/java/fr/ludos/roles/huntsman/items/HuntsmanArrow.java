@@ -68,6 +68,25 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 		}
 
 
+		private void reload(Player player, List<HuntsmanArrow> arrows) {
+			if (player.getCooldown(Material.BOW) < reloadTime) player.setCooldown(Material.BOW, reloadTime);
+			if (player.getCooldown(Material.CROSSBOW) < reloadTime) player.setCooldown(Material.CROSSBOW, reloadTime);
+			if (player.getCooldown(Material.ARROW) < reloadTime) player.setCooldown(Material.ARROW, reloadTime);
+
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					PlayerInventory inventory = player.getInventory();
+					for (HuntsmanArrow arrow : arrows) {
+						inventory.remove(arrow.getStack());
+						uncache(arrow);
+					}
+					HuntsmanArrow arrow = createItem(player);
+					ItemSlot.setItemInInventory(getInfo().slot(), arrow.getStack(), inventory);
+				}
+			}.runTaskLater(game.getPlugin(), reloadTime);
+		}
+
 		@EventHandler
 		public void onShootArrow(EntityShootBowEvent event) {
 			if (! (event.getEntity() instanceof Player player) ) return;
@@ -106,25 +125,7 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 
 			reload(player, arrows);
 		}
-
-		private void reload(Player player, List<HuntsmanArrow> arrows) {
-			if (player.getCooldown(Material.BOW) < reloadTime) player.setCooldown(Material.BOW, reloadTime);
-			if (player.getCooldown(Material.CROSSBOW) < reloadTime) player.setCooldown(Material.CROSSBOW, reloadTime);
-			if (player.getCooldown(Material.ARROW) < reloadTime) player.setCooldown(Material.ARROW, reloadTime);
-
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					PlayerInventory inventory = player.getInventory();
-					for (HuntsmanArrow arrow : arrows) {
-						inventory.remove(arrow.getStack());
-					}
-					HuntsmanArrow arrow = createItem(player);
-					ItemSlot.setItemInInventory(getInfo().slot(), arrow.getStack(), inventory);
-				}
-			}.runTaskLater(game.getPlugin(), reloadTime);
-		}
-		private void clearAndReload(Player player) {
+		private void manualReload(Player player) {
 			PlayerInventory inventory = player.getInventory();
 			List<HuntsmanArrow> arrows = findAllIn(inventory, this::getItem);
 
@@ -147,7 +148,7 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 				case CROSSBOW:
 				case ARROW:
 					event.setCancelled(true);
-					clearAndReload(player);
+					manualReload(player);
 					break;
 				default:
 					break;
