@@ -63,7 +63,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: Release v${{ steps.get_version.outputs.VERSION }}
+          name: Release v${{ github.ref_name }}
           body: ${{ steps.set_body.outputs.body_value }}
           files: plugin/build/output/*.jar
           draft: false
