@@ -5,6 +5,7 @@ import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import fr.ludos.other.ExcludeFromJacocoGeneratedReport;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -15,6 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
 /**
  * Player packet implementation for Minecraft 1.19.
  */
+@ExcludeFromJacocoGeneratedReport
 public final class PlayerPackets_1_19 implements PlayerPackets {
 
 	@Override

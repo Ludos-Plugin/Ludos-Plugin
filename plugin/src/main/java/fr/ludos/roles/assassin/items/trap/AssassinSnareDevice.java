@@ -5,10 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -30,9 +27,8 @@ import fr.ludos.core.Utility;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.item.BranchItem;
-import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.ItemSlot;
-import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.SpecialItem;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -40,49 +36,14 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * Implementation of the Assassin Snare Device, for use by any Player with {@link AssassinRole}.
  */
-public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
+public class AssassinSnareDevice extends BranchItem<AssassinSnareDevice, AssassinSnare> {
 	public final static String ID = "assassin_snare_grimoire";
 
-	// private final static Map<UUID, TrapperSnareDevice> cachedItems = new HashMap<>();
 
-
-	public static AssassinSnareDevice fromItemStack(Map<String, AssassinSnare> branchMap, @Nullable AssassinSnare defaultBranch, ItemStack stack, Game game) throws IllegalArgumentException {
-		final UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// TrapperSnareDevice cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		final Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-		final String branchKey = BranchItemInterface.branchFromItemStack(stack, game);
-		if (branchKey == null) return null;
-
-		AssassinSnare branch = branchMap.getOrDefault(branchKey, defaultBranch);
-
-		AssassinSnareDevice device = new AssassinSnareDevice(branchMap, branch, stack, owner, game);
-		// cachedItems.put(itemId, device);
-
-		return device;
-	}
-	public static AssassinSnareDevice createItem(Map<String, AssassinSnare> branchMap, @Nullable AssassinSnare defaultBranch, Player owner, Game game) {
-		final AssassinSnareDevice device = new AssassinSnareDevice(branchMap, defaultBranch, new ItemStack(Material.ENCHANTED_BOOK), owner, game);
-		final UUID itemId = device.initializeItem();
-
-		// cachedItems.put(itemId, device);
-
-		return device;
+	AssassinSnareDevice(BranchItem.ItemData<AssassinSnare> info, Events events) {
+		super(info, events);
 	}
 
-	protected AssassinSnareDevice(Map<String, AssassinSnare> branchMap, @Nullable AssassinSnare defaultBranch, ItemStack stack, Player owner, Game game) {
-		super(branchMap, defaultBranch, stack, owner, game);
-	}
-
-
-	@Override
-	public String getTypeId() {
-		return ID;
-	}
 
 	@Override
 	public Component getName() {
@@ -106,6 +67,11 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 
 		public Events(Game game) {
 			super(Arrays.asList(AssassinSnareDeviceBranches.values()), game, new Events.Info(ItemSlot.HOTBAR_2));
+		}
+
+		@Override
+		public String getTypeId() {
+			return ID;
 		}
 
 		@Override
@@ -225,15 +191,23 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnare> {
 
 
 		@Override
-		@Nullable
-		public AssassinSnareDevice getItem(ItemStack stack) {
-			return AssassinSnareDevice.fromItemStack(getBranches(), getDefaultBranch(), stack, game);
+		protected AssassinSnareDevice getItemInternal(BranchItem.ItemData<AssassinSnare> info) {
+			return new AssassinSnareDevice(info, this);
 		}
 
 		@Override
-		public AssassinSnareDevice createItem(Player owner) {
-			return AssassinSnareDevice.createItem(getBranches(), getDefaultBranch(), owner, game);
+		protected AssassinSnareDevice createItemInternal(BranchData<AssassinSnare> data, Player owner) {
+			return new AssassinSnareDevice(
+				new BranchItem.ItemData<>(
+					data,
+					new SpecialItem.ItemData(
+						new ItemStack(Material.ENCHANTED_BOOK),
+						owner
+					)
+				), this
+			);
 		}
+
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return game.getLudos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);

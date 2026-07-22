@@ -2,9 +2,6 @@ package fr.ludos.roles.huntsman.items;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -18,7 +15,6 @@ import org.bukkit.inventory.ItemStack;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
-import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -26,45 +22,14 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * Implementation of the Huntsman Bow, for use by any Player with {@link HuntsmanRole}.
  */
-public class HuntsmanBow extends SpecialItem {
+public class HuntsmanBow extends SpecialItem<HuntsmanBow> {
 	public static final String ID = "huntsman_bow";
 
-	// private final static Map<UUID, HuntsmanBow> cachedItems = new HashMap<>();
 
-
-	public static @Nullable HuntsmanBow fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// HuntsmanBow cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-
-		HuntsmanBow bow = new HuntsmanBow(stack, owner, game);
-		// cachedItems.put(itemId, bow);
-
-		return bow;
-	}
-	public static HuntsmanBow createItem(Player owner, Game game) {
-		HuntsmanBow bow = new HuntsmanBow(new ItemStack(Material.BOW), owner, game);
-		UUID itemId = bow.initializeItem();
-
-		// cachedItems.put(itemId, bow);
-
-		return bow;
+	protected HuntsmanBow(SpecialItem.ItemData info, Events events) {
+		super(info, events);
 	}
 
-	protected HuntsmanBow(ItemStack stack, Player owner, Game game) {
-		super(stack, owner, game);
-	}
-
-
-	@Override
-	public String getTypeId() {
-		return ID;
-	}
 
 	@Override
 	public Component getName(){
@@ -86,6 +51,11 @@ public class HuntsmanBow extends SpecialItem {
 			super(game, new Events.Info(ItemSlot.HOTBAR_1));
 		}
 
+		@Override
+		public String getTypeId() {
+			return ID;
+		}
+
 		@EventHandler
 		public void onShootArrow(EntityShootBowEvent event) {
 			if ( ! (event.getEntity() instanceof Player player) ) return;
@@ -99,16 +69,16 @@ public class HuntsmanBow extends SpecialItem {
 			}
 		}
 
+		@Override
+		protected HuntsmanBow getItemInternal(ItemData info) {
+			return new HuntsmanBow(info, this);
+		}
+		@Override
+		protected HuntsmanBow createItemInternal(Player owner) {
+			return new HuntsmanBow(new SpecialItem.ItemData(new ItemStack(Material.BOW), owner), this);
+		}
 
-		@Override
-		@Nullable
-		public HuntsmanBow getItem(ItemStack stack) {
-			return HuntsmanBow.fromItemStack(stack, game);
-		}
-		@Override
-		public HuntsmanBow createItem(Player owner) {
-			return HuntsmanBow.createItem(owner, game);
-		}
+
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return game.getLudos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);

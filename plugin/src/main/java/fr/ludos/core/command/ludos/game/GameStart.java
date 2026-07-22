@@ -8,10 +8,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
 
 /**
@@ -19,10 +19,10 @@ import fr.ludos.core.group.Group;
  */
 public class GameStart implements Subcommand {
 	private final static String ID = "start";
-	private final Ludos ludos;
+	private final GameManager manager;
 
-	public GameStart(Ludos ludos) {
-		this.ludos = ludos;
+	public GameStart(GameManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
@@ -44,12 +44,12 @@ public class GameStart implements Subcommand {
 		}
 
 		String startGameId = args[0].toLowerCase();
-		if ( !ludos.getGameManager().getRegistered().containsKey(startGameId) ) {
+		if (! manager.getRegistered().containsKey(startGameId) ) {
 			sender.sendMessage("Game not found: " + startGameId);
 			return true;
 		}
 
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
+		Group group = manager.getLudos().getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
@@ -61,19 +61,19 @@ public class GameStart implements Subcommand {
 			return true;
 		}
 
-		ludos.getGameManager().startGame(startGameId, group);
+		manager.startGame(startGameId, group);
 		return true;
 	}
 	@Override
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length == 1)
-			return ludos.getGameManager().getRegistered().keySet().stream().sorted().collect(Collectors.toList());
+			return manager.getRegistered().keySet().stream().sorted().collect(Collectors.toList());
 		return null;
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "<" +
-			ludos.getGameManager().getRegistered().keySet().stream().sorted()
+			manager.getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))
 			+ ">";
 	}

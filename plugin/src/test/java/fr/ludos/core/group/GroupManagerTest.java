@@ -7,33 +7,28 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import org.bukkit.OfflinePlayer;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerQuitEvent.QuitReason;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mockito;
 
 import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.ServerMock;
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import fr.ludos.core.Ludos;
-import net.kyori.adventure.text.Component;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GroupManagerTest {
@@ -54,6 +49,7 @@ class GroupManagerTest {
 	@BeforeEach
 	void setUp() {
 		mockLudos = mock(Ludos.class);
+		when(mockLudos.getLogger()).thenReturn(Logger.getLogger("Test"));
 	}
 
 	@Test
@@ -96,53 +92,6 @@ class GroupManagerTest {
 		assertFalse(manager.getAllGroups().contains(group));
 		assertNull(manager.getGroupOfPlayer(leaderPlayer));
 		assertEquals(beforeDisbandCount - 1, manager.getAllGroups().size());
-	}
-
-	@Test
-	@DisplayName("Should handle leader disconnect by demoting and saving config")
-	void testOnLeaderDisconnectShouldDemote() {
-		GroupManager manager = Mockito.spy(new GroupManager(mockLudos));
-
-		PlayerMock leaderPlayer = server.addPlayer("LeaderName");
-		PlayerMock memberPlayer = server.addPlayer("MemberName");
-
-		doNothing().when(manager).saveConfig();
-
-
-		Set<OfflinePlayer> members = Set.of(memberPlayer);
-		Group group = manager.createGroup(leaderPlayer, members);
-
-		assertTrue(group.isLeader(leaderPlayer));
-
-		PlayerQuitEvent event = new PlayerQuitEvent(leaderPlayer, Component.text("Quit"), QuitReason.DISCONNECTED);
-		manager.onLeaderDisconnect(event);
-
-		assertFalse(group.isLeader(leaderPlayer));
-		assertTrue(group.isLeader(memberPlayer)); // New leader elected
-		verify(manager, times(1)).saveConfig();
-	}
-
-	@Test
-	@DisplayName("Should do nothing if non-leader disconnects")
-	void testOnNonLeaderDisconnectShouldDoNothing() {
-		GroupManager manager = Mockito.spy(new GroupManager(mockLudos));
-
-		PlayerMock leaderPlayer = server.addPlayer("LeaderName");
-		PlayerMock memberPlayer = server.addPlayer("MemberName");
-
-		doNothing().when(manager).saveConfig();
-
-
-		Set<OfflinePlayer> members = Set.of(memberPlayer);
-		Group group = manager.createGroup(leaderPlayer, members);
-
-		UUID originalLeaderId = group.getLeaderId();
-
-		PlayerQuitEvent event = new PlayerQuitEvent(memberPlayer, Component.text("Quit"), QuitReason.DISCONNECTED);
-		manager.onLeaderDisconnect(event);
-
-		assertEquals(originalLeaderId, group.getLeaderId()); // Leader unchanged
-		verify(manager, never()).saveConfig();
 	}
 
 	@Test

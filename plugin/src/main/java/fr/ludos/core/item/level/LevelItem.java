@@ -5,9 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.SpecialItem;
@@ -15,9 +14,10 @@ import net.kyori.adventure.text.Component;
 
 /**
  * A {@link LevelItemInterface} wrapper for {@link ItemStack}s.
+ * @param <T> self type
  * @param <TLevel> The type of {@link LevelItemInterface.Level} the item uses
  */
-public abstract class LevelItem<TLevel extends LevelItemInterface.Level<TLevel>> extends SpecialItem implements LevelItemInterface {
+public abstract class LevelItem<T extends LevelItem<T, TLevel>, TLevel extends LevelItemInterface.Level<TLevel>> extends SpecialItem<T> implements LevelItemInterface {
 	private final LevelState levelState;
 	public LevelState levelState() {
 		return levelState;
@@ -40,18 +40,11 @@ public abstract class LevelItem<TLevel extends LevelItemInterface.Level<TLevel>>
 		lvlObject(level).onSwitchOffLevel(this);
 	}
 
-	public LevelItem(List<TLevel> levels, LevelValue level, ItemStack stack, Player owner, Game game) {
-		super(stack, owner, game);
+	public LevelItem(LevelItem.ItemData<TLevel> info, Events<T, TLevel> events) {
+		super(info.info, events);
 
-		this.levels = levels;
-		this.levelState = LevelItemInterface.initializeLevelState(this, levels, level);
-	}
-
-	@Override
-	protected void onInitialize() {
-		super.onInitialize();
-
-		LevelItemInterface.setItemLevel(this, levelState().value());
+		this.levels = info.data.levels;
+		this.levelState = LevelItemInterface.initializeLevelState(this, this, levels, info.data.level);
 	}
 
 	@Override
@@ -64,11 +57,49 @@ public abstract class LevelItem<TLevel extends LevelItemInterface.Level<TLevel>>
 	}
 
 	/**
+	 * .
+	 * @param <TLevel>
+	 * @param levels
+	 * @param level
+	 */
+	public static record LevelData<TLevel extends LevelItemInterface.Level<TLevel>>(
+		List<TLevel> levels,
+		LevelValue level
+	) {
+		public LevelData(List<TLevel> levels) {
+			this(levels, new LevelValue());
+		}
+
+		public @Nullable TLevel getCurrentLevel() {
+			int levelIndex = level.level();
+			return levelIndex < levels.size()
+				? levels.get(levelIndex)
+				: null;
+		}
+		public @Nullable TLevel getCurrentLevelOr(TLevel defaultLevel) {
+			TLevel found = getCurrentLevel();
+			if (found != null) return found;
+
+			return defaultLevel;
+		}
+	}
+	/**
+	 * .
+	 * @param <TLevel>
+	 * @param data
+	 * @param info
+	 */
+	public static record ItemData<TLevel extends LevelItemInterface.Level<TLevel>>(
+		LevelData<TLevel> data,
+		SpecialItem.ItemData info
+	) {}
+
+	/**
 	 * Events for {@link LevelItem}.
 	 * @param <T> The type of {@link LevelItem}
 	 * @param <TLevel> The type of {@link Level} the item uses
 	 */
-	public static abstract class Events<T extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & Level<TLevel>> extends SpecialItem.Events<T> {
+	public static abstract class Events<T extends LevelItem<T, TLevel>, TLevel extends LevelItemInterface.Level<TLevel>> extends SpecialItem.Events<T> {
 		protected final Map<Player, LevelValue> deadPlayerLevels = new HashMap<>();
 
 		protected Events(Game game, Events.Info info) {
@@ -77,29 +108,22 @@ public abstract class LevelItem<TLevel extends LevelItemInterface.Level<TLevel>>
 
 		public abstract List<TLevel> getLevels();
 
+		protected abstract T getItemInternal(LevelItem.ItemData<TLevel> info);
+		@Override
+		protected final T getItemInternal(SpecialItem.ItemData info) {
+			LevelValue levelValue = LevelItemInterface.levelFromItemStack(info.stack(), game);
+			if (levelValue == null) return null;
 
-		@EventHandler
-		public void onPlayerDeath(PlayerDeathEvent event) {
-			Player player = event.getEntity();
-			if (! isPlayerValid(player)) return;
-
-			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
-			if ( specialItem == null ) {
-				return;
-			}
-
-			deadPlayerLevels.put(player, specialItem.levelState().value());
+			return getItemInternal(new LevelItem.ItemData<>(new LevelData<>(getLevels(), levelValue), info));
 		}
 
-		public abstract T createItem(LevelValue level, Player owner);
+		protected abstract T createItemInternal(LevelItem.LevelData<TLevel> data, Player owner);
 		@Override
-		public T createItem(Player owner) {
-			// if (!deadPlayerLevels.containsKey(owner)) {
-			// 	return createItem(new LevelValue(), owner);
-			// }
+		protected final T createItemInternal(Player owner) {
+			T created = createItemInternal(new LevelItem.LevelData<>(getLevels(), new LevelValue()), owner);
+			LevelItemInterface.setItemLevel(created, created, created.levelState().value());
 
-			// LevelValue deadLevels = deadPlayerLevels.get(owner);
-			return createItem(new LevelValue(), owner);
+			return created;
 		}
 	}
 }

@@ -23,9 +23,10 @@ import net.kyori.adventure.text.Component;
 
 /**
  * Wrapper for {@link BranchItemInterface} over a {@link ItemStack}.
+ * @param <T> self type
  * @param <TBranch> The type that a Branch needs to implement/extend to be used as a Branch for this type.
  */
-public abstract class BranchItem<TBranch extends BranchItemInterface.Branch> extends SpecialItem implements BranchItemInterface<TBranch> {
+public abstract class BranchItem<T extends BranchItem<T, TBranch>, TBranch extends BranchItemInterface.Branch> extends SpecialItem<T> implements BranchItemInterface<T, TBranch> {
 	protected TBranch branch;
 	@Override
 	public TBranch getBranch() {
@@ -61,6 +62,7 @@ public abstract class BranchItem<TBranch extends BranchItemInterface.Branch> ext
 				.sorted()
 				.collect(Collectors.toList());
 		}
+		if (branchesList.size() == 0) return null;
 
 		final String currentBranchId = branch.id();
 		final int currentIndex = Math.max(0, branchesList.indexOf(currentBranchId));
@@ -74,12 +76,14 @@ public abstract class BranchItem<TBranch extends BranchItemInterface.Branch> ext
 
 	/**
 	 * Utility function to handle branch switching when player switches branches.
-	 * @param <TItem> The type of the item, must extend SpecialItem
+	 * @param <T> The type of the item, must extend SpecialItem
 	 * @param <TBranch> The type of the branch, must be an enum that implements {@link BranchItemInterface.Branch}
 	 * @param item The item whose branch is being switched
 	 * @param newBranch The new branch to switch to
 	 */
-	public static <TItem extends SpecialItem & BranchItemInterface<TBranch>, TBranch extends Branch> void setItemBranch(TItem item, TBranch newBranch) {
+	public static <T extends BranchItemInterface<T, TBranch>, TBranch extends Branch> void setItemBranch(T item, TBranch newBranch) {
+		if (newBranch == null) return;
+
 		TBranch oldBranch = item.getBranch();
 
 		ItemStack itemStack = item.getStack();
@@ -100,16 +104,16 @@ public abstract class BranchItem<TBranch extends BranchItemInterface.Branch> ext
 
 	/**
 	 * Utility function to handle branch switching when player switches items.
-	 * @param <TItem> The type of the item, must extend SpecialItem
+	 * @param <T> The type of the item, must extend SpecialItem
 	 * @param <TBranch> The type of the branch, must be an enum that implements {@link BranchItemInterface.Branch}
 	 * @param event The PlayerItemHeldEvent to handle
 	 * @param getItem An "SpecialItem from ItemStack" function, used to get the item being switched from/to
 	 */
-	public static <TItem extends SpecialItem & BranchItemInterface<TBranch>, TBranch extends Branch> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem) {
+	public static <T extends BranchItemInterface<T, TBranch>, TBranch extends Branch> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, T> getItem) {
 		Player player = event.getPlayer();
 
-		TItem oldItem = getItem.apply(player.getInventory().getItem(event.getPreviousSlot()));
-		TItem newItem = getItem.apply(player.getInventory().getItem(event.getNewSlot()));
+		T oldItem = getItem.apply(player.getInventory().getItem(event.getPreviousSlot()));
+		T newItem = getItem.apply(player.getInventory().getItem(event.getNewSlot()));
 		if (oldItem == null && newItem == null) return;
 
 		if (oldItem != null) {
@@ -121,31 +125,14 @@ public abstract class BranchItem<TBranch extends BranchItemInterface.Branch> ext
 	}
 
 
-	public BranchItem(Map<String, TBranch> branches, TBranch branch, ItemStack stack, Player owner, Game game) {
-		super(stack, owner, game);
+	public BranchItem(BranchItem.ItemData<TBranch> info, Events<T, TBranch> events) {
+		super(info.info, events);
 
-		this.branches = ObjectUtils.requireNonEmpty(branches);
+		this.branches = ObjectUtils.requireNonEmpty(info.data.branches);
 
-		if (branch == null) {
-			branch = branches.values().iterator().next();
-		}
-		this.branch = branch;
-	}
-	public BranchItem(List<TBranch> branches, TBranch branch, ItemStack stack, Player owner, Game game) {
-		this(branches.stream().collect(Collectors.toMap(b -> b.id(), b -> b)), branch, stack, owner, game);
-	}
-	public BranchItem(Map<String, TBranch> branches, ItemStack stack, Player owner, Game game) {
-		this(branches, null, stack, owner, game);
-	}
-	public BranchItem(List<TBranch> branches, ItemStack stack, Player owner, Game game) {
-		this(branches, null, stack, owner, game);
-	}
-
-	@Override
-	protected void onInitialize() {
-		super.onInitialize();
-
-		switchBranch(branch);
+		this.branch = info.data.branch != null
+			? info.data.branch
+			: branches.values().iterator().next();
 	}
 
 	public void onSetBranch(TBranch branch) {
@@ -166,11 +153,32 @@ public abstract class BranchItem<TBranch extends BranchItemInterface.Branch> ext
 	}
 
 	/**
+	 * .
+	 * @param <TBranch>
+	 * @param branches
+	 * @param branch
+	 */
+	public static record BranchData<TBranch extends BranchItemInterface.Branch>(
+		Map<String, TBranch> branches,
+		TBranch branch
+	) {}
+	/**
+	 * .
+	 * @param <TBranch>
+	 * @param data
+	 * @param info
+	 */
+	public static record ItemData<TBranch extends BranchItemInterface.Branch>(
+		BranchData<TBranch> data,
+		SpecialItem.ItemData info
+	) {}
+
+	/**
 	 * Events for a {@link BranchItem}.
 	 * @param <T> The type of {@link BranchItem}
 	 * @param <TBranch> The type of {@link BranchItemInterface.Branch} the item uses
 	 */
-	public static abstract class Events<T extends BranchItem<TBranch>, TBranch extends Branch> extends SpecialItem.Events<T> implements Map<String, TBranch> {
+	public static abstract class Events<T extends BranchItem<T, TBranch>, TBranch extends Branch> extends SpecialItem.Events<T> implements Map<String, TBranch> {
 		private final Map<String, TBranch> branches;
 
 		private @Nullable TBranch defaultBranch;
@@ -189,6 +197,26 @@ public abstract class BranchItem<TBranch extends BranchItemInterface.Branch> ext
 		}
 		protected Events(Collection<TBranch> branches, Game game, Events.Info info) {
 			this(branches, null, game, info);
+		}
+
+		protected abstract T getItemInternal(BranchItem.ItemData<TBranch> info);
+		@Override
+		protected T getItemInternal(SpecialItem.ItemData info) {
+			final String branchKey = BranchItemInterface.branchFromItemStack(info.stack(), game);
+			if (branchKey == null) return null;
+
+			TBranch branch = branches.getOrDefault(branchKey, defaultBranch);
+
+			return getItemInternal(new ItemData<>(new BranchData<>(branches, branch), info));
+		}
+
+		protected abstract T createItemInternal(BranchData<TBranch> data, Player owner);
+		@Override
+		protected T createItemInternal(Player owner) {
+			T created = createItemInternal(new BranchData<>(branches, defaultBranch), owner);
+			created.switchBranch(created.branch);
+
+			return created;
 		}
 
 

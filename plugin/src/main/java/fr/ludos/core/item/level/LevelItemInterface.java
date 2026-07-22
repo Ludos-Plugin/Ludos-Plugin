@@ -3,11 +3,8 @@ package fr.ludos.core.item.level;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -15,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
-import fr.ludos.core.item.MultiLevelBranchItem;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.persistence.LevelValueMapPersistentDataType;
@@ -64,80 +60,66 @@ public interface LevelItemInterface extends SpecialItemInterface {
 
 	/**
 	 * Utility function to handle level switching when player switches levels.
-	 * @param <TItem> The type of the item, must extend {@link SpecialItem}
-	 * @param <TLevel> The type of the level, must be an enum that implements {@link LevelItemInterface.Level}
+	 * @param <T> The type of the item, must extend {@link SpecialItem}
+	 * @param <TLevel> The type of the level, must implement {@link LevelItemInterface.Level}
+	 * @param levelItem
 	 * @param item The item whose level is being switched
 	 * @param level The new level to switch to
 	 */
-	public static <TItem extends SpecialItem & LevelItemInterface, TLevel extends Enum<TLevel> & Level<TLevel>> void setItemLevel(TItem item, LevelValue level) {
-		final int oldLevel = item.level();
+	public static <T extends SpecialItem<T>, TLevel extends Level<TLevel>> void setItemLevel(LevelItemInterface levelItem, SpecialItem<T> item, LevelValue level) {
+		final int oldLevel = levelItem.level();
 		final int newLevel = level.level();
 
-		saveLevelValue(item, level);
+		saveLevelValue(item.getStack(), level);
 
-		item.setValue(level);
-
-		item.onSwitchOffLevel(oldLevel);
-		item.onSwitchToLevel(newLevel);
+		levelItem.onSwitchOffLevel(oldLevel);
+		levelItem.onSwitchToLevel(newLevel);
 
 		item.update();
 	}
 
-	/**
-	 * Utility function to handle level switching when player switches items.
-	 * @param <TItem> The type of the item, must extend {@link SpecialItem}
-	 * @param <TLevel> The type of the level, must be an enum that implements {@link LevelItemInterface.Level}
-	 * @param event The PlayerItemHeldEvent to handle
-	 * @param getItem A "{@link SpecialItem} from {@link ItemStack}" function, used to get the item being switched from/to
-	 */
-	public static <TItem extends LevelItem<TLevel>, TLevel extends Enum<TLevel> & LevelItemInterface.Level<TLevel>> void onSwitchItem(PlayerItemHeldEvent event, Function<ItemStack, TItem> getItem) {
-		Player player = event.getPlayer();
+	public static void saveLevelValue(ItemStack stack, LevelValue levelValue) {
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) return;
 
-		TItem oldItem = getItem.apply(player.getInventory().getItem(event.getPreviousSlot()));
-		TItem newItem = getItem.apply(player.getInventory().getItem(event.getNewSlot()));
-		if (oldItem == null && newItem == null) return;
+		PersistentDataContainer container = meta.getPersistentDataContainer();
 
-		if (oldItem != null) {
-			oldItem.lvlObject().onUnequip(oldItem);
-		}
-		if (newItem != null) {
-			newItem.lvlObject().onEquip(newItem);
-		}
+		container.set(LevelItem.LEVEL_KEY, LevelValuePersistentDataType.INSTANCE, levelValue);
+		stack.setItemMeta(meta);
 	}
 
-	public static void saveLevelValue(SpecialItem item, LevelValue levelValue) {
-		ItemMeta meta = item.getStack().getItemMeta();
-		meta.getPersistentDataContainer().set(LevelItem.LEVEL_KEY, LevelValuePersistentDataType.INSTANCE, levelValue);
-		item.getStack().setItemMeta(meta);
-	}
-	public static void saveLevelState(SpecialItem item, LevelState levelState) {
-		saveLevelValue(item, levelState.value());
-	}
+	public static void saveLevelValues(ItemStack stack, Map<String, LevelValue> levelValues) {
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) return;
 
-	public static void saveLevelValues(SpecialItem item, Map<String, LevelValue> levelValues) {
-		ItemMeta meta = item.getStack().getItemMeta();
-		meta.getPersistentDataContainer().set(LevelItem.LEVEL_KEY, LevelValueMapPersistentDataType.INSTANCE, levelValues);
-		item.getStack().setItemMeta(meta);
+		PersistentDataContainer container = meta.getPersistentDataContainer();
+
+		container.set(LevelItem.LEVEL_KEY, LevelValueMapPersistentDataType.INSTANCE, levelValues);
+		stack.setItemMeta(meta);
 	}
 
 	public static LevelValue levelFromItemStack(ItemStack stack, Game game) {
-		PersistentDataContainer container = stack.getItemMeta().getPersistentDataContainer();
+		if (stack == null) return null;
+
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) return null;
+
+		PersistentDataContainer container = meta.getPersistentDataContainer();
 
 		if ( ! container.has(LEVEL_KEY, LevelValuePersistentDataType.INSTANCE) ) return null;
-
 		return container.get(LEVEL_KEY, LevelValuePersistentDataType.INSTANCE);
 	}
 
-	public static <T extends SpecialItem & LevelItemInterface> LevelState initializeLevelState(
-		T item,
+	public static <T extends SpecialItem<T>> LevelState initializeLevelState(
+		LevelItemInterface levelItem, SpecialItem<T> item,
 		LevelState levelState,
 		BiConsumer<LevelValue, Integer> onLevelChange,
 		BiConsumer<LevelValue, Double> onXpChange
 	) {
 		levelState.addLevelUpListener( (lvlValue, oldLevel) -> {
 			int newLevel = lvlValue.level();
-			item.onSwitchOffLevel(oldLevel);
-			item.onSwitchToLevel(newLevel);
+			levelItem.onSwitchOffLevel(oldLevel);
+			levelItem.onSwitchToLevel(newLevel);
 
 			if (newLevel == oldLevel) return;
 			onLevelChange.accept(lvlValue, oldLevel);
@@ -158,17 +140,17 @@ public interface LevelItemInterface extends SpecialItemInterface {
 		} );
 		return levelState;
 	}
-	public static <T extends SpecialItem & LevelItemInterface, TLevel extends Level<TLevel>> LevelState initializeLevelState(T item, List<TLevel> levels, LevelValue levelValue) {
-		LevelState levelState = new LevelState(levelValue, l -> levels.get(l).xpThreshold(), levels.size() - 1);
+	public static <T extends SpecialItem<T>, TLevel extends Level<TLevel>> LevelState initializeLevelState(LevelItemInterface levelItem, SpecialItem<T> item, List<TLevel> levels, LevelValue levelValue) {
+		LevelState levelState = LevelState.capped(levelValue, l -> levels.get(l).xpThreshold(), levels.size() - 1);
 		return initializeLevelState(
-			item,
+			levelItem, item,
 			levelState,
-			(lvlValue, oldLevel) -> LevelItemInterface.saveLevelValue(item, lvlValue),
-			(lvlValue, oldXp) -> LevelItemInterface.saveLevelValue(item, lvlValue)
+			(lvlValue, oldLevel) -> LevelItemInterface.saveLevelValue(item.getStack(), lvlValue),
+			(lvlValue, oldXp) -> LevelItemInterface.saveLevelValue(item.getStack(), lvlValue)
 		);
 	}
 
-	public static @NotNull TextComponent getLevelUpMessage(SpecialItem item) { // TODO: Translate
+	public static <T extends SpecialItem<T>> @NotNull TextComponent getLevelUpMessage(SpecialItem<T> item) { // TODO: Translate
 		return Component.text("Your ")
 			.color(NamedTextColor.GREEN)
 		.append(item.getName())
@@ -213,9 +195,6 @@ public interface LevelItemInterface extends SpecialItemInterface {
 			.decoration(TextDecoration.ITALIC, false);
 	}
 	public static <TLevel extends Enum<TLevel> & Level<TLevel>> Component getLevelLoreField(LevelItemInterface item) {
-		return getLevelLoreField(item.level());
-	}
-	public static <TBranch extends MultiLevelBranchItem.Branch> Component getBranchLevelLoreField(MultiLevelBranchItem<TBranch> item) {
 		return getLevelLoreField(item.level());
 	}
 

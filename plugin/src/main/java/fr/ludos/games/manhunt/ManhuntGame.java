@@ -19,7 +19,6 @@ import org.bukkit.WorldType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -205,7 +204,7 @@ public class ManhuntGame extends Game {
 		);
 
 		for (Player hunter : teamController.getTeamOnlinePlayers(teamController.preyTeam)) {
-			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), (ItemStack stack) -> ManhuntCompass.fromItemStack(stack, this))) {
+			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), compassEvents::getItem)) {
 				compass.setLocation(prey);
 			}
 		}

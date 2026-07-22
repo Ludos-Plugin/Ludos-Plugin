@@ -69,7 +69,7 @@ public final record LevelValue(int level, double xp) implements Serializable {
 		return withXp(this.xp + xp, thresholds, maxLevel);
 	}
 
-	public LevelValue capped(Integer maxLevel) {
+	public LevelValue levelCapped(Integer maxLevel) {
 		if (maxLevel != null && level > maxLevel) {
 			return new LevelValue(maxLevel, xp);
 		}
@@ -77,10 +77,10 @@ public final record LevelValue(int level, double xp) implements Serializable {
 	}
 	public LevelValue capped(double threshold, Integer maxLevel) {
 		if (maxLevel != null && level >= maxLevel) {
-			return new LevelValue(level, 0.0);
+			return new LevelValue(maxLevel, 0.0);
 		}
 		if (xp >= threshold) {
-			return new LevelValue(level, 0);
+			return new LevelValue(level, threshold);
 		}
 		return this;
 	}
@@ -94,13 +94,13 @@ public final record LevelValue(int level, double xp) implements Serializable {
 		}
 		return this;
 	}
-	public LevelValue capped(double threshold) {
+	public LevelValue xpCapped(double threshold) {
 		if (xp >= threshold) {
 			return new LevelValue(level, 0);
 		}
 		return this;
 	}
-	public LevelValue capped(Function<@NotNull Integer, Double> thresholds) {
+	public LevelValue xpCapped(Function<@NotNull Integer, Double> thresholds) {
 		double threshold = thresholds.apply(level);
 		if (xp >= threshold) {
 			return new LevelValue(level, 0);

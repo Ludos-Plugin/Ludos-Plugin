@@ -4,19 +4,19 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.config.ConfigOptions;
 import fr.ludos.core.config.sectionProvider.ConfigSectionProvider;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.group.GroupManager;
 
 /**
  * {@link ConfigSectionProvider} to scope subsequent {@link ConfigOptions} within the Group's config ({@link Group#getConfig()}).
  */
 public final class GroupConfigProvider extends ConfigSectionProvider {
-	private final Ludos ludos;
-	public GroupConfigProvider(Ludos ludos) {
-		this.ludos = ludos;
+	private final GroupManager manager;
+	public GroupConfigProvider(GroupManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public final class GroupConfigProvider extends ConfigSectionProvider {
 			return null;
 		}
 
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
+		Group group = manager.getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return null;
@@ -43,7 +43,7 @@ public final class GroupConfigProvider extends ConfigSectionProvider {
 
 	@Override
 	public boolean saveConfig(ConfigurationSection config, CommandSender sender) {
-		ludos.saveConfig();
+		manager.saveConfig();
 		return true;
 	}
 

@@ -165,53 +165,83 @@ public final class Categories {
 		return Collections.unmodifiableSet(values);
 	}
 
-    public static boolean isChestplate(ItemStack item) {
+	public static boolean isChestplate(Material type) {
+		return Categories.CHESTPLATES.contains(type);
+	}
+	public static boolean isChestplate(ItemStack item) {
 		if (item == null) return false;
-		return Categories.CHESTPLATES.contains(item.getType());
+		return isChestplate(item.getType());
 	}
 
-    public static boolean isHelmet(ItemStack item) {
-        if (item == null) return false;
-        return Categories.HELMETS.contains(item.getType());
-    }
+	public static boolean isHelmet(Material type) {
+		return Categories.HELMETS.contains(type);
+	}
+	public static boolean isHelmet(ItemStack item) {
+		if (item == null) return false;
+		return isHelmet(item.getType());
+	}
 
-    public static boolean isLeggings(ItemStack item) {
-        if (item == null) return false;
-        return Categories.LEGGINGS.contains(item.getType());
-    }
+	public static boolean isLeggings(Material type) {
+		return Categories.LEGGINGS.contains(type);
+	}
+	public static boolean isLeggings(ItemStack item) {
+		if (item == null) return false;
+		return isLeggings(item.getType());
+	}
 
-    public static boolean isBoots(ItemStack item) {
-        if (item == null) return false;
-        return Categories.BOOTS.contains(item.getType());
-    }
+	public static boolean isBoots(Material type) {
+		return Categories.BOOTS.contains(type);
+	}
+	public static boolean isBoots(ItemStack item) {
+		if (item == null) return false;
+		return isBoots(item.getType());
+	}
 
-    public static boolean isSword(ItemStack item) {
-        if (item == null) return false;
-        return Categories.SWORDS.contains(item.getType());
-    }
+	public static boolean isSword(Material type) {
+		return Categories.SWORDS.contains(type);
+	}
+	public static boolean isSword(ItemStack item) {
+		if (item == null) return false;
+		return isSword(item.getType());
+	}
 
-    public static boolean isAxe(ItemStack item) {
-        if (item == null) return false;
-        return Categories.AXES.contains(item.getType());
-    }
+	public static boolean isAxe(Material type) {
+		return Categories.AXES.contains(type);
+	}
+	public static boolean isAxe(ItemStack item) {
+		if (item == null) return false;
+		return isAxe(item.getType());
+	}
 
-    public static boolean isPickaxe(ItemStack item) {
-        if (item == null) return false;
-        return Categories.PICKAXES.contains(item.getType());
-    }
+	public static boolean isPickaxe(Material type) {
+		return Categories.PICKAXES.contains(type);
+	}
+	public static boolean isPickaxe(ItemStack item) {
+		if (item == null) return false;
+		return isPickaxe(item.getType());
+	}
 
-    public static boolean isShovel(ItemStack item) {
-        if (item == null) return false;
-        return Categories.SHOVELS.contains(item.getType());
-    }
+	public static boolean isShovel(Material type) {
+		return Categories.SHOVELS.contains(type);
+	}
+	public static boolean isShovel(ItemStack item) {
+		if (item == null) return false;
+		return isShovel(item.getType());
+	}
 
-    public static boolean isHoe(ItemStack item) {
-        if (item == null) return false;
-        return Categories.HOES.contains(item.getType());
-    }
+	public static boolean isHoe(Material type) {
+		return Categories.HOES.contains(type);
+	}
+	public static boolean isHoe(ItemStack item) {
+		if (item == null) return false;
+		return isHoe(item.getType());
+	}
 
-    public static boolean isRanged(ItemStack item) {
-        if (item == null) return false;
-        return Categories.RANGED.contains(item.getType());
-    }
+	public static boolean isRanged(Material type) {
+		return Categories.RANGED.contains(type);
+	}
+	public static boolean isRanged(ItemStack item) {
+		if (item == null) return false;
+		return isRanged(item.getType());
+	}
 }

@@ -36,10 +36,6 @@ public class RoleGet implements Subcommand {
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		OfflinePlayer getTarget = CommandUtility.getOfflinePlayerFromArgsOrSender(args, 0, sender);
-		if (getTarget == null) {
-			sender.sendMessage(Role.NONE_LABEL); // TODO: Translate
-			return true;
-		}
 
 		Role.Builder getRole = manager.getPlayerRole(getTarget);
 		sender.sendMessage(getRole == null ? Role.NONE_LABEL : getRole.getId());
@@ -52,7 +48,7 @@ public class RoleGet implements Subcommand {
 		return null;
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "[player]";
 	}
 	@Override

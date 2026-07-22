@@ -44,7 +44,7 @@ public class LudosConfig implements Subcommand {
 		return map.tabComplete(args, sender);
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "<global | group> [config] [name] [option]";
 	}
 	@Override

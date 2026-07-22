@@ -82,8 +82,7 @@ public class HarvesterRole extends Role {
 				LevelItem.findAllIn(inventory, (itemStack) -> itemEvents.getItem(itemStack))
 					.stream()
 					.filter(o -> o instanceof LevelItemInterface)
-					.map(o -> (LevelItemInterface) o)
-					.forEach(item -> item.addXp(oreXp));
+					.forEach(item -> ((LevelItemInterface) item).addXp(oreXp));
 			}
 		}
 	}

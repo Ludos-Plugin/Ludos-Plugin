@@ -44,7 +44,7 @@ public class HelpSubcommand implements Subcommand {
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 		if (args.length < 1) {
-			sender.sendMessage(getUsage());
+			sender.sendMessage(getUsage(sender));
 			return true;
 		}
 
@@ -52,7 +52,7 @@ public class HelpSubcommand implements Subcommand {
 		Subcommand sc = subcommands.get(arg);
 		if (sc == null) return false;
 
-		sender.sendMessage(sc.getUsage());
+		sender.sendMessage(sc.getUsage(sender));
 		return true;
 	}
 	@Override
@@ -65,7 +65,7 @@ public class HelpSubcommand implements Subcommand {
 		return null;
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return SubcommandManager.getUsage(
 			subcommands.keySet()
 				.stream()

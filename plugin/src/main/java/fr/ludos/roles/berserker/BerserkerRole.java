@@ -71,7 +71,7 @@ public class BerserkerRole extends Role {
 	@Override
 	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
 		LinkedHashMap<String, GameEvents> map = new LinkedHashMap<>();
-		map.put(BerserkerAxe.ID, new BerserkerAxe.Events(game, this));
+		map.put(BerserkerAxe.ID, new BerserkerAxe.Events(game));
 		map.put(BerserkerRageBrew.ID, new BerserkerRageBrew.Events(game, this));
 		return map;
 	}

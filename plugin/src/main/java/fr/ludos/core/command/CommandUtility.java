@@ -17,15 +17,15 @@ import org.bukkit.entity.Player;
 public class CommandUtility {
 
 	@Nullable
-	public static Player getPlayerFromArg(String[] args, int index, CommandSender sender) {
+	public static Player getPlayerFromArg(String[] args, int index) {
 		if ( args.length > index ) {
 			return Bukkit.getPlayer(args[index]);
 		} else {
 			return null;
 		}
 	}
-	@Nullable
-	public static OfflinePlayer getOfflinePlayerFromArg(String[] args, int index, CommandSender sender) {
+
+	public static OfflinePlayer getOfflinePlayerFromArg(String[] args, int index) {
 		if ( args.length > index ) {
 			return Bukkit.getOfflinePlayer(args[index]);
 		} else {
@@ -35,7 +35,7 @@ public class CommandUtility {
 
 	@Nullable
 	public static Player getPlayerFromArgsOrSender(String[] args, int index, CommandSender sender) {
-		Player target = getPlayerFromArg(args, index, sender);
+		Player target = getPlayerFromArg(args, index);
 
 		if ( target == null && (sender instanceof Player playerSender) ) {
 			target = playerSender;
@@ -45,13 +45,19 @@ public class CommandUtility {
 	}
 	@Nullable
 	public static OfflinePlayer getOfflinePlayerFromArgsOrSender(String[] args, int index, CommandSender sender) {
-		OfflinePlayer target = getOfflinePlayerFromArg(args, index, sender);
+		OfflinePlayer target = getOfflinePlayerFromArg(args, index);
 
 		if ( target == null && (sender instanceof Player playerSender) ) {
 			target = playerSender;
 		}
 
 		return target;
+	}
+
+	public static List<OfflinePlayer> getOfflinePlayersFromArgs(String[] args, CommandSender sender) {
+		return Arrays.stream(args)
+			.map(Bukkit::getOfflinePlayer)
+			.collect(Collectors.toList());
 	}
 
 	public static List<Player> getPlayersFromArgs(String[] args, CommandSender sender) {

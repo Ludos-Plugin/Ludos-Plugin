@@ -69,7 +69,7 @@ public class RoleGuidebook implements Subcommand {
 		return null;
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "<" +
 			manager.getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))

@@ -7,10 +7,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
 
 /**
@@ -18,10 +18,10 @@ import fr.ludos.core.group.Group;
  */
 public class GameStop implements Subcommand {
 	private final static String ID = "stop";
-	private final Ludos ludos;
+	private final GameManager manager;
 
-	public GameStop(Ludos ludos) {
-		this.ludos = ludos;
+	public GameStop(GameManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class GameStop implements Subcommand {
 			return true;
 		}
 
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
+		Group group = manager.getLudos().getGroupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
@@ -66,7 +66,7 @@ public class GameStop implements Subcommand {
 		return null;
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "";
 	}
 	@Override

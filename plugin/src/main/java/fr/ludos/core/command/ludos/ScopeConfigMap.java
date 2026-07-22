@@ -16,7 +16,7 @@ public class ScopeConfigMap extends ConfigSectionMap {
 	public ScopeConfigMap(Ludos ludos, ConfigOptions globalOptions, ConfigOptions groupOptions, ConfigOptions playerOptions) {
 		super(new HashMap<>() {{
 			put("global", Pair.of(new GlobalConfigProvider(ludos), globalOptions));
-			put("group", Pair.of(new GroupConfigProvider(ludos), groupOptions));
+			put("group", Pair.of(new GroupConfigProvider(ludos.getGroupManager()), groupOptions));
 			put("player", Pair.of(new PlayerConfigProvider(ludos), playerOptions));
 		}});
 	}

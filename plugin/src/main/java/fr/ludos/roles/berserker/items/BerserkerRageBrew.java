@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -21,7 +19,6 @@ import org.bukkit.potion.PotionEffectType;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
-import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.roles.berserker.BerserkerRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -30,49 +27,11 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * Implementation of the Berserker Rage Brew, for use by any Player with {@link BerserkerRole}.
  */
-public class BerserkerRageBrew extends SpecialItem {
+public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 	public static final String ID = "berserker_rage_brew";
 
-	@Override
-	public String getTypeId() {
-		return ID;
-	}
-
-	// Used to read/detect an existing ItemStack
-	protected BerserkerRageBrew(ItemStack stack, Player owner, Game game) throws IllegalArgumentException {
-		super(stack, owner, game);
-	}
-
-	// Used to create a new brew
-	protected BerserkerRageBrew(Player owner, Game game) {
-		super(new ItemStack(Material.SUSPICIOUS_STEW), owner, game);
-	}
-
-
-	@Nullable
-	public static BerserkerRageBrew getItem(ItemStack stack, Game game) {
-		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// BerserkerRageBrew cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-
-		BerserkerRageBrew brew = new BerserkerRageBrew(stack, owner, game);
-		// cachedItems.put(itemId, brew);
-
-		return brew;
-	}
-
-	public static BerserkerRageBrew createItem(Player owner, Game game) {
-		BerserkerRageBrew brew = new BerserkerRageBrew(owner, game);
-		UUID itemId = brew.initializeItem();
-
-		// cachedItems.put(itemId, brew);
-
-		return brew;
+	BerserkerRageBrew(SpecialItem.ItemData info, Events events) {
+		super(info, events);
 	}
 
 
@@ -109,6 +68,11 @@ public class BerserkerRageBrew extends SpecialItem {
 		}
 
 		@Override
+		public String getTypeId() {
+			return ID;
+		}
+
+		@Override
 		protected void onItemStop() {
 			super.onItemStop();
 
@@ -119,14 +83,13 @@ public class BerserkerRageBrew extends SpecialItem {
 		}
 
 		@Override
-		@Nullable
-		public BerserkerRageBrew getItem(ItemStack stack) {
-			return BerserkerRageBrew.getItem(stack, game);
+		protected BerserkerRageBrew getItemInternal(SpecialItem.ItemData info) {
+			return new BerserkerRageBrew(info, this);
 		}
 
 		@Override
-		public BerserkerRageBrew createItem(Player owner) {
-			return BerserkerRageBrew.createItem(owner, game);
+		protected BerserkerRageBrew createItemInternal(Player owner) {
+			return new BerserkerRageBrew(new SpecialItem.ItemData(new ItemStack(Material.SUSPICIOUS_STEW), owner), this);
 		}
 
 		@Override

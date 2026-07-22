@@ -3,9 +3,6 @@ package fr.ludos.roles.harvester.items;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Location;
@@ -27,10 +24,9 @@ import fr.ludos.core.Utility;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.ItemUtilities;
+import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItem;
-import fr.ludos.core.item.level.LevelItemInterface;
-import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.roles.harvester.HarvesterRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -39,53 +35,16 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * Implementation of the Huntsman Spade, for use by any Player with {@link HarvesterRole}.
  */
-public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
+public class HarvesterSpade extends LevelItem<HarvesterSpade, HarvesterSpadeLevels> {
 	public static final String ID = "harvester_spade";
-
-	// private final static Map<UUID, HarvesterSpade> cachedItems = new HashMap<>();
 
 	private static final int COOLDOWN_SECONDS = 20;
 	private static final int TUNNEL_LENGTH = 10;
 
 	private final static Map<Player, List<List<BlockState>>> TUNNEL_BLOCKS = new HashMap<>();
 
-
-	public static HarvesterSpade fromItemStack(List<HarvesterSpadeLevels> levels, ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// HarvesterSpade cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-		LevelValue levelValue = LevelItemInterface.levelFromItemStack(stack, game);
-		if (levelValue == null) return null;
-
-		HarvesterSpade harvesterSpade = new HarvesterSpade(levels, levelValue, stack, owner, game);
-		// cachedItems.put(itemId, harvesterSpade);
-
-		return harvesterSpade;
-	}
-
-	public static HarvesterSpade createItem(List<HarvesterSpadeLevels> levels, LevelValue level, Player owner, Game game) {
-		HarvesterSpadeLevels lvl = levels.get(level.level());
-		HarvesterSpade harvesterSpade = new HarvesterSpade(levels, level, new ItemStack(lvl.getMaterial()), owner, game);
-		UUID itemId = harvesterSpade.initializeItem();
-
-		// cachedItems.put(itemId, harvesterSpade);
-
-		return harvesterSpade;
-	}
-
-	protected HarvesterSpade(List<HarvesterSpadeLevels> levels, LevelValue level, ItemStack stack, Player owner, Game game) {
-		super(levels, level, stack, owner, game);
-	}
-
-
-	@Override
-	public String getTypeId() {
-		return ID;
+	HarvesterSpade(LevelItem.ItemData<HarvesterSpadeLevels> info, Events events) {
+		super(info, events);
 	}
 
 	@Override
@@ -241,6 +200,11 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 		}
 
 		@Override
+		public String getTypeId() {
+			return ID;
+		}
+
+		@Override
 		public List<HarvesterSpadeLevels> getLevels() {
 			return LEVELS;
 		}
@@ -273,14 +237,16 @@ public class HarvesterSpade extends LevelItem<HarvesterSpadeLevels> {
 		}
 
 		@Override
-		@Nullable
-		public HarvesterSpade getItem(ItemStack stack) {
-			return HarvesterSpade.fromItemStack(LEVELS, stack, game);
+		protected HarvesterSpade getItemInternal(ItemData<HarvesterSpadeLevels> info) {
+			return new HarvesterSpade(info, this);
 		}
+
 		@Override
-		public HarvesterSpade createItem(LevelValue level, Player owner) {
-			return HarvesterSpade.createItem(LEVELS, level, owner, game);
+		protected HarvesterSpade createItemInternal(LevelData<HarvesterSpadeLevels> data, Player owner) {
+			HarvesterSpadeLevels currentLevel = data.getCurrentLevelOr(HarvesterSpadeLevels.WOODEN);
+			return new HarvesterSpade(new ItemData<>(data, new SpecialItem.ItemData(new ItemStack(currentLevel.getMaterial()), owner)), this);
 		}
+
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return game.getLudos().getRoleManager().isPlayerRole(owner, HarvesterRole.ID);

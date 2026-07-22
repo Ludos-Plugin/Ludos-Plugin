@@ -4,6 +4,7 @@ plugins {
     id 'java'
     id 'io.papermc.paperweight.userdev' version '2.0.0-beta.21'
     id 'checkstyle'
+    id 'jacoco'
     id 'org.owasp.dependencycheck' version '12.2.2'
 }
 
@@ -155,11 +156,31 @@ tasks.named('test') {
     useJUnitPlatform()
 
     testLogging {
-        events "passed", "skipped", "failed"
+        events "failed"
         exceptionFormat "full"
         showStandardStreams true
         showExceptions true
         showStackTraces true
+    }
+
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = "0.8.14"
+    reportsDirectory = layout.buildDirectory.dir('reports/coverage')
+}
+
+jacocoTestReport {
+    dependsOn test
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                '**/fr/ludos/roles/**',
+                '**/fr/ludos/games/**',
+                '**/fr/ludos/games/**',
+            ])
+        }))
     }
 }
 

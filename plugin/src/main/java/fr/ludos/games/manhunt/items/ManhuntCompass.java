@@ -2,7 +2,6 @@ package fr.ludos.games.manhunt.items;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -16,7 +15,6 @@ import org.bukkit.inventory.meta.CompassMeta;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
-import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.games.manhunt.ManhuntGame;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -24,45 +22,19 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * Implementation of ManhuntCompass, used for and managed by {@link ManhuntGame}.
  */
-public class ManhuntCompass extends SpecialItem {
+public class ManhuntCompass extends SpecialItem<ManhuntCompass> {
 	private static final String ID = "manhunt_compass";
 
-	// private static final Map<UUID, ManhuntCompass> cachedItems = new HashMap<>();
 
-
-	public static @Nullable ManhuntCompass fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// ManhuntCompass cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-
-		ManhuntCompass compass = new ManhuntCompass(stack, owner, game);
-		// cachedItems.put(itemId, compass);
-
-		return compass;
+	ManhuntCompass(SpecialItem.ItemData info, Events events) {
+		super(info, events);
 	}
 
-	public static ManhuntCompass createItem(Player owner, Game game) {
-		ManhuntCompass compass = new ManhuntCompass(createItemStack(), owner, game);
-		UUID itemId = compass.initializeItem();
-
-		// cachedItems.put(itemId, compass);
-
-		return compass;
+	static ManhuntCompass createItem(Player owner, Events events) {
+		return new ManhuntCompass(new SpecialItem.ItemData(createItemStack(), owner), events);
 	}
 
-	protected ManhuntCompass(ItemStack stack, Player owner, Game game) {
-		super(stack, owner, game);
-	}
 
-	@Override
-	public String getTypeId() {
-		return ID;
-	}
 
 	@Override
 	public Component getName() {
@@ -123,14 +95,19 @@ public class ManhuntCompass extends SpecialItem {
 		}
 
 		@Override
-		@Nullable
-		public ManhuntCompass getItem(ItemStack stack) {
-			return ManhuntCompass.fromItemStack(stack, game);
+		public String getTypeId() {
+			return ID;
 		}
 
 		@Override
-		public ManhuntCompass createItem(Player owner) {
-			return ManhuntCompass.createItem(owner, game);
+		@Nullable
+		protected ManhuntCompass getItemInternal(SpecialItem.ItemData info) {
+			return new ManhuntCompass(info, this);
+		}
+
+		@Override
+		protected ManhuntCompass createItemInternal(Player owner) {
+			return ManhuntCompass.createItem(owner, this);
 		}
 
 		@Override

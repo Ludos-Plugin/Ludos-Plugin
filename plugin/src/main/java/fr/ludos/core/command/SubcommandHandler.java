@@ -45,8 +45,8 @@ public class SubcommandHandler implements Subcommand {
 	}
 
 	@Override
-	public String getUsage() {
-		return manager.getUsage();
+	public String getUsage(@NotNull CommandSender sender) {
+		return manager.getUsage(sender);
 	}
 
 	@Override

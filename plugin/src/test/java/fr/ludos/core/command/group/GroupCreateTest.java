@@ -8,7 +8,32 @@ import org.junit.jupiter.api.Test;
 
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 
-class GroupMembershipTest extends GroupTest {
+class GroupCreateTest extends GroupTest {
+	@Test
+	void testGroupCreate() {
+		PlayerMock player1 = createPlayer("Player1");
+
+		player1.performCommand("ludos group create");
+		assertEquals("You have created a new group.", player1.nextMessage(), "Could not create group");
+
+		assertGroupInfo(player1, player1, Collections.emptyList());
+	}
+
+	@Test
+	void testGroupCreateWhenAlreadyInGroup() {
+		PlayerMock player1 = createPlayer("Player1");
+
+		player1.performCommand("ludos group create");
+		assertEquals("You have created a new group.", player1.nextMessage(), "Could not create group");
+
+		assertGroupInfo(player1, player1, Collections.emptyList());
+
+		player1.performCommand("ludos group create");
+		assertEquals("Your group has been disbanded.", player1.nextMessage(), "Group was not disbanded when leaving, as only member");
+		assertEquals("You have left the group.", player1.nextMessage(), "Could not create group");
+		assertEquals("You have created a new group.", player1.nextMessage(), "Could not create group");
+	}
+
 	@Test
 	void testGroupCreateWithInvite() {
 		PlayerMock player1 = createPlayer("Player1");
@@ -32,6 +57,7 @@ class GroupMembershipTest extends GroupTest {
 		assertGroupInfo(player2, player1, Collections.singletonList(player2));
 
 		player1.performCommand("ludos group leave");
+		assertEquals(player2.getName() + " has been promoted to group leader.", player1.nextMessage(), "Did not receive new leader promotion notification");
 		assertEquals("You have left the group.", player1.nextMessage(), "Could not leave the group");
 		assertEquals("You have been promoted to group leader.", player2.nextMessage(), "Member was not promoted to Leader");
 		assertEquals(player1.getName() + " has left the group.", player2.nextMessage(), "Did not receive player leave notification");
