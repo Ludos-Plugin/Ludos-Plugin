@@ -242,6 +242,9 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 	public static abstract class Events<T extends SpecialItem<T>> extends GameEvents {
 		protected final Map<UUID, T> CACHED = new HashMap<>();
 		private final Info info;
+		public final Info getInfo() {
+			return this.info;
+		}
 
 		protected Events(Game game, Info info) {
 			super(game);

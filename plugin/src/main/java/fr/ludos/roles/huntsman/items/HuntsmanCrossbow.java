@@ -142,6 +142,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, Hun
 
 				container.remove(ARROW_TYPE);
 				container.remove(ARROW_LEVEL);
+				arrowProjectile.setGravity(true);
 
 				HuntsmanCrossbowBranch branch = getBranches().get(branchKey);
 				if (branch != null) {
