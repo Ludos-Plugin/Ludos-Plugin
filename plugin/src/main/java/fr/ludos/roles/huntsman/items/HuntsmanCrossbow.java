@@ -67,11 +67,11 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, Hun
 	public static class Events extends MultiLevelBranchItem.Events<HuntsmanCrossbow, HuntsmanCrossbowBranch> {
 		private static final List<HuntsmanCrossbowBranch> BRANCHES = Arrays.asList(HuntsmanCrossbowBranches.values());
 
-		public static final String ARROW_TYPE = "arrow_type";
-		public final NamespacedKey arrowTypeKey = new NamespacedKey(Ludos.NAMESPACE, ARROW_TYPE);
+		public static final String ARROW_TYPE_STRING = "arrow_type";
+		public static final NamespacedKey ARROW_TYPE = new NamespacedKey(Ludos.NAMESPACE, ARROW_TYPE_STRING);
 
-		public static final String ARROW_LEVEL = "arrow_level";
-		public final NamespacedKey arrowLevelKey = new NamespacedKey(Ludos.NAMESPACE, ARROW_LEVEL);
+		public static final String ARROW_LEVEL_STRING = "arrow_level";
+		public static final NamespacedKey ARROW_LEVEL = new NamespacedKey(Ludos.NAMESPACE, ARROW_LEVEL_STRING);
 
 		// private BukkitTask saturationTask;
 
@@ -104,8 +104,8 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, Hun
 			arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
 			arrowProjectile.setGravity(false);
 			arrowProjectile.setDamage(4);
-			container.set(arrowTypeKey, PersistentDataType.STRING, branch.id());
-			container.set(arrowLevelKey, PersistentDataType.INTEGER, level);
+			container.set(ARROW_TYPE, PersistentDataType.STRING, branch.id());
+			container.set(ARROW_LEVEL, PersistentDataType.INTEGER, level);
 
 			branch.processShotArrow(arrowProjectile, player, level, event);
 			player.setCooldown(Material.CROSSBOW, 200);
@@ -136,9 +136,12 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, Hun
 
 
 			PersistentDataContainer container = arrow.getPersistentDataContainer();
-			if (container.has(arrowTypeKey, PersistentDataType.STRING) && container.has(arrowLevelKey, PersistentDataType.INTEGER)) {
-				String branchKey = container.get(arrowTypeKey, PersistentDataType.STRING);
-				int levelIdx = container.get(arrowLevelKey, PersistentDataType.INTEGER);
+			if (container.has(ARROW_TYPE, PersistentDataType.STRING) && container.has(ARROW_LEVEL, PersistentDataType.INTEGER)) {
+				String branchKey = container.get(ARROW_TYPE, PersistentDataType.STRING);
+				int levelIdx = container.get(ARROW_LEVEL, PersistentDataType.INTEGER);
+
+				container.remove(ARROW_TYPE);
+				container.remove(ARROW_LEVEL);
 
 				HuntsmanCrossbowBranch branch = getBranches().get(branchKey);
 				if (branch != null) {
