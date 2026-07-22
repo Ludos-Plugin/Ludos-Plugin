@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,38 +37,19 @@ public final class ManhuntTeamController extends GameTeamController {
 	public Team preyTeam;
 	public Team spectatorTeam;
 
+	private final Set<OfflinePlayer> selectedPlayers;
 	private final OfflinePlayer selectedPrey;
-	public OfflinePlayer getSelectedPrey() {
-		return selectedPrey;
-	}
 
+	private OfflinePlayer prey;
+	public OfflinePlayer getPrey() {
+		return prey;
+	}
 
 	public ManhuntTeamController(ManhuntGame game, @Nullable Set<OfflinePlayer> players, @Nullable OfflinePlayer prey) {
 		super(game);
 
-		Set<Player> finalPlayers = game.getGroup().getOnlinePlayers();
-		if (players != null && ! players.isEmpty()) {
-			finalPlayers = finalPlayers.stream()
-				.filter(p -> players.contains(p))
-				.collect(Collectors.toSet());
-
-			if (finalPlayers.isEmpty()) {
-				throw new IllegalArgumentException("No players available (Check if the configured players are online)");
-			}
-		}
-
-		if (prey == null) {
-			OfflinePlayer[] playersArray = finalPlayers.toArray(new OfflinePlayer[finalPlayers.size()]);
-			prey = playersArray[ new Random().nextInt(playersArray.length) ];
-		}
-		else if (!prey.isOnline()) {
-			throw new IllegalArgumentException("Configured Prey is not online");
-		}
-
-		finalPlayers.remove(prey);
-
+		this.selectedPlayers = players;
 		this.selectedPrey = prey;
-
 
 		Scoreboard scoreboard = getGame().getScoreboard();
 
@@ -98,18 +78,37 @@ public final class ManhuntTeamController extends GameTeamController {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		joinPrey(selectedPrey);
 
-		Set<Player> hunters = getGame().getGroup().getOnlinePlayers();
-		hunters.remove(selectedPrey);
+		Set<Player> finalHunters = getGame().getGroup().getOnlinePlayers();
+		if (selectedPlayers != null && ! selectedPlayers.isEmpty()) {
+			finalHunters = finalHunters.stream()
+				.filter(p -> selectedPlayers.contains(p))
+				.collect(Collectors.toSet());
 
-		for (OfflinePlayer hunter : hunters) {
-			if (hunter == null) continue;
+			if (finalHunters.isEmpty()) {
+				throw new IllegalArgumentException("No players available (Check if the configured players are online)");
+			}
+		}
 
-			Player onlineHunter = hunter.getPlayer();
-			if (onlineHunter == null) continue;
+		if (selectedPrey == null) {
+			prey = finalHunters.iterator().next();
+		}
+		else if (! selectedPrey.isOnline()) {
+			throw new IllegalArgumentException("Configured Prey is not online");
+		}
 
-			joinHunter(onlineHunter);
+		finalHunters.remove(prey);
+
+
+		joinPrey(prey);
+
+		for (Player player : getGame().getGroup().getOnlinePlayers()) {
+			if (player == prey) continue;
+			if (finalHunters.contains(player)) {
+				joinHunter(player);
+			} else {
+				joinSpectator(player);
+			}
 		}
 	}
 
@@ -213,7 +212,9 @@ public final class ManhuntTeamController extends GameTeamController {
 		preyTeam.addPlayer(player);
 
 		Player onlinePlayer = player.getPlayer();
-		if (onlinePlayer == null) return;
+		if (onlinePlayer == null) {
+			throw new IllegalArgumentException("Prey offline : " + player.getName());
+		}
 
 		joinAnyPlayer(onlinePlayer, gameLocation);
 

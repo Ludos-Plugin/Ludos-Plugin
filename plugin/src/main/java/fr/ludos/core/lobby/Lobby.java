@@ -21,6 +21,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -78,6 +79,7 @@ public final class Lobby extends GameProcessBase {
 
 	private BukkitTask joinLobbyTask;
 	private BukkitTask startGameTask;
+	private Set<OfflinePlayer> finalPlayersSelection;
 
 
 	private Lobby(Builder builder) {
@@ -106,58 +108,7 @@ public final class Lobby extends GameProcessBase {
 
 		structure = builder.getStructureBuilder().build(builder.location);
 
-		Lobby lobby = this;
-		joinLobbyTask = new BukkitRunnable() {
-			@Override
-			public void run() {
-				Set<OfflinePlayer> allPlayers = builder.getPlayers();
-
-				Set<OfflinePlayer> allPlayersToTeleport = allPlayers.stream()
-					.filter(player ->
-						!player.isOnline() ||
-						!player.getPlayer().getWorld().equals(builder.location.getWorld()) ||
-						!structure.contains(player.getPlayer().getBoundingBox())
-					)
-					.collect(Collectors.toSet());
-
-				if (builder.canStart(lobby) && allPlayersToTeleport.isEmpty()) {
-					players = allPlayers;
-					startGameTask = startOnTimer(
-						builder.getStartingText(),
-						(int) builder.getWaitDuration().toSeconds(),
-						builder::onEnd
-					);
-					cancel();
-					return;
-				}
-
-				for (OfflinePlayer waitedPlayer : allPlayersToTeleport) {
-					Player player = waitedPlayer.getPlayer();
-					if (player == null) continue;
-					if (! player.isOnline()) continue;
-
-					player.teleport(structure.getEntranceLocation());
-					builder.clearMode.handlePlayer(player);
-					if (builder.gameMode != null) player.setGameMode(builder.gameMode);
-				}
-
-
-				Set<Player> waitingPlayers = Utility.getOnline(allPlayers.stream())
-					.filter(player -> player.getWorld().equals(builder.location.getWorld()) )
-					.collect(Collectors.toSet());
-
-				for (Player waitingPlayer : waitingPlayers) {
-					waitingPlayer.sendTitlePart(
-						TitlePart.TIMES,
-						Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ZERO)
-					);
-					waitingPlayer.sendTitlePart(
-						TitlePart.TITLE,
-						builder.getWaitingText()
-					);
-				}
-			}
-		}.runTaskTimer(getPlugin(), 0, 20);
+		startWaitSequence();
 	}
 
 	@Override
@@ -178,6 +129,61 @@ public final class Lobby extends GameProcessBase {
 			startGameTask.cancel();
 		}
 		startGameTask = null;
+	}
+
+	private void startWaitSequence() {
+		Lobby lobby = this;
+		joinLobbyTask = new BukkitRunnable() {
+			@Override
+			public void run() {
+				finalPlayersSelection = builder.getPlayers();
+
+				Set<OfflinePlayer> allPlayersToTeleport = finalPlayersSelection.stream()
+					.filter(player ->
+						!player.isOnline() ||
+						!player.getPlayer().getWorld().equals(builder.location.getWorld()) ||
+						!structure.contains(player.getPlayer().getBoundingBox())
+					)
+					.collect(Collectors.toSet());
+
+				if (builder.canStart(lobby) && allPlayersToTeleport.isEmpty()) {
+					players = finalPlayersSelection;
+					startGameTask = startOnTimer(
+						builder.getStartingText(),
+						(int) builder.getWaitDuration().toSeconds(),
+						builder::onEnd
+					);
+					cancel();
+					return;
+				}
+
+				for (OfflinePlayer waitedPlayer : allPlayersToTeleport) {
+					Player player = waitedPlayer.getPlayer();
+					if (player == null) continue;
+					if (! player.isOnline()) continue;
+
+					player.teleport(structure.getEntranceLocation());
+					builder.clearMode.handlePlayer(player);
+					if (builder.gameMode != null) player.setGameMode(builder.gameMode);
+				}
+
+
+				Set<Player> waitingPlayers = Utility.getOnline(finalPlayersSelection.stream())
+					.filter(player -> player.getWorld().equals(builder.location.getWorld()) )
+					.collect(Collectors.toSet());
+
+				for (Player waitingPlayer : waitingPlayers) {
+					waitingPlayer.sendTitlePart(
+						TitlePart.TIMES,
+						Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ZERO)
+					);
+					waitingPlayer.sendTitlePart(
+						TitlePart.TITLE,
+						builder.getWaitingText()
+					);
+				}
+			}
+		}.runTaskTimer(getPlugin(), 0, 20);
 	}
 
 	private final BukkitTask startOnTimer(Component text, int seconds, Runnable onFinish) {
@@ -237,6 +243,16 @@ public final class Lobby extends GameProcessBase {
 		if (players == null || ! players.contains(player)) return;
 
 		event.setCancelled(true);
+	}
+
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent event) {
+		Player player = event.getPlayer();
+		if (! finalPlayersSelection.contains(player)) return;
+
+		startGameTask.cancel();
+		startGameTask = null;
+		startWaitSequence();
 	}
 
 	/**
