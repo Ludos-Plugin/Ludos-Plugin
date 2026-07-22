@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.attribute.Attribute;
@@ -23,9 +22,7 @@ import org.bukkit.persistence.PersistentDataType;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.SpecialItem;
-import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItem;
-import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.roles.berserker.BerserkerRole;
 import net.kyori.adventure.text.Component;
@@ -35,13 +32,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * Implementation of the Berserker Axe, for use by any Player with {@link BerserkerRole}.
  */
-public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
+public class BerserkerAxe extends LevelItem<BerserkerAxe, BerserkerAxeLevels> {
 	public static final String ID = "berserker_axe";
-
-	@Override
-	public String getTypeId() {
-		return ID;
-	}
 
 	/**
 	 * The variant of a {@link BerserkerAxe}.
@@ -74,87 +66,10 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 	}
 
 
-	public static @Nullable Variant getSpecialItemVariant(ItemStack stack, Game game) {
-		if (stack == null) return null;
-
-		ItemMeta meta = stack.getItemMeta();
-		if (meta == null) return null;
-
-
-		PersistentDataContainer container = meta.getPersistentDataContainer();
-
-		if (! container.has(VARIANT_KEY, PersistentDataType.INTEGER) ) return null;
-
-		return Variant.fromKey(container.get(VARIANT_KEY, PersistentDataType.INTEGER));
-	}
-
-
-	@Nullable
-	public static BerserkerAxe getItem(Events events, ItemStack stack, Game game) {
-		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// BerserkerAxe cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-
-		LevelValue levelValue = LevelItemInterface.levelFromItemStack(stack, game);
-		if (levelValue == null) return null;
-		Variant variant = getSpecialItemVariant(stack, game);
-		if (variant == null) return null;
-
-		BerserkerAxe axe = new BerserkerAxe(events, variant, levelValue, stack, owner, game);
-		// cachedItems.put(itemId, axe);
-
-		return axe;
-	}
-
-	public static BerserkerAxe createItem(Events events, Variant variant, LevelValue level, Player owner, Game game) {
-		BerserkerAxeLevels lvl = BerserkerAxeLevels.values()[level.level()];
-		Material mat = lvl.getMaterialForVariant(variant);
-		BerserkerAxe axe = new BerserkerAxe(events, variant, level, new ItemStack(mat), owner, game);
-		UUID itemId = axe.initializeItem();
-
-		// cachedItems.put(itemId, axe);
-
-		return axe;
-	}
-
-
-	protected BerserkerAxe(Events events, Variant variant, LevelValue level, ItemStack stack, Player owner, Game game) throws IllegalArgumentException {
-		super(events.getLevels(), level, stack, owner, game);
+	protected BerserkerAxe(Variant variant, LevelItem.ItemData<BerserkerAxeLevels> info, Events events) throws IllegalArgumentException {
+		super(info, events);
 
 		this.variant = variant;
-	}
-
-
-	@Override
-	protected void onInitialize() {
-		super.onInitialize();
-		ItemMeta meta = getStack().getItemMeta();
-
-		meta.getPersistentDataContainer().set(VARIANT_KEY, PersistentDataType.INTEGER, variant.key());
-
-		// Set damage to sword baseline: 1 (base) + 5 = 6 damage, same as iron sword
-		if (variant == Variant.FIRST) {
-			// meta.addAttributeModifier(
-			// 	Attribute.GENERIC_ATTACK_DAMAGE,
-			// 	new AttributeModifier(DAMAGE_MODIFIER_ID, "berserker_axe_damage", BASE_DAMAGE_BONUS, Operation.ADD_NUMBER, EquipmentSlot.HAND)
-			// );
-		} else {
-			meta.addAttributeModifier(
-				Attribute.GENERIC_ATTACK_DAMAGE,
-				new AttributeModifier(UUID.randomUUID(), "berserker_variant_axe_extra_damage", -3.0, Operation.ADD_NUMBER, EquipmentSlot.OFF_HAND)
-			);
-			meta.addAttributeModifier(
-				Attribute.GENERIC_ATTACK_SPEED,
-				new AttributeModifier(UUID.randomUUID(), "berserker_variant_axe_less_speed", 0.5, Operation.ADD_NUMBER, EquipmentSlot.OFF_HAND)
-			);
-		}
-
-		getStack().setItemMeta(meta);
 	}
 
 	@Override
@@ -192,11 +107,14 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 	 */
 	public static class Events extends LevelItem.Events<BerserkerAxe, BerserkerAxeLevels> {
 		private static final List<BerserkerAxeLevels> LEVELS = List.of(BerserkerAxeLevels.values());
-		private final BerserkerRole role;
 
-		public Events(Game game, BerserkerRole role) {
+		public Events(Game game) {
 			super(game, new Events.Info());
-			this.role = role;
+		}
+
+		@Override
+		public String getTypeId() {
+			return ID;
 		}
 
 		@Override
@@ -221,12 +139,16 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 				|| (offHandAxe != null && offHandAxe.getVariant() == Variant.SECOND);
 
 			if (!hasFirst) {
-				player.getInventory().addItem(createItem(Variant.FIRST, playerLevel, player).getStack());
+				createVariant = Variant.FIRST;
+				player.getInventory().addItem(createItem(player).getStack());
 			}
 
 			if (!hasSecond) {
 				ItemStack currentOffHand = player.getInventory().getItemInOffHand();
-				BerserkerAxe secondAxe = createItem(Variant.SECOND, playerLevel, player);
+
+				createVariant = Variant.SECOND;
+				BerserkerAxe secondAxe = createItem(player);
+
 				if (currentOffHand == null || currentOffHand.getType().isAir()) {
 					player.getInventory().setItemInOffHand(secondAxe.getStack());
 				} else {
@@ -254,17 +176,66 @@ public class BerserkerAxe extends LevelItem<BerserkerAxeLevels> {
 		}
 
 		@Override
-		@Nullable
-		public BerserkerAxe getItem(ItemStack stack) {
-			return BerserkerAxe.getItem(this, stack, game);
+		protected BerserkerAxe getItemInternal(LevelItem.ItemData<BerserkerAxeLevels> info) {
+			Variant variant = getSpecialItemVariant(info.info().stack());
+			if (variant == null) return null;
+
+			return new BerserkerAxe(variant, info, this);
 		}
 
-		@Override
-		public BerserkerAxe createItem(LevelValue level, Player owner) {
-			return createItem(Variant.FIRST, level, owner);
+		public final BerserkerAxe createItemInternal(Variant variant, LevelData<BerserkerAxeLevels> data, Player owner) {
+			BerserkerAxeLevels currentLevel = data.getCurrentLevelOr(BerserkerAxeLevels.IRON);
+			BerserkerAxe created = new BerserkerAxe(variant,
+				new LevelItem.ItemData<>(
+					data,
+					new SpecialItem.ItemData(new ItemStack(
+						currentLevel.getMaterialForVariant(variant)
+					), owner)
+				), this
+			);
+			ItemMeta meta = created.getStack().getItemMeta();
+
+			meta.getPersistentDataContainer().set(VARIANT_KEY, PersistentDataType.INTEGER, variant.key());
+
+			// Set damage to sword baseline: 1 (base) + 5 = 6 damage, same as iron sword
+			if (variant == Variant.FIRST) {
+				// meta.addAttributeModifier(
+				// 	Attribute.GENERIC_ATTACK_DAMAGE,
+				// 	new AttributeModifier(DAMAGE_MODIFIER_ID, "berserker_axe_damage", BASE_DAMAGE_BONUS, Operation.ADD_NUMBER, EquipmentSlot.HAND)
+				// );
+			} else {
+				meta.addAttributeModifier(
+					Attribute.GENERIC_ATTACK_DAMAGE,
+					new AttributeModifier(UUID.randomUUID(), "berserker_variant_axe_extra_damage", -3.0, Operation.ADD_NUMBER, EquipmentSlot.OFF_HAND)
+				);
+				meta.addAttributeModifier(
+					Attribute.GENERIC_ATTACK_SPEED,
+					new AttributeModifier(UUID.randomUUID(), "berserker_variant_axe_less_speed", 0.5, Operation.ADD_NUMBER, EquipmentSlot.OFF_HAND)
+				);
+			}
+
+			created.getStack().setItemMeta(meta);
+
+			return created;
 		}
-		public BerserkerAxe createItem(Variant variant, LevelValue level, Player owner) {
-			return BerserkerAxe.createItem(this, variant, level, owner, game);
+
+		private Variant createVariant = Variant.FIRST;
+		@Override
+		protected BerserkerAxe createItemInternal(LevelData<BerserkerAxeLevels> data, Player owner) {
+			return createItemInternal(createVariant, data, owner);
+		}
+
+		public static @Nullable Variant getSpecialItemVariant(ItemStack stack) {
+			if (stack == null) return null;
+
+			ItemMeta meta = stack.getItemMeta();
+			if (meta == null) return null;
+
+
+			PersistentDataContainer container = meta.getPersistentDataContainer();
+
+			if (! container.has(VARIANT_KEY, PersistentDataType.INTEGER) ) return null;
+			return Variant.fromKey(container.get(VARIANT_KEY, PersistentDataType.INTEGER));
 		}
 
 		@Override

@@ -3,7 +3,6 @@ package fr.ludos.roles.harvester.items;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -30,10 +29,9 @@ import fr.ludos.core.Utility;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.ItemUtilities;
+import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItem;
-import fr.ludos.core.item.level.LevelItemInterface;
-import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.roles.harvester.HarvesterRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -42,7 +40,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * Implementation of the Huntsman Scythe, for use by any Player with {@link HarvesterRole}.
  */
-public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
+public class HarvesterScythe extends LevelItem<HarvesterScythe, HarvesterScytheLevels> {
 	public static final String ID = "harvester_scythe";
 
 	private static final int WALL_COOLDOWN_TICKS = 20 * 8;
@@ -50,44 +48,8 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 	private static final int WALL_WIDTH = 5;
 	private static final int WALL_HEIGHT = 3;
 
-	// private final static Map<UUID, HarvesterScythe> cachedItems = new HashMap();
-
-
-	public static HarvesterScythe fromItemStack(List<HarvesterScytheLevels> levels, ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// HarvesterScythe cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-		LevelValue levelValue = LevelItemInterface.levelFromItemStack(stack, game);
-		if (levelValue == null) return null;
-
-		HarvesterScythe harvesterScythe = new HarvesterScythe(levels, levelValue, stack, owner, game);
-		// cachedItems.put(itemId, harvesterScythe);
-
-		return harvesterScythe;
-	}
-
-	public static HarvesterScythe createItem(List<HarvesterScytheLevels> levels, LevelValue level, Player owner, Game game) {
-		HarvesterScytheLevels lvl = levels.get(level.level());
-		HarvesterScythe harvesterScythe = new HarvesterScythe(levels, level, new ItemStack(lvl.getMaterial()), owner, game);
-		UUID itemId = harvesterScythe.initializeItem();
-
-		// cachedItems.put(itemId, harvesterScythe);
-
-		return harvesterScythe;
-	}
-
-	protected HarvesterScythe(List<HarvesterScytheLevels> levels, LevelValue level, ItemStack stack, Player owner, Game game) {
-		super(levels, level, stack, owner, game);
-	}
-
-	@Override
-	public String getTypeId() {
-		return ID;
+	HarvesterScythe(LevelItem.ItemData<HarvesterScytheLevels> info, Events events) {
+		super(info, events);
 	}
 
 	@Override
@@ -191,19 +153,24 @@ public class HarvesterScythe extends LevelItem<HarvesterScytheLevels> {
 		}
 
 		@Override
+		public String getTypeId() {
+			return ID;
+		}
+
+		@Override
 		public List<HarvesterScytheLevels> getLevels() {
 			return LEVELS;
 		}
 
 		@Override
-		public HarvesterScythe createItem(LevelValue level, Player owner) {
-			return HarvesterScythe.createItem(LEVELS, level, owner, game);
+		protected HarvesterScythe getItemInternal(ItemData<HarvesterScytheLevels> info) {
+			return new HarvesterScythe(info, this);
 		}
 
 		@Override
-		@Nullable
-		public HarvesterScythe getItem(ItemStack stack) {
-			return HarvesterScythe.fromItemStack(LEVELS, stack, game);
+		protected HarvesterScythe createItemInternal(LevelData<HarvesterScytheLevels> data, Player owner) {
+			HarvesterScytheLevels currentLevel = data.getCurrentLevelOr(HarvesterScytheLevels.WOODEN);
+			return new HarvesterScythe(new ItemData<>(data, new SpecialItem.ItemData(new ItemStack(currentLevel.getMaterial()) , owner)), this);
 		}
 
 		@EventHandler

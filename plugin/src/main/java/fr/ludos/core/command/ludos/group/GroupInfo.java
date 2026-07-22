@@ -9,9 +9,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.group.GroupManager;
 
 /**
  * {@link Subcommand} to get info about the current {@link Group}, as a member.
@@ -19,9 +19,9 @@ import fr.ludos.core.group.Group;
 public class GroupInfo implements Subcommand {
 	private final static String ID = "info";
 
-	private final Ludos ludos;
-	public GroupInfo(Ludos ludos) {
-		this.ludos = ludos;
+	private final GroupManager manager;
+	public GroupInfo(GroupManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class GroupInfo implements Subcommand {
 			return true;
 		}
 
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
+		Group group = manager.getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
@@ -55,7 +55,7 @@ public class GroupInfo implements Subcommand {
 		return null;
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "";
 	}
 	@Override

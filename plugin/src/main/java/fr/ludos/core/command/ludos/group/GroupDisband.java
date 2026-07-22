@@ -7,10 +7,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.group.GroupManager;
 
 /**
  * {@link Subcommand} to disband the current {@link Group}, as the Group leader.
@@ -18,9 +18,9 @@ import fr.ludos.core.group.Group;
 public class GroupDisband implements Subcommand {
 	private final static String ID = "disband";
 
-	private final Ludos ludos;
-	public GroupDisband(Ludos ludos) {
-		this.ludos = ludos;
+	private final GroupManager manager;
+	public GroupDisband(GroupManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public class GroupDisband implements Subcommand {
 			return true;
 		}
 
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
+		Group group = manager.getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
@@ -53,7 +53,7 @@ public class GroupDisband implements Subcommand {
 
 		group.disband();
 
-		ludos.saveConfig();
+		manager.saveConfig();
 
 		return true;
 	}
@@ -62,7 +62,7 @@ public class GroupDisband implements Subcommand {
 		return null;
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "";
 	}
 	@Override

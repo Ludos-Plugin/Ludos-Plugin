@@ -3,23 +3,21 @@ package fr.ludos.roles.huntsman.items;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.CrossbowMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
-import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -27,44 +25,14 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * A simple non-throwable, infinite source of arrows, notably for {@link HuntsmanBow}s and {@link HuntsmanCrossbow}s.
  */
-public class HuntsmanArrow extends SpecialItem {
+public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 	public final static String ID = "huntsman_arrow";
 
-	// private final static Map<UUID, HuntsmanArrow> cachedItems = new HashMap<>();
 
-
-	public static @Nullable HuntsmanArrow fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// HuntsmanArrow cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-
-		HuntsmanArrow arrow = new HuntsmanArrow(stack, owner, game);
-		// cachedItems.put(itemId, arrow);
-
-		return arrow;
-	}
-	public static HuntsmanArrow createItem(Player owner, Game game) {
-		HuntsmanArrow arrow = new HuntsmanArrow(new ItemStack(Material.ARROW), owner, game);
-		UUID itemId = arrow.initializeItem();
-		// cachedItems.put(itemId, arrow);
-
-		return arrow;
+	protected HuntsmanArrow(SpecialItem.ItemData info, Events events) {
+		super(info, events);
 	}
 
-	protected HuntsmanArrow(ItemStack stack, Player owner, Game game) {
-		super(stack, owner, game);
-	}
-
-
-	@Override
-	public String getTypeId() {
-		return ID;
-	}
 
 	@Override
 	public Component getName(){
@@ -85,13 +53,18 @@ public class HuntsmanArrow extends SpecialItem {
 		private final int reloadTime;
 
 		public Events(Game game, Integer arrowMagazineSize, int reloadTime) {
-			super(game, new Events.Info(ItemSlot.BOT_9));
+			super(game, new Events.Info(ItemSlot.HOTBAR_9));
 			this.arrowMagazineSize = arrowMagazineSize;
 			this.reloadTime = reloadTime;
 		}
 
 		public Events(Game game) {
 			this(game, null, 20 * 3);
+		}
+
+		@Override
+		public String getTypeId() {
+			return ID;
 		}
 
 
@@ -101,7 +74,7 @@ public class HuntsmanArrow extends SpecialItem {
 			if (! isPlayerValid(player)) return;
 
 			ItemStack launcher = event.getBow();
-			List<HuntsmanArrow> arrows = findAllIn(player.getInventory(), (ItemStack stack) -> getItem(stack));
+			List<HuntsmanArrow> arrows = findAllIn(player.getInventory(), this::getItem);
 
 			// prevent arrow consumption or restore count if not possible
 			if (arrowMagazineSize == null) {
@@ -123,11 +96,92 @@ public class HuntsmanArrow extends SpecialItem {
 				return;
 			}
 
+			consumeArrow(player, arrows);
+		}
+
+		private void consumeArrow(Player player, List<HuntsmanArrow> arrows) {
+			int amount = countArrows(player, arrows);
+
+			if (amount - 1 > 0) return;
+
+			reload(player, arrows);
+		}
+
+		private void reload(Player player, List<HuntsmanArrow> arrows) {
+			if (player.getCooldown(Material.BOW) < reloadTime) player.setCooldown(Material.BOW, reloadTime);
+			if (player.getCooldown(Material.CROSSBOW) < reloadTime) player.setCooldown(Material.CROSSBOW, reloadTime);
+			if (player.getCooldown(Material.ARROW) < reloadTime) player.setCooldown(Material.ARROW, reloadTime);
+
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					PlayerInventory inventory = player.getInventory();
+					for (HuntsmanArrow arrow : arrows) {
+						inventory.remove(arrow.getStack());
+					}
+					HuntsmanArrow arrow = createItem(player);
+					ItemSlot.setItemInInventory(getInfo().slot(), arrow.getStack(), inventory);
+				}
+			}.runTaskLater(game.getPlugin(), reloadTime);
+		}
+		private void clearAndReload(Player player) {
+			PlayerInventory inventory = player.getInventory();
+			List<HuntsmanArrow> arrows = findAllIn(inventory, this::getItem);
+
+			int amount = countArrows(player, arrows);
+
+			if (arrowMagazineSize != null && amount >= arrowMagazineSize) return;
+
+			reload(player, arrows);
+		}
+
+		@EventHandler
+		public void onPlayerReload(PlayerDropItemEvent event) {
+			Player player = event.getPlayer();
+			if (! isPlayerValid(player)) return;
+
+			if (arrowMagazineSize == null) return;
+
+			switch (event.getItemDrop().getItemStack().getType()) {
+				case BOW:
+				case CROSSBOW:
+				case ARROW:
+					event.setCancelled(true);
+					clearAndReload(player);
+					break;
+				default:
+					break;
+			}
+		}
+
+		@Override
+		protected HuntsmanArrow getItemInternal(ItemData info) {
+			return new HuntsmanArrow(info, this);
+		}
+
+		@Override
+		protected HuntsmanArrow createItemInternal(Player owner) {
+			return new HuntsmanArrow(new ItemData(createStack(), owner), this);
+		}
+
+		private final ItemStack createStack() {
+			if (arrowMagazineSize == null) {
+				return new ItemStack(Material.ARROW);
+			}
+			return new ItemStack(Material.ARROW, arrowMagazineSize);
+		}
+
+		@Override
+		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
+			return game.getLudos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
+		}
+
+		private int countArrows(Player player, List<HuntsmanArrow> arrows) {
 			// count arrow stacks
 			int amount = arrows.stream()
 				.mapToInt(item -> item.getStack().getAmount())
 				.sum();
-			// count loaded arrows in crossbow
+			// count loaded arrows in crossbows
 			amount += Arrays.stream(player.getInventory().getContents())
 				.filter(item -> item != null && item.getType() == Material.CROSSBOW)
 				.mapToInt(item -> {
@@ -139,40 +193,7 @@ public class HuntsmanArrow extends SpecialItem {
 					return 0;
 				})
 				.sum();
-
-			if (amount - 1 > 0) return;
-
-			// reload
-			if (player.getCooldown(Material.BOW) < reloadTime) player.setCooldown(Material.BOW, reloadTime);
-			if (player.getCooldown(Material.CROSSBOW) < reloadTime) player.setCooldown(Material.CROSSBOW, reloadTime);
-			if (player.getCooldown(Material.ARROW) < reloadTime) player.setCooldown(Material.ARROW, reloadTime);
-
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					HuntsmanArrow arrow = createItem(player);
-					arrow.getStack().setAmount(arrowMagazineSize);
-
-					player.getInventory().addItem(arrow.getStack());
-				}
-			}.runTaskLater(game.getPlugin(), reloadTime);
-		}
-
-
-		@Override
-		@Nullable
-		public HuntsmanArrow getItem(ItemStack stack) {
-			return HuntsmanArrow.fromItemStack(stack, game);
-		}
-		@Override
-		public HuntsmanArrow createItem(Player owner) {
-			HuntsmanArrow arrow = HuntsmanArrow.createItem(owner, game);
-			arrow.getStack().setAmount(arrowMagazineSize == null ? 64 : arrowMagazineSize);
-			return arrow;
-		}
-		@Override
-		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.getLudos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
+			return amount;
 		}
 	}
 }

@@ -7,9 +7,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.group.GroupManager;
 
 /**
  * {@link Subcommand} to leave the current {@link Group}, as any Group member.
@@ -17,9 +17,9 @@ import fr.ludos.core.group.Group;
 public class GroupLeave implements Subcommand {
 	private final static String ID = "leave";
 
-	private final Ludos ludos;
-	public GroupLeave(Ludos ludos) {
-		this.ludos = ludos;
+	private final GroupManager manager;
+	public GroupLeave(GroupManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class GroupLeave implements Subcommand {
 			return true;
 		}
 
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
+		Group group = manager.getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
@@ -46,7 +46,7 @@ public class GroupLeave implements Subcommand {
 
 		group.removePlayer(player, false);
 
-		ludos.saveConfig();
+		manager.saveConfig();
 
 		return true;
 	}
@@ -55,7 +55,7 @@ public class GroupLeave implements Subcommand {
 		return null;
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "";
 	}
 	@Override

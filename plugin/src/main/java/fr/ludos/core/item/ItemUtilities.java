@@ -10,8 +10,10 @@ import org.bukkit.entity.LivingEntity;
  */
 public class ItemUtilities {
 
+	private ItemUtilities() {}
+
 	public static Boolean isBreakable(Block block) {
-		return block.getType().isSolid() && ! block.getType().isAir() && block.getType().getHardness() >= 0;
+		return ! block.getType().isAir() && block.getType().isSolid() && block.getType().getHardness() >= 0;
 	}
 
 	public static void doSweepAttack(HumanEntity attacker, LivingEntity primaryTarget, double damage, int enchantmentLevel, double horizontalRange) {
@@ -22,7 +24,7 @@ public class ItemUtilities {
 			double sweepDamage = 1.0 + damage * (doubleEnchantmentLevel / (doubleEnchantmentLevel + 1.0));
 
 			attacker.getNearbyEntities(horizontalRange, 0.25, horizontalRange).forEach(nearby -> {
-				if (nearby != primaryTarget && nearby instanceof LivingEntity nearbyEntity) {
+				if (nearby instanceof LivingEntity nearbyEntity) {
 					nearbyEntity.damage(sweepDamage);
 				}
 			});

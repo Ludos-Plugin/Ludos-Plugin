@@ -61,7 +61,7 @@ public class RoleReset implements Subcommand {
 		return null;
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "[player]";
 	}
 	@Override

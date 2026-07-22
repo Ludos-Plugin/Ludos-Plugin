@@ -188,14 +188,14 @@ public final class Group {
 		}
 		this.memberIds.clear();
 	}
-	private final boolean electNewLeader() {
-		Set<UUID> currentMemberIds = memberIds;
-		if (currentMemberIds.isEmpty()) return false;
 
-		UUID newLeaderId = currentMemberIds.iterator().next();
+
+	private boolean promoteToLeader(UUID newLeaderId) {
+		UUID currentLeader = getLeaderId();
 
 		this.leaderId = newLeaderId;
 		memberIds.remove(newLeaderId);
+		memberIds.add(currentLeader);
 		getManager().writeAllToConfig(this);
 
 		Component promotionMessage = Component.text("You have been promoted to group leader.");
@@ -211,35 +211,22 @@ public final class Group {
 
 		return true;
 	}
+	public boolean promoteToLeader(OfflinePlayer newLeader) {
+		return promoteToLeader(newLeader.getUniqueId());
+	}
 
-	public final boolean demoteLeader() {
-		OfflinePlayer oldLeader = getLeader();
+	private final boolean electNewLeader() {
+		Set<UUID> currentMemberIds = memberIds;
+		if (currentMemberIds.isEmpty()) return false;
 
-		if (electNewLeader()) {
-			Player onlineLeader = oldLeader.getPlayer();
-			memberIds.add(oldLeader.getUniqueId());
-			getManager().writeMembersToConfig(this);
+		UUID newLeaderId = currentMemberIds.iterator().next();
 
-			Component demoteMessage = Component.text(getLeader().getName() + " has been promoted to leader.");
-			onlineLeader.sendMessage(demoteMessage);
-
-			return true;
-		}
-
-		return false;
+		return promoteToLeader(newLeaderId);
 	}
 
 	public final boolean addPlayer(OfflinePlayer player) {
 		Player onlinePlayer = player.getPlayer();
-		if (isPlayer(player)) {
-
-			if (onlinePlayer != null) {
-				Component alreadyJoinedMessage = Component.text("You are already in this group.");
-				onlinePlayer.sendMessage(alreadyJoinedMessage);
-			}
-
-			return false;
-		}
+		if (isPlayer(player)) return false;
 
 		Group currentGroup = getManager().getGroupOfPlayer(player);
 		if (currentGroup != null) {
@@ -292,7 +279,6 @@ public final class Group {
 			}
 			else {
 				disband();
-				playerLeftMessage = Component.text("You have left the group. Since you were the leader and there are no more members, the group has been disbanded.");
 			}
 		} else {
 			removeMemberInternalPersistent(player);
@@ -314,7 +300,9 @@ public final class Group {
 			);
 		}
 
-		Component leaveMessage = Component.text(player.getName() + " has left the group.");
+		Component leaveMessage = kick
+			? Component.text(player.getName() + " has been kicked from the group.")
+			: Component.text(player.getName() + " has left the group.");
 		for (Player member : getOnlinePlayers()) {
 			member.sendMessage(leaveMessage);
 		}

@@ -3,13 +3,15 @@ package fr.ludos.core.item;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
@@ -33,20 +35,33 @@ import org.bukkit.persistence.PersistentDataType;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
+import fr.ludos.other.ExcludeFromJacocoGeneratedReport;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 /**
  * A {@link SpecialItemInterface} wrapper for an Item ({@link ItemStack}).
+ * @param <T> self type
  */
-public abstract class SpecialItem implements SpecialItemInterface {
+public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialItemInterface {
 	public static final int USAGE_COOLDOWN = 4;
 
-	private final Game game;
-	public Game getGame() { return game; }
+	private final Events<T> events;
+	public Events<T> getEvents() { return events; }
+	public Game getGame() { return events.getGame(); }
 
-	private final ItemStack stack;
+	@Override
+	public final String getTypeId() {
+		return events.getTypeId();
+	}
+
+	private final UUID itemId;
+	public final UUID getItemId() {
+		return itemId;
+	}
+
+	ItemStack stack;
 	public ItemStack getStack() {
 		return stack;
 	}
@@ -56,35 +71,12 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		return owner;
 	}
 
-	protected SpecialItem(ItemStack stack, Player owner, Game game) {
-		this.game = game;
-		this.stack = stack;
-		this.owner = owner;
+	protected SpecialItem(ItemData info, Events<T> events) {
+		this.itemId = Objects.requireNonNull(info.itemId);
+		this.owner = Objects.requireNonNull(info.owner);
+		this.stack = Objects.requireNonNull(info.stack);
+		this.events = Objects.requireNonNull(events);
 	}
-	protected final UUID initializeItem() {
-		ItemMeta meta = stack.getItemMeta();
-
-		meta.setUnbreakable(true);
-		meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-
-		UUID itemId = UUID.randomUUID();
-
-		PersistentDataContainer container = meta.getPersistentDataContainer();
-		container.set(OWNER_KEY, PersistentDataType.STRING, owner.getUniqueId().toString());
-		container.set(TYPE_ID_KEY, PersistentDataType.STRING, getTypeId());
-		container.set(ITEM_ID_KEY, PersistentDataType.STRING, itemId.toString());
-
-		stack.setItemMeta(meta);
-
-		updateName();
-		updateLore();
-
-		onInitialize();
-
-		return itemId;
-	}
-
-	protected void onInitialize() { }
 
 
 	public void updateName() {
@@ -106,7 +98,8 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		updateLore();
 	}
 
-	protected final boolean refreshUseCooldown() {
+	@ExcludeFromJacocoGeneratedReport // Tested, but not picked up by Jacoco
+	public final boolean refreshUseCooldown() {
 		Player owner = getOwner();
 		Material itemType = getStack().getType();
 
@@ -121,6 +114,17 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (! (obj instanceof SpecialItem item)) return false;
+		if (getClass() != obj.getClass()) return false;
+
+		return
+			getItemId().equals(item.getItemId()) &&
+			getTypeId().equals(item.getTypeId()) &&
+			getOwner().getUniqueId().equals(item.getOwner().getUniqueId());
+	}
+
 	/**
 	 * Check for the presence of any number of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
 	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
@@ -128,12 +132,11 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}.<br>
 	 * @return Whether or not the provided inventory contains at least one instance of {@link SpecialItem} type T
 	 */
-	public static <T extends SpecialItem> Boolean containedIn(Inventory inventory, Function<ItemStack, T> constructor) {
+	public static <T extends SpecialItem<T>> Boolean containedIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		ItemStack[] items = inventory.getContents();
 		for (ItemStack item : items) {
-			if (item == null) {
-				continue;
-			}
+			if (item == null) continue;
+
 			T specialItem = constructor.apply(item);
 			if (specialItem != null) {
 				return true;
@@ -152,7 +155,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	 * @return The first Special Item of type T found in the inventory or null if there is none
 	 */
 	@Nullable
-	public static <T extends SpecialItem> T findIn(Inventory inventory, Function<ItemStack, T> constructor) {
+	public static <T extends SpecialItem<T>> T findIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		return findIn(Arrays.asList(inventory.getContents()), constructor);
 	}
 	/**
@@ -163,7 +166,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
 	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
 	 */
-	public static <T extends SpecialItem> List<T> findAllIn(Inventory inventory, Function<ItemStack, T> constructor) {
+	public static <T extends SpecialItem<T>> List<T> findAllIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		return findAllIn(Arrays.asList(inventory.getContents()), constructor);
 	}
 
@@ -175,7 +178,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
 	 * @return The first Special Item of type T found in the inventory or null if there is none
 	 */
-	public static <T extends SpecialItem> T findIn(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
+	public static <T extends SpecialItem<T>> T findIn(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
 		for (ItemStack item : items) {
 			if (item == null) continue;
 
@@ -193,7 +196,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
 	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
 	 */
-	public static <T extends SpecialItem> List<T> findAllIn(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
+	public static <T extends SpecialItem<T>> List<T> findAllIn(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
 		ArrayList<T> results = new ArrayList<>();
 		for (ItemStack item : items) {
 			if (item == null) continue;
@@ -205,7 +208,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		return Collections.unmodifiableList(results);
 	}
 
-	public static <T extends SpecialItem, TData> Component buildDataLore(String label, TData data) {
+	public static <T extends SpecialItem<T>, TData> Component buildDataLore(String label, TData data) {
 		return
 			Component.text(label + ": ")
 				.color(NamedTextColor.GRAY)
@@ -217,11 +220,31 @@ public abstract class SpecialItem implements SpecialItemInterface {
 	}
 
 	/**
+	 * Information about a {@link SpecialItem}, such as its specific ID and owner.
+	 * @param stack
+	 * @param itemId
+	 * @param owner
+	 */
+	public static record ItemData(
+		UUID itemId,
+		ItemStack stack,
+		Player owner
+	) {
+		public ItemData(ItemStack stack, Player owner) {
+			this(UUID.randomUUID(), stack, owner);
+		}
+	}
+
+	/**
 	 * Events for the {@link T} {@link SpecialItem} type.
 	 * @param <T> The {@link SpecialItem} Type to work on.
 	 */
-	public static abstract class Events<T extends SpecialItem> extends GameEvents {
+	public static abstract class Events<T extends SpecialItem<T>> extends GameEvents {
+		protected final Map<UUID, T> CACHED = new HashMap<>();
 		private final Info info;
+		public final Info getInfo() {
+			return this.info;
+		}
 
 		protected Events(Game game, Info info) {
 			super(game);
@@ -229,6 +252,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 			this.info = info;
 		}
 
+		public abstract String getTypeId();
 
 		@Override
 		protected final void onInit() {
@@ -268,8 +292,50 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		protected void onItemStop() { }
 
 
-		public abstract @Nullable T getItem(ItemStack stack);
-		public abstract T createItem(Player owner);
+		protected abstract @Nullable T getItemInternal(SpecialItem.ItemData info);
+		public final @Nullable T getItem(ItemStack stack) {
+			UUID itemId = SpecialItemInterface.getSpecialItemId(stack, getTypeId(), game);
+			if (itemId == null) return null;
+
+			Player owner = SpecialItemInterface.getSpecialItemOwner(stack);
+			if (owner == null) return null;
+
+			T cached = CACHED.get(itemId);
+			if (cached != null) {
+				cached.stack = stack; // Stack is a different instance, every time
+				return cached;
+			}
+
+			T got = getItemInternal(new SpecialItem.ItemData(itemId, stack, owner));
+			CACHED.put(itemId, got);
+
+			return got;
+		}
+
+		protected abstract T createItemInternal(Player owner);
+		public final T createItem(Player owner) {
+			T item = createItemInternal(owner);
+
+			ItemMeta meta = item.getStack().getItemMeta();
+
+			meta.setUnbreakable(true);
+			meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+
+
+			PersistentDataContainer container = meta.getPersistentDataContainer();
+			container.set(OWNER_KEY, PersistentDataType.STRING, owner.getUniqueId().toString());
+			container.set(TYPE_ID_KEY, PersistentDataType.STRING, getTypeId());
+			container.set(ITEM_ID_KEY, PersistentDataType.STRING, item.getItemId().toString());
+
+			item.getStack().setItemMeta(meta);
+
+			item.updateName();
+			item.updateLore();
+
+			CACHED.put(item.getItemId(), item);
+
+			return item;
+		}
 
 		public final Boolean isPlayerValid(OfflinePlayer player) {
 			if (! game.getGroup().isPlayer(player)) return false;
@@ -299,32 +365,32 @@ public abstract class SpecialItem implements SpecialItemInterface {
 			}
 		}
 
-		public void removeFromPLayerInventory(Player player) {
+		public void removeFromPlayerInventory(Player player) {
 			PlayerInventory inventory = player.getInventory();
 			for(T item : SpecialItem.findAllIn(inventory, this::getItem)) {
 				inventory.remove(item.getStack());
 
-				if (inventory.getItemInOffHand().equals(item.getStack())) {
-					inventory.setItemInOffHand(null);
-				}
-				else if (inventory.getHelmet() != null && inventory.getHelmet().equals(item.getStack())) {
+				if (item.getStack().equals(inventory.getHelmet())) {
 					inventory.setHelmet(null);
 				}
-				else if (inventory.getChestplate() != null && inventory.getChestplate().equals(item.getStack())) {
+				else if (item.getStack().equals(inventory.getChestplate())) {
 					inventory.setChestplate(null);
 				}
-				else if (inventory.getLeggings() != null && inventory.getLeggings().equals(item.getStack())) {
+				else if (item.getStack().equals(inventory.getLeggings())) {
 					inventory.setLeggings(null);
 				}
-				else if (inventory.getBoots() != null && inventory.getBoots().equals(item.getStack())) {
+				else if (item.getStack().equals(inventory.getBoots())) {
 					inventory.setBoots(null);
+				}
+				else if (item.getStack().equals(inventory.getItemInOffHand())) {
+					inventory.setItemInOffHand(null);
 				}
 			}
 		}
 
 		public void removeFromAllInventories() {
 			for (Player player : getGame().getGroup().getOnlinePlayers()) {
-				removeFromPLayerInventory(player);
+				removeFromPlayerInventory(player);
 			}
 		}
 
@@ -341,7 +407,7 @@ public abstract class SpecialItem implements SpecialItemInterface {
 
 		public static void removeFromPlayerInventory(Game game, Player player) {
 			for (SpecialItem.Events<?> itemEvents : game.getActiveItems()) {
-				itemEvents.removeFromPLayerInventory(player);
+				itemEvents.removeFromPlayerInventory(player);
 			}
 		}
 
@@ -356,7 +422,6 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		public void onPlayerDropItem(PlayerDropItemEvent event) {
 			if (info.canDrop()) return;
 			Player player = event.getPlayer();
-			if (! game.getGroup().isPlayer(player)) return;
 			if (! isPlayerValid(player)) return;
 
 			ItemStack item = event.getItemDrop().getItemStack();
@@ -370,9 +435,8 @@ public abstract class SpecialItem implements SpecialItemInterface {
 		public void onInventoryClickItem(InventoryClickEvent event) {
 			if (info.canDrop()) return;
 			HumanEntity entity = event.getWhoClicked();
-			Player player = Bukkit.getPlayer(entity.getUniqueId());
-			if (player == null) return;
-			if (! game.getGroup().isPlayer(player)) return;
+			if (! (entity instanceof Player player)) return;
+
 			if (! isPlayerValid(player)) return;
 
 			ItemStack item = event.getCursor();

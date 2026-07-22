@@ -7,11 +7,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.CommandUtility;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.Group.AddPlayerMethod;
+import fr.ludos.core.group.GroupManager;
 
 /**
  * {@link Subcommand} to create a new {@link Group}, and join it as leader.
@@ -19,9 +19,9 @@ import fr.ludos.core.group.Group.AddPlayerMethod;
 public class GroupCreate implements Subcommand {
 	private final static String ID = "create";
 
-	private final Ludos ludos;
-	public GroupCreate(Ludos ludos) {
-		this.ludos = ludos;
+	private final GroupManager manager;
+	public GroupCreate(GroupManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
@@ -40,14 +40,14 @@ public class GroupCreate implements Subcommand {
 			return true;
 		}
 
-		Group group = ludos.getGroupManager().createGroup(player, null);
+		Group group = manager.createGroup(player, null);
 
 		List<Player> members = CommandUtility.getPlayersFromArgs(args, sender);
 		for (Player member : members) {
 			group.requestAddPlayer(member, AddPlayerMethod.Invite);
 		}
 
-		ludos.saveConfig();
+		manager.saveConfig();
 
 		return true;
 	}
@@ -56,7 +56,7 @@ public class GroupCreate implements Subcommand {
 		return CommandUtility.getOnlinePlayerNames();
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "[member1] [member2] ...";
 	}
 	@Override

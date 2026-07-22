@@ -1,7 +1,6 @@
 package fr.ludos.core.item.level;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -12,7 +11,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.BranchItem;
@@ -22,10 +20,11 @@ import net.kyori.adventure.text.Component;
 
 /**
  * A {@link SpecialItem} implementation with the ability to hold {@link BranchItemInterface.Branch}es, with a single {@link LevelState}, shared between them.
+ * @param <T> self type
  * @param <TBranch> The type of {@link BranchItemInterface.Branch} the item uses
  * @param <TLevel> The type of {@link Level} the item uses
  */
-public abstract class LevelBranchItem<TBranch extends BranchItemInterface.Branch, TLevel extends Enum<TLevel> & LevelItemInterface.Level<TLevel>> extends BranchItem<TBranch> implements LevelItemInterface {
+public abstract class LevelBranchItem<T extends LevelBranchItem<T, TBranch, TLevel>, TBranch extends BranchItemInterface.Branch, TLevel extends LevelItemInterface.Level<TLevel>> extends BranchItem<T, TBranch> implements LevelItemInterface {
 	private final LevelState levelState;
 	@Override
 	public LevelState levelState() {
@@ -48,39 +47,11 @@ public abstract class LevelBranchItem<TBranch extends BranchItemInterface.Branch
 		lvlObject(level).onSwitchOffLevel(this);
 	}
 
-	public LevelBranchItem(Map<String, TBranch> branches, @Nullable TBranch defaultBranch, List<TLevel> levels, LevelValue level, ItemStack stack, Player owner, Game game) {
-		super(branches, defaultBranch, stack, owner, game);
+	public LevelBranchItem(Info<TBranch, TLevel> info, Events<T, TBranch, TLevel> events) {
+		super(new BranchItem.ItemData<>(info.branch, info.info), events);
 
-		this.levels = ObjectUtils.requireNonEmpty(levels);
-		this.levelState = LevelItemInterface.initializeLevelState(this, this.levels, level);
-	}
-	protected LevelBranchItem(List<TBranch> branches, @Nullable TBranch defaultBranch, List<TLevel> levels, LevelValue defaultLevel, ItemStack stack, Player owner, Game game) {
-		this(branches.stream().collect(Collectors.toMap(b -> b.id(), b -> b)), defaultBranch, levels, defaultLevel, stack, owner, game);
-	}
-	public LevelBranchItem(Map<String, TBranch> branches, @Nullable TBranch defaultBranch, List<TLevel> levels, ItemStack stack, Player owner, Game game) {
-		this(branches, defaultBranch, levels, new LevelValue(), stack, owner, game);
-	}
-	protected LevelBranchItem(List<TBranch> branches, @Nullable TBranch defaultBranch, List<TLevel> levels, ItemStack stack, Player owner, Game game) {
-		this(branches.stream().collect(Collectors.toMap(b -> b.id(), b -> b)), defaultBranch, levels, new LevelValue(), stack, owner, game);
-	}
-	public LevelBranchItem(Map<String, TBranch> branches, List<TLevel> levels, LevelValue defaultLevel, ItemStack stack, Player owner, Game game) {
-		this(branches, null, levels, defaultLevel, stack, owner, game);
-	}
-	protected LevelBranchItem(List<TBranch> branches, List<TLevel> levels, LevelValue defaultLevel, ItemStack stack, Player owner, Game game) {
-		this(branches.stream().collect(Collectors.toMap(b -> b.id(), b -> b)), null, levels, defaultLevel, stack, owner, game);
-	}
-	public LevelBranchItem(Map<String, TBranch> branches, List<TLevel> levels, ItemStack stack, Player owner, Game game) {
-		this(branches, null, levels, new LevelValue(), stack, owner, game);
-	}
-	protected LevelBranchItem(List<TBranch> branches, List<TLevel> levels, ItemStack stack, Player owner, Game game) {
-		this(branches.stream().collect(Collectors.toMap(b -> b.id(), b -> b)), null, levels, new LevelValue(), stack, owner, game);
-	}
-
-	@Override
-	protected void onInitialize() {
-		super.onInitialize();
-
-		LevelItemInterface.setItemLevel(this, levelState().value());
+		this.levels = ObjectUtils.requireNonEmpty(info.level.levels());
+		this.levelState = LevelItemInterface.initializeLevelState(this, this, this.levels, info.level.level());
 	}
 
 	@Override
@@ -93,13 +64,26 @@ public abstract class LevelBranchItem<TBranch extends BranchItemInterface.Branch
 	}
 
 	/**
+	 * .
+	 * @param <TLevel>
+	 * @param <TBranch>
+	 * @param level
+	 * @param branch
+	 * @param info
+	 */
+	public static record Info<TBranch extends BranchItemInterface.Branch, TLevel extends LevelItemInterface.Level<TLevel>>(
+		BranchItem.BranchData<TBranch> branch,
+		LevelItem.LevelData<TLevel> level,
+		SpecialItem.ItemData info
+	) {}
+
+	/**
 	 * Events for {@link LevelBranchItem}s.
 	 * @param <T> The type of {@link LevelBranchItem}
 	 * @param <TBranch> The type of {@link BranchItemInterface.Branch} the item uses
 	 * @param <TLevel> The type of {@link LevelItemInterface.Level} the item uses
 	 */
-	public static abstract class Events<T extends LevelBranchItem<TBranch, TLevel>, TBranch extends BranchItemInterface.Branch, TLevel extends Enum<TLevel> & LevelItemInterface.Level<TLevel>> extends BranchItem.Events<T, TBranch> {
-		private Map<Player, LevelValue> deadPlayerLevels = new HashMap<>();
+	public static abstract class Events<T extends LevelBranchItem<T, TBranch, TLevel>, TBranch extends BranchItemInterface.Branch, TLevel extends LevelItemInterface.Level<TLevel>> extends BranchItem.Events<T, TBranch> {
 
 		protected Events(Map<String, TBranch> branches, @Nullable TBranch defaultBranch, Game game, Events.Info info) {
 			super(branches, defaultBranch, game, info);
@@ -114,17 +98,28 @@ public abstract class LevelBranchItem<TBranch extends BranchItemInterface.Branch
 			this(branches, null, game, info);
 		}
 
-		public abstract T createItem(Player owner, LevelValue level);
 		public abstract List<TLevel> getLevels();
 
+		protected abstract T getItemInternal(LevelBranchItem.Info<TBranch, TLevel> info);
 		@Override
-		public final T createItem(Player owner) {
-			if (!deadPlayerLevels.containsKey(owner)) {
-				return createItem(owner, new LevelValue());
-			}
+		protected final T getItemInternal(BranchItem.ItemData<TBranch> info) {
+			LevelValue levelValue = LevelItemInterface.levelFromItemStack(info.info().stack(), game);
+			if (levelValue == null) return null;
 
-			LevelValue deadLevels = deadPlayerLevels.get(owner);
-			return createItem(owner, deadLevels);
+			return getItemInternal(new LevelBranchItem.Info<>(
+				info.data(),
+				new LevelItem.LevelData<TLevel>(getLevels(), levelValue),
+				info.info()
+			));
+		}
+
+		protected abstract T createItemInternal(BranchItem.BranchData<TBranch> branch, LevelItem.LevelData<TLevel> level, Player owner);
+		@Override
+		protected T createItemInternal(BranchData<TBranch> data, Player owner) {
+			T created = createItemInternal(data, new LevelItem.LevelData<>(getLevels()), owner);
+			LevelItemInterface.setItemLevel(created, created, created.levelState().value());
+
+			return created;
 		}
 
 		@EventHandler

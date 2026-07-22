@@ -11,6 +11,7 @@ import org.bukkit.util.Vector;
 
 import fr.ludos.core.structure.BoundingBoxStructure;
 import fr.ludos.core.structure.Structure;
+import fr.ludos.other.ExcludeFromJacocoGeneratedReport;
 
 /**
  * Default {@link Structure} for a {@link Lobby}.
@@ -64,6 +65,7 @@ public class LobbyStructure extends BoundingBoxStructure {
 		public Builder() { }
 
 		@Override
+		@ExcludeFromJacocoGeneratedReport
 		public Structure build(Location location) {
 			Location origin = location.clone();
 

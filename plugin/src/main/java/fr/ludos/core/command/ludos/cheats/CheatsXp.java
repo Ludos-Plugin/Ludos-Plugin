@@ -72,7 +72,7 @@ public class CheatsXp implements Subcommand {
 			return true;
 		}
 
-		SpecialItem item = CheatsSubcommand.findHeldSpecialItem(game, heldItem);
+		SpecialItem<?> item = CheatsSubcommand.findHeldSpecialItem(game, heldItem);
 		if (item == null) {
 			sender.sendMessage("Held item is not a valid game item.");
 			return true;
@@ -93,7 +93,7 @@ public class CheatsXp implements Subcommand {
 		return null;
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "<amount>";
 	}
 

@@ -3,9 +3,6 @@ package fr.ludos.roles.assassin.items;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -20,7 +17,6 @@ import org.bukkit.potion.PotionEffectType;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
-import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -28,43 +24,11 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * Implementation of the Assassin Boots, for use by any Player with {@link AssassinRole}.
  */
-public class AssassinBoots extends SpecialItem {
+public class AssassinBoots extends SpecialItem<AssassinBoots> {
 	public static final String ID = "assassin_boots";
 
-	// private final static Map<UUID, AssassinBoots> cachedItems = new HashMap<>();
-
-	public static @Nullable AssassinBoots fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// AssassinBoots cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-
-		AssassinBoots boots = new AssassinBoots(stack, owner, game);
-		// cachedItems.put(itemId, boots);
-
-		return boots;
-	}
-
-	public static AssassinBoots createItem(Player owner, Game game) {
-		AssassinBoots boots = new AssassinBoots(new ItemStack(Material.IRON_BOOTS), owner, game);
-		UUID itemId = boots.initializeItem();
-
-		// cachedItems.put(itemId, boots);
-
-		return boots;
-	}
-
-	public AssassinBoots(ItemStack stack, Player player, Game game) {
-		super(stack, player, game);
-	}
-
-	@Override
-	public String getTypeId() {
-		return ID;
+	AssassinBoots(SpecialItem.ItemData info, Events events) {
+		super(info, events);
 	}
 
 	@Override
@@ -88,6 +52,11 @@ public class AssassinBoots extends SpecialItem {
 	public static class Events extends SpecialItem.Events<AssassinBoots> {
 		public Events(Game game) {
 			super(game, new Events.Info(ItemSlot.BOOTS));
+		}
+
+		@Override
+		public String getTypeId() {
+			return ID;
 		}
 
 		@EventHandler
@@ -118,14 +87,13 @@ public class AssassinBoots extends SpecialItem {
 		}
 
 		@Override
-		@Nullable
-		public AssassinBoots getItem(ItemStack stack) {
-			return AssassinBoots.fromItemStack(stack, game);
+		protected AssassinBoots getItemInternal(SpecialItem.ItemData info) {
+			return new AssassinBoots(info, this);
 		}
 
 		@Override
-		public AssassinBoots createItem(Player owner) {
-			return AssassinBoots.createItem(owner, game);
+		protected AssassinBoots createItemInternal(Player owner) {
+			return new AssassinBoots(new SpecialItem.ItemData(new ItemStack(Material.IRON_BOOTS), owner), this);
 		}
 
 		@Override

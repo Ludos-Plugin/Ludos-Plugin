@@ -24,6 +24,13 @@ class RoleAuthorizationTest extends RoleTest {
 		Role.Builder role = getValidRole();
 		player1.setOp(true);
 
+		player1.performCommand("ludos role set " + role.getId() + " UnknownPlayer testing");
+		assertEquals(ludos.getCommand("ludos").getUsage(), player1.nextMessage(), "Invalid role set command did not refuse");
+
+		player1.performCommand("ludos role set " + role.getId() + " " + player1.getName());
+		assertEquals("Your role is now " + role.getId(), player1.nextMessage(), "Role was not set");
+		assertNull(player1.nextMessage(), "Extra role set message on set self role");
+
 		player1.performCommand("ludos role set " + role.getId() + " " + player2.getName());
 		assertEquals("The role of Player " + player2.getName() + " is now " + role.getId(), player1.nextMessage(), "Role was not set");
 		assertEquals("Your role is now " + role.getId(), player2.nextMessage(), "Role was not set");
@@ -36,10 +43,10 @@ class RoleAuthorizationTest extends RoleTest {
 		player1.performCommand("ludos role reset " + player2.getName());
 		assertEquals("The role of player " + player2.getName() + " was reset", player1.nextMessage(), "Role was not reset");
 
-		player1.performCommand("ludos role get");
+		player1.performCommand("ludos role get " + player2.getName());
 		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was not reset");
 
-		assertNull(ludos.getRoleManager().getPlayerRole(player1), "Role appears unset but isn't");
+		assertNull(ludos.getRoleManager().getPlayerRole(player2), "Role appears unset but isn't");
 	}
 
 	// @Test

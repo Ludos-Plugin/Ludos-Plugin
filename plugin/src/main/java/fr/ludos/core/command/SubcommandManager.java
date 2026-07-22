@@ -78,7 +78,7 @@ public final class SubcommandManager implements CommandExecutor, TabCompleter, C
 		return usage.toString();
 	}
 
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return getUsage(subcommands.keySet().stream());
 	}
 }

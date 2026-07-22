@@ -49,15 +49,21 @@ public enum ItemSlot {
 	HELMET,
 	OFFHAND;
 
-	public static void setItemInInventory(ItemSlot slot, ItemStack item, PlayerInventory inventory) {
-		int index = slot != null
-			? slot.ordinal()
-			: -1;
+	public void setInInventory(ItemStack item, PlayerInventory inventory) {
+		int index = ordinal();
 
-		if (index == -1 || inventory.getItem(index) != null) {
+		if (index < 0 || inventory.getItem(index) != null) {
 			inventory.addItem(item);
 		} else {
 			inventory.setItem(index, item);
 		}
+	}
+
+	public static void setItemInInventory(ItemSlot slot, ItemStack item, PlayerInventory inventory) {
+		if (slot == null) {
+			inventory.addItem(item);
+			return;
+		}
+		slot.setInInventory(item, inventory);
 	}
 }

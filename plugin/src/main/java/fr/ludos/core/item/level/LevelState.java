@@ -81,30 +81,33 @@ public class LevelState {
 		}
 	}
 
-	public LevelState(LevelValue level) {
-		this.value = level;
-	}
-	public LevelState(LevelValue level, Function<Integer, Double> thresholdFunction) {
-		this.value = level.capped(thresholdFunction);
-		this.xpThresholdFunction = thresholdFunction;
-	}
-	public LevelState(LevelValue level, double threshold) {
-		this.value = level.capped(threshold);
-		this.xpThreshold = threshold;
-	}
-	public LevelState(LevelValue level, Function<Integer, Double> thresholdFunction, int maxLevel) {
-		this.value = level.capped(thresholdFunction, maxLevel);
-		this.xpThresholdFunction = thresholdFunction;
+	private LevelState(LevelValue value, Double xpThreshold, Function<@NotNull Integer, Double> xpThresholdFunction, Integer maxLevel) {
+		this.value = value;
+		this.xpThreshold = xpThreshold;
+		this.xpThresholdFunction = xpThresholdFunction;
 		this.maxLevel = maxLevel;
 	}
-	public LevelState(LevelValue level, double threshold, int maxLevel) {
-		this.value = level.capped(threshold, maxLevel);
-		this.xpThreshold = threshold;
-		this.maxLevel = maxLevel;
+	public LevelState(LevelValue value) {
+		this(value, null, null, null);
 	}
-	public LevelState(LevelValue level, int maxLevel) {
-		this.value = level.capped(maxLevel);
-		this.maxLevel = maxLevel;
+
+	public static LevelState simple(LevelValue value) {
+		return new LevelState(value);
+	}
+	public static LevelState levelCapped(LevelValue value, Integer maxLevel) {
+		return new LevelState(value.levelCapped(maxLevel), null, null, maxLevel);
+	}
+	public static LevelState xpCapped(LevelValue value, Double xpThreshold) {
+		return new LevelState(value.xpCapped(xpThreshold), xpThreshold, null, null);
+	}
+	public static LevelState xpCapped(LevelValue value, Function<@NotNull Integer, Double> xpThresholdFunction) {
+		return new LevelState(value.xpCapped(xpThresholdFunction), null, xpThresholdFunction, null);
+	}
+	public static LevelState capped(LevelValue value, Double xpThreshold, Integer maxLevel) {
+		return new LevelState(value.capped(xpThreshold, maxLevel), xpThreshold, null, maxLevel);
+	}
+	public static LevelState capped(LevelValue value, Function<@NotNull Integer, Double> xpThresholdFunction, Integer maxLevel) {
+		return new LevelState(value.capped(xpThresholdFunction, maxLevel), null, xpThresholdFunction, maxLevel);
 	}
 
 	public void setValue(LevelValue level) {
@@ -133,11 +136,7 @@ public class LevelState {
 		}
 	}
 	public void addLvl() {
-		LevelValue old = value;
-		value = old.withAddedLevel(maxLevel());
-		if (old.level() != value.level()) {
-			notifyLevelUp(old.level());
-		}
+		addLvl(1);
 	}
 
 	public void setXp(double xp) {

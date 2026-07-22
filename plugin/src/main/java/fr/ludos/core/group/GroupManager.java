@@ -17,13 +17,10 @@ import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -136,10 +133,10 @@ public class GroupManager implements Listener {
 
 	public @NotNull Group deserialize(UUID id, @NotNull Map<String, Object> data) {
 		Object leaderRaw = data.get("leader");
-		if (!(leaderRaw instanceof String leaderName)) {
+		if (!(leaderRaw instanceof String leaderUUID)) {
 			throw new IllegalArgumentException("Invalid leader UUID in group data");
 		}
-		OfflinePlayer leader = Bukkit.getOfflinePlayer(UUID.fromString(leaderName));
+		OfflinePlayer leader = Bukkit.getOfflinePlayer(UUID.fromString(leaderUUID));
 
 		Object membersRaw = data.get("members");
 		List<OfflinePlayer> members;
@@ -151,6 +148,8 @@ public class GroupManager implements Listener {
 		} else {
 			members = new ArrayList<>();
 		}
+
+		ludos.getLogger().info("Loaded Group : " + id + " | Leader : " + leader.getName() + " - Members: " + members.stream().map(OfflinePlayer::getName).collect(Collectors.joining(", ")));
 
 		Group newGroup = new Group(id, leader, members);
 		addGroup(newGroup);
@@ -219,7 +218,7 @@ public class GroupManager implements Listener {
 		for (Map.Entry<String, Object> groupEntry : configSection.getValues(false).entrySet()) {
 			try {
 				UUID groupUuid = UUID.fromString(groupEntry.getKey());
-				if (groupEntry.getValue() instanceof MemorySection groupData) {
+				if (groupEntry.getValue() instanceof ConfigurationSection groupData) {
 					try {
 						deserialize(groupUuid, groupData.getValues(true));
 					} catch (Exception e) {
@@ -238,19 +237,5 @@ public class GroupManager implements Listener {
 		} catch (IOException ex) {
 			getLudos().getLogger().log(Level.SEVERE, "Could not save groups to " + groupsFile, ex);
 		}
-	}
-
-
-	@EventHandler
-	public void onLeaderDisconnect(PlayerQuitEvent event) {
-		Player player = event.getPlayer();
-		Group group = getGroupOfPlayer(player);
-		if (group == null) return;
-
-		if (! group.isLeader(player)) return;
-
-		group.demoteLeader();
-
-		saveConfig();
 	}
 }

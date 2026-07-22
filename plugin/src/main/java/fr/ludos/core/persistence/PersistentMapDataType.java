@@ -2,7 +2,6 @@ package fr.ludos.core.persistence;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -37,7 +36,7 @@ public abstract class PersistentMapDataType<TKey extends Serializable, TVal exte
 			ObjectOutputStream oos = new ObjectOutputStream(baos);
 			oos.writeObject(complex); // Requires State to be Serializable or handled by custom resolver
 			return baos.toByteArray();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new RuntimeException("Failed to serialize State map", e);
 		}
 	}
@@ -49,7 +48,7 @@ public abstract class PersistentMapDataType<TKey extends Serializable, TVal exte
 			ByteArrayInputStream bais = new ByteArrayInputStream(primitive);
 			ObjectInputStream ois = new ObjectInputStream(bais);
 			return (Map<TKey, TVal>) ois.readObject();
-		} catch (IOException | ClassNotFoundException e) {
+		} catch (Exception e) {
 			throw new RuntimeException("Failed to deserialize State map", e);
 		}
 	}

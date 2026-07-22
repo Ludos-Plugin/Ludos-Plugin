@@ -2,10 +2,6 @@ package fr.ludos.roles.huntsman.items;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -31,8 +27,7 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.MultiLevelBranchItem;
-import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.item.level.LevelValue;
+import fr.ludos.core.item.SpecialItem;
 import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -40,52 +35,15 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * Implementation of the Huntsman Crossbow, for use by any Player with {@link HuntsmanRole}.
  */
-public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranch> {
+public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, HuntsmanCrossbowBranch> {
 	public static final String ID = "huntsman_crossbow";
 
-	// private final static Map<UUID, HuntsmanCrossbow> cachedItems = new HashMap<>();
 
 
-	public static HuntsmanCrossbow fromItemStack(Map<String, HuntsmanCrossbowBranch> branchMap, HuntsmanCrossbowBranch defaultBranch, ItemStack stack, Game game) throws IllegalArgumentException {
-		final UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// HuntsmanCrossbow cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		final Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-		final String branchKey = BranchItemInterface.branchFromItemStack(stack, game);
-		if (branchKey == null) return null;
-		final Map<String, LevelValue> levels = MultiLevelBranchItem.levelsFromItemStack(stack, ID, game);
-		if (levels == null) return null;
-
-		final HuntsmanCrossbowBranch branch = branchMap.getOrDefault(branchKey, defaultBranch);
-
-		final HuntsmanCrossbow crossbow = new HuntsmanCrossbow(branchMap, branch, levels, stack, owner, game);
-		// cachedItems.put(itemId, crossbow);
-
-		return crossbow;
-	}
-	public static HuntsmanCrossbow createItem(Map<String, HuntsmanCrossbowBranch> branchMap, HuntsmanCrossbowBranch defaultBranch, Map<String, LevelValue> levels, Player owner, Game game) {
-		final HuntsmanCrossbow crossbow = new HuntsmanCrossbow(branchMap, defaultBranch, levels, new ItemStack(Material.CROSSBOW), owner, game);
-		final UUID itemId = crossbow.initializeItem();
-
-		// cachedItems.put(itemId, crossbow);
-
-		return crossbow;
+	protected HuntsmanCrossbow(ItemData<HuntsmanCrossbowBranch> info, Events events) {
+		super(info, events);
 	}
 
-
-	protected HuntsmanCrossbow(Map<String, HuntsmanCrossbowBranch> branches, HuntsmanCrossbowBranch branch, Map<String, LevelValue> levels, ItemStack stack, Player owner, Game game) {
-		super(branches, branch, levels, stack, owner, game);
-	}
-
-
-	@Override
-	public String getTypeId() {
-		return ID;
-	}
 
 	@Override
 	public Component getName() {
@@ -109,17 +67,22 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 	public static class Events extends MultiLevelBranchItem.Events<HuntsmanCrossbow, HuntsmanCrossbowBranch> {
 		private static final List<HuntsmanCrossbowBranch> BRANCHES = Arrays.asList(HuntsmanCrossbowBranches.values());
 
-		public static final String ARROW_TYPE = "arrow_type";
-		public final NamespacedKey arrowTypeKey = new NamespacedKey(Ludos.NAMESPACE, ARROW_TYPE);
+		public static final String ARROW_TYPE_STRING = "arrow_type";
+		public static final NamespacedKey ARROW_TYPE = new NamespacedKey(Ludos.NAMESPACE, ARROW_TYPE_STRING);
 
-		public static final String ARROW_LEVEL = "arrow_level";
-		public final NamespacedKey arrowLevelKey = new NamespacedKey(Ludos.NAMESPACE, ARROW_LEVEL);
+		public static final String ARROW_LEVEL_STRING = "arrow_level";
+		public static final NamespacedKey ARROW_LEVEL = new NamespacedKey(Ludos.NAMESPACE, ARROW_LEVEL_STRING);
 
 		// private BukkitTask saturationTask;
 
 
 		public Events(Game game) {
 			super(BRANCHES, game, new Events.Info(ItemSlot.HOTBAR_2));
+		}
+
+		@Override
+		public String getTypeId() {
+			return ID;
 		}
 
 
@@ -141,8 +104,8 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 			arrowProjectile.setPickupStatus(PickupStatus.DISALLOWED);
 			arrowProjectile.setGravity(false);
 			arrowProjectile.setDamage(4);
-			container.set(arrowTypeKey, PersistentDataType.STRING, branch.id());
-			container.set(arrowLevelKey, PersistentDataType.INTEGER, level);
+			container.set(ARROW_TYPE, PersistentDataType.STRING, branch.id());
+			container.set(ARROW_LEVEL, PersistentDataType.INTEGER, level);
 
 			branch.processShotArrow(arrowProjectile, player, level, event);
 			player.setCooldown(Material.CROSSBOW, 200);
@@ -173,9 +136,13 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 
 
 			PersistentDataContainer container = arrow.getPersistentDataContainer();
-			if (container.has(arrowTypeKey, PersistentDataType.STRING) && container.has(arrowLevelKey, PersistentDataType.INTEGER)) {
-				String branchKey = container.get(arrowTypeKey, PersistentDataType.STRING);
-				int levelIdx = container.get(arrowLevelKey, PersistentDataType.INTEGER);
+			if (container.has(ARROW_TYPE, PersistentDataType.STRING) && container.has(ARROW_LEVEL, PersistentDataType.INTEGER)) {
+				String branchKey = container.get(ARROW_TYPE, PersistentDataType.STRING);
+				int levelIdx = container.get(ARROW_LEVEL, PersistentDataType.INTEGER);
+
+				container.remove(ARROW_TYPE);
+				container.remove(ARROW_LEVEL);
+				arrowProjectile.setGravity(true);
 
 				HuntsmanCrossbowBranch branch = getBranches().get(branchKey);
 				if (branch != null) {
@@ -202,16 +169,17 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbowBranc
 			crossbow.cycleBranch();
 		}
 
+		@Override
+		protected HuntsmanCrossbow getItemInternal(ItemData<HuntsmanCrossbowBranch> info) {
+			return new HuntsmanCrossbow(info, this);
+		}
 
 		@Override
-		@Nullable
-		public HuntsmanCrossbow getItem(ItemStack stack) {
-			return HuntsmanCrossbow.fromItemStack(getBranches(), getDefaultBranch(), stack, game);
+		protected HuntsmanCrossbow createItemInternal(MultiLevelData levels, BranchData<HuntsmanCrossbowBranch> data, Player owner) {
+			return new HuntsmanCrossbow(new ItemData<>(levels, data, new SpecialItem.ItemData(new ItemStack(Material.CROSSBOW), owner)), this);
 		}
-		@Override
-		public HuntsmanCrossbow createItem(Player owner, Map<String, LevelValue> levels) {
-			return HuntsmanCrossbow.createItem(getBranches(), getDefaultBranch(), levels, owner, game);
-		}
+
+
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			return game.getLudos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);

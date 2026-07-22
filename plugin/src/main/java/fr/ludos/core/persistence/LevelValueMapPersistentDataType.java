@@ -2,7 +2,6 @@ package fr.ludos.core.persistence;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Map;
@@ -27,7 +26,7 @@ public class LevelValueMapPersistentDataType extends PersistentMapDataType<Strin
 			oos.writeObject(complex);
 
 			return baos.toByteArray();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new RuntimeException("Failed to serialize State map", e);
 		}
 	}
@@ -41,7 +40,7 @@ public class LevelValueMapPersistentDataType extends PersistentMapDataType<Strin
 			Map<String, LevelValue> result = (Map<String, LevelValue>) ois.readObject();
 
 			return result;
-		} catch (IOException | ClassNotFoundException e) {
+		} catch (Exception e) {
 			throw new RuntimeException("Failed to deserialize State map", e);
 		}
 	}

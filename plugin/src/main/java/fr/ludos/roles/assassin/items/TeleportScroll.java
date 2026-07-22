@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -24,7 +22,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
-import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -32,43 +29,11 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * Implementation of the Assassin Teleport Scroll, for use by any Player with {@link AssassinRole}.
  */
-public class TeleportScroll extends SpecialItem {
+public class TeleportScroll extends SpecialItem<TeleportScroll> {
 	public static final String ID = "teleport_scroll";
 
-	// private final static Map<UUID, TeleportScroll> cachedItems = new HashMap<>();
-
-	public static @Nullable TeleportScroll fromItemStack(ItemStack stack, Game game) throws IllegalArgumentException {
-		UUID itemId = SpecialItemInterface.getSpecialItemId(stack, ID, game);
-		if (itemId == null) return null;
-
-		// TeleportScroll cached = cachedItems.get(itemId);
-		// if (cached != null) return cached;
-
-		Player owner = SpecialItemInterface.getSpecialItemOwner(stack, game);
-		if (owner == null) return null;
-
-		TeleportScroll scroll = new TeleportScroll(stack, owner, game);
-		// cachedItems.put(itemId, scroll);
-
-		return scroll;
-	}
-
-	public static TeleportScroll createItem(Player owner, Game game) {
-		TeleportScroll scroll = new TeleportScroll(new ItemStack(Material.PAPER), owner, game);
-		UUID itemId = scroll.initializeItem();
-
-		// cachedItems.put(itemId, scroll);
-
-		return scroll;
-	}
-
-	public TeleportScroll(ItemStack stack, Player player, Game game) {
-		super(stack, player, game);
-	}
-
-	@Override
-	public String getTypeId() {
-		return ID;
+	TeleportScroll(SpecialItem.ItemData info, Events events) {
+		super(info, events);
 	}
 
 	@Override
@@ -98,6 +63,11 @@ public class TeleportScroll extends SpecialItem {
 
 		public Events(Game game) {
 			super(game, new Events.Info(ItemSlot.HOTBAR_3));
+		}
+
+		@Override
+		public String getTypeId() {
+			return ID;
 		}
 
 		@Override
@@ -191,14 +161,13 @@ public class TeleportScroll extends SpecialItem {
 		}
 
 		@Override
-		@Nullable
-		public TeleportScroll getItem(ItemStack stack) {
-			return TeleportScroll.fromItemStack(stack, game);
+		protected TeleportScroll getItemInternal(SpecialItem.ItemData info) {
+			return new TeleportScroll(info, this);
 		}
 
 		@Override
-		public TeleportScroll createItem(Player owner) {
-			return TeleportScroll.createItem(owner, game);
+		protected TeleportScroll createItemInternal(Player owner) {
+			return new TeleportScroll(new SpecialItem.ItemData(new ItemStack(Material.PAPER), owner), this);
 		}
 
 		@Override

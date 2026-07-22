@@ -7,7 +7,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.ScopeConfigMap;
 import fr.ludos.core.game.Game;
@@ -19,12 +18,12 @@ import fr.ludos.core.game.GameManager;
 public class GameConfig implements Subcommand {
 	private final static String ID = "config";
 
-	private final GameManager gameManager;
+	private final GameManager manager;
 	private final ScopeConfigMap map;
 
-	public GameConfig(Ludos ludos) {
-		this.gameManager = ludos.getGameManager();
-		this.map = new ScopeConfigMap(ludos, gameManager.configMap);
+	public GameConfig(GameManager manager) {
+		this.manager = manager;
+		this.map = new ScopeConfigMap(manager.getLudos(), manager.configMap);
 	}
 
 	@Override
@@ -45,9 +44,9 @@ public class GameConfig implements Subcommand {
 		return map.tabComplete(args, sender);
 	}
 	@Override
-	public String getUsage() {
+	public String getUsage(@NotNull CommandSender sender) {
 		return "<" +
-			gameManager.getRegistered().keySet().stream().sorted()
+			manager.getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))
 			+ "> [name] [option]";
 	}
