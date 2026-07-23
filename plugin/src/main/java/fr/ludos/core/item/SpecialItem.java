@@ -2,7 +2,6 @@ package fr.ludos.core.item;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +31,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
@@ -98,6 +98,17 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 		updateLore();
 	}
 
+	public void uncache() {
+		events.uncache(this);
+	}
+
+	public void give(Player player) {
+		events.give(this, player);
+	}
+	public void give(PlayerInventory inventory) {
+		events.give(this, inventory);
+	}
+
 	@ExcludeFromJacocoGeneratedReport // Tested, but not picked up by Jacoco
 	public final boolean refreshUseCooldown() {
 		Player owner = getOwner();
@@ -155,8 +166,8 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 	 * @return The first Special Item of type T found in the inventory or null if there is none
 	 */
 	@Nullable
-	public static <T extends SpecialItem<T>> T findIn(Inventory inventory, Function<ItemStack, T> constructor) {
-		return findIn(Arrays.asList(inventory.getContents()), constructor);
+	public static <T extends SpecialItem<T>> T findOne(Inventory inventory, Function<ItemStack, T> constructor) {
+		return findOne(Arrays.asList(inventory.getContents()), constructor);
 	}
 	/**
 	 * Find all instances of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
@@ -166,8 +177,8 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
 	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
 	 */
-	public static <T extends SpecialItem<T>> List<T> findAllIn(Inventory inventory, Function<ItemStack, T> constructor) {
-		return findAllIn(Arrays.asList(inventory.getContents()), constructor);
+	public static <T extends SpecialItem<T>> List<T> findAll(Inventory inventory, Function<ItemStack, T> constructor) {
+		return findAll(Arrays.asList(inventory.getContents()), constructor);
 	}
 
 	/**
@@ -178,7 +189,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
 	 * @return The first Special Item of type T found in the inventory or null if there is none
 	 */
-	public static <T extends SpecialItem<T>> T findIn(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
+	public static <T extends SpecialItem<T>> T findOne(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
 		for (ItemStack item : items) {
 			if (item == null) continue;
 
@@ -196,7 +207,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
 	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
 	 */
-	public static <T extends SpecialItem<T>> List<T> findAllIn(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
+	public static <T extends SpecialItem<T>> List<T> findAll(Iterable<ItemStack> items, Function<ItemStack, T> constructor) {
 		ArrayList<T> results = new ArrayList<>();
 		for (ItemStack item : items) {
 			if (item == null) continue;
@@ -205,7 +216,19 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			if (specialItem != null) results.add(specialItem);
 		}
 
-		return Collections.unmodifiableList(results);
+		return results;
+	}
+	public static <T extends SpecialItem<T>> List<@NotNull T> findAll(PlayerInventory inventory, Function<ItemStack, T> constructor, ItemSlot[] order) {
+		ArrayList<T> results = new ArrayList<>();
+		for (ItemSlot slot : order) {
+			ItemStack item = slot.get(inventory);
+			if (item == null) continue;
+
+			T specialItem = constructor.apply(item);
+			if (specialItem != null) results.add(specialItem);
+		}
+
+		return results;
 	}
 
 	public static <T extends SpecialItem<T>, TData> Component buildDataLore(String label, TData data) {
@@ -338,7 +361,8 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			return item;
 		}
 
-		protected void uncache(T item) {
+		protected <TItem extends SpecialItem<T>> void uncache(TItem item) {
+			if (item == null) return;
 			CACHED.remove(item.getItemId());
 		}
 
@@ -355,6 +379,14 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 		}
 
 
+		public <TItem extends SpecialItem<T>> void give(TItem item, PlayerInventory inventory) {
+			if (item == null) return;
+			ItemSlot.set(info.slot, item.getStack(), inventory);
+		}
+		public <TItem extends SpecialItem<T>> void give(TItem item, Player player) {
+			give(item, player.getInventory());
+		}
+
 		public void refreshPlayerInventory(Player player) {
 			if (! game.getGroup().isPlayer(player)) return;
 			if (! isPlayerValid(player)) return;
@@ -363,9 +395,8 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			if (T.containedIn(inventory, this::getItem)) return;
 
 			T item = createItem(player);
-			if (item == null) return;
 
-			ItemSlot.setItemInInventory(info.slot(), item.getStack(), inventory);
+			item.give(inventory);
 		}
 
 		public void refreshAllPlayerInventories() {
@@ -376,7 +407,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 		public void removeFromPlayerInventory(Player player) {
 			PlayerInventory inventory = player.getInventory();
-			for(T item : SpecialItem.findAllIn(inventory, this::getItem)) {
+			for(T item : SpecialItem.findAll(inventory, this::getItem)) {
 				inventory.remove(item.getStack());
 
 				if (item.getStack().equals(inventory.getHelmet())) {
@@ -475,7 +506,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			if (found == null) return;
 
 			event.setCancelled(true);
-			uncache(found);
+			found.uncache();
 		}
 
 

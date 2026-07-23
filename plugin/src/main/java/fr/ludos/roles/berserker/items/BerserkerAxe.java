@@ -131,7 +131,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxe, BerserkerAxeLevels> {
 				playerLevel = new LevelValue();
 			}
 
-			List<BerserkerAxe> axes = SpecialItem.findAllIn(player.getInventory(), this::getItem);
+			List<BerserkerAxe> axes = SpecialItem.findAll(player.getInventory(), this::getItem);
 			BerserkerAxe offHandAxe = getItem(player.getInventory().getItemInOffHand());
 
 			boolean hasFirst = axes.stream().anyMatch(axe -> axe.getVariant() == Variant.FIRST);
@@ -169,7 +169,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxe, BerserkerAxeLevels> {
 			double finalDamage = event.getFinalDamage();
 			if (finalDamage <= 0) return;
 
-			SpecialItem.findAllIn(player.getInventory(), this::getItem)
+			SpecialItem.findAll(player.getInventory(), this::getItem)
 				.forEach(axe -> {
 					axe.addXp(finalDamage);
 				});

@@ -274,7 +274,7 @@ class SpecialItemTest {
 		when(inventory.getContents()).thenReturn(new ItemStack[]{null, new ItemStack(Material.ACACIA_BOAT), item.getStack()});
 
 
-		TestSpecialItem found = SpecialItem.findIn(inventory, testEvents::getItem);
+		TestSpecialItem found = SpecialItem.findOne(inventory, testEvents::getItem);
 
 		assertNotNull(found);
 		assertEquals(item, found);
@@ -289,7 +289,7 @@ class SpecialItemTest {
 		when(inventory.getContents()).thenReturn(new ItemStack[]{null, new ItemStack(Material.ACACIA_BOAT), new ItemStack(Material.STONE)});
 
 
-		TestSpecialItem found = SpecialItem.findIn(inventory, testEvents::getItem);
+		TestSpecialItem found = SpecialItem.findOne(inventory, testEvents::getItem);
 		assertNull(found);
 	}
 
@@ -425,7 +425,7 @@ class SpecialItemTest {
 		inventory = spy(inventory);
 		testEvents.refreshPlayerInventory(owner);
 
-		assertEquals(1, TestSpecialItem.findAllIn(inventory, testEvents::getItem).size());
+		assertEquals(1, TestSpecialItem.findAll(inventory, testEvents::getItem).size());
 
 		verify(inventory, never()).addItem(any(ItemStack.class));
 		verify(inventory, never()).setItem(anyInt(), any(ItemStack.class));

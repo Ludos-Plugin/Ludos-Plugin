@@ -121,7 +121,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, Hun
 
 			if (! isPlayerValid(player)) return;
 
-			HuntsmanCrossbow crossbow = HuntsmanCrossbow.findIn(player.getInventory(), this::getItem);
+			HuntsmanCrossbow crossbow = HuntsmanCrossbow.findOne(player.getInventory(), this::getItem);
 			if (crossbow == null) return;
 
 

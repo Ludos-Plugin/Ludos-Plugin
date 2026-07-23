@@ -204,7 +204,7 @@ public class ManhuntGame extends Game {
 		);
 
 		for (Player hunter : teamController.getTeamOnlinePlayers(teamController.preyTeam)) {
-			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), compassEvents::getItem)) {
+			for (ManhuntCompass compass : ManhuntCompass.findAll(hunter.getInventory(), compassEvents::getItem)) {
 				compass.setLocation(prey);
 			}
 		}

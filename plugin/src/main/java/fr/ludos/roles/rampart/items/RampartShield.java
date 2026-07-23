@@ -189,7 +189,7 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 
 					for (Player player : rampartPlayers) {
 						PlayerInventory inventory = player.getInventory();
-						for (RampartShield shield : RampartShield.findAllIn(inventory, (ItemStack stack) -> getItem(stack))) {
+						for (RampartShield shield : RampartShield.findAll(inventory, (ItemStack stack) -> getItem(stack))) {
 							RampartShieldLevels level = shield.lvlObject();
 							shield.restore(level.getRegen());
 

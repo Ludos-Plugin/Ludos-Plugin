@@ -79,7 +79,7 @@ public class HarvesterRole extends Role {
 		if (oreXp == 0) return;
 		for (var events : getGameEvents().values()) {
 			if (events instanceof SpecialItem.Events itemEvents) {
-				LevelItem.findAllIn(inventory, (itemStack) -> itemEvents.getItem(itemStack))
+				LevelItem.findAll(inventory, itemEvents::getItem)
 					.stream()
 					.filter(o -> o instanceof LevelItemInterface)
 					.forEach(item -> ((LevelItemInterface) item).addXp(oreXp));

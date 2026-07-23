@@ -217,7 +217,7 @@ public abstract class MultiLevelBranchItem<T extends MultiLevelBranchItem<T, TBr
 			Player player = event.getEntity();
 			if (! isPlayerValid(player)) return;
 
-			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
+			T specialItem = SpecialItem.findOne(player.getInventory(), this::getItem);
 			if ( specialItem == null ) return;
 
 			deadPlayerLevels.put(player, specialItem.getLevelValues());

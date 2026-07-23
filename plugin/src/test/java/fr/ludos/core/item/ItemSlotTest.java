@@ -44,7 +44,7 @@ class ItemSlotTest {
 		when(inventory.getItem(ItemSlot.HOTBAR_1.ordinal())).thenReturn(null);
 
 
-		ItemSlot.setItemInInventory(ItemSlot.HOTBAR_1, item, inventory);
+		ItemSlot.set(ItemSlot.HOTBAR_1, item, inventory);
 
 		verify(inventory).setItem(ItemSlot.HOTBAR_1.ordinal(), item);
 		verify(inventory, never()).addItem(any(ItemStack.class));
@@ -60,7 +60,7 @@ class ItemSlotTest {
 		when(inventory.getItem(ItemSlot.HOTBAR_1.ordinal())).thenReturn(occupied);
 
 
-		ItemSlot.setItemInInventory(ItemSlot.HOTBAR_1, item, inventory);
+		ItemSlot.set(ItemSlot.HOTBAR_1, item, inventory);
 
 		verify(inventory).addItem(item);
 	}
@@ -72,7 +72,7 @@ class ItemSlotTest {
 		ItemStack item = new ItemStack(org.bukkit.Material.STONE);
 
 
-		ItemSlot.setItemInInventory(null, item, inventory);
+		ItemSlot.set(null, item, inventory);
 
 		verify(inventory).addItem(item);
 	}
@@ -83,6 +83,6 @@ class ItemSlotTest {
 		assertNotNull(ItemSlot.HOTBAR_1);
 		assertNotNull(ItemSlot.CHESTPLATE);
 		assertNotNull(ItemSlot.OFFHAND);
-		assertEquals(41, ItemSlot.values().length);
+		assertEquals(42, ItemSlot.values().length);
 	}
 }

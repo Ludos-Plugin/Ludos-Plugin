@@ -3,6 +3,7 @@ package fr.ludos.roles.huntsman.items;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -53,7 +54,10 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 		private final int reloadTime;
 
 		public Events(Game game, Integer arrowMagazineSize, int reloadTime) {
-			super(game, new Events.Info(ItemSlot.HOTBAR_9));
+			super(game, new Events.Info(arrowMagazineSize == null
+				? ItemSlot.TOP_9
+				: ItemSlot.OFFHAND
+			));
 			this.arrowMagazineSize = arrowMagazineSize;
 			this.reloadTime = reloadTime;
 		}
@@ -79,10 +83,9 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 					PlayerInventory inventory = player.getInventory();
 					for (HuntsmanArrow arrow : arrows) {
 						inventory.remove(arrow.getStack());
-						uncache(arrow);
+						arrow.uncache();
 					}
-					HuntsmanArrow arrow = createItem(player);
-					ItemSlot.setItemInInventory(getInfo().slot(), arrow.getStack(), inventory);
+					createItem(player).give(player);
 				}
 			}.runTaskLater(game.getPlugin(), reloadTime);
 		}
@@ -93,22 +96,26 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 			if (! isPlayerValid(player)) return;
 
 			ItemStack launcher = event.getBow();
-			List<HuntsmanArrow> arrows = findAllIn(player.getInventory(), this::getItem);
+			List<HuntsmanArrow> arrows = findAll(player.getInventory(), this::getItem, ItemSlot.ARROW_ORDER);
 
 			// prevent arrow consumption or restore count if not possible
 			if (arrowMagazineSize == null) {
 				event.setConsumeItem(false);
 				player.updateInventory();
 
-				if (launcher.getType() == Material.CROSSBOW) {
+				if (launcher.getItemMeta() instanceof CrossbowMeta meta) {
 					if (arrows.size() == 0) {
-						HuntsmanArrow newArrow = createItem(player);
-						newArrow.getStack().setAmount(1);
-						player.getInventory().addItem(newArrow.getStack());
+						createItem(player).give(player);
 					}
 					else {
 						ItemStack firstStack = arrows.get(0).getStack();
 						firstStack.setAmount(firstStack.getAmount() + 1);
+					}
+
+					HuntsmanArrow shotArrow = getItem(meta.getChargedProjectiles().get(0));
+					// Uncache arrow that is about to be deleted, if its the last of its ItemId
+					if (shotArrow != null && ! arrows.stream().map(SpecialItem::getItemId).collect(Collectors.toSet()).contains(shotArrow.getItemId())) {
+						shotArrow.uncache();
 					}
 				}
 
@@ -121,13 +128,21 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 		private void consumeArrow(Player player, List<HuntsmanArrow> arrows) {
 			int amount = countArrows(player, arrows);
 
+			if (arrows.size() != 0) {
+				HuntsmanArrow nextConsumed = arrows.get(0);
+				if (nextConsumed.getStack().getAmount() <= 1) {
+					nextConsumed.uncache();
+					arrows.remove(0);
+				}
+			}
+
 			if (amount - 1 > 0) return;
 
 			reload(player, arrows);
 		}
 		private void manualReload(Player player) {
 			PlayerInventory inventory = player.getInventory();
-			List<HuntsmanArrow> arrows = findAllIn(inventory, this::getItem);
+			List<HuntsmanArrow> arrows = findAll(inventory, this::getItem);
 
 			int amount = countArrows(player, arrows);
 
@@ -167,7 +182,7 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 
 		private final ItemStack createStack() {
 			if (arrowMagazineSize == null) {
-				return new ItemStack(Material.ARROW);
+				return new ItemStack(Material.ARROW, 64);
 			}
 			return new ItemStack(Material.ARROW, arrowMagazineSize);
 		}
