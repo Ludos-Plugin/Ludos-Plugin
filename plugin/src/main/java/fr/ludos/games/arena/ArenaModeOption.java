@@ -6,7 +6,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import fr.ludos.core.config.valueOptions.EnumConfigOptions;
+import fr.ludos.core.persistence.config.valueEntry.EnumConfigEntry;
 
 /**
  * Enum representing the different {@link ArenaGame} mode options.
@@ -15,8 +15,8 @@ public enum ArenaModeOption {
 	duel("Duel", "1v1 rounds"),
 	multi("Multi", "team rounds");
 
-	public static final EnumConfigOptions<ArenaModeOption> CONFIG =
-		new EnumConfigOptions<>("Arena Mode", "arena_mode", null, ArenaModeOption.class);
+	public static final EnumConfigEntry<ArenaModeOption> CONFIG =
+		new EnumConfigEntry<>("Arena Mode", "arena_mode", null, ArenaModeOption.class);
 
 	private final String displayName;
 	private final String description;

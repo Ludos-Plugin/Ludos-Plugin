@@ -57,7 +57,7 @@ class GameManagerTest {
 		when(mockBuilder.getLudos()).thenReturn(mockLudos);
 		when(mockBuilder.getId()).thenReturn(mockBuilderId);
 		when(mockBuilder.build(any(Group.class))).thenReturn(mockGame);
-		when(mockGame.getLudos()).thenReturn(mockLudos);
+		when(mockGame.ludos()).thenReturn(mockLudos);
 		when(mockGame.getPlugin()).thenReturn(mockLudos);
 		when(mockGame.getGroup()).thenReturn(mockGroup);
 	}

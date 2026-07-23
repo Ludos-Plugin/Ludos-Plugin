@@ -23,10 +23,10 @@ import org.bukkit.scoreboard.Scoreboard;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.book.BookUtility;
-import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.persistence.config.ConfigEntriesCollection;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.world.WorldManager;
 import net.kyori.adventure.text.Component;
@@ -39,6 +39,8 @@ import net.kyori.adventure.text.format.TextDecoration;
  * An encapsulation of a Game instance's logic within a Ludos environment.
  */
 public abstract class Game extends TwoStepGameProcessBase {
+	public static final String NAMESPACE = "game";
+
 	private static final String SCHEDULE_END_GAME_TEXT = "Game finished, returning in %s seconds...";
 
 	protected final Builder builder;
@@ -81,15 +83,15 @@ public abstract class Game extends TwoStepGameProcessBase {
 		this.scoreboard = builder.getLudos().getServer().getScoreboardManager().getNewScoreboard();
 	}
 
-	public Builder getBuilder() {
+	public Builder builder() {
 		return builder;
 	}
-	public Ludos getLudos() {
+	public Ludos ludos() {
 		return builder.getLudos();
 	}
 	@Override
 	public JavaPlugin getPlugin() {
-		return getLudos();
+		return ludos();
 	}
 
 	public Group getGroup() {
@@ -328,7 +330,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
-		public ConfigOptionsCollection getConfig() {
+		public ConfigEntriesCollection getConfig() {
 			return null;
 		}
 

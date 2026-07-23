@@ -130,7 +130,7 @@ class SpecialItemTest {
 
 		when(mockLudos.getServer()).thenReturn(server);
 		when(mockGame.getPlugin()).thenReturn(mockLudos);
-		when(mockGame.getLudos()).thenReturn(mockLudos);
+		when(mockGame.ludos()).thenReturn(mockLudos);
 		when(mockGame.getGroup()).thenReturn(mockGroup);
 		when(mockGroup.isPlayer(any())).thenReturn(true);
 		when(mockGroup.getOnlinePlayers()).thenReturn(Set.of(owner));

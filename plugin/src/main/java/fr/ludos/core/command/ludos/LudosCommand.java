@@ -22,8 +22,6 @@ import fr.ludos.core.command.ludos.role.RoleSubcommand;
  * {@link Subcommand} encapsulating all Ludos subcommands.
  */
 public class LudosCommand implements Subcommand {
-	private final static String ID = "ludos";
-
 	private final SubcommandManager manager;
 
 	public LudosCommand(Ludos ludos) {
@@ -35,14 +33,14 @@ public class LudosCommand implements Subcommand {
 			add(new CheatsSubcommand(ludos));
 			add(new LudosGuidebook(ludos));
 		}};
-		HelpSubcommand help = new HelpSubcommand("ludos", subcommands);
+		HelpSubcommand help = new HelpSubcommand(Ludos.NAMESPACE, subcommands);
 		subcommands.add(help);
 		manager = new SubcommandManager(subcommands);
 	}
 
 	@Override
 	public String id() {
-		return ID;
+		return Ludos.NAMESPACE;
 	}
 
 	@Override

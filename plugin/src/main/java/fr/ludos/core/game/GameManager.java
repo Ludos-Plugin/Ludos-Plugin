@@ -22,8 +22,6 @@ import fr.ludos.core.group.Group;
  * Manager class for {@link Game}s, used to maintain a registry of games for use in {@link Ludos}.
  */
 public final class GameManager {
-	public static final String NAMESPACE = "game";
-
 	private final Ludos ludos;
 
 	private final Map<String, Game.Builder> registered = new HashMap<>();
@@ -106,6 +104,6 @@ public final class GameManager {
 
 
 	public ConfigurationSection getGlobalGameConfig(Game.Builder game) {
-		return Utility.getOrCreateConfigSection(ludos.getConfig(), configMap.getNamespace() + "." + game.getId());
+		return Utility.getOrCreateConfigSection(ludos.getConfig(), configMap.namespace() + "." + game.getId());
 	}
 }

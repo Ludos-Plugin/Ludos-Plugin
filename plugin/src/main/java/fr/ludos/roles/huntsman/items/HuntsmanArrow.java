@@ -189,7 +189,7 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.getLudos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
+			return game.ludos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
 		}
 
 		private int countArrows(Player player, List<HuntsmanArrow> arrows) {

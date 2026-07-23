@@ -165,7 +165,7 @@ public final class HarvesterPick extends LevelBranchItem<HarvesterPick, Harveste
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.getLudos().getRoleManager().isPlayerRole(owner, HarvesterRole.ID);
+			return game.ludos().getRoleManager().isPlayerRole(owner, HarvesterRole.ID);
 		}
 	}
 }

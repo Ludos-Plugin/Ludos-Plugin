@@ -240,7 +240,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxe, BerserkerAxeLevels> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.getLudos().getRoleManager().isPlayerRole(owner, BerserkerRole.ID);
+			return game.ludos().getRoleManager().isPlayerRole(owner, BerserkerRole.ID);
 		}
 	}
 }

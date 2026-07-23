@@ -1,4 +1,4 @@
-package fr.ludos.core.persistence;
+package fr.ludos.core.persistence.pdc;
 
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;

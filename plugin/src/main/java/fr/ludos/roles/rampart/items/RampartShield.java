@@ -184,7 +184,7 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 				@Override
 				public void run() {
 					Player[] rampartPlayers = getGame().getGroup().getOnlinePlayers().stream()
-						.filter(game.getLudos().getRoleManager().ofRole(RampartRole.ID))
+						.filter(game.ludos().getRoleManager().ofRole(RampartRole.ID))
 						.toArray(Player[]::new);
 
 					for (Player player : rampartPlayers) {
@@ -257,7 +257,7 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.getLudos().getRoleManager().isPlayerRole(owner, RampartRole.ID);
+			return game.ludos().getRoleManager().isPlayerRole(owner, RampartRole.ID);
 		}
 
 		@EventHandler

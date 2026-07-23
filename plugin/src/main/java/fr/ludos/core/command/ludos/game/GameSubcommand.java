@@ -13,12 +13,12 @@ import fr.ludos.core.game.GameManager;
  */
 public final class GameSubcommand extends SubcommandHandler {
 	public GameSubcommand(GameManager manager) {
-		super("game", "Manage Ludos Games", false, new ArrayList<>() {{
+		super(Game.NAMESPACE, "Manage Ludos Games", false, new ArrayList<>() {{
 			add(new GameStart(manager));
 			add(new GameStop(manager));
 			add(new GameConfig(manager));
 			add(new GameGuidebook(manager));
-			add(new HelpSubcommand("game", this));
+			add(new HelpSubcommand(Game.NAMESPACE, this));
 		}});
 	}
 }

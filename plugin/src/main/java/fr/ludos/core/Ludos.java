@@ -34,6 +34,7 @@ import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.GroupManager;
+import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.texture.TextureListener;
 import fr.ludos.core.item.texture.TextureManager;
 import fr.ludos.core.packets.player.PlayerPackets;
@@ -64,6 +65,10 @@ public class Ludos extends JavaPlugin implements Listener {
 	private final FileConfiguration playersData = YamlConfiguration.loadConfiguration(playersFile);
 
 	public static final String NAMESPACE = "ludos";
+	public static final String GLOBAL_KEY = "global";
+	public static final String PLAYER_NAMESPACE = "player";
+	public static final String CONFIG_NAMESPACE = "config";
+	public static final String DATA_NAMESPACE = "data";
 
 	private final GroupManager groupManager = new GroupManager(this);
 	private final GameManager gameManager = new GameManager(this);
@@ -88,13 +93,13 @@ public class Ludos extends JavaPlugin implements Listener {
 	}
 
 	public ConfigurationSection getPluginConfig() {
-		return Utility.getOrCreateConfigSection(getConfig(), LudosConfigMap.INSTANCE.getNamespace());
+		return Utility.getOrCreateConfigSection(getConfig(), LudosConfigMap.INSTANCE.namespace());
 	}
 	public ConfigurationSection getGlobalRoleConfig(Role.Builder role) {
-		return Utility.getOrCreateConfigSection(getConfig(), roleManager.configMap.getNamespace() + "." + role.getId());
+		return Utility.getOrCreateConfigSection(getConfig(), roleManager.configMap.namespace() + "." + role.getId());
 	}
 	public ConfigurationSection getGlobalPlayerConfig() {
-		return Utility.getOrCreateConfigSection(getConfig(), PlayerConfigMap.INSTANCE.getNamespace());
+		return Utility.getOrCreateConfigSection(getConfig(), PlayerConfigMap.INSTANCE.namespace());
 	}
 
 	public final FileConfiguration getPlayersConfig() {
@@ -103,17 +108,34 @@ public class Ludos extends JavaPlugin implements Listener {
 	public ConfigurationSection getPlayerConfigSection(OfflinePlayer player) {
 		return Utility.getOrCreateConfigSection(playersData, player.getUniqueId().toString());
 	}
+
 	public ConfigurationSection getPlayerScopedConfig(OfflinePlayer player) {
-		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), "config");
+		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), CONFIG_NAMESPACE);
 	}
 	public ConfigurationSection getPlayerScopedConfig(OfflinePlayer player, String path) {
-		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), "config." + path);
+		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), CONFIG_NAMESPACE + "." + path);
 	}
 	public ConfigurationSection getPlayerRoleConfig(OfflinePlayer player, Role.Builder role) {
-		return getPlayerScopedConfig(player, roleManager.configMap.getNamespace() + "." + role.getId());
+		return getPlayerScopedConfig(player, Role.NAMESPACE + "." + role.getId());
 	}
 	public ConfigurationSection getPlayerConfig(OfflinePlayer player) {
-		return getPlayerScopedConfig(player, PlayerConfigMap.INSTANCE.getNamespace());
+		return getPlayerScopedConfig(player, PLAYER_NAMESPACE);
+	}
+
+	public ConfigurationSection getPlayerScopedData(OfflinePlayer player) {
+		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), DATA_NAMESPACE);
+	}
+	public ConfigurationSection getPlayerScopedData(OfflinePlayer player, String path) {
+		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), DATA_NAMESPACE + "." + path);
+	}
+	public ConfigurationSection getGameData(OfflinePlayer player, Game.Builder game) {
+		return getPlayerScopedData(player, Game.NAMESPACE + "." + game.getId());
+	}
+	public ConfigurationSection getRoleData(OfflinePlayer player, Role.Builder role) {
+		return getPlayerScopedData(player, Role.NAMESPACE + "." + role.getId());
+	}
+	public ConfigurationSection getItemData(OfflinePlayer player, SpecialItem.Events<?> game) {
+		return getPlayerScopedData(player, SpecialItem.NAMESPACE + "." + game.getTypeId());
 	}
 
 	public void savePlayersConfig() {
@@ -144,7 +166,7 @@ public class Ludos extends JavaPlugin implements Listener {
 		roleManager.registerRole(new AssassinRole.Builder(this));
 		roleManager.registerRole(new BerserkerRole.Builder(this));
 
-		String commandLabel = "ludos";
+		String commandLabel = NAMESPACE;
 		PluginCommand cmd = getCommand(commandLabel);
 		LudosCommand ludosCommand = new LudosCommand(this);
 		cmd.setExecutor(ludosCommand);

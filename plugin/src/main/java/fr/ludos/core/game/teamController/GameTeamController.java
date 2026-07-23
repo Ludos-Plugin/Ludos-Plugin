@@ -34,13 +34,13 @@ import fr.ludos.core.game.GameProcessBase;
  */
 public abstract class GameTeamController extends GameProcessBase {
 	private final Game game;
-	public final Game getGame() {
+	public final Game game() {
 		return game;
 	}
 
 	@Override
 	protected final JavaPlugin getPlugin() {
-		return getGame().getPlugin();
+		return game().getPlugin();
 	}
 
 	private final GameJoinOption joinOption;
@@ -188,12 +188,12 @@ public abstract class GameTeamController extends GameProcessBase {
 		return getLocationAroundTeammate(
 			team,
 			noPlayerFallback,
-			() -> getGame().getWorldManager().getWorld().getSpawnLocation()
+			() -> game().getWorldManager().getWorld().getSpawnLocation()
 		);
 	}
 	public final Location getLocationAroundTeammate(Team team, Function<Area, Location> noPlayerFallback, Supplier<Location> noAreaFallback) {
 		Set<Player> players = getTeamAlivePlayers(team);
-		Area area = getGame().getWorldManager().getArea();
+		Area area = game().getWorldManager().getArea();
 
 		if (! players.isEmpty()) {
 			Player teammate = players.iterator().next();

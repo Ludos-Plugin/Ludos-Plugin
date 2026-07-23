@@ -1,4 +1,4 @@
-package fr.ludos.core.config;
+package fr.ludos.core.persistence.config;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,58 +14,54 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.Utility;
 
 /**
- * {@link ConfigOptions} implemented as a Collection of sub-{@link ConfigOptions}.
+ * {@link ConfigEntry} implemented as a Collection of sub-{@link ConfigEntry}.
  */
-public abstract class ConfigOptionsCollection extends ConfigOptions implements ConfigEntryInterface {
+public abstract class ConfigEntriesCollection extends ConfigEntry {
 	private final @Nullable String namespace;
-	public @Nullable String getNamespace() {
-		return namespace;
-	}
 
-	public ConfigOptionsCollection(String namespace) {
+	public ConfigEntriesCollection(@Nullable String namespace) {
 		this.namespace = namespace;
 	}
 
-	@Override
-	public String key() {
+	public @Nullable String namespace() {
 		return namespace;
 	}
 	@Override
-	public ConfigOptions options() {
-		return this;
+	public String key() {
+		return namespace();
 	}
 
-	public abstract @Nullable ConfigOptions getOptionsValue(String key);
+	public abstract @Nullable ConfigEntry getEntry(String key);
 
-	public final @NotNull Set<@NotNull String> getOptions(String key, CommandSender sender) {
-		ConfigOptions options = getOptionsValue(key);
+	public final @NotNull Set<@NotNull String> getEntryOptions(String key, CommandSender sender) {
+		ConfigEntry options = getEntry(key);
 		if (options == null) return Collections.emptySet();
 
-		return options.getOptions(sender);
+		return options.options(sender);
 	}
 
 	@Override
-	public final boolean set(@NotNull String[] args, CommandSender sender, ConfigurationSection config) {
+	public final boolean execute(@NotNull String[] args, CommandSender sender, ConfigurationSection config) {
 		if (args.length == 0) return false;
 
 		String key = args[0];
-		ConfigOptions options = getOptionsValue(key);
+		ConfigEntry options = getEntry(key);
 		if (options == null) return false;
 
 		if (namespace != null) {
 			config = Utility.getOrCreateConfigSection(config, namespace);
 		}
 
-		return options.set(Arrays.copyOfRange(args, 1, args.length), sender, config);
+		return options.execute(Arrays.copyOfRange(args, 1, args.length), sender, config);
 	}
 
 	@Override
 	public final @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender) {
 		if (args.length <= 1) {
-			return getOptions(sender).stream().toList();
+			return options(sender).stream().toList();
 		}
 
-		ConfigOptions options = getOptionsValue(args[0]);
+		ConfigEntry options = getEntry(args[0]);
 		if (options == null) return null;
 
 		return options.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender);

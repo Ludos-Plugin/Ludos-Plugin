@@ -45,7 +45,9 @@ import net.kyori.adventure.text.format.TextDecoration;
  * @param <T> self type
  */
 public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialItemInterface {
-	public static final int USAGE_COOLDOWN = 4;
+	public final static String NAMESPACE = "item";
+
+	public final static int USAGE_COOLDOWN = 4;
 
 	private final Events<T> events;
 	public Events<T> getEvents() { return events; }

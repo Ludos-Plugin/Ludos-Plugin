@@ -23,7 +23,7 @@ import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelState;
 import fr.ludos.core.item.level.LevelValue;
-import fr.ludos.core.persistence.LevelValueMapPersistentDataType;
+import fr.ludos.core.persistence.pdc.LevelValueMapPersistentDataType;
 import net.kyori.adventure.text.Component;
 
 /**

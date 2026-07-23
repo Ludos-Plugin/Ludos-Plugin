@@ -13,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -51,7 +52,7 @@ public final class ManhuntTeamController extends GameTeamController {
 		this.selectedPlayers = players;
 		this.selectedPrey = prey;
 
-		Scoreboard scoreboard = getGame().getScoreboard();
+		Scoreboard scoreboard = game().getScoreboard();
 
 		hunterTeam = scoreboard.getTeam("Hunters");
 		if (hunterTeam == null) {
@@ -79,7 +80,7 @@ public final class ManhuntTeamController extends GameTeamController {
 	protected void onStart() {
 		super.onStart();
 
-		Set<Player> finalHunters = getGame().getGroup().getOnlinePlayers();
+		Set<Player> finalHunters = game().getGroup().getOnlinePlayers();
 		if (selectedPlayers != null && ! selectedPlayers.isEmpty()) {
 			finalHunters = finalHunters.stream()
 				.filter(p -> selectedPlayers.contains(p))
@@ -102,7 +103,7 @@ public final class ManhuntTeamController extends GameTeamController {
 
 		joinPrey(prey);
 
-		for (Player player : getGame().getGroup().getOnlinePlayers()) {
+		for (Player player : game().getGroup().getOnlinePlayers()) {
 			if (player == prey) continue;
 			if (finalHunters.contains(player)) {
 				joinHunter(player);
@@ -159,20 +160,19 @@ public final class ManhuntTeamController extends GameTeamController {
 
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
-		if (getGame().getWorldManager().isLobbyStarted()) return;
+		if (game().getWorldManager().isLobbyStarted()) return;
 
 		Player player = event.getPlayer();
-		if (! getGame().getGroup().isPlayer(player)) return;
+		if (! game().getGroup().isPlayer(player)) return;
 
 		if (! preyTeam.hasEntry(player.getName())) {
 			Utility.onDeathSpectate(event, 5.0f, getPlugin(), () -> {
-				for (SpecialItem.Events<?> item : getGame().getActiveItems()) {
+				for (SpecialItem.Events<?> item : game().getActiveItems()) {
 					item.refreshPlayerInventory(player);
 				}
 			});
 			return;
 		}
-
 		Utility.onDeathSpectate(event, getPlugin());
 
 		Bukkit.getServer().broadcast(Component.text("Prey " + player.getName() + " Slain!")); // TODO: Translate
@@ -180,8 +180,35 @@ public final class ManhuntTeamController extends GameTeamController {
 
 		if (preyTeam.getSize() == 0) {
 			Bukkit.getServer().sendMessage(Component.text("All Prey Dead! End of Game!")); // TODO: Translate
-			getGame().scheduleEndGame(5);
+			game().scheduleEndGame(5);
 		}
+
+
+		ConfigurationSection preyData = game().ludos().getGameData(player, game().builder());
+		ManhuntTimer timer = ((ManhuntGame)game()).timer;
+		Duration newRecord = timer.getDuration();
+		String newRecordString = timer.formatDuration(newRecord);
+		Duration oldRecord = ManhuntGame.SURVIVAL_TIME.get(preyData);
+		String oldRecordString = oldRecord != null
+			? timer.formatDuration(oldRecord)
+			: null;
+
+		if (oldRecord == null || newRecord.compareTo(oldRecord) > 0) {
+			ManhuntGame.SURVIVAL_TIME.set(newRecord, preyData);
+			game().ludos().savePlayersConfig();
+		}
+
+		Component timeMessage =
+			Component.text("You survived ")
+				.append(Component.text(newRecordString).color(NamedTextColor.GOLD))
+				.append(Component.text("!"));
+		if (oldRecordString != null) {
+			timeMessage = timeMessage
+				.append(Component.text(" Previous Best : "))
+				.append(Component.text(oldRecordString).color(NamedTextColor.GOLD));
+		}
+
+		player.sendMessage(timeMessage.color(NamedTextColor.GREEN));
 	}
 
 
@@ -192,7 +219,7 @@ public final class ManhuntTeamController extends GameTeamController {
 	}
 
 	private void joinAnyPlayer(Player player, Location location) {
-		player.setScoreboard(getGame().getScoreboard());
+		player.setScoreboard(game().getScoreboard());
 
 		Utility.resetPlayer(player);
 
@@ -204,10 +231,10 @@ public final class ManhuntTeamController extends GameTeamController {
 	}
 
 	public void joinPrey(OfflinePlayer player) {
-		Area area = getGame().getWorldManager().getArea();
+		Area area = game().getWorldManager().getArea();
 		Location gameLocation = area != null
 			? Utility.snapToHighestY(area.pickRandom(0.0, 0.2), true)
-			: getGame().getWorldManager().getWorld().getSpawnLocation();
+			: game().getWorldManager().getWorld().getSpawnLocation();
 
 		preyTeam.addPlayer(player);
 
@@ -266,10 +293,10 @@ public final class ManhuntTeamController extends GameTeamController {
 	public void joinSpectator(OfflinePlayer player) {
 		if (hunterTeam.hasPlayer(player) || preyTeam.hasPlayer(player)) return;
 
-		Area area = getGame().getWorldManager().getArea();
+		Area area = game().getWorldManager().getArea();
 		Location gameLocation = area != null
 			? Utility.snapToHighestY(area.pickRandom(0.0, 1.0), true)
-			: getGame().getWorldManager().getWorld().getSpawnLocation();
+			: game().getWorldManager().getWorld().getSpawnLocation();
 
 		spectatorTeam.addPlayer(player);
 
@@ -280,7 +307,7 @@ public final class ManhuntTeamController extends GameTeamController {
 		onlinePlayer.setBedSpawnLocation(gameLocation, true);
 		onlinePlayer.setGameMode(GameMode.SPECTATOR);
 
-		onlinePlayer.setScoreboard(getGame().getScoreboard());
+		onlinePlayer.setScoreboard(game().getScoreboard());
 
 		Optional<Player> prey = getTeamOnlinePlayers(preyTeam).stream().findFirst();
 		if (prey.isPresent()) {
@@ -306,7 +333,7 @@ public final class ManhuntTeamController extends GameTeamController {
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer != null) {
 			Utility.resetPlayer(onlinePlayer);
-			onlinePlayer.teleport(getGame().getWorldManager().getReturnLocation());
+			onlinePlayer.teleport(game().getWorldManager().getReturnLocation());
 		}
 	}
 

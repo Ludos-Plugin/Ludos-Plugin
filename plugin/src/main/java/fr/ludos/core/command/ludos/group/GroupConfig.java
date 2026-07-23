@@ -45,7 +45,7 @@ public class GroupConfig implements Subcommand {
 	@Override
 	public String getUsage(@NotNull CommandSender sender) {
 		return "<" +
-			GroupConfigMap.INSTANCE.options().getOptions(sender).stream().sorted()
+			GroupConfigMap.INSTANCE.options(sender).stream().sorted()
 				.collect(Collectors.joining(" | "))
 			+ "> [option]";
 	}

@@ -7,15 +7,15 @@ import org.bukkit.WorldBorder;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.Utility;
-import fr.ludos.core.config.valueOptions.NumberConfigOptions;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.persistence.config.valueEntry.NumberConfigEntry;
 
 /**
  * Area that is delimited by a Minecraft {@link WorldBorder}.
  */
 public class WorldBorderArea extends Area {
-	public static final NumberConfigOptions CONFIG =
-		new NumberConfigOptions("WorldBorder Area diameter", "area", null, 150, Set.of(150, 250, 350), true);
+	public static final NumberConfigEntry CONFIG =
+		new NumberConfigEntry("WorldBorder Area diameter", "area", null, 150, Set.of(150, 250, 350), true);
 
 	private final Builder builder;
 	@Override

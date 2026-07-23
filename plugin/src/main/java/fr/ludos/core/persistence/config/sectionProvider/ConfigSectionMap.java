@@ -1,4 +1,4 @@
-package fr.ludos.core.config.sectionProvider;
+package fr.ludos.core.persistence.config.sectionProvider;
 
 import java.util.Map;
 import java.util.Set;
@@ -7,16 +7,16 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.config.ConfigOptions;
+import fr.ludos.core.persistence.config.ConfigEntry;
 
 /**
- * {@link ConfigSectionCollection} implemented as a Map-like structure of sub-{@link ConfigSectionProvider}s and {@link ConfigOptions}.
+ * {@link ConfigSectionCollection} implemented as a Map-like structure of sub-{@link ConfigSectionProvider}s and {@link ConfigEntry}.
  */
 public class ConfigSectionMap extends ConfigSectionCollection {
-	private final static Pair<ConfigSectionProvider, ConfigOptions> EMPTY_PAIR = Pair.of(null, null);
-	private final Map<String, Pair<ConfigSectionProvider, ConfigOptions>> map;
+	private final static Pair<ConfigSectionProvider, ConfigEntry> EMPTY_PAIR = Pair.of(null, null);
+	private final Map<String, Pair<ConfigSectionProvider, ConfigEntry>> map;
 
-	public ConfigSectionMap(Map<String, Pair<ConfigSectionProvider, ConfigOptions>> map) {
+	public ConfigSectionMap(Map<String, Pair<ConfigSectionProvider, ConfigEntry>> map) {
 		this.map = map;
 	}
 
@@ -31,7 +31,7 @@ public class ConfigSectionMap extends ConfigSectionCollection {
 	}
 
 	@Override
-	public @NotNull ConfigOptions getOptions(String key, CommandSender sender) {
+	public @NotNull ConfigEntry getOptions(String key, CommandSender sender) {
 		return map.getOrDefault(key, EMPTY_PAIR).getRight();
 	}
 

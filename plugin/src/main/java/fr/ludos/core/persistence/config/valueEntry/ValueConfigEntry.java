@@ -1,4 +1,4 @@
-package fr.ludos.core.config.valueOptions;
+package fr.ludos.core.persistence.config.valueEntry;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,17 +13,18 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
-import fr.ludos.core.config.ConfigEntryInterface;
-import fr.ludos.core.config.ConfigOptions;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.persistence.config.ConfigEntry;
+import fr.ludos.core.persistence.serializer.Serializer;
 import fr.ludos.core.role.Role;
 
 /**
- * {@link ConfigOptions} for flat, typed values.
- * @param <T> The type of values, natively supported by this instance. Parsed to and from a String during command running.
+ * {@link ConfigEntry} for flat, typed values.
+ * @param <TComplex> The type of values, natively supported by this instance. Parsed to and from a String during command running.
+ * @param <TPrimitive> The backing type that the value is converted to, before being set in the give {@link ConfigurationSection}
  */
-public abstract class ValueConfigOptions<T> extends ConfigOptions implements ConfigEntryInterface {
+public abstract class ValueConfigEntry<TComplex, TPrimitive> extends ConfigEntry {
 	public static final String DEFAULT_PLACEHOLDER_VALUE = "default";
 	private final @NotNull String name;
 	public @NotNull String getName() {
@@ -40,12 +41,7 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		return placeholderValue;
 	}
 
-	@Override
-	public ConfigOptions options() {
-		return this;
-	}
-
-	public ValueConfigOptions(@NotNull String name, @NotNull String key, @Nullable String placeholderValue) {
+	public ValueConfigEntry(@NotNull String name, @NotNull String key, @Nullable String placeholderValue) {
 		this.name = ObjectUtils.requireNonEmpty(name);
 		this.key = ObjectUtils.requireNonEmpty(key);
 		this.placeholderValue = (placeholderValue == null || placeholderValue.isBlank())
@@ -53,61 +49,66 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 			: placeholderValue;
 	}
 
-	public final @Nullable T getValueOrDefault(ConfigurationSection config) {
-		T found = getValueOrNull(config);
+	protected abstract Serializer<TComplex, TPrimitive> getSerializer();
+
+	public final @Nullable TComplex getValueOrNull(ConfigurationSection config) {
+		return getSerializer().get(key, config);
+	}
+	public final @Nullable TComplex getValueOrDefault(ConfigurationSection config) {
+		TComplex found = getValueOrNull(config);
 		if (found != null) return found;
 
 		return getDefaultValue();
 	}
 
-	public final @Nullable T getValueOrNull(ConfigurationSection config, ConfigurationSection fallback) {
-		T first = getValueOrNull(config);
+	public final @Nullable TComplex getValueOrNull(ConfigurationSection config, ConfigurationSection fallback) {
+		TComplex first = getValueOrNull(config);
 		if (first != null) return first;
 
-		T second = getValueOrNull(fallback);
+		TComplex second = getValueOrNull(fallback);
 		if (second != null) return second;
 
 		return null;
 	}
-	public final @Nullable T getValueOrDefault(ConfigurationSection config, ConfigurationSection fallback) {
-		T found = getValueOrNull(config, fallback);
+	public final @Nullable TComplex getValueOrDefault(ConfigurationSection config, ConfigurationSection fallback) {
+		TComplex found = getValueOrNull(config, fallback);
 		if (found != null) return found;
 
 		return getDefaultValue();
 	}
 
-	public final @Nullable T getValueOrNull(ConfigurationSection scopedConfig, ConfigurationSection config, ConfigurationSection fallback) {
-		T first = getValueOrNull(scopedConfig);
+	public final @Nullable TComplex getValueOrNull(ConfigurationSection scopedConfig, ConfigurationSection config, ConfigurationSection fallback) {
+		TComplex first = getValueOrNull(scopedConfig);
 		if (first != null) return first;
 
-		T second = getValueOrNull(config);
+		TComplex second = getValueOrNull(config);
 		if (second != null) return second;
 
-		T third = getValueOrNull(fallback);
+		TComplex third = getValueOrNull(fallback);
 		if (third != null) return third;
 
 		return null;
 	}
-	public final @Nullable T getValueOrDefault(ConfigurationSection scopedConfig, ConfigurationSection config, ConfigurationSection fallback) {
-		T found = getValueOrNull(scopedConfig, config, fallback);
+	public final @Nullable TComplex getValueOrDefault(ConfigurationSection scopedConfig, ConfigurationSection config, ConfigurationSection fallback) {
+		TComplex found = getValueOrNull(scopedConfig, config, fallback);
 		if (found != null) return found;
 
 		return getDefaultValue();
 	}
 
-	public final T getPluginConfig(Ludos ludos) {
+	public final TComplex getPluginConfig(Ludos ludos) {
 		return getValueOrDefault(ludos.getPluginConfig());
 	}
-	public final T getGroupConfig(Group group) {
+	public final TComplex getGroupConfig(Group group) {
 		return getValueOrDefault(group.getGroupConfig(), group.getManager().getGlobalGroupConfig());
 	}
-	public final T getGameConfig(Group group, Game.Builder game) {
+	public final TComplex getGameConfig(Group group, Game.Builder game) {
 		return getValueOrDefault(group.getGameConfig(game), game.getManager().getGlobalGameConfig(game));
 	}
-	public final T getRoleConfig(Group group, Role.Builder role) {
+	public final TComplex getRoleConfig(Group group, Role.Builder role) {
 		return getValueOrDefault(group.getRoleConfig(role), role.getLudos().getGlobalRoleConfig(role));
 	}
-	public final T getRoleConfig(OfflinePlayer player, Ludos ludos, Role.Builder role) {
+	public final TComplex getRoleConfig(OfflinePlayer player, Ludos ludos, Role.Builder role) {
 		ConfigurationSection playerScopedConfig = ludos.getPlayerRoleConfig(player, role);
 		ConfigurationSection globalScopedConfig = ludos.getGlobalRoleConfig(role);
 		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
@@ -116,7 +117,7 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		}
 		return getValueOrDefault(playerScopedConfig, group.getRoleConfig(role), globalScopedConfig);
 	}
-	public final T getPlayerConfig(OfflinePlayer player, Ludos ludos) {
+	public final TComplex getPlayerConfig(OfflinePlayer player, Ludos ludos) {
 		ConfigurationSection playerScopedConfig = ludos.getPlayerConfig(player);
 		ConfigurationSection globalScopedConfig = ludos.getGlobalPlayerConfig();
 		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
@@ -127,7 +128,7 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	}
 
 	@Override
-	public @NotNull Set<@NotNull String> getOptions(CommandSender sender) {
+	public @NotNull Set<@NotNull String> options(CommandSender sender) {
 		Set<String> options = getValidOptions(sender).stream()
 			.collect(Collectors.toCollection(HashSet::new));
 
@@ -136,46 +137,24 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		return options;
 	}
 
-	public boolean set(@NotNull String[] args, CommandSender sender, ConfigurationSection config) {
+	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigurationSection config) {
 		if (args.length == 0) {
 			sender.sendMessage(getterMessage(config));
 			return false;
 		}
 
 		if (isDefaultArgs(args, sender)) {
-			unsetValue(config);
+			getSerializer().unset(key, config);
 			notifyUnset(sender);
 			return true;
 		}
 
-		T parsed = parseValueFromArgs(args, sender);
+		TComplex parsed = parseValueFromArgs(args, sender);
 		if (parsed == null) return false;
 
-		if (! setValue(parsed, config)) return false;
+		if (! getSerializer().set(key, parsed, config)) return false;
 
 		notifySet(parsed, sender);
-		return true;
-	}
-
-	/**
-	 * Unset/reset the value in the given {@link ConfigurationSection}.
-	 * @param config The Configuration section to use as a root path for the unsetting.
-	 * @return Whether or not the operation was successful.
-	 */
-	protected boolean unsetValue(ConfigurationSection config) {
-		config.set(key, null);
-		return true;
-	}
-	/**
-	 * Set the new value in the given {@link ConfigurationSection}.
-	 * @param value The new value to set in the given {@link ConfigurationSection}
-	 * @param config The Configuration section to use as a root path for the setting.
-	 * @return Whether or not the operation was successful, if the given {@code value} is null, return false.
-	 */
-	protected boolean setValue(T value, ConfigurationSection config) {
-		if (value == null) return false;
-
-		config.set(key, value);
 		return true;
 	}
 
@@ -197,15 +176,17 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	 * @param sender The Command Sender who performed the command
 	 * @return A valid instance of T if the args were valid, or null.
 	 */
-	public T parseValueFromArgs(@NotNull String[] args, CommandSender sender) {
-		return fromString(args[0]);
+	public TComplex parseValueFromArgs(@NotNull String[] args, CommandSender sender) {
+		String val = args[0];
+		if (! getValidOptions(sender).contains(val)) return null;
+		return getSerializer().fromString(val);
 	}
 
 	protected void notifyUnset(CommandSender sender) {
 		sender.sendMessage(getName() + " reset");
 	}
-	protected void notifySet(T value, CommandSender sender) {
-		String parsed = toString(value);
+	protected void notifySet(TComplex value, CommandSender sender) {
+		String parsed = getSerializer().toString(value);
 		if (parsed == null) {
 			sender.sendMessage(getName() + " set to irrepresentable value");
 		}
@@ -221,7 +202,7 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	 * @return A more detailed, if necessary, value to return to the player.
 	 */
 	public @NotNull String getterMessage(ConfigurationSection config) {
-		String valueString = toString(getValueOrNull(config));
+		String valueString = getSerializer().toString(getValueOrNull(config));
 		return getterMessage(valueString);
 	}
 	/**
@@ -232,7 +213,7 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 	 */
 	public String getterMessage(String value) {
 		if (value == null) {
-			String defaultValue = toString(getDefaultValue());
+			String defaultValue = getSerializer().toString(getDefaultValue());
 			return defaultValue != null
 				? placeholderValue + " (" + defaultValue + ")"
 				: placeholderValue;
@@ -240,39 +221,29 @@ public abstract class ValueConfigOptions<T> extends ConfigOptions implements Con
 		return value;
 	}
 
+	public TPrimitive serialize(TComplex value) {
+		return getSerializer().serialize(value);
+	}
+	public TComplex parse(TPrimitive primitive) {
+		return getSerializer().parse(primitive);
+	}
+	public String toString(TComplex value) {
+		return getSerializer().toString(value);
+	}
+	public TComplex fromString(String string) {
+		return getSerializer().fromString(string);
+	}
+
 	/**
 	 * The default value that will be returned when fetching the value, when the option was not set, or after it was reset, using {@link #placeholderValue}.<br>
 	 * Using {@link #getDefaultValue} with {@link #getDefaultValue} should NEVER result in null, for the sake of sender messages.
 	 * @return The default value. Do not return null, unless the {@link #getValueOrDefault} call-sites are null-proof.
 	 */
-	public abstract @NotNull T getDefaultValue();
+	public abstract @NotNull TComplex getDefaultValue();
 	/**
 	 * Gets the valid options available for this parameter. Does not include {@link #placeholderValue}.
 	 * @param sender The Command Sender who performed the command
 	 * @return The valid options (except for {@link #placeholderValue}) available to the {@code sender} for passing as the next argument in the chain.
 	 */
 	public abstract @NotNull Set<@NotNull String> getValidOptions(CommandSender sender);
-
-	/**
-	 * Fetches the currently set value of this ConfigOptions in the given {@link ConfigurationSection}.<br>
-	 * Returns null if the value was not set, or if it was reset, using {@link #placeholderValue}.
-	 * @param config The Configuration section to use as a root path for the fetching.
-	 * @return The value found in the config, or null.
-	 */
-	public abstract @Nullable T getValueOrNull(ConfigurationSection config);
-
-	/**
-	 * Function to convert a single String value to a native T type value.<br>
-	 * If the given String value is invalid/non-parsable, return null.<br>
-	 * @param value The representative String value to parse to a native T type.
-	 * @return The parsed T value or null if an invalid/non-parsable String `value` was given.
-	 */
-	public abstract @Nullable T fromString(String value);
-	/**
-	 * Function to convert a T native value to a parsed String value.<br>
-	 * If the given T value is invalid/null, return null.
-	 * @param value The T native value type to represent as a string
-	 * @return The representative String or null if an invalid/null T `value` was given.
-	 */
-	public abstract @NotNull String toString(T value);
 }

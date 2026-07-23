@@ -166,7 +166,7 @@ public class RampartDash extends SpecialItem<RampartDash> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return getGame().getLudos().getRoleManager().isPlayerRole(owner, RampartRole.ID);
+			return getGame().ludos().getRoleManager().isPlayerRole(owner, RampartRole.ID);
 		}
 
 		@EventHandler

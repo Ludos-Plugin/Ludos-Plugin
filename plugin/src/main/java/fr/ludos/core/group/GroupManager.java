@@ -188,7 +188,7 @@ public class GroupManager implements Listener {
 	}
 
 	public ConfigurationSection getGlobalGroupConfig() {
-		return Utility.getOrCreateConfigSection(getLudos().getConfig(), GroupConfigMap.INSTANCE.getNamespace());
+		return Utility.getOrCreateConfigSection(getLudos().getConfig(), GroupConfigMap.INSTANCE.namespace());
 	}
 	public ConfigurationSection getConfigSection(Group group) {
 		return Utility.getOrCreateConfigSection(groupsData, group.getId().toString());
@@ -200,16 +200,16 @@ public class GroupManager implements Listener {
 		return Utility.getOrCreateConfigSection(getConfigSection(group), "config." + path);
 	}
 	public ConfigurationSection getGroupConfig(Group group) {
-		return getScopedConfig(group, GroupConfigMap.INSTANCE.getNamespace());
+		return getScopedConfig(group, GroupConfigMap.INSTANCE.namespace());
 	}
 	public ConfigurationSection getGameConfig(Group group, Game.Builder game) {
-		return getScopedConfig(group, game.getManager().configMap.getNamespace() + "." + game.getId());
+		return getScopedConfig(group, game.getManager().configMap.namespace() + "." + game.getId());
 	}
 	public ConfigurationSection getRoleConfig(Group group, Role.Builder role) {
-		return getScopedConfig(group, role.getManager().configMap.getNamespace() + "." + role.getId());
+		return getScopedConfig(group, role.getManager().configMap.namespace() + "." + role.getId());
 	}
 	public ConfigurationSection getPlayerConfig(Group group) {
-		return getScopedConfig(group, PlayerConfigMap.INSTANCE.getNamespace());
+		return getScopedConfig(group, PlayerConfigMap.INSTANCE.namespace());
 	}
 
 	public void loadConfigGroups() {

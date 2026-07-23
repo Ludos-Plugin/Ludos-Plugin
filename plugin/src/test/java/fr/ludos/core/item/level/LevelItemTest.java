@@ -41,7 +41,7 @@ import fr.ludos.core.group.Group;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
-import fr.ludos.core.persistence.LevelValuePersistentDataType;
+import fr.ludos.core.persistence.pdc.LevelValuePersistentDataType;
 import net.kyori.adventure.text.Component;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -144,7 +144,7 @@ class LevelItemTest {
 
 		when(mockLudos.getServer()).thenReturn(server);
 		when(mockGame.getPlugin()).thenReturn(mockLudos);
-		when(mockGame.getLudos()).thenReturn(mockLudos);
+		when(mockGame.ludos()).thenReturn(mockLudos);
 		when(mockGame.getGroup()).thenReturn(mockGroup);
 		when(mockGroup.isPlayer(any())).thenReturn(true);
 		when(mockGroup.getOnlinePlayers()).thenReturn(Set.of(owner));

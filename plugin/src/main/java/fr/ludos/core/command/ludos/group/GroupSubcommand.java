@@ -13,7 +13,7 @@ import fr.ludos.core.group.GroupManager;
  */
 public final class GroupSubcommand extends SubcommandHandler {
 	public GroupSubcommand(GroupManager manager) {
-		super("group", "Manage Ludos Groups", false, new ArrayList<>() {{
+		super(Group.NAMESPACE, "Manage Ludos Groups", false, new ArrayList<>() {{
 			add(new GroupCreate(manager));
 			add(new GroupDisband(manager));
 			add(new GroupJoin(manager));
@@ -23,7 +23,7 @@ public final class GroupSubcommand extends SubcommandHandler {
 			add(new GroupPromote(manager));
 			add(new GroupConfig(manager));
 			add(new GroupInfo(manager));
-			add(new HelpSubcommand("group", this));
+			add(new HelpSubcommand(Group.NAMESPACE, this));
 		}});
 	}
 }
