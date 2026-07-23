@@ -3,13 +3,18 @@ package fr.ludos.roles.huntsman;
 import java.util.LinkedHashMap;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
@@ -49,7 +54,8 @@ public class HuntsmanRole extends Role {
 
 	@EventHandler
 	public void onProjectileHit(ProjectileHitEvent event) {
-		if (event.getHitEntity() == null) return;
+		Entity hit = event.getHitEntity();
+		if (hit == null) return;
 
 		Projectile arrowProjectile = event.getEntity();
 		if (! (arrowProjectile instanceof Arrow arrow)) return;
@@ -60,6 +66,31 @@ public class HuntsmanRole extends Role {
 		if (! isPlayerValid(player)) return;
 
 		player.addPotionEffect(PotionEffectType.SPEED.createEffect((int)(20 * 2.5), 2));
+
+
+		playHitPing(player);
+	}
+
+
+	public @NotNull BukkitTask playHitPing(Player player) {
+		return new BukkitRunnable() {
+			private int progress;
+			@Override
+			public void run() {
+				switch (progress) {
+					case 0:
+						player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.1f, 0.5f);
+						break;
+					case 2:
+						player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.05f, 1.2f);
+						cancel();
+						return;
+					default:
+						break;
+				}
+				progress += 1;
+			}
+		}.runTaskTimer(getPlugin(), 0, 1);
 	}
 
 	@Override
