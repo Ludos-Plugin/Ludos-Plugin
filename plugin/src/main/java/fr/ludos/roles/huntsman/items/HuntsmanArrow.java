@@ -71,6 +71,10 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 			return ID;
 		}
 
+		@Override
+		public boolean isWeapon() {
+			return false;
+		}
 
 		private void reload(Player player, List<HuntsmanArrow> arrows) {
 			if (player.getCooldown(Material.BOW) < reloadTime) player.setCooldown(Material.BOW, reloadTime);

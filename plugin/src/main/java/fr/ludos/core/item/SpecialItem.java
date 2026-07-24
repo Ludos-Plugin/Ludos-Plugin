@@ -389,6 +389,9 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 		public boolean isRanged() {
 			return false;
 		}
+		public boolean isWeapon() {
+			return true;
+		}
 
 		public final Boolean isPlayerValid(OfflinePlayer player) {
 			if (! game.getGroup().isPlayer(player)) return false;
@@ -488,6 +491,8 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 		@EventHandler
 		public void onKill(EntityDeathEvent event) {
+			if (isWeapon()) return;
+
 			LivingEntity victim = event.getEntity();
 			EntityDamageEvent damageEvent = victim.getLastDamageCause();
 

@@ -59,6 +59,11 @@ public class AssassinBoots extends SpecialItem<AssassinBoots> {
 			return ID;
 		}
 
+		@Override
+		public boolean isWeapon() {
+			return false;
+		}
+
 		@EventHandler
 		public void onPlayerMove(PlayerMoveEvent event) {
 			Player player = event.getPlayer();

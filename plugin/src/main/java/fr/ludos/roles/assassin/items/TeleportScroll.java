@@ -71,6 +71,11 @@ public class TeleportScroll extends SpecialItem<TeleportScroll> {
 		}
 
 		@Override
+		public boolean isWeapon() {
+			return false;
+		}
+
+		@Override
 		protected void onItemStop() {
 			super.onItemStop();
 

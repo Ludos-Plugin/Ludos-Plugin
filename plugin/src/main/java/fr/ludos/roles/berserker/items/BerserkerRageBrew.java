@@ -73,6 +73,11 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 		}
 
 		@Override
+		public boolean isWeapon() {
+			return false;
+		}
+
+		@Override
 		protected void onItemStop() {
 			super.onItemStop();
 

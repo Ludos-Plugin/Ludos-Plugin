@@ -46,6 +46,11 @@ public class RampartHelm extends SpecialItem<RampartHelm> {
 		}
 
 		@Override
+		public boolean isWeapon() {
+			return false;
+		}
+
+		@Override
 		protected RampartHelm getItemInternal(SpecialItem.ItemData info) {
 			return new RampartHelm(info, this);
 		}

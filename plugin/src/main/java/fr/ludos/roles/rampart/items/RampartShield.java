@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -26,6 +27,8 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.level.LevelItem;
+import fr.ludos.core.persistence.data.DataEntry;
+import fr.ludos.core.persistence.serializer.DoubleSerializer;
 import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -37,6 +40,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels> {
 	public static final String ID = "rampart_shield";
 
+	public static final DataEntry<Double> DAMAGE_ABSORBED = new DataEntry<>("damage_absorbed", DoubleSerializer.INSTANCE);
+
 	private static final int COOLDOWN_DURATION_SECONDS = 10;
 	private static final Vector ALLY_PROTECTION_RANGE = new Vector(2.0, 2.0, 2.0);
 
@@ -45,34 +50,36 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 		super(info, events);
 	}
 
-	public void hit() {
-		hit(1);
-	}
-	public void hit(double damage) {
+	public void hit(double damage, double multiplier) {
 		ItemStack stack = getStack();
 		ItemMeta meta = stack.getItemMeta();
 		if (! (meta instanceof Damageable damageable)) return;
 
 		RampartShieldLevels level = lvlObject(level());
 
-		int currentDamage = damageable.getDamage();
-		int maxDamage = stack.getType().getMaxDurability();
+		int currentDurabilityDamage = damageable.getDamage();
+		int maxDurabilityDamage = stack.getType().getMaxDurability();
 
 		double durabilityPerDamage = level.durabilityPerDamage();
-		double convertedDamage = durabilityPerDamage * damage;
-		int newDamage = (int) Math.ceil(currentDamage + convertedDamage);
+		double durabilityDamage = durabilityPerDamage * damage * multiplier;
+		int newDurabilityDamage = (int) Math.ceil(currentDurabilityDamage + durabilityDamage);
 
-		if (newDamage >= maxDamage) {
-			damageable.setDamage(maxDamage);
+		if (newDurabilityDamage >= maxDurabilityDamage) {
+			damageable.setDamage(maxDurabilityDamage);
 			doCooldown();
 		}
 		else {
-			damageable.setDamage(newDamage);
+			damageable.setDamage(newDurabilityDamage);
 		}
 		stack.setItemMeta(damageable);
 
 		addXp(damage);
+		saveDamageAbsorbed(damage);
 	}
+	public void hit(double damage) {
+		hit(damage, 1.0);
+	}
+
 	public void restore(double health) {
 		ItemStack stack = getStack();
 		ItemMeta meta = stack.getItemMeta();
@@ -120,6 +127,14 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 				}
 			}
 		}.runTaskLater(getGame().getPlugin(), 2);
+	}
+
+	public void saveDamageAbsorbed(double damage) {
+		ConfigurationSection data = getGame().ludos().getItemData(getOwner(), getEvents());
+
+		double currentDamage = DAMAGE_ABSORBED.getOr(data, 0d);
+		DAMAGE_ABSORBED.set(currentDamage + damage, data);
+		getGame().ludos().savePlayersConfig();
 	}
 
 	@Override
@@ -309,7 +324,7 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 				if (shield == null) continue;
 
 				event.setCancelled(true);
-				shield.hit(event.getDamage());
+				shield.hit(event.getDamage(), 0.5);
 				rampartEntity.playEffect(EntityEffect.SHIELD_BLOCK);
 				return;
 			}
