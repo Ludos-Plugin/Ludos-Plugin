@@ -66,7 +66,7 @@ public class RampartHelm extends SpecialItem<RampartHelm> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.getLudos().getRoleManager().isPlayerRole(owner, RampartRole.ID);
+			return game.ludos().getRoleManager().isPlayerRole(owner, RampartRole.ID);
 		}
 	}
 }

@@ -56,6 +56,11 @@ public class HuntsmanBow extends SpecialItem<HuntsmanBow> {
 			return ID;
 		}
 
+		@Override
+		public boolean isRanged() {
+			return true;
+		}
+
 		@EventHandler
 		public void onShootArrow(EntityShootBowEvent event) {
 			if ( ! (event.getEntity() instanceof Player player) ) return;
@@ -81,7 +86,7 @@ public class HuntsmanBow extends SpecialItem<HuntsmanBow> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.getLudos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
+			return game.ludos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
 		}
 	}
 }

@@ -33,6 +33,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
  * A structure to encapsulate a Group of Players. Meant for {@link Game} instances.
  */
 public final class Group {
+	public static final String NAMESPACE = "group";
+
 	GroupManager groupManager;
 	private @Nullable Game game;
 

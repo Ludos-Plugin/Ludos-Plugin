@@ -6,13 +6,13 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.command.ludos.config.ludos.LudosConfigMap;
 import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
-import fr.ludos.core.config.ConfigOptionsMap;
+import fr.ludos.core.persistence.config.ConfigEntriesMap;
 
 /**
  * Config Options Map for Globally scoped configuration.
  * This is used to limit the subsequent config options to Global configuration.
  */
-public class GlobalScopedConfigMap extends ConfigOptionsMap {
+public class GlobalScopedConfigMap extends ConfigEntriesMap {
 	public GlobalScopedConfigMap(Ludos ludos) {
 		super(null, Set.of(
 			LudosConfigMap.INSTANCE,

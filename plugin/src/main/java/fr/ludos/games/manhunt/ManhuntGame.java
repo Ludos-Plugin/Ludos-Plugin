@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
@@ -27,17 +26,18 @@ import org.bukkit.scheduler.BukkitTask;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
-import fr.ludos.core.config.ConfigOptionsCollection;
-import fr.ludos.core.config.ConfigOptionsMap;
-import fr.ludos.core.config.valueOptions.MultipleGroupPlayerConfigOptions;
-import fr.ludos.core.config.valueOptions.NumberConfigOptions;
-import fr.ludos.core.config.valueOptions.SingleGroupPlayerConfigOptions;
-import fr.ludos.core.config.valueOptions.ValueConfigOptions;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
+import fr.ludos.core.persistence.config.ConfigEntriesCollection;
+import fr.ludos.core.persistence.config.ConfigEntriesMap;
+import fr.ludos.core.persistence.config.valueEntry.GroupPlayerConfigEntry;
+import fr.ludos.core.persistence.config.valueEntry.GroupPlayersConfigEntry;
+import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
+import fr.ludos.core.persistence.data.DataEntry;
+import fr.ludos.core.persistence.serializer.TimeSerializer;
 import fr.ludos.core.world.WorldManager;
 import fr.ludos.games.manhunt.items.ManhuntCompass;
 import net.kyori.adventure.text.Component;
@@ -52,8 +52,10 @@ import net.kyori.adventure.util.TriState;
 public class ManhuntGame extends Game {
 	public static final String ID = "manhunt";
 
+	public static final DataEntry<Duration> SURVIVAL_TIME = new DataEntry<>("survival_time", TimeSerializer.INSTANCE);
+
 	private final Builder builder;
-	public final Builder getBuilder() {
+	public final Builder builder() {
 		return this.builder;
 	}
 
@@ -69,8 +71,8 @@ public class ManhuntGame extends Game {
 		return this.teamController;
 	}
 
-	private final ManhuntCompass.Events compassEvents;
-	private final ManhuntTimer timer;
+	public final ManhuntTimer timer;
+	public final ManhuntCompass.Events compassEvents;
 
 	private Location lastPreyLocation = null;
 	private BukkitTask actionBarTask;
@@ -204,7 +206,7 @@ public class ManhuntGame extends Game {
 		);
 
 		for (Player hunter : teamController.getTeamOnlinePlayers(teamController.preyTeam)) {
-			for (ManhuntCompass compass : ManhuntCompass.findAllIn(hunter.getInventory(), compassEvents::getItem)) {
+			for (ManhuntCompass compass : ManhuntCompass.findAll(hunter.getInventory(), compassEvents::getItem)) {
 				compass.setLocation(prey);
 			}
 		}
@@ -226,17 +228,17 @@ public class ManhuntGame extends Game {
 	 * Builder for {@link ManhuntGame}.
 	 */
 	public static class Builder extends Game.Builder {
-		public final ValueConfigOptions<Set<OfflinePlayer>> players =
-			new MultipleGroupPlayerConfigOptions(getManager().getLudos().getGroupManager(), "Players", "players", "all");
+		public final GroupPlayersConfigEntry players =
+			new GroupPlayersConfigEntry(getManager().getLudos().getGroupManager(), "Players", "players", "all");
 
-		public final ValueConfigOptions<OfflinePlayer> prey =
-			new SingleGroupPlayerConfigOptions(getManager().getLudos().getGroupManager(), "Prey Player", "prey", "random");
+		public final GroupPlayerConfigEntry prey =
+			new GroupPlayerConfigEntry(getManager().getLudos().getGroupManager(), "Prey Player", "prey", "random");
 
-		public final ValueConfigOptions<Integer> revealPeriod =
-			new NumberConfigOptions("Reveal period duration seconds", "reveal", null, 180, Set.of(60, 120, 180, 240, 300, 360), true);
+		public final IntegerConfigEntry revealPeriod =
+			new IntegerConfigEntry("Reveal period duration seconds", "reveal", null, 180, Set.of(60, 120, 180, 240, 300, 360), true);
 
-		public final ConfigOptionsMap config =
-			new ConfigOptionsMap(ID, Set.of(players, prey, WorldBorderArea.CONFIG, revealPeriod));
+		public final ConfigEntriesMap config =
+			new ConfigEntriesMap(ID, Set.of(players, prey, WorldBorderArea.CONFIG, revealPeriod));
 
 		public Builder(GameManager manager) {
 			super(manager);
@@ -283,7 +285,7 @@ public class ManhuntGame extends Game {
 		}
 
 		@Override
-		public ConfigOptionsCollection getConfig() {
+		public ConfigEntriesCollection getConfig() {
 			return config;
 		}
 

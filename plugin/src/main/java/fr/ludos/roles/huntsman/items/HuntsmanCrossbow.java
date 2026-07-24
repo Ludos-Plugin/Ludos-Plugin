@@ -85,6 +85,11 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, Hun
 			return ID;
 		}
 
+		@Override
+		public boolean isRanged() {
+			return true;
+		}
+
 
 		@EventHandler
 		public void onShootArrow(EntityShootBowEvent event) {
@@ -121,17 +126,16 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, Hun
 
 			if (! isPlayerValid(player)) return;
 
-			HuntsmanCrossbow crossbow = HuntsmanCrossbow.findIn(player.getInventory(), this::getItem);
+			HuntsmanCrossbow crossbow = HuntsmanCrossbow.findOne(player.getInventory(), this::getItem);
 			if (crossbow == null) return;
 
 
 			Entity hitEntity = event.getHitEntity();
-			if (hitEntity != null) {
-				if (hitEntity instanceof LivingEntity livingEntity) {
-					double xp = livingEntity.isDead() ? 1.25d : 1d;
-					xp *= livingEntity.getLocation().distance(player.getLocation());
-					crossbow.addXp(xp);
-				}
+			if (hitEntity instanceof LivingEntity livingEntity) {
+				double xp = livingEntity.isDead() ? 1.25d : 1d;
+				double distance = livingEntity.getLocation().distance(player.getLocation());
+				xp *= distance;
+				crossbow.addXp(xp);
 			}
 
 
@@ -182,7 +186,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, Hun
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.getLudos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
+			return game.ludos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
 		}
 	}
 }

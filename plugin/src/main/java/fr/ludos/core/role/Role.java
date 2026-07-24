@@ -14,10 +14,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.book.BookUtility;
-import fr.ludos.core.config.ConfigOptionsCollection;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
 import fr.ludos.core.game.GameProcessBase;
+import fr.ludos.core.persistence.config.ConfigEntriesCollection;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -44,7 +44,7 @@ public abstract class Role extends GameProcessBase {
 	}
 
 	public Ludos getLudos() {
-		return game.getLudos();
+		return game.ludos();
 	}
 	public JavaPlugin getPlugin() {
 		return game.getPlugin();
@@ -192,7 +192,7 @@ public abstract class Role extends GameProcessBase {
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
 
-		public ConfigOptionsCollection getConfig() {
+		public ConfigEntriesCollection getConfig() {
 			return null;
 		}
 

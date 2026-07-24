@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,10 +34,14 @@ public final class ArenaTeamController extends GameTeamController {
 	private static final int PRIMARY_TEAM_INDEX = 0;
 	private static final int SECONDARY_TEAM_INDEX = 1;
 
-	private final Set<Player> selectedPrimary;
-	private final Set<Player> selectedSecondary;
+	private final ArenaModeOption mode;
+
+	private final Set<OfflinePlayer> selectedPrimary;
+	private final Set<OfflinePlayer> selectedSecondary;
 	private final List<Team> combatTeams = new ArrayList<>();
 
+	private Team primaryTeam;
+	private Team secondaryTeam;
 	private Team spectatorTeam;
 
 
@@ -47,72 +52,73 @@ public final class ArenaTeamController extends GameTeamController {
 			.filter(p -> excluded == null || !p.equals(excluded))
 			.collect(Collectors.toList());
 		if (filtered.isEmpty()) return null;
-		return filtered.get(new java.util.Random().nextInt(filtered.size()));
+		return filtered.get(new Random().nextInt(filtered.size()));
 	}
 
-	public ArenaTeamController(ArenaGame game, ArenaModeOption mode, @Nullable Set<OfflinePlayer> selectedPrimaryPlayers, @Nullable Set<OfflinePlayer> selectedSecondaryPlayers) {
+	public ArenaTeamController(ArenaGame game, ArenaModeOption mode, @Nullable Set<OfflinePlayer> primaryPlayers, @Nullable Set<OfflinePlayer> secondaryPlayers) {
 		super(game);
+		this.mode = mode;
+		this.selectedPrimary = primaryPlayers;
+		this.selectedSecondary = secondaryPlayers;
 
-		Set<Player> online = new HashSet<>(game.getGroup().getOnlinePlayers());
-		if (online.size() < 2) {
-			throw new IllegalArgumentException("At least 2 online players are required for Arena : " + online.size());
-		}
+		Scoreboard scoreboard = game().getScoreboard();
 
-		Set<Player> configuredPrimary;
-		Set<Player> configuredSecondary;
-		if (selectedPrimaryPlayers == null && selectedSecondaryPlayers == null) {
-			List<? extends Collection<Player>> split = Utility.split(online, 2);
-			configuredPrimary = split.get(0).stream().collect(Collectors.toSet());
-			configuredSecondary = split.get(1).stream().collect(Collectors.toSet());
-		}
-		else {
-			configuredPrimary = Utility.getOnline(selectedPrimaryPlayers).collect(Collectors.toCollection(HashSet::new));
-			configuredSecondary = Utility.getOnline(selectedSecondaryPlayers).collect(Collectors.toCollection(HashSet::new));
+		primaryTeam = createOrGetTeam(scoreboard, "ArenaTeam1", NamedTextColor.BLUE, false);
+		secondaryTeam = createOrGetTeam(scoreboard, "ArenaTeam2", NamedTextColor.RED, false);
+		spectatorTeam = createOrGetTeam(scoreboard, "ArenaSpectators", NamedTextColor.GRAY, true);
 
-			if (selectedPrimaryPlayers == null) {
-				configuredPrimary = new HashSet<>(online);
-				configuredPrimary.removeAll(configuredSecondary);
-			} else {
-				configuredSecondary = new HashSet<>(online);
-				configuredSecondary.removeAll(configuredPrimary);
-			}
-
-			configuredSecondary.removeAll(configuredPrimary);
-		}
-
-		if (configuredPrimary.isEmpty() || configuredSecondary.isEmpty()) {
-			throw new IllegalStateException("Cannot start Arena game with only one team");
-		}
-
-		if (mode == ArenaModeOption.duel) {
-			Player p1 = pickPlayer(configuredPrimary, null);
-			Player p2 = pickPlayer(configuredSecondary, p1);
-			if (p1 == null || p2 == null) throw new IllegalArgumentException("Could not resolve duel players");
-
-			this.selectedPrimary = Set.of(p1);
-			this.selectedSecondary = Set.of(p2);
-		} else {
-			this.selectedPrimary = configuredPrimary;
-			this.selectedSecondary = configuredSecondary;
-		}
+		combatTeams.add(primaryTeam);
+		combatTeams.add(secondaryTeam);
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
-		Scoreboard scoreboard = getGame().getScoreboard();
 
-		Team primaryTeam = createOrGetTeam(scoreboard, "ArenaTeam1", NamedTextColor.BLUE, false);
-		Team secondaryTeam = createOrGetTeam(scoreboard, "ArenaTeam2", NamedTextColor.RED, false);
-		spectatorTeam = createOrGetTeam(scoreboard, "ArenaSpectators", NamedTextColor.GRAY, true);
+		Set<Player> online = new HashSet<>(game().getGroup().getOnlinePlayers());
+		if (online.size() < 2) {
+			throw new IllegalArgumentException("At least 2 online players are required for Arena : " + online.size());
+		}
 
-		combatTeams.add(primaryTeam);
-		combatTeams.add(secondaryTeam);
+		Set<Player> finalPrimary;
+		Set<Player> finalSecondary;
+		if (selectedPrimary == null && selectedSecondary == null) {
+			List<? extends Collection<Player>> split = Utility.split(online, 2);
+			finalPrimary = split.get(0).stream().collect(Collectors.toSet());
+			finalSecondary = split.get(1).stream().collect(Collectors.toSet());
+		}
+		else {
+			finalPrimary = Utility.getOnline(selectedPrimary).collect(Collectors.toCollection(HashSet::new));
+			finalSecondary = Utility.getOnline(selectedSecondary).collect(Collectors.toCollection(HashSet::new));
 
-		for (Player player : getGame().getGroup().getOnlinePlayers()) {
-			if (selectedPrimary.contains(player)) {
+			if (selectedPrimary == null) {
+				finalPrimary = new HashSet<>(online);
+				finalPrimary.removeAll(finalSecondary);
+			} else {
+				finalSecondary = new HashSet<>(online);
+				finalSecondary.removeAll(finalPrimary);
+			}
+
+			finalSecondary.removeAll(finalPrimary);
+		}
+
+		if (finalPrimary.isEmpty() || finalSecondary.isEmpty()) {
+			throw new IllegalStateException("Cannot start Arena game with only one team");
+		}
+
+		if (mode == ArenaModeOption.duel) {
+			Player p1 = pickPlayer(finalPrimary, null);
+			Player p2 = pickPlayer(finalSecondary, p1);
+			if (p1 == null || p2 == null) throw new IllegalArgumentException("Could not resolve duel players");
+
+			finalPrimary = Set.of(p1);
+			finalSecondary = Set.of(p2);
+		}
+
+		for (Player player : game().getGroup().getOnlinePlayers()) {
+			if (finalPrimary.contains(player)) {
 				moveToTeam(player, primaryTeam);
-			} else if (selectedSecondary.contains(player)) {
+			} else if (finalSecondary.contains(player)) {
 				moveToTeam(player, secondaryTeam);
 			} else {
 				moveToTeam(player, spectatorTeam);
@@ -213,10 +219,10 @@ public final class ArenaTeamController extends GameTeamController {
 
 		moveToTeam(onlinePlayer, spectatorTeam);
 
-		Area area = getGame().getWorldManager().getArea();
+		Area area = game().getWorldManager().getArea();
 		Location center = area != null
 			? area.getCenter()
-			: getGame().getWorldManager().getWorld().getSpawnLocation();
+			: game().getWorldManager().getWorld().getSpawnLocation();
 		onlinePlayer.teleport(center);
 		onlinePlayer.setGameMode(GameMode.SPECTATOR);
 	}
@@ -256,11 +262,11 @@ public final class ArenaTeamController extends GameTeamController {
 
 		onlinePlayer.teleport(teammateLocation, true);
 
-		onlinePlayer.setScoreboard(getGame().getScoreboard());
+		onlinePlayer.setScoreboard(game().getScoreboard());
 	}
 
 	public void joinAnyPlayer(Player player, @Nullable Location location) {
-		player.setScoreboard(getGame().getScoreboard());
+		player.setScoreboard(game().getScoreboard());
 
 		Utility.resetPlayer(player);
 		player.setGameMode(GameMode.SURVIVAL);
@@ -292,7 +298,7 @@ public final class ArenaTeamController extends GameTeamController {
 		} else if (primarySize > secondarySize) {
 			moveToTeam(player, secondaryTeam);
 		} else {
-			moveToTeam(player, getGame().getRandom().nextFloat() < 0.5 ? primaryTeam : secondaryTeam);
+			moveToTeam(player, game().getRandom().nextFloat() < 0.5 ? primaryTeam : secondaryTeam);
 		}
 	}
 
@@ -308,15 +314,15 @@ public final class ArenaTeamController extends GameTeamController {
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer != null) {
-			SpecialItem.Events.removeFromPlayerInventory(getGame(), onlinePlayer);
-			onlinePlayer.teleport(getGame().getWorldManager().getReturnLocation());
+			SpecialItem.Events.removeFromPlayerInventory(game(), onlinePlayer);
+			onlinePlayer.teleport(game().getWorldManager().getReturnLocation());
 		}
 	}
 
 
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
-		if (getGame().getWorldManager().isLobbyStarted()) return;
+		if (game().getWorldManager().isLobbyStarted()) return;
 
 		Player player = event.getEntity();
 		if (!getPlayers().contains(player)) return;

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import fr.ludos.core.item.level.LevelValue;
+import fr.ludos.core.persistence.pdc.LevelValueMapPersistentDataType;
 
 class LevelValueMapPersistentDataTypeTest {
 	private final PersistentDataAdapterContext context = mock(PersistentDataAdapterContext.class);

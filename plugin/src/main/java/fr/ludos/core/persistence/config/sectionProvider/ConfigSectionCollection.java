@@ -1,4 +1,4 @@
-package fr.ludos.core.config.sectionProvider;
+package fr.ludos.core.persistence.config.sectionProvider;
 
 import java.util.Arrays;
 import java.util.List;
@@ -9,15 +9,15 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import fr.ludos.core.config.ConfigOptions;
+import fr.ludos.core.persistence.config.ConfigEntry;
 
 /**
- * Collection of {@link ConfigSectionProvider}s, with their corresponding {@link ConfigOptions}.
+ * Collection of {@link ConfigSectionProvider}s, with their corresponding {@link ConfigEntry}.
  */
 public abstract class ConfigSectionCollection {
 	public abstract @NotNull Set<String> getProviderKeys(CommandSender sender);
 	public abstract @NotNull ConfigSectionProvider getProvider(String key, CommandSender sender);
-	public abstract @NotNull ConfigOptions getOptions(String key, CommandSender sender);
+	public abstract @NotNull ConfigEntry getOptions(String key, CommandSender sender);
 
 	public final boolean exec(@NotNull String[] args, CommandSender sender) {
 		if (args.length == 0) return false;
@@ -29,9 +29,9 @@ public abstract class ConfigSectionCollection {
 		ConfigurationSection config = provider.getConfig(sender);
 		if (config == null) return true;
 
-		ConfigOptions options = getOptions(key, sender);
+		ConfigEntry options = getOptions(key, sender);
 
-		boolean success = options.set(Arrays.copyOfRange(args, 1, args.length), sender, config);
+		boolean success = options.execute(Arrays.copyOfRange(args, 1, args.length), sender, config);
 		if (success) {
 			provider.saveConfig(config, sender);
 		}
@@ -45,7 +45,7 @@ public abstract class ConfigSectionCollection {
 
 		String key = args[0];
 
-		ConfigOptions options = getOptions(key, sender);
+		ConfigEntry options = getOptions(key, sender);
 
 		return options.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender);
 	}

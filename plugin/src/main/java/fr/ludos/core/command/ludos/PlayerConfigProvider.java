@@ -5,10 +5,11 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
-import fr.ludos.core.config.sectionProvider.ConfigSectionProvider;
+import fr.ludos.core.persistence.config.ConfigEntry;
+import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
 
 /**
- * {@link ConfigSectionProvider} to scope subsequent {@link ConfigOptions} within a Player's config ({@link Ludos#getPlayerConfigSection}).
+ * {@link ConfigSectionProvider} to scope subsequent {@link ConfigEntry} within a Player's config ({@link Ludos#getPlayerConfigSection}).
  */
 public final class PlayerConfigProvider extends ConfigSectionProvider {
 	private final Ludos ludos;

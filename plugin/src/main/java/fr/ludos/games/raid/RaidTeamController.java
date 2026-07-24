@@ -26,7 +26,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
  * Team controller for {@link RaidGame}.
  */
 public final class RaidTeamController extends GameTeamController {
-	private final Set<Player> selectedPlayers;
+	private final Set<OfflinePlayer> selectedPlayers;
 
 	private Team playersTeam;
 	private Team spectatorsTeam;
@@ -35,19 +35,12 @@ public final class RaidTeamController extends GameTeamController {
 	public RaidTeamController(RaidGame game, @Nullable Set<OfflinePlayer> selectedPlayers) {
 		super(game);
 
-		Set<Player> online = game.getGroup().getOnlinePlayers();
-		if (online.size() < 2) {
-			throw new IllegalArgumentException("At least 2 online players are required for Arena");
-		}
+		this.selectedPlayers = selectedPlayers;
 
-		Set<Player> configuredPlayers;
-		if (selectedPlayers == null || selectedPlayers.isEmpty()) {
-			configuredPlayers = online;
-		} else {
-			configuredPlayers = Utility.getOnline(selectedPlayers).collect(Collectors.toSet());
-		}
+		Scoreboard scoreboard = game().getScoreboard();
 
-		this.selectedPlayers = configuredPlayers;
+		playersTeam = createOrGetTeam(scoreboard, "ArenaTeam", NamedTextColor.BLUE, false);
+		spectatorsTeam = createOrGetTeam(scoreboard, "ArenaSpectators", NamedTextColor.GRAY, true);
 	}
 
 	@Override
@@ -59,14 +52,20 @@ public final class RaidTeamController extends GameTeamController {
 	protected void onStart() {
 		super.onStart();
 
-		Scoreboard scoreboard = getGame().getScoreboard();
+		Set<Player> online = game().getGroup().getOnlinePlayers();
+		if (online.size() < 2) {
+			throw new IllegalArgumentException("At least 2 online players are required for Arena");
+		}
 
-		playersTeam = createOrGetTeam(scoreboard, "ArenaTeam", NamedTextColor.BLUE, false);
-		spectatorsTeam = createOrGetTeam(scoreboard, "ArenaSpectators", NamedTextColor.GRAY, true);
+		Set<Player> finalPlayers;
+		if (selectedPlayers == null || selectedPlayers.isEmpty()) {
+			finalPlayers = online;
+		} else {
+			finalPlayers = Utility.getOnline(selectedPlayers).collect(Collectors.toSet());
+		}
 
-
-		for (Player player : getGame().getGroup().getOnlinePlayers()) {
-			if (selectedPlayers.contains(player)) {
+		for (Player player : game().getGroup().getOnlinePlayers()) {
+			if (finalPlayers.contains(player)) {
 				moveToTeam(player, playersTeam);
 			} else {
 				moveToTeam(player, spectatorsTeam);
@@ -113,11 +112,11 @@ public final class RaidTeamController extends GameTeamController {
 
 		onlinePlayer.teleport(teammateLocation);
 
-		onlinePlayer.setScoreboard(getGame().getScoreboard());
+		onlinePlayer.setScoreboard(game().getScoreboard());
 	}
 
 	public void joinAnyPlayer(Player player) {
-		player.setScoreboard(getGame().getScoreboard());
+		player.setScoreboard(game().getScoreboard());
 
 		Utility.resetPlayer(player);
 
@@ -137,7 +136,7 @@ public final class RaidTeamController extends GameTeamController {
 		joinAnyPlayer(onlinePlayer);
 		onlinePlayer.setGameMode(GameMode.SURVIVAL);
 
-		SpecialItem.Events.refreshPlayerInventory(getGame(), onlinePlayer);
+		SpecialItem.Events.refreshPlayerInventory(game(), onlinePlayer);
 	}
 
 	public void joinSpectator(OfflinePlayer player) {
@@ -165,8 +164,8 @@ public final class RaidTeamController extends GameTeamController {
 
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer != null) {
-			SpecialItem.Events.removeFromPlayerInventory(getGame(), onlinePlayer);
-			onlinePlayer.teleport(getGame().getWorldManager().getReturnLocation());
+			SpecialItem.Events.removeFromPlayerInventory(game(), onlinePlayer);
+			onlinePlayer.teleport(game().getWorldManager().getReturnLocation());
 		}
 	}
 

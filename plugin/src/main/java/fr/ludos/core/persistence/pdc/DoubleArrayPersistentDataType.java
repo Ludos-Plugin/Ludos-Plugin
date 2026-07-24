@@ -1,4 +1,4 @@
-package fr.ludos.core.persistence;
+package fr.ludos.core.persistence.pdc;
 
 import java.util.Arrays;
 

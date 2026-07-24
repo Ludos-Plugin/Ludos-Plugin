@@ -12,6 +12,8 @@ import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import fr.ludos.core.persistence.pdc.DoubleArrayPersistentDataType;
+
 class DoubleArrayPersistentDataTypeTest {
 	private final PersistentDataAdapterContext context = mock(PersistentDataAdapterContext.class);
 

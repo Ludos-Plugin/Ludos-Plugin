@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
+// import fr.ludos.core.persistence.serializer.BooleanSerializer;
 
 class LoginMessageTest extends ConfigTest {
 	@BeforeEach
@@ -26,13 +27,13 @@ class LoginMessageTest extends ConfigTest {
 
 	// 	assertSetConfigValues(player1, "ludos config global player", PlayerConfigMap.GUIDEBOOK_MESSAGE, "invalid");
 
-	// 	player1.performCommand("ludos config global player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + " " + BooleanConfigOptions.FALSE_STRING);
-	// 	assertEquals(PlayerConfigMap.GUIDEBOOK_MESSAGE.getName() + " set to " + BooleanConfigOptions.FALSE_STRING, player1.nextMessage(), "Could not disable login message globally.");
+	// 	player1.performCommand("ludos config global player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + " " + BooleanSerializer.FALSE_STRING);
+	// 	assertEquals(PlayerConfigMap.GUIDEBOOK_MESSAGE.getName() + " set to " + BooleanSerializer.FALSE_STRING, player1.nextMessage(), "Could not disable login message globally.");
 	// 	PlayerMock player2 = createPlayer("Player2");
 	// 	assertNull(player2.nextMessage(), "Player received login message when disabled.");
 
-	// 	player1.performCommand("ludos config global player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + " " + BooleanConfigOptions.TRUE_STRING);
-	// 	assertEquals(PlayerConfigMap.GUIDEBOOK_MESSAGE.getName() + " set to " + BooleanConfigOptions.TRUE_STRING, player1.nextMessage(), "Could not enable login message globally.");
+	// 	player1.performCommand("ludos config global player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + " " + BooleanSerializer.TRUE_STRING);
+	// 	assertEquals(PlayerConfigMap.GUIDEBOOK_MESSAGE.getName() + " set to " + BooleanSerializer.TRUE_STRING, player1.nextMessage(), "Could not enable login message globally.");
 	// 	PlayerMock player3 = createPlayer("Player3");
 	// 	assertNotNull(player3.nextMessage(), "Player dit not receive login message when enabled.");
 	// }

@@ -23,7 +23,7 @@ import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelState;
 import fr.ludos.core.item.level.LevelValue;
-import fr.ludos.core.persistence.LevelValueMapPersistentDataType;
+import fr.ludos.core.persistence.pdc.LevelValueMapPersistentDataType;
 import net.kyori.adventure.text.Component;
 
 /**
@@ -217,7 +217,7 @@ public abstract class MultiLevelBranchItem<T extends MultiLevelBranchItem<T, TBr
 			Player player = event.getEntity();
 			if (! isPlayerValid(player)) return;
 
-			T specialItem = SpecialItem.findIn(player.getInventory(), this::getItem);
+			T specialItem = SpecialItem.findOne(player.getInventory(), this::getItem);
 			if ( specialItem == null ) return;
 
 			deadPlayerLevels.put(player, specialItem.getLevelValues());

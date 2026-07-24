@@ -130,7 +130,7 @@ class SpecialItemTest {
 
 		when(mockLudos.getServer()).thenReturn(server);
 		when(mockGame.getPlugin()).thenReturn(mockLudos);
-		when(mockGame.getLudos()).thenReturn(mockLudos);
+		when(mockGame.ludos()).thenReturn(mockLudos);
 		when(mockGame.getGroup()).thenReturn(mockGroup);
 		when(mockGroup.isPlayer(any())).thenReturn(true);
 		when(mockGroup.getOnlinePlayers()).thenReturn(Set.of(owner));
@@ -185,24 +185,24 @@ class SpecialItemTest {
 	@DisplayName("Test Item id persistence")
 	void testGetSpecialItemId() {
 		TestSpecialItem item = testEvents.createItem(owner);
-		assertEquals(item.getItemId(), SpecialItemInterface.getSpecialItemId(item.getStack(), item.getTypeId(), mockGame));
+		assertEquals(item.getItemId(), SpecialItemInterface.getSpecialItemId(item.getStack(), mockGame));
 
 		TestSpecialItem otherItem = testEvents.createItem(owner);
-		assertNotEquals(item.getItemId(), SpecialItemInterface.getSpecialItemId(otherItem.getStack(), item.getTypeId(), mockGame));
+		assertNotEquals(item.getItemId(), SpecialItemInterface.getSpecialItemId(otherItem.getStack(), mockGame));
 
 		ItemStack itemWithoutMeta = spy(item.getStack());
 		when(itemWithoutMeta.getItemMeta()).thenReturn(null);
-		assertNull(SpecialItemInterface.getSpecialItemId(itemWithoutMeta, item.getTypeId(), mockGame));
+		assertNull(SpecialItemInterface.getSpecialItemId(itemWithoutMeta, mockGame));
 
 		ItemMeta meta = item.getStack().getItemMeta();
 		meta.getPersistentDataContainer().set(SpecialItem.ITEM_ID_KEY, PersistentDataType.STRING, null);
 		item.getStack().setItemMeta(meta);
-		assertNull(SpecialItemInterface.getSpecialItemId(item.getStack(), item.getTypeId(), mockGame));
+		assertNull(SpecialItemInterface.getSpecialItemId(item.getStack(), mockGame));
 
 		ItemStack trashItem = spy(new ItemStack(Material.ACACIA_BOAT));
-		assertNull(SpecialItemInterface.getSpecialItemId(trashItem, item.getTypeId(), mockGame));
+		assertNull(SpecialItemInterface.getSpecialItemId(trashItem, mockGame));
 
-		assertNull(SpecialItemInterface.getSpecialItemId(null, item.getTypeId(), mockGame));
+		assertNull(SpecialItemInterface.getSpecialItemId(null, mockGame));
 	}
 
 	@Test
@@ -274,7 +274,7 @@ class SpecialItemTest {
 		when(inventory.getContents()).thenReturn(new ItemStack[]{null, new ItemStack(Material.ACACIA_BOAT), item.getStack()});
 
 
-		TestSpecialItem found = SpecialItem.findIn(inventory, testEvents::getItem);
+		TestSpecialItem found = SpecialItem.findOne(inventory, testEvents::getItem);
 
 		assertNotNull(found);
 		assertEquals(item, found);
@@ -289,7 +289,7 @@ class SpecialItemTest {
 		when(inventory.getContents()).thenReturn(new ItemStack[]{null, new ItemStack(Material.ACACIA_BOAT), new ItemStack(Material.STONE)});
 
 
-		TestSpecialItem found = SpecialItem.findIn(inventory, testEvents::getItem);
+		TestSpecialItem found = SpecialItem.findOne(inventory, testEvents::getItem);
 		assertNull(found);
 	}
 
@@ -425,7 +425,7 @@ class SpecialItemTest {
 		inventory = spy(inventory);
 		testEvents.refreshPlayerInventory(owner);
 
-		assertEquals(1, TestSpecialItem.findAllIn(inventory, testEvents::getItem).size());
+		assertEquals(1, TestSpecialItem.findAll(inventory, testEvents::getItem).size());
 
 		verify(inventory, never()).addItem(any(ItemStack.class));
 		verify(inventory, never()).setItem(anyInt(), any(ItemStack.class));

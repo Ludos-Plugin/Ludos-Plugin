@@ -74,7 +74,7 @@ public class TeleportScroll extends SpecialItem<TeleportScroll> {
 		protected void onItemStop() {
 			super.onItemStop();
 
-			for (Player player : game.getLudos().getRoleManager().getPlayersOfRole(AssassinRole.ID)) {
+			for (Player player : game.ludos().getRoleManager().getPlayersOfRole(AssassinRole.ID)) {
 				var healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
 				if (healthAttr == null) continue;
 				new ArrayList<>(healthAttr.getModifiers()).stream()
@@ -172,7 +172,7 @@ public class TeleportScroll extends SpecialItem<TeleportScroll> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.getLudos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);
+			return game.ludos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

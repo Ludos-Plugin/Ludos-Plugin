@@ -29,19 +29,19 @@ public class DefaultWaveLoadout extends WaveLoadoutService {
 		PlayerInventory inventory = player.getInventory();
 
 		ItemStack sword = enchantedItem(Material.DIAMOND_SWORD, Enchantment.DAMAGE_ALL, 3);
-		ItemSlot.setItemInInventory(ItemSlot.HOTBAR_1, sword, inventory);
+		ItemSlot.HOTBAR_1.set(sword, inventory);
 
 		ItemStack helmet = enchantedItem(Material.DIAMOND_HELMET, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
-		ItemSlot.setItemInInventory(ItemSlot.HELMET, helmet, inventory);
+		ItemSlot.HELMET.set(helmet, inventory);
 
 		ItemStack chestplate = enchantedItem(Material.DIAMOND_CHESTPLATE, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
-		ItemSlot.setItemInInventory(ItemSlot.CHESTPLATE, chestplate, inventory);
+		ItemSlot.CHESTPLATE.set(chestplate, inventory);
 
 		ItemStack leggings = enchantedItem(Material.DIAMOND_LEGGINGS, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
-		ItemSlot.setItemInInventory(ItemSlot.LEGGINGS, leggings, inventory);
+		ItemSlot.LEGGINGS.set(leggings, inventory);
 
 		ItemStack boots = enchantedItem(Material.DIAMOND_BOOTS, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
-		ItemSlot.setItemInInventory(ItemSlot.BOOTS, boots, inventory);
+		ItemSlot.BOOTS.set(boots, inventory);
 
 		SpecialItem.Events.refreshPlayerInventory(getGame(), player);
 	}

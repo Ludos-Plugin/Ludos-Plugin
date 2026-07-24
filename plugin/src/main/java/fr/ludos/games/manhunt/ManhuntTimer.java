@@ -1,5 +1,6 @@
 package fr.ludos.games.manhunt;
 
+import java.time.Duration;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
@@ -28,19 +29,12 @@ public class ManhuntTimer extends GameProcessBase {
 	private BossBar bossbar;
 
 	private boolean isRunning = false;
-	public boolean isRunning() {
-		return isRunning;
-	}
 
 	private BukkitTask task;
 
 	private long totalSeconds;
 	private String formattedTime;
 
-	@Override
-	protected JavaPlugin getPlugin() {
-		return game.getPlugin();
-	}
 
 	public ManhuntTimer(ManhuntGame game, int revealPeriodSeconds) {
 		this.game = game;
@@ -61,6 +55,64 @@ public class ManhuntTimer extends GameProcessBase {
 
 		bossbar = Bukkit.createBossBar("Timer", BarColor.RED, segmentation);
 	}
+
+	public boolean isRunning() {
+		return isRunning;
+	}
+
+	@Override
+	protected JavaPlugin getPlugin() {
+		return game.getPlugin();
+	}
+
+	public Duration getDuration() {
+		return Duration.ofSeconds(totalSeconds);
+	}
+	public String formatDuration(Duration duration) {
+		return String.format("%02d:%02d:%02d",
+			duration.toHours(),
+			duration.toMinutes() % 60,
+			duration.getSeconds() % 60
+		);
+	}
+
+	private void addSecond() {
+		totalSeconds++;
+
+		formattedTime = formatDuration(getDuration());
+		double timerDuration = (double) revealPeriodSeconds;
+
+		double progress = ((double)totalSeconds % timerDuration) / timerDuration;
+		bossbar.setProgress(progress);
+		bossbar.setTitle(formattedTime);
+
+		if (totalSeconds % timerDuration == 0 && totalSeconds != 0) {
+			game.revealPrey();
+		}
+	}
+
+	public void resume() {
+		if (isRunning) return;
+		isRunning = true;
+
+		task = new BukkitRunnable() {
+			@Override
+			public void run() {
+				addSecond();
+			}
+		}.runTaskTimer(game.getPlugin(), 20, 20);
+	}
+
+	public void pause() {
+		if (! isRunning) return;
+		isRunning = false;
+
+		if (task != null) {
+			task.cancel();
+		}
+		task = null;
+	}
+
 
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
@@ -149,48 +201,5 @@ public class ManhuntTimer extends GameProcessBase {
 				.color(NamedTextColor.GREEN)
 		);
 		super.onStop();
-	}
-
-	public void resume() {
-		if (isRunning) return;
-		isRunning = true;
-
-		task = new BukkitRunnable() {
-			@Override
-			public void run() {
-				addSecond();
-			}
-		}.runTaskTimer(game.getPlugin(), 20, 20);
-	}
-
-	public void pause() {
-		if (! isRunning) return;
-		isRunning = false;
-
-		if (task != null) {
-			task.cancel();
-		}
-		task = null;
-	}
-
-
-
-	private void addSecond() {
-		totalSeconds++;
-
-		long hours = totalSeconds / 3600;
-		long minutes = totalSeconds % 3600 / 60;
-		long seconds = totalSeconds % 60;
-
-		formattedTime = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-		double timerDuration = (double) revealPeriodSeconds;
-
-		double progress = ((double)totalSeconds % timerDuration) / timerDuration;
-		bossbar.setProgress(progress);
-		bossbar.setTitle(formattedTime);
-
-		if (totalSeconds % timerDuration == 0 && totalSeconds != 0) {
-			game.revealPrey();
-		}
 	}
 }

@@ -249,7 +249,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpade, HarvesterSpadeLeve
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.getLudos().getRoleManager().isPlayerRole(owner, HarvesterRole.ID);
+			return game.ludos().getRoleManager().isPlayerRole(owner, HarvesterRole.ID);
 		}
 	}
 }

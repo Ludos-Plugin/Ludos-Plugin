@@ -5,13 +5,13 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
-import fr.ludos.core.config.ConfigOptions;
-import fr.ludos.core.config.sectionProvider.ConfigSectionProvider;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupManager;
+import fr.ludos.core.persistence.config.ConfigEntry;
+import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
 
 /**
- * {@link ConfigSectionProvider} to scope subsequent {@link ConfigOptions} within the Group's config ({@link Group#getConfig()}).
+ * {@link ConfigSectionProvider} to scope subsequent {@link ConfigEntry} within the Group's config ({@link Group#getConfig()}).
  */
 public final class GroupConfigProvider extends ConfigSectionProvider {
 	private final GroupManager manager;
