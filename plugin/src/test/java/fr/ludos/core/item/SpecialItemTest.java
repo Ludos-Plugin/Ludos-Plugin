@@ -185,24 +185,24 @@ class SpecialItemTest {
 	@DisplayName("Test Item id persistence")
 	void testGetSpecialItemId() {
 		TestSpecialItem item = testEvents.createItem(owner);
-		assertEquals(item.getItemId(), SpecialItemInterface.getSpecialItemId(item.getStack(), item.getTypeId(), mockGame));
+		assertEquals(item.getItemId(), SpecialItemInterface.getSpecialItemId(item.getStack(), mockGame));
 
 		TestSpecialItem otherItem = testEvents.createItem(owner);
-		assertNotEquals(item.getItemId(), SpecialItemInterface.getSpecialItemId(otherItem.getStack(), item.getTypeId(), mockGame));
+		assertNotEquals(item.getItemId(), SpecialItemInterface.getSpecialItemId(otherItem.getStack(), mockGame));
 
 		ItemStack itemWithoutMeta = spy(item.getStack());
 		when(itemWithoutMeta.getItemMeta()).thenReturn(null);
-		assertNull(SpecialItemInterface.getSpecialItemId(itemWithoutMeta, item.getTypeId(), mockGame));
+		assertNull(SpecialItemInterface.getSpecialItemId(itemWithoutMeta, mockGame));
 
 		ItemMeta meta = item.getStack().getItemMeta();
 		meta.getPersistentDataContainer().set(SpecialItem.ITEM_ID_KEY, PersistentDataType.STRING, null);
 		item.getStack().setItemMeta(meta);
-		assertNull(SpecialItemInterface.getSpecialItemId(item.getStack(), item.getTypeId(), mockGame));
+		assertNull(SpecialItemInterface.getSpecialItemId(item.getStack(), mockGame));
 
 		ItemStack trashItem = spy(new ItemStack(Material.ACACIA_BOAT));
-		assertNull(SpecialItemInterface.getSpecialItemId(trashItem, item.getTypeId(), mockGame));
+		assertNull(SpecialItemInterface.getSpecialItemId(trashItem, mockGame));
 
-		assertNull(SpecialItemInterface.getSpecialItemId(null, item.getTypeId(), mockGame));
+		assertNull(SpecialItemInterface.getSpecialItemId(null, mockGame));
 	}
 
 	@Test

@@ -46,7 +46,7 @@ public interface SpecialItemInterface {
 
 	public void update();
 
-	public static @Nullable UUID getSpecialItemId(ItemStack stack, String typeId, Game game) {
+	public static @Nullable String getSpecialItemTypeId(ItemStack stack, Game game) {
 		if (stack == null) return null;
 
 		ItemMeta meta = stack.getItemMeta();
@@ -54,12 +54,18 @@ public interface SpecialItemInterface {
 
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
-		if (! container.has(TYPE_ID_KEY, PersistentDataType.STRING) ) return null;
-		String found = container.get(TYPE_ID_KEY, PersistentDataType.STRING);
+		if (! container.has(TYPE_ID_KEY, PersistentDataType.STRING)) return null;
+		return container.get(TYPE_ID_KEY, PersistentDataType.STRING);
+	}
+	public static @Nullable UUID getSpecialItemId(ItemStack stack, Game game) {
+		if (stack == null) return null;
 
-		if (! found.equals(typeId)) return null;
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) return null;
+
+		PersistentDataContainer container = meta.getPersistentDataContainer();
+
 		if (! container.has(ITEM_ID_KEY, PersistentDataType.STRING) ) return null;
-
 		return UUID.fromString(
 			container.get(ITEM_ID_KEY, PersistentDataType.STRING)
 		);

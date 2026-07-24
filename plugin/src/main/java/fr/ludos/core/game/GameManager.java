@@ -104,6 +104,6 @@ public final class GameManager {
 
 
 	public ConfigurationSection getGlobalGameConfig(Game.Builder game) {
-		return Utility.getOrCreateConfigSection(ludos.getConfig(), configMap.namespace() + "." + game.getId());
+		return Utility.getOrCreateConfigSection(ludos.getConfig(), configMap.namespace() + '.' + game.getId());
 	}
 }

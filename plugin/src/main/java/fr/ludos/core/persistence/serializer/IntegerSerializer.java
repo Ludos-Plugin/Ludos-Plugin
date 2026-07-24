@@ -5,13 +5,13 @@ import org.bukkit.configuration.ConfigurationSection;
 /**
  * .
  */
-public final class NumberSerializer implements Serializer<Integer, Integer> {
-	public static final NumberSerializer UNSIGNED = new NumberSerializer(true);
-	public static final NumberSerializer SIGNED = new NumberSerializer(false);
+public final class IntegerSerializer implements Serializer<Integer, Integer> {
+	public static final IntegerSerializer UNSIGNED = new IntegerSerializer(true);
+	public static final IntegerSerializer SIGNED = new IntegerSerializer(false);
 
 	private final boolean unsigned;
 
-	private NumberSerializer(boolean unsigned) {
+	private IntegerSerializer(boolean unsigned) {
 		this.unsigned = unsigned;
 	}
 

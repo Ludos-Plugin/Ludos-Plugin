@@ -203,10 +203,10 @@ public class GroupManager implements Listener {
 		return getScopedConfig(group, GroupConfigMap.INSTANCE.namespace());
 	}
 	public ConfigurationSection getGameConfig(Group group, Game.Builder game) {
-		return getScopedConfig(group, game.getManager().configMap.namespace() + "." + game.getId());
+		return getScopedConfig(group, game.getManager().configMap.namespace() + '.' + game.getId());
 	}
 	public ConfigurationSection getRoleConfig(Group group, Role.Builder role) {
-		return getScopedConfig(group, role.getManager().configMap.namespace() + "." + role.getId());
+		return getScopedConfig(group, role.getManager().configMap.namespace() + '.' + role.getId());
 	}
 	public ConfigurationSection getPlayerConfig(Group group) {
 		return getScopedConfig(group, PlayerConfigMap.INSTANCE.namespace());

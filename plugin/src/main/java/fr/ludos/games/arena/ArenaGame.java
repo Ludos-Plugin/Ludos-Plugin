@@ -22,7 +22,7 @@ import fr.ludos.core.lobby.Lobby.ClearMode;
 import fr.ludos.core.persistence.config.ConfigEntriesCollection;
 import fr.ludos.core.persistence.config.ConfigEntriesMap;
 import fr.ludos.core.persistence.config.valueEntry.GroupPlayersConfigEntry;
-import fr.ludos.core.persistence.config.valueEntry.NumberConfigEntry;
+import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
 import fr.ludos.core.wave.WaveController;
 import fr.ludos.core.wave.WaveGame;
 import fr.ludos.core.world.WorldManager;
@@ -109,8 +109,8 @@ public class ArenaGame extends WaveGame {
 		public final GroupPlayersConfigEntry team2Players =
 			new GroupPlayersConfigEntry(getManager().getLudos().getGroupManager(), "Team 2 players", "team_2", "random");
 
-		public final NumberConfigEntry rounds =
-			new NumberConfigEntry("Number of Rounds", "rounds", null, 3, true);
+		public final IntegerConfigEntry rounds =
+			new IntegerConfigEntry("Number of Rounds", "rounds", null, 3, true);
 
 		private final ConfigEntriesMap configMap =
 			new ConfigEntriesMap(ID, Set.of(team1Players, team2Players, ArenaModeOption.CONFIG, rounds, WorldBorderArea.CONFIG));

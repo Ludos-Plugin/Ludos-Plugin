@@ -56,6 +56,11 @@ public class HuntsmanBow extends SpecialItem<HuntsmanBow> {
 			return ID;
 		}
 
+		@Override
+		public boolean isRanged() {
+			return true;
+		}
+
 		@EventHandler
 		public void onShootArrow(EntityShootBowEvent event) {
 			if ( ! (event.getEntity() instanceof Player player) ) return;

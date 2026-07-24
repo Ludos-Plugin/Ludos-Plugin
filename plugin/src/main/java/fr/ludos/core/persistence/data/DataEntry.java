@@ -23,6 +23,11 @@ public class DataEntry<T> {
 	public T get(ConfigurationSection config) {
 		return serializer.get(key, config);
 	}
+	public T getOr(ConfigurationSection config, T defaultValue) {
+		T got = get(config);
+		if (got == null) return defaultValue;
+		return got;
+	}
 	public void set(T value, ConfigurationSection section) {
 		serializer.set(key, value, section);
 	}

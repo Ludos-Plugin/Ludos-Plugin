@@ -8,14 +8,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.Utility;
 import fr.ludos.core.game.Game;
-import fr.ludos.core.persistence.config.valueEntry.NumberConfigEntry;
+import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
 
 /**
  * Area that is delimited by a Minecraft {@link WorldBorder}.
  */
 public class WorldBorderArea extends Area {
-	public static final NumberConfigEntry CONFIG =
-		new NumberConfigEntry("WorldBorder Area diameter", "area", null, 150, Set.of(150, 250, 350), true);
+	public static final IntegerConfigEntry CONFIG =
+		new IntegerConfigEntry("WorldBorder Area diameter", "area", null, 150, Set.of(150, 250, 350), true);
 
 	private final Builder builder;
 	@Override

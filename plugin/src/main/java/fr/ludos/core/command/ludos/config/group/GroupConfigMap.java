@@ -9,7 +9,7 @@ import fr.ludos.core.group.GroupRightsOption;
 import fr.ludos.core.lobby.LobbyWaitPlayersOption;
 import fr.ludos.core.persistence.config.ConfigEntriesMap;
 import fr.ludos.core.persistence.config.valueEntry.EnumConfigEntry;
-import fr.ludos.core.persistence.config.valueEntry.NumberConfigEntry;
+import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
 
 /**
  * {@link ConfigEntriesMap} for Group-specific configuration.
@@ -27,8 +27,8 @@ public final class GroupConfigMap extends ConfigEntriesMap {
 	public static final EnumConfigEntry<LobbyWaitPlayersOption> WAIT_PLAYERS =
 		new EnumConfigEntry<>("Players to wait in lobby", "wait_players", null, LobbyWaitPlayersOption.class, LobbyWaitPlayersOption.all);
 
-	public static final NumberConfigEntry START_DELAY =
-		new NumberConfigEntry("Lobby start delay seconds", "start_delay", null, 10, Set.of(5, 10, 30), true);
+	public static final IntegerConfigEntry START_DELAY =
+		new IntegerConfigEntry("Lobby start delay seconds", "start_delay", null, 10, Set.of(5, 10, 30), true);
 
 	public static final GroupConfigMap INSTANCE = new GroupConfigMap();
 

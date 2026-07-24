@@ -10,33 +10,33 @@ import javax.annotation.Nullable;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.persistence.serializer.NumberSerializer;
+import fr.ludos.core.persistence.serializer.IntegerSerializer;
 import fr.ludos.core.persistence.serializer.Serializer;
 
 /**
  * {@link ValueConfigEntry} for {@link Number}s.
  */
-public class NumberConfigEntry extends ValueConfigEntry<Integer, Integer> {
+public class IntegerConfigEntry extends ValueConfigEntry<Integer, Integer> {
 	private final static Set<String> NUMBERS = new HashSet<>() {{add("1"); add("2"); add("3");}};
-	private final NumberSerializer serializer;
+	private final IntegerSerializer serializer;
 	private final @Nullable Set<@NotNull String> suggestions;
 	private final @Nullable Integer defaultValue;
 
-	public NumberConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions, boolean unsigned) {
+	public IntegerConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions, boolean unsigned) {
 		super(name, key, emptyValue);
 		this.defaultValue = Objects.requireNonNull(defaultValue);
-		this.serializer = unsigned ? NumberSerializer.UNSIGNED : NumberSerializer.SIGNED;
+		this.serializer = unsigned ? IntegerSerializer.UNSIGNED : IntegerSerializer.SIGNED;
 		this.suggestions = suggestions != null
 			? suggestions.stream().map(i -> i.toString()).collect(Collectors.toSet())
 			: null;
 	}
-	public NumberConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions) {
+	public IntegerConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions) {
 		this(name, key, emptyValue, defaultValue, suggestions, false);
 	}
-	public NumberConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue, boolean unsigned) {
+	public IntegerConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue, boolean unsigned) {
 		this(name, key, emptyValue, defaultValue, null, unsigned);
 	}
-	public NumberConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue) {
+	public IntegerConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue) {
 		this(name, key, emptyValue, defaultValue, null);
 	}
 

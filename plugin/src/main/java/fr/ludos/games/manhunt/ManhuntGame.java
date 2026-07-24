@@ -35,7 +35,7 @@ import fr.ludos.core.persistence.config.ConfigEntriesCollection;
 import fr.ludos.core.persistence.config.ConfigEntriesMap;
 import fr.ludos.core.persistence.config.valueEntry.GroupPlayerConfigEntry;
 import fr.ludos.core.persistence.config.valueEntry.GroupPlayersConfigEntry;
-import fr.ludos.core.persistence.config.valueEntry.NumberConfigEntry;
+import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
 import fr.ludos.core.persistence.data.DataEntry;
 import fr.ludos.core.persistence.serializer.TimeSerializer;
 import fr.ludos.core.world.WorldManager;
@@ -234,8 +234,8 @@ public class ManhuntGame extends Game {
 		public final GroupPlayerConfigEntry prey =
 			new GroupPlayerConfigEntry(getManager().getLudos().getGroupManager(), "Prey Player", "prey", "random");
 
-		public final NumberConfigEntry revealPeriod =
-			new NumberConfigEntry("Reveal period duration seconds", "reveal", null, 180, Set.of(60, 120, 180, 240, 300, 360), true);
+		public final IntegerConfigEntry revealPeriod =
+			new IntegerConfigEntry("Reveal period duration seconds", "reveal", null, 180, Set.of(60, 120, 180, 240, 300, 360), true);
 
 		public final ConfigEntriesMap config =
 			new ConfigEntriesMap(ID, Set.of(players, prey, WorldBorderArea.CONFIG, revealPeriod));

@@ -96,7 +96,7 @@ public class Ludos extends JavaPlugin implements Listener {
 		return Utility.getOrCreateConfigSection(getConfig(), LudosConfigMap.INSTANCE.namespace());
 	}
 	public ConfigurationSection getGlobalRoleConfig(Role.Builder role) {
-		return Utility.getOrCreateConfigSection(getConfig(), roleManager.configMap.namespace() + "." + role.getId());
+		return Utility.getOrCreateConfigSection(getConfig(), roleManager.configMap.namespace() + '.' + role.getId());
 	}
 	public ConfigurationSection getGlobalPlayerConfig() {
 		return Utility.getOrCreateConfigSection(getConfig(), PlayerConfigMap.INSTANCE.namespace());
@@ -113,10 +113,10 @@ public class Ludos extends JavaPlugin implements Listener {
 		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), CONFIG_NAMESPACE);
 	}
 	public ConfigurationSection getPlayerScopedConfig(OfflinePlayer player, String path) {
-		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), CONFIG_NAMESPACE + "." + path);
+		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), CONFIG_NAMESPACE + '.' + path);
 	}
 	public ConfigurationSection getPlayerRoleConfig(OfflinePlayer player, Role.Builder role) {
-		return getPlayerScopedConfig(player, Role.NAMESPACE + "." + role.getId());
+		return getPlayerScopedConfig(player, Role.NAMESPACE + '.' + role.getId());
 	}
 	public ConfigurationSection getPlayerConfig(OfflinePlayer player) {
 		return getPlayerScopedConfig(player, PLAYER_NAMESPACE);
@@ -126,16 +126,16 @@ public class Ludos extends JavaPlugin implements Listener {
 		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), DATA_NAMESPACE);
 	}
 	public ConfigurationSection getPlayerScopedData(OfflinePlayer player, String path) {
-		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), DATA_NAMESPACE + "." + path);
+		return Utility.getOrCreateConfigSection(getPlayerConfigSection(player), DATA_NAMESPACE + '.' + path);
 	}
 	public ConfigurationSection getGameData(OfflinePlayer player, Game.Builder game) {
-		return getPlayerScopedData(player, Game.NAMESPACE + "." + game.getId());
+		return getPlayerScopedData(player, Game.NAMESPACE + '.' + game.getId());
 	}
 	public ConfigurationSection getRoleData(OfflinePlayer player, Role.Builder role) {
-		return getPlayerScopedData(player, Role.NAMESPACE + "." + role.getId());
+		return getPlayerScopedData(player, Role.NAMESPACE + '.' + role.getId());
 	}
-	public ConfigurationSection getItemData(OfflinePlayer player, SpecialItem.Events<?> game) {
-		return getPlayerScopedData(player, SpecialItem.NAMESPACE + "." + game.getTypeId());
+	public ConfigurationSection getItemData(OfflinePlayer player, SpecialItem.Events<?> item) {
+		return getPlayerScopedData(player, SpecialItem.NAMESPACE + '.' + item.getTypeId());
 	}
 
 	public void savePlayersConfig() {

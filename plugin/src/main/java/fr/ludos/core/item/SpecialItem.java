@@ -13,10 +13,17 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.AbstractArrow;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -35,6 +42,8 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
+import fr.ludos.core.persistence.data.DataEntry;
+import fr.ludos.core.persistence.serializer.IntegerSerializer;
 import fr.ludos.other.ExcludeFromJacocoGeneratedReport;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -46,6 +55,9 @@ import net.kyori.adventure.text.format.TextDecoration;
  */
 public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialItemInterface {
 	public final static String NAMESPACE = "item";
+
+	public static final DataEntry<Integer> ENTITY_KILLS = new DataEntry<>("entity_kills", IntegerSerializer.UNSIGNED);
+	public static final DataEntry<Integer> PLAYER_KILLS = new DataEntry<>("player_kills", IntegerSerializer.UNSIGNED);
 
 	public final static int USAGE_COOLDOWN = 4;
 
@@ -319,7 +331,10 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 		protected abstract @Nullable T getItemInternal(SpecialItem.ItemData info);
 		public final @Nullable T getItem(ItemStack stack) {
-			UUID itemId = SpecialItemInterface.getSpecialItemId(stack, getTypeId(), game);
+			String typeId = SpecialItemInterface.getSpecialItemTypeId(stack, game);
+			if (! getTypeId().equals(typeId)) return null;
+
+			UUID itemId = SpecialItemInterface.getSpecialItemId(stack, game);
 			if (itemId == null) return null;
 
 			Player owner = SpecialItemInterface.getSpecialItemOwner(stack);
@@ -369,6 +384,9 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 		}
 
 		public boolean visibleDurability() {
+			return false;
+		}
+		public boolean isRanged() {
 			return false;
 		}
 
@@ -457,6 +475,50 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			for (SpecialItem.Events<?> itemEvents : game.getActiveItems()) {
 				itemEvents.removeFromAllInventories();
 			}
+		}
+
+		public void recordKill(T item, DataEntry<Integer> entry) {
+			ConfigurationSection killerData = getGame().ludos().getItemData(item.getOwner(), this);
+
+			int currentKills = entry.getOr(killerData, 0);
+			entry.set(currentKills + 1, killerData);
+
+			getGame().ludos().savePlayersConfig();
+		}
+
+		@EventHandler
+		public void onKill(EntityDeathEvent event) {
+			LivingEntity victim = event.getEntity();
+			EntityDamageEvent damageEvent = victim.getLastDamageCause();
+
+			if (! (damageEvent instanceof EntityDamageByEntityEvent entityDamage)) return;
+
+			ItemStack weapon;
+			Entity damageCause = entityDamage.getDamager();
+			if (! isRanged() && damageCause instanceof Player attacker) {
+				weapon = attacker.getInventory().getItemInMainHand();
+				if (weapon.getType() == Material.AIR) {
+					weapon = attacker.getInventory().getItemInOffHand();
+				}
+				if (weapon == null) return;
+			} else if (isRanged() && damageCause instanceof AbstractArrow arrow) {
+				if (! (arrow.getShooter() instanceof Player shooter)) return;
+
+				weapon = shooter.getInventory().getItemInMainHand();
+				if (weapon.getType() == Material.AIR) {
+					weapon = shooter.getInventory().getItemInOffHand();
+				}
+				if (weapon == null) return;
+			} else return;
+
+
+			T item = getItem(weapon);
+			if (item == null) return;
+
+			DataEntry<Integer> killData = (victim instanceof Player)
+				? PLAYER_KILLS
+				: ENTITY_KILLS;
+			recordKill(item, killData);
 		}
 
 

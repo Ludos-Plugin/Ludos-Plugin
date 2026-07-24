@@ -4,7 +4,8 @@ import java.util.LinkedHashMap;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
-import org.bukkit.entity.Arrow;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -19,6 +20,8 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
+import fr.ludos.core.persistence.data.DataEntry;
+import fr.ludos.core.persistence.serializer.DoubleSerializer;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.huntsman.items.HuntsmanArrow;
 import fr.ludos.roles.huntsman.items.HuntsmanBow;
@@ -32,6 +35,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
  */
 public class HuntsmanRole extends Role {
 	public static final String ID = "huntsman";
+
+	public static final DataEntry<Double> SNIPE_DISTANCE = new DataEntry<>("snipe_distance", DoubleSerializer.INSTANCE);
 
 
 	public HuntsmanRole(Builder builder, Game game) {
@@ -51,6 +56,16 @@ public class HuntsmanRole extends Role {
 		}
 	}
 
+	public void recordSnipeDistance(Player player, double distance) {
+		ConfigurationSection data = getLudos().getRoleData(player, getBuilder());
+
+		Double currentRecord = SNIPE_DISTANCE.get(data);
+		if (currentRecord == null || distance > currentRecord) {
+			SNIPE_DISTANCE.set(distance, data);
+			getLudos().savePlayersConfig();
+		}
+	}
+
 
 	@EventHandler
 	public void onProjectileHit(ProjectileHitEvent event) {
@@ -58,7 +73,7 @@ public class HuntsmanRole extends Role {
 		if (hit == null) return;
 
 		Projectile arrowProjectile = event.getEntity();
-		if (! (arrowProjectile instanceof Arrow arrow)) return;
+		if (! (arrowProjectile instanceof AbstractArrow arrow)) return;
 
 		ProjectileSource source = arrow.getShooter();
 		if (! (source instanceof Player player)) return;
@@ -66,9 +81,10 @@ public class HuntsmanRole extends Role {
 		if (! isPlayerValid(player)) return;
 
 		player.addPotionEffect(PotionEffectType.SPEED.createEffect((int)(20 * 2.5), 2));
-
-
 		playHitPing(player);
+
+		double distance = hit.getLocation().distance(player.getLocation());
+		recordSnipeDistance(player, distance);
 	}
 
 

@@ -85,6 +85,11 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, Hun
 			return ID;
 		}
 
+		@Override
+		public boolean isRanged() {
+			return true;
+		}
+
 
 		@EventHandler
 		public void onShootArrow(EntityShootBowEvent event) {
@@ -126,12 +131,11 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, Hun
 
 
 			Entity hitEntity = event.getHitEntity();
-			if (hitEntity != null) {
-				if (hitEntity instanceof LivingEntity livingEntity) {
-					double xp = livingEntity.isDead() ? 1.25d : 1d;
-					xp *= livingEntity.getLocation().distance(player.getLocation());
-					crossbow.addXp(xp);
-				}
+			if (hitEntity instanceof LivingEntity livingEntity) {
+				double xp = livingEntity.isDead() ? 1.25d : 1d;
+				double distance = livingEntity.getLocation().distance(player.getLocation());
+				xp *= distance;
+				crossbow.addXp(xp);
 			}
 
 

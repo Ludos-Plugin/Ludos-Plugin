@@ -156,6 +156,6 @@ public abstract class MockBukkitTestBase {
 			? Collections.emptySet()
 			: Arrays.stream(infoMemberNamesString.trim().split(", ")).collect(Collectors.toSet());
 
-		assertTrue(actualMemberNames.equals(infoMemberNames), "Invalid Group members in Info\nActual Members: " + actualMemberNames.stream().collect(Collectors.joining(", ")) + ".\nInfo Members: " + infoMemberNamesString + ".");
+		assertTrue(actualMemberNames.equals(infoMemberNames), "Invalid Group members in Info\nActual Members: " + actualMemberNames.stream().collect(Collectors.joining(", ")) + ".\nInfo Members: " + infoMemberNamesString + '.');
 	}
 }
