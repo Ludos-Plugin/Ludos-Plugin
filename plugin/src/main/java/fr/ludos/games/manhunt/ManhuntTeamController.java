@@ -28,6 +28,7 @@ import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.item.SpecialItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 
 /**
@@ -117,6 +118,9 @@ public final class ManhuntTeamController extends GameTeamController {
 	protected void onStop() {
 		super.onStop();
 
+		getTeamAlivePlayersStream(preyTeam)
+			.forEach(this::saveSurvivalRecord);
+
 		if (preyTeam != null) {
 			preyTeam.unregister();
 			preyTeam = null;
@@ -131,6 +135,39 @@ public final class ManhuntTeamController extends GameTeamController {
 	@Override
 	public Collection<Team> getTeams() {
 		return Set.of(hunterTeam, preyTeam);
+	}
+
+	private void saveSurvivalRecord(Player player) {
+		ConfigurationSection preyData = game().ludos().getGameData(player, game().builder());
+		ManhuntTimer timer = ((ManhuntGame)game()).timer;
+		Duration newRecord = timer.getDuration();
+		String newRecordString = timer.formatDuration(newRecord);
+		Duration oldRecord = ManhuntGame.SURVIVAL_TIME.get(preyData);
+		String oldRecordString = oldRecord != null
+			? timer.formatDuration(oldRecord)
+			: null;
+
+		if (oldRecord == null || newRecord.compareTo(oldRecord) > 0) {
+			ManhuntGame.SURVIVAL_TIME.set(newRecord, preyData);
+			game().ludos().savePlayersConfig();
+
+			player.sendMessage(Component.text("New Record!")
+				.color(NamedTextColor.GOLD)
+				.decorate(TextDecoration.BOLD)
+			);
+		}
+
+		Component timeMessage =
+			Component.text("You survived ")
+				.append(Component.text(newRecordString).color(NamedTextColor.GOLD))
+				.append(Component.text("!"));
+		if (oldRecordString != null) {
+			timeMessage = timeMessage
+				.append(Component.text(" Previous Best : "))
+				.append(Component.text(oldRecordString).color(NamedTextColor.BLUE));
+		}
+
+		player.sendMessage(timeMessage.color(NamedTextColor.GREEN));
 	}
 
 
@@ -183,32 +220,7 @@ public final class ManhuntTeamController extends GameTeamController {
 			game().scheduleEndGame(5);
 		}
 
-
-		ConfigurationSection preyData = game().ludos().getGameData(player, game().builder());
-		ManhuntTimer timer = ((ManhuntGame)game()).timer;
-		Duration newRecord = timer.getDuration();
-		String newRecordString = timer.formatDuration(newRecord);
-		Duration oldRecord = ManhuntGame.SURVIVAL_TIME.get(preyData);
-		String oldRecordString = oldRecord != null
-			? timer.formatDuration(oldRecord)
-			: null;
-
-		if (oldRecord == null || newRecord.compareTo(oldRecord) > 0) {
-			ManhuntGame.SURVIVAL_TIME.set(newRecord, preyData);
-			game().ludos().savePlayersConfig();
-		}
-
-		Component timeMessage =
-			Component.text("You survived ")
-				.append(Component.text(newRecordString).color(NamedTextColor.GOLD))
-				.append(Component.text("!"));
-		if (oldRecordString != null) {
-			timeMessage = timeMessage
-				.append(Component.text(" Previous Best : "))
-				.append(Component.text(oldRecordString).color(NamedTextColor.GOLD));
-		}
-
-		player.sendMessage(timeMessage.color(NamedTextColor.GREEN));
+		saveSurvivalRecord(player);
 	}
 
 
