@@ -489,12 +489,16 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			if (getItem(item) == null) return;
 
 			InventoryType invType = event.getInventory().getType();
+			InventoryAction action = event.getAction();
 
-			if (
-				event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY &&
+			boolean removeFromInventory = action == InventoryAction.MOVE_TO_OTHER_INVENTORY &&
 				invType != InventoryType.PLAYER &&
-				invType != InventoryType.CRAFTING
-			) {
+				invType != InventoryType.CRAFTING;
+			boolean splitItem = action == InventoryAction.PICKUP_HALF ||
+				action == InventoryAction.PICKUP_SOME ||
+				action == InventoryAction.PICKUP_ONE;
+
+			if (removeFromInventory || splitItem) {
 				event.setResult(Result.DENY);
 			}
 		}
