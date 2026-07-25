@@ -16,7 +16,7 @@ public enum ArenaModeOption {
 	multi("Multi", "team rounds");
 
 	public static final EnumConfigEntry<ArenaModeOption> CONFIG =
-		new EnumConfigEntry<>("Arena Mode", "arena_mode", null, ArenaModeOption.class);
+		new EnumConfigEntry<>("Arena Mode", "arena_mode", ArenaModeOption.class);
 
 	private final String displayName;
 	private final String description;
@@ -51,13 +51,13 @@ public enum ArenaModeOption {
 	public static String getUsage() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("<");
+		sb.append('<');
 		sb.append(
 			Arrays.stream(ArenaModeOption.values())
 			.map(ArenaModeOption::name)
 			.collect(Collectors.joining(" | "))
 		);
-		sb.append(">");
+		sb.append('>');
 
 		return sb.toString();
 	}

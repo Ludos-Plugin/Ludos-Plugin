@@ -6,15 +6,15 @@ import java.util.stream.Collectors;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.persistence.config.ConfigEntry;
-import fr.ludos.core.persistence.config.ConfigEntriesCollection;
+import fr.ludos.core.persistence.config.ConfigNode;
+import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.role.RoleManager;
 
 /**
- * Config Options Map for Role-specific configuration.
+ * Config Nodes Map for Role-specific configuration.
  */
-public class RoleConfigMap extends ConfigEntriesCollection {
+public class RoleConfigMap extends ConfigNodeCollection {
 	private RoleManager manager;
 
 	public RoleConfigMap(RoleManager manager) {
@@ -27,7 +27,7 @@ public class RoleConfigMap extends ConfigEntriesCollection {
 	}
 
 	@Override
-	public ConfigEntry getEntry(String name) {
+	public ConfigNode getEntry(String name) {
 		Role.Builder role = manager.getRoleById(name);
 		if (role == null) return null;
 

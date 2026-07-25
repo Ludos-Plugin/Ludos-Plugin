@@ -160,7 +160,7 @@ public final class ManhuntTeamController extends GameTeamController {
 		Component timeMessage =
 			Component.text("You survived ")
 				.append(Component.text(newRecordString).color(NamedTextColor.GOLD))
-				.append(Component.text("!"));
+				.append(Component.text('!'));
 		if (oldRecordString != null) {
 			timeMessage = timeMessage
 				.append(Component.text(" Previous Best : "))

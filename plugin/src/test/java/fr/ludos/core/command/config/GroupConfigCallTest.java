@@ -15,20 +15,20 @@ class GroupConfigCallTest extends ConfigTest {
 		assertNotNull(player1.nextMessage());
 		player1.setOp(true);
 
-		assertSetConfigValues(player1, "ludos config global group", GroupConfigMap.GAME_JOIN, "never");
-		assertSetConfigValues(player1, "ludos config global group", GroupConfigMap.GROUP_JOIN, "always");
-		assertSetConfigValues(player1, "ludos config global group", GroupConfigMap.MEMBERS_AUTH, "admin");
-		assertSetConfigValues(player1, "ludos config global group", GroupConfigMap.START_DELAY, "three");
-		assertSetConfigValues(player1, "ludos config global group", GroupConfigMap.WAIT_PLAYERS, "offline");
+		assertSetConfigValues(player1, "ludos config", "global group", GroupConfigMap.GAME_JOIN, "never");
+		assertSetConfigValues(player1, "ludos config", "global group", GroupConfigMap.GROUP_JOIN, "always");
+		assertSetConfigValues(player1, "ludos config", "global group", GroupConfigMap.MEMBERS_AUTH, "admin");
+		assertSetConfigValues(player1, "ludos config", "global group", GroupConfigMap.START_DELAY, "three");
+		assertSetConfigValues(player1, "ludos config", "global group", GroupConfigMap.WAIT_PLAYERS, "offline");
 
 
 		assertCreateGroup(player1);
 
-		assertSetConfigValues(player1, "ludos config group group", GroupConfigMap.GAME_JOIN, "never");
-		assertSetConfigValues(player1, "ludos config group group", GroupConfigMap.GROUP_JOIN, "always");
-		assertSetConfigValues(player1, "ludos config group group", GroupConfigMap.MEMBERS_AUTH, "admin");
-		assertSetConfigValues(player1, "ludos config group group", GroupConfigMap.START_DELAY, "three");
-		assertSetConfigValues(player1, "ludos config group group", GroupConfigMap.WAIT_PLAYERS, "offline");
+		assertSetConfigValues(player1, "ludos config", "group group", GroupConfigMap.GAME_JOIN, "never");
+		assertSetConfigValues(player1, "ludos config", "group group", GroupConfigMap.GROUP_JOIN, "always");
+		assertSetConfigValues(player1, "ludos config", "group group", GroupConfigMap.MEMBERS_AUTH, "admin");
+		assertSetConfigValues(player1, "ludos config", "group group", GroupConfigMap.START_DELAY, "three");
+		assertSetConfigValues(player1, "ludos config", "group group", GroupConfigMap.WAIT_PLAYERS, "offline");
 
 		player1.performCommand("ludos group disband");
 	}

@@ -17,8 +17,8 @@ import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
-import fr.ludos.core.persistence.config.ConfigEntriesCollection;
-import fr.ludos.core.persistence.config.ConfigEntriesMap;
+import fr.ludos.core.persistence.config.ConfigNodeCollection;
+import fr.ludos.core.persistence.config.ConfigNodeMap;
 import fr.ludos.core.persistence.config.valueEntry.GroupPlayersConfigEntry;
 import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
 import fr.ludos.core.wave.WaveController;
@@ -100,10 +100,10 @@ public class RaidGame extends WaveGame {
 			new GroupPlayersConfigEntry(getManager().getLudos().getGroupManager(), "Players", "players", "all");
 
 		public final IntegerConfigEntry waves =
-			new IntegerConfigEntry("Number of Waves", "waves", null, 0, true);
+			new IntegerConfigEntry("Number of Waves", "waves", 0, true);
 
-		public final ConfigEntriesMap config =
-			new ConfigEntriesMap(ID, Set.of(players, waves, WorldBorderArea.CONFIG));
+		public final ConfigNodeMap config =
+			new ConfigNodeMap(ID, Set.of(players, waves, WorldBorderArea.CONFIG));
 
 
 		public Builder(GameManager manager) {
@@ -139,7 +139,7 @@ public class RaidGame extends WaveGame {
 		}
 
 		@Override
-		public ConfigEntriesCollection getConfig() {
+		public ConfigNodeCollection getConfig() {
 			return config;
 		}
 

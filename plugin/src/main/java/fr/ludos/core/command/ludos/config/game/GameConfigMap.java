@@ -8,14 +8,14 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameManager;
-import fr.ludos.core.persistence.config.ConfigEntry;
-import fr.ludos.core.persistence.config.ConfigEntriesCollection;
-import fr.ludos.core.persistence.config.ConfigEntriesMap;
+import fr.ludos.core.persistence.config.ConfigNode;
+import fr.ludos.core.persistence.config.ConfigNodeCollection;
+import fr.ludos.core.persistence.config.ConfigNodeMap;
 
 /**
- * {@link ConfigEntriesMap} for {@link Game}-specific configuration.
+ * {@link ConfigNodeMap} for {@link Game}-specific configuration.
  */
-public class GameConfigMap extends ConfigEntriesCollection {
+public class GameConfigMap extends ConfigNodeCollection {
 	private final GameManager gameManager;
 
 	public GameConfigMap(GameManager gameManager) {
@@ -29,7 +29,7 @@ public class GameConfigMap extends ConfigEntriesCollection {
 	}
 
 	@Override
-	public ConfigEntry getEntry(String name) {
+	public ConfigNode getEntry(String name) {
 		Game.Builder game = gameManager.getGameById(name);
 		if (game == null) return null;
 

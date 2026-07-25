@@ -39,12 +39,12 @@ public enum LobbyWaitPlayersOption {
 	public static String getUsage() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("<");
+		sb.append('<');
 		sb.append(
 			Arrays.stream(LobbyWaitPlayersOption.values()).map(LobbyWaitPlayersOption::toString)
 				.collect(Collectors.joining( " | "))
 		);
-		sb.append(">");
+		sb.append('>');
 
 		return sb.toString();
 	}

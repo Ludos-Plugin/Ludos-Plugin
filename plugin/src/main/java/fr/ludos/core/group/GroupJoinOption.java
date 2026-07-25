@@ -20,12 +20,12 @@ public enum GroupJoinOption {
 	public static String getUsage() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("<");
+		sb.append('<');
 		sb.append(
 			Arrays.stream(GroupJoinOption.values()).map(GroupJoinOption::toString)
 				.collect(Collectors.joining( " | "))
 		);
-		sb.append(">");
+		sb.append('>');
 
 		return sb.toString();
 	}

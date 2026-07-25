@@ -5,13 +5,14 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
-import fr.ludos.core.persistence.config.ConfigEntry;
+import fr.ludos.core.persistence.config.ConfigNode;
+import fr.ludos.core.persistence.config.ConfigNodeOperation;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
 
 /**
- * {@link ConfigSectionProvider} to scope subsequent {@link ConfigEntry} within a Player's config ({@link Ludos#getPlayerConfigSection}).
+ * {@link ConfigSectionProvider} to scope subsequent {@link ConfigNode} within a Player's config ({@link Ludos#getPlayerConfigSection}).
  */
-public final class PlayerConfigProvider extends ConfigSectionProvider {
+public final class PlayerConfigProvider implements ConfigSectionProvider {
 	private final Ludos ludos;
 	public PlayerConfigProvider(Ludos ludos) {
 		this.ludos = ludos;
@@ -28,7 +29,12 @@ public final class PlayerConfigProvider extends ConfigSectionProvider {
 	}
 
 	@Override
-	public boolean saveConfig(ConfigurationSection config, CommandSender sender) {
+	public boolean isAuthorized(CommandSender sender, ConfigNodeOperation op) {
+		return true;
+	}
+
+	@Override
+	public boolean saveConfig() {
 		ludos.savePlayersConfig();
 		return true;
 	}

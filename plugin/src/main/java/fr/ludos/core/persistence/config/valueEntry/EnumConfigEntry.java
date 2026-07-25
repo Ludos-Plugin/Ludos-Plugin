@@ -14,22 +14,22 @@ import fr.ludos.core.persistence.serializer.EnumSerializer;
 import fr.ludos.core.persistence.serializer.Serializer;
 
 /**
- * {@link ValueConfigEntry} for {@link Enum} values.
+ * {@link ConfigEntry} for {@link Enum} values.
  * @param <T> The Enum type of the values
  */
-public final class EnumConfigEntry<T extends Enum<T>> extends ValueConfigEntry<T, String> {
+public class EnumConfigEntry<T extends Enum<T>> extends ConfigEntry<T, String> {
 	private final @NotNull Class<T> clazz;
 	private final EnumSerializer<T> serializer;
 	private final @Nullable T defaultValue;
 
-	public EnumConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Class<T> clazz, @Nullable T defaultValue) {
-		super(name, key, emptyValue);
+	public EnumConfigEntry(@NotNull String name, @NotNull String key, @NotNull Class<T> clazz, @Nullable T defaultValue) {
+		super(name, key);
 		this.clazz = Objects.requireNonNull(clazz);
 		this.serializer = Objects.requireNonNull(new EnumSerializer<>(clazz));
 		this.defaultValue = defaultValue;
 	}
-	public EnumConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Class<T> clazz) {
-		this(name, key, emptyValue, clazz, null);
+	public EnumConfigEntry(@NotNull String name, @NotNull String key, @NotNull Class<T> clazz) {
+		this(name, key, clazz, null);
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public final class EnumConfigEntry<T extends Enum<T>> extends ValueConfigEntry<T
 			: clazz.getEnumConstants()[0];
 	}
 	@Override
-	public @NotNull Set<@NotNull String> getValidOptions(CommandSender player) {
+	public @NotNull Set<@NotNull String> options(CommandSender player) {
 		return Arrays.stream(clazz.getEnumConstants())
 			.map(Enum::name)
 			.collect(Collectors.toSet());

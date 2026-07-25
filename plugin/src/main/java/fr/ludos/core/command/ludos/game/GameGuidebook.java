@@ -68,7 +68,7 @@ public class GameGuidebook implements Subcommand {
 	}
 	@Override
 	public String getUsage(@NotNull CommandSender sender) {
-		return "<" +
+		return '<' +
 			manager.getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))
 			+ "> [player]";

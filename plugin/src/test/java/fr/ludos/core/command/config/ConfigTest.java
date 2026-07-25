@@ -8,74 +8,73 @@ import java.util.Collection;
 
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import fr.ludos.core.command.MockBukkitTestBase;
-import fr.ludos.core.persistence.config.valueEntry.ValueConfigEntry;
+import fr.ludos.core.persistence.config.valueEntry.ConfigEntry;
 
 abstract class ConfigTest extends MockBukkitTestBase {
-	private <TComplex, TPrimitive> void assertSetValidConfigValues(PlayerMock player, String path, ValueConfigEntry<TComplex, TPrimitive> entry, Collection<String> values) {
+	private <TComplex, TPrimitive> void assertSetValidConfigValues(PlayerMock player, String root, String path, ConfigEntry<TComplex, TPrimitive> entry, Collection<String> values) {
 		for (String value : values) {
 			String stringRep = entry.toString(entry.parseValueFromArgs(value.split(" "), player));
 
-			player.performCommand(path + " " + entry.key() + " " + value);
-			assertEquals(entry.getName() + " set to " + stringRep, player.nextMessage(), "Could not set Config options value to a valid option.");
+			player.performCommand(root + " set " + path + ' ' + entry.key() + ' ' + value);
+			assertEquals(entry.getName() + " set to " + stringRep, player.nextMessage(), "Could not set Config entry value to a valid option.");
 
-			player.performCommand(path + " " + entry.key());
-			assertEquals(entry.getterMessage(stringRep), player.nextMessage(), "Invalid value return after fetching set Config Options.");
+			player.performCommand(root + " get " + path + ' ' + entry.key());
+			assertEquals(entry.getterMessage(stringRep), player.nextMessage(), "Invalid value return after fetching set Config entry.");
 		}
 	}
-	private <TComplex, TPrimitive> void assertSetValidConfigValues(PlayerMock player, String path, ValueConfigEntry<TComplex, TPrimitive> options) {
-		assertSetValidConfigValues(player, path, options, options.getValidOptions(player));
+	private <TComplex, TPrimitive> void assertSetValidConfigValues(PlayerMock player, String root, String path, ConfigEntry<TComplex, TPrimitive> entry) {
+		assertSetValidConfigValues(player, root, path, entry, entry.options(player));
 	}
-	private <TComplex, TPrimitive> void assertResetConfigValues(PlayerMock player, String path, ValueConfigEntry<TComplex, TPrimitive> options) {
-		String placeHolder = options.placeholderValue();
-		player.performCommand(path + " " + options.key() + " " + placeHolder);
-		assertEquals(options.getName() + " reset", player.nextMessage(), "Could not reset Config options value.");
+	private <TComplex, TPrimitive> void assertResetConfigValues(PlayerMock player, String root, String path, ConfigEntry<TComplex, TPrimitive> entry) {
+		player.performCommand(root + " reset " + path + ' ' + entry.key());
+		assertEquals(entry.getName() + " reset", player.nextMessage(), "Could not reset Config entry value.");
 
-		player.performCommand(path + " " + options.key());
-		assertEquals(options.getterMessage((String) null), player.nextMessage(), "Value was not reset after using Placeholder value in Config Options.");
+		player.performCommand(root + " get " + path + ' ' + entry.key());
+		assertEquals(entry.getterMessage((String) null), player.nextMessage(), "Value was not reset after resetting Config entry.");
 	}
 
-	protected <TComplex, TPrimitive> void assertSetConfigValues(PlayerMock player, String path, ValueConfigEntry<TComplex, TPrimitive> options) {
+	protected <TComplex, TPrimitive> void assertSetConfigValues(PlayerMock player, String root, String path, ConfigEntry<TComplex, TPrimitive> entry) {
 		clearMessages(player);
 
-		assertSetValidConfigValues(player, path, options);
+		assertSetValidConfigValues(player, root, path, entry);
 
-		assertResetConfigValues(player, path, options);
+		assertResetConfigValues(player, root, path, entry);
 	}
-	protected <TComplex, TPrimitive> void assertSetConfigValues(PlayerMock player, String path, ValueConfigEntry<TComplex, TPrimitive> options, Collection<String> additionalValues) {
+	protected <TComplex, TPrimitive> void assertSetConfigValues(PlayerMock player, String root, String path, ConfigEntry<TComplex, TPrimitive> entry, Collection<String> additionalValues) {
 		clearMessages(player);
 
-		assertSetValidConfigValues(player, path, options);
+		assertSetValidConfigValues(player, root, path, entry);
 
-		assertSetValidConfigValues(player, path, options, additionalValues);
+		assertSetValidConfigValues(player, root, path, entry, additionalValues);
 
-		assertResetConfigValues(player, path, options);
+		assertResetConfigValues(player, root, path, entry);
 	}
 
 
-	private <TComplex, TPrimitive> void assertSetNonsenseConfigValues(PlayerMock player, String path, ValueConfigEntry<TComplex, TPrimitive> options, String nonsense) {
-		player.performCommand(path + " " + options.key());
+	private <TComplex, TPrimitive> void assertSetNonsenseConfigValues(PlayerMock player, String root, String path, ConfigEntry<TComplex, TPrimitive> entry, String nonsense) {
+		player.performCommand(root + " get " + path + ' ' + entry.key());
 		String previousValue = player.nextMessage();
-		assertNotNull(previousValue, "Could not fetch current Config Options value via parameterless call.");
+		assertNotNull(previousValue, "Could not fetch current Config entry value via get command.");
 
-		player.performCommand(path + " " + options.key() + " " + nonsense);
-		assertNull(player.nextMessage(), "Successfully set Config options value to invalid option.");
+		player.performCommand(root + " set " + path + ' ' + entry.key() + ' ' + nonsense);
+		assertNull(player.nextMessage(), "Successfully set Config entry value to invalid option.");
 
-		player.performCommand(path + " " + options.key());
+		player.performCommand(root + " get " + path + ' ' + entry.key());
 		String newValue = player.nextMessage();
-		assertNotNull(newValue, "Could not fetch current Config Options value via parameterless call.");
+		assertNotNull(newValue, "Could not fetch current Config entry value via get command.");
 
 		assertEquals(previousValue, newValue);
 	}
 
-	protected <TComplex, TPrimitive> void assertSetConfigValues(PlayerMock player, String path, ValueConfigEntry<TComplex, TPrimitive> options, String nonsense) {
-		assertSetConfigValues(player, path, options);
+	protected <TComplex, TPrimitive> void assertSetConfigValues(PlayerMock player, String root, String path, ConfigEntry<TComplex, TPrimitive> entry, String nonsense) {
+		assertSetConfigValues(player, root, path, entry);
 
-		assertSetNonsenseConfigValues(player, path, options, nonsense);
+		assertSetNonsenseConfigValues(player, root, path, entry, nonsense);
 	}
 
-	protected <TComplex, TPrimitive> void assertSetConfigValues(PlayerMock player, String path, ValueConfigEntry<TComplex, TPrimitive> options, Collection<String> additionalValues, String nonsense) {
-		assertSetConfigValues(player, path, options, additionalValues);
+	protected <TComplex, TPrimitive> void assertSetConfigValues(PlayerMock player, String root, String path, ConfigEntry<TComplex, TPrimitive> entry, Collection<String> additionalValues, String nonsense) {
+		assertSetConfigValues(player, root, path, entry, additionalValues);
 
-		assertSetNonsenseConfigValues(player, path, options, nonsense);
+		assertSetNonsenseConfigValues(player, root, path, entry, nonsense);
 	}
 }

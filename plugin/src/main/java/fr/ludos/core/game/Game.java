@@ -26,7 +26,7 @@ import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.item.SpecialItem;
-import fr.ludos.core.persistence.config.ConfigEntriesCollection;
+import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.world.WorldManager;
 import net.kyori.adventure.text.Component;
@@ -330,7 +330,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
-		public ConfigEntriesCollection getConfig() {
+		public ConfigNodeCollection getConfig() {
 			return null;
 		}
 

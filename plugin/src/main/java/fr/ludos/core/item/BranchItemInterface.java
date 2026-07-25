@@ -92,9 +92,9 @@ public interface BranchItemInterface<T extends BranchItemInterface<T, TBranch>, 
 	public static <TBranch extends Branch> Component getBranchAnnotation(TBranch branch) {
 		if (branch == null) return Component.empty();
 
-		return Component.text("(")
+		return Component.text('(')
 			.append(branch.getName())
-			.append(Component.text(")"))
+			.append(Component.text(')'))
 			.decoration(TextDecoration.ITALIC, false);
 	}
 	public static <TBranch extends Branch> Component getBranchLoreField(TBranch branch) {

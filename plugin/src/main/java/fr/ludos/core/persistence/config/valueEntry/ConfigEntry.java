@@ -1,8 +1,7 @@
 package fr.ludos.core.persistence.config.valueEntry;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -15,17 +14,20 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.persistence.config.ConfigEntry;
+import fr.ludos.core.persistence.config.ConfigNode;
+import fr.ludos.core.persistence.config.ConfigNodeOperation;
+import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import fr.ludos.core.persistence.serializer.Serializer;
 import fr.ludos.core.role.Role;
 
 /**
- * {@link ConfigEntry} for flat, typed values.
+ * {@link ConfigNode} for flat, typed values.
  * @param <TComplex> The type of values, natively supported by this instance. Parsed to and from a String during command running.
  * @param <TPrimitive> The backing type that the value is converted to, before being set in the give {@link ConfigurationSection}
  */
-public abstract class ValueConfigEntry<TComplex, TPrimitive> extends ConfigEntry {
-	public static final String DEFAULT_PLACEHOLDER_VALUE = "default";
+public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode {
+	public static final String DEFAULT = "default";
+
 	private final @NotNull String name;
 	public @NotNull String getName() {
 		return name;
@@ -36,17 +38,9 @@ public abstract class ValueConfigEntry<TComplex, TPrimitive> extends ConfigEntry
 		return key;
 	}
 
-	private final @NotNull String placeholderValue;
-	public final @NotNull String placeholderValue() {
-		return placeholderValue;
-	}
-
-	public ValueConfigEntry(@NotNull String name, @NotNull String key, @Nullable String placeholderValue) {
+	public ConfigEntry(@NotNull String name, @NotNull String key) {
 		this.name = ObjectUtils.requireNonEmpty(name);
 		this.key = ObjectUtils.requireNonEmpty(key);
-		this.placeholderValue = (placeholderValue == null || placeholderValue.isBlank())
-			? DEFAULT_PLACEHOLDER_VALUE
-			: placeholderValue;
 	}
 
 	protected abstract Serializer<TComplex, TPrimitive> getSerializer();
@@ -127,49 +121,68 @@ public abstract class ValueConfigEntry<TComplex, TPrimitive> extends ConfigEntry
 		return getValueOrDefault(playerScopedConfig, group.getPlayerConfig(), globalScopedConfig);
 	}
 
-	@Override
-	public @NotNull Set<@NotNull String> options(CommandSender sender) {
-		Set<String> options = getValidOptions(sender).stream()
-			.collect(Collectors.toCollection(HashSet::new));
-
-		options.add(placeholderValue);
-
-		return options;
+	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context, ConfigNodeOperation op) {
+		if (! context.isAuthorized(sender, op)) return false;
+		ConfigurationSection config = context.getConfig(sender);
+		switch (op) {
+			case get:
+				return get(args, sender, config);
+			case set:
+				return set(args, sender, config);
+			case reset:
+				return unset(args, sender, config);
+			default:
+				return false;
+		}
 	}
 
-	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigurationSection config) {
+	protected boolean get(String[] args, CommandSender sender, ConfigurationSection config) {
 		if (args.length == 0) {
 			sender.sendMessage(getterMessage(config));
-			return false;
-		}
-
-		if (isDefaultArgs(args, sender)) {
-			getSerializer().unset(key, config);
-			notifyUnset(sender);
 			return true;
 		}
-
+		return false;
+	}
+	protected boolean set(String[] args, CommandSender sender, ConfigurationSection config) {
 		TComplex parsed = parseValueFromArgs(args, sender);
 		if (parsed == null) return false;
 
-		if (! getSerializer().set(key, parsed, config)) return false;
-
-		notifySet(parsed, sender);
-		return true;
+		if (getSerializer().set(key, parsed, config)) {
+			notifySet(parsed, sender);
+			return true;
+		}
+		return false;
+	}
+	protected boolean unset(String[] args, CommandSender sender, ConfigurationSection config) {
+		if (args.length == 0) {
+			if (getSerializer().unset(key, config)) {
+				notifyUnset(sender);
+				return true;
+			}
+		}
+		return false;
 	}
 
-	/**
-	 * Function to determine whether a set of arguments will reset the active Config Options value.
-	 * @param args The arguments passed for the command performed
-	 * @param sender The Command Sender who performed the command
-	 * @return
-	 * Whether or not these args correspond to a "reset" command for this option<br/>
-	 * This usually means that the args are equal to [{@link #placeholderValue}, ...]
-	 * For example, with a boolean Config Options, <code>ludos config global player guidebook_message default</code>, the value will be reset.
-	 */
-	public boolean isDefaultArgs(@NotNull String[] args, CommandSender sender) {
-		return args[0].equals(placeholderValue);
+	@Override
+	public List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender, ConfigNodeOperation mode) {
+		switch (mode) {
+			case get:
+			case reset:
+				return Collections.emptyList();
+			case set:
+				return setTabComplete(args, sender);
+			default:
+				return null;
+		}
 	}
+
+	protected List<@NotNull String> setTabComplete(String[] args, CommandSender sender) {
+		if (args.length <= 1) {
+			return options(sender).stream().toList();
+		}
+		return null;
+	}
+
 	/**
 	 * Parse the given args as a native T type.
 	 * @param args The arguments passed for the command performed
@@ -178,8 +191,12 @@ public abstract class ValueConfigEntry<TComplex, TPrimitive> extends ConfigEntry
 	 */
 	public TComplex parseValueFromArgs(@NotNull String[] args, CommandSender sender) {
 		String val = args[0];
-		if (! getValidOptions(sender).contains(val)) return null;
-		return getSerializer().fromString(val);
+		TComplex parsed = getSerializer().fromString(val);
+		if (! validateValue(parsed, sender)) return null;
+		return parsed;
+	}
+	public boolean validateValue(TComplex value, CommandSender sender) {
+		return true;
 	}
 
 	protected void notifyUnset(CommandSender sender) {
@@ -215,8 +232,8 @@ public abstract class ValueConfigEntry<TComplex, TPrimitive> extends ConfigEntry
 		if (value == null) {
 			String defaultValue = getSerializer().toString(getDefaultValue());
 			return defaultValue != null
-				? placeholderValue + " (" + defaultValue + ")"
-				: placeholderValue;
+				? DEFAULT + " (" + defaultValue + ')'
+				: DEFAULT;
 		}
 		return value;
 	}
@@ -240,10 +257,4 @@ public abstract class ValueConfigEntry<TComplex, TPrimitive> extends ConfigEntry
 	 * @return The default value. Do not return null, unless the {@link #getValueOrDefault} call-sites are null-proof.
 	 */
 	public abstract @NotNull TComplex getDefaultValue();
-	/**
-	 * Gets the valid options available for this parameter. Does not include {@link #placeholderValue}.
-	 * @param sender The Command Sender who performed the command
-	 * @return The valid options (except for {@link #placeholderValue}) available to the {@code sender} for passing as the next argument in the chain.
-	 */
-	public abstract @NotNull Set<@NotNull String> getValidOptions(CommandSender sender);
 }

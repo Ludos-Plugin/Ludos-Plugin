@@ -15,7 +15,7 @@ import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
  */
 public class WorldBorderArea extends Area {
 	public static final IntegerConfigEntry CONFIG =
-		new IntegerConfigEntry("WorldBorder Area diameter", "area", null, 150, Set.of(150, 250, 350), true);
+		new IntegerConfigEntry("WorldBorder Area diameter", "area", 150, Set.of(150, 250, 350), true);
 
 	private final Builder builder;
 	@Override

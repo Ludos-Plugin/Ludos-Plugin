@@ -80,12 +80,12 @@ public enum GroupRightsOption {
 	public static String getUsage() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("<");
+		sb.append('<');
 		sb.append(
 			Arrays.stream(GroupRightsOption.values()).map(GroupRightsOption::toString)
 				.collect(Collectors.joining( " | "))
 		);
-		sb.append(">");
+		sb.append('>');
 
 		return sb.toString();
 	}

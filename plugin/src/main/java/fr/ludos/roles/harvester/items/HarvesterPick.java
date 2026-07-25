@@ -45,7 +45,7 @@ public final class HarvesterPick extends LevelBranchItem<HarvesterPick, Harveste
 	public Component getName() {
 		return Component.text("Harvester's Pick (")
 			.append(getBranch().getName())
-			.append(Component.text(")"))
+			.append(Component.text(')'))
 			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
 	}
 
@@ -63,7 +63,7 @@ public final class HarvesterPick extends LevelBranchItem<HarvesterPick, Harveste
 		lore.add(
 			Component.text("Size: ")
 				.color(NamedTextColor.GRAY)
-			.append(Component.text(size + "x" + size)
+			.append(Component.text(size + 'x' + size)
 				.color(NamedTextColor.YELLOW))
 			.decoration(TextDecoration.ITALIC, false)
 		);

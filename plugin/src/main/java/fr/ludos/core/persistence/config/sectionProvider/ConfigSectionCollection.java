@@ -5,48 +5,47 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import fr.ludos.core.persistence.config.ConfigEntry;
+import fr.ludos.core.persistence.config.ConfigNode;
+import fr.ludos.core.persistence.config.ConfigNodeOperation;
+import fr.ludos.core.persistence.config.ConfigRoot;
 
 /**
- * Collection of {@link ConfigSectionProvider}s, with their corresponding {@link ConfigEntry}.
+ * Collection of {@link ConfigSectionProvider}s, with their corresponding {@link ConfigNode}.
  */
 public abstract class ConfigSectionCollection {
 	public abstract @NotNull Set<String> getProviderKeys(CommandSender sender);
 	public abstract @NotNull ConfigSectionProvider getProvider(String key, CommandSender sender);
-	public abstract @NotNull ConfigEntry getOptions(String key, CommandSender sender);
+	public abstract @NotNull ConfigRoot getOptions(String key, CommandSender sender);
 
-	public final boolean exec(@NotNull String[] args, CommandSender sender) {
+	public final boolean execute(@NotNull String[] args, CommandSender sender, ConfigNodeOperation mode) {
 		if (args.length == 0) return false;
 
 		String key = args[0];
 		ConfigSectionProvider provider = getProvider(key, sender);
 		if (provider == null) return true;
 
-		ConfigurationSection config = provider.getConfig(sender);
-		if (config == null) return true;
+		ConfigSectionContext context = new ConfigSectionContext(provider);
 
-		ConfigEntry options = getOptions(key, sender);
+		ConfigRoot root = getOptions(key, sender);
 
-		boolean success = options.execute(Arrays.copyOfRange(args, 1, args.length), sender, config);
-		if (success) {
-			provider.saveConfig(config, sender);
+		if (root.execute(Arrays.copyOfRange(args, 1, args.length), sender, context, mode) && mode != ConfigNodeOperation.get) {
+			provider.saveConfig();
 		}
 		return true;
 	}
 
-	public final @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender) {
+	public final @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender, ConfigNodeOperation mode) {
 		if (args.length <= 1) {
 			return getProviderKeys(sender).stream().toList();
 		}
 
 		String key = args[0];
 
-		ConfigEntry options = getOptions(key, sender);
+		ConfigRoot root = getOptions(key, sender);
 
-		return options.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender);
+		return root.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender, mode);
 	}
 }

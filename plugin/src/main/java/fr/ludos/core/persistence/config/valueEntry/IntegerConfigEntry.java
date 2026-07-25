@@ -14,30 +14,30 @@ import fr.ludos.core.persistence.serializer.IntegerSerializer;
 import fr.ludos.core.persistence.serializer.Serializer;
 
 /**
- * {@link ValueConfigEntry} for {@link Number}s.
+ * {@link ConfigEntry} for {@link Number}s.
  */
-public class IntegerConfigEntry extends ValueConfigEntry<Integer, Integer> {
+public class IntegerConfigEntry extends ConfigEntry<Integer, Integer> {
 	private final static Set<String> NUMBERS = new HashSet<>() {{add("1"); add("2"); add("3");}};
 	private final IntegerSerializer serializer;
 	private final @Nullable Set<@NotNull String> suggestions;
 	private final @Nullable Integer defaultValue;
 
-	public IntegerConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions, boolean unsigned) {
-		super(name, key, emptyValue);
+	public IntegerConfigEntry(@NotNull String name, @NotNull String key, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions, boolean unsigned) {
+		super(name, key);
 		this.defaultValue = Objects.requireNonNull(defaultValue);
 		this.serializer = unsigned ? IntegerSerializer.UNSIGNED : IntegerSerializer.SIGNED;
 		this.suggestions = suggestions != null
 			? suggestions.stream().map(i -> i.toString()).collect(Collectors.toSet())
 			: null;
 	}
-	public IntegerConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions) {
-		this(name, key, emptyValue, defaultValue, suggestions, false);
+	public IntegerConfigEntry(@NotNull String name, @NotNull String key, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions) {
+		this(name, key, defaultValue, suggestions, false);
 	}
-	public IntegerConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue, boolean unsigned) {
-		this(name, key, emptyValue, defaultValue, null, unsigned);
+	public IntegerConfigEntry(@NotNull String name, @NotNull String key, @NotNull Integer defaultValue, boolean unsigned) {
+		this(name, key, defaultValue, null, unsigned);
 	}
-	public IntegerConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Integer defaultValue) {
-		this(name, key, emptyValue, defaultValue, null);
+	public IntegerConfigEntry(@NotNull String name, @NotNull String key, @NotNull Integer defaultValue) {
+		this(name, key, defaultValue, null);
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class IntegerConfigEntry extends ValueConfigEntry<Integer, Integer> {
 	}
 
 	@Override
-	public @NotNull Set<@NotNull String> getValidOptions(CommandSender player) {
+	public @NotNull Set<@NotNull String> options(CommandSender player) {
 		return suggestions != null
 			? suggestions
 			: NUMBERS;

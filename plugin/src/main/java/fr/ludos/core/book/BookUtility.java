@@ -391,7 +391,7 @@ public class BookUtility {
 		if (totalWidth >= lineWidth) {
 			return Component.text()
 				.append(leftComponent)
-				.append(Component.text(" "))
+				.append(Component.text(' '))
 				.append(rightComponent)
 				.append(Component.text('\n'))
 				.build();

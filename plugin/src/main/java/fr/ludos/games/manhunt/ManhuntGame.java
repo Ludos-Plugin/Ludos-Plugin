@@ -31,8 +31,8 @@ import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
-import fr.ludos.core.persistence.config.ConfigEntriesCollection;
-import fr.ludos.core.persistence.config.ConfigEntriesMap;
+import fr.ludos.core.persistence.config.ConfigNodeCollection;
+import fr.ludos.core.persistence.config.ConfigNodeMap;
 import fr.ludos.core.persistence.config.valueEntry.GroupPlayerConfigEntry;
 import fr.ludos.core.persistence.config.valueEntry.GroupPlayersConfigEntry;
 import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
@@ -232,13 +232,13 @@ public class ManhuntGame extends Game {
 			new GroupPlayersConfigEntry(getManager().getLudos().getGroupManager(), "Players", "players", "all");
 
 		public final GroupPlayerConfigEntry prey =
-			new GroupPlayerConfigEntry(getManager().getLudos().getGroupManager(), "Prey Player", "prey", "random");
+			new GroupPlayerConfigEntry(getManager().getLudos().getGroupManager(), "Prey Player", "prey");
 
 		public final IntegerConfigEntry revealPeriod =
-			new IntegerConfigEntry("Reveal period duration seconds", "reveal", null, 180, Set.of(60, 120, 180, 240, 300, 360), true);
+			new IntegerConfigEntry("Reveal period duration seconds", "reveal", 180, Set.of(60, 120, 180, 240, 300, 360), true);
 
-		public final ConfigEntriesMap config =
-			new ConfigEntriesMap(ID, Set.of(players, prey, WorldBorderArea.CONFIG, revealPeriod));
+		public final ConfigNodeMap config =
+			new ConfigNodeMap(ID, Set.of(players, prey, WorldBorderArea.CONFIG, revealPeriod));
 
 		public Builder(GameManager manager) {
 			super(manager);
@@ -285,7 +285,7 @@ public class ManhuntGame extends Game {
 		}
 
 		@Override
-		public ConfigEntriesCollection getConfig() {
+		public ConfigNodeCollection getConfig() {
 			return config;
 		}
 

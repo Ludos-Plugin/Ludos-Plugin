@@ -9,17 +9,14 @@ import fr.ludos.core.persistence.serializer.BooleanSerializer;
 import fr.ludos.core.persistence.serializer.Serializer;
 
 /**
- * {@link ValueConfigEntry} for {@link Boolean}s.
+ * {@link ConfigEntry} for {@link Boolean}s.
  */
-public class BooleanConfigEntry extends ValueConfigEntry<Boolean, Boolean> {
+public class BooleanConfigEntry extends ConfigEntry<Boolean, Boolean> {
 	private final boolean defaultValue;
 
-	public BooleanConfigEntry(@NotNull String name, @NotNull String key, Boolean defaultValue, String emptyValue) {
-		super(name, key, emptyValue);
-		this.defaultValue = defaultValue;
-	}
 	public BooleanConfigEntry(@NotNull String name, @NotNull String key, Boolean defaultValue) {
-		this(name, key, defaultValue, null);
+		super(name, key);
+		this.defaultValue = defaultValue;
 	}
 
 	@Override
@@ -27,7 +24,7 @@ public class BooleanConfigEntry extends ValueConfigEntry<Boolean, Boolean> {
 		return defaultValue;
 	}
 	@Override
-	public @NotNull Set<@NotNull String> getValidOptions(CommandSender sender) {
+	public @NotNull Set<@NotNull String> options(CommandSender sender) {
 		return Set.of(BooleanSerializer.FALSE_STRING, BooleanSerializer.TRUE_STRING);
 	}
 	@Override

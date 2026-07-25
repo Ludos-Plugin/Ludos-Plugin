@@ -243,7 +243,7 @@ public final class WorldManager extends GameProcessBase {
 
 		Utility.deleteRecursive(folder);
 
-		File worldFolder = new File(Bukkit.getWorldContainer().getAbsolutePath() + "/" + world.getName());
+		File worldFolder = new File(Bukkit.getWorldContainer().getAbsolutePath() + '/' + world.getName());
 		worldFolder.delete();
 	}
 

@@ -11,21 +11,20 @@ import org.jetbrains.annotations.NotNull;
 import com.google.common.base.Functions;
 
 /**
- * {@link ConfigEntry} implemented as a Map-like structure of sub-{@link ConfigEntry}.
+ * {@link ConfigNode} implemented as a Map-like structure of sub-{@link ConfigNode}.
  */
-public class ConfigEntriesMap extends ConfigEntriesCollection {
-	private final Map<String, ConfigEntry> values;
+public class ConfigRootMap extends ConfigRootCollection {
+	private final Map<String, ConfigNode> values;
 
-	public ConfigEntriesMap(String namespace, Map<String, ConfigEntry> values) {
-		super(namespace);
+	public ConfigRootMap(Map<String, ConfigNode> values) {
+		super();
 		this.values = values;
 	}
-	public ConfigEntriesMap(String namespace, Collection<ConfigEntry> entries) {
+	public ConfigRootMap(Collection<ConfigNode> entries) {
 		this(
-			namespace,
 			entries.stream()
 				.filter(e -> e != null && e.key() != null)
-				.collect(Collectors.toMap(ConfigEntry::key, Functions.identity()))
+				.collect(Collectors.toMap(ConfigNode::key, Functions.identity()))
 		);
 	}
 
@@ -35,7 +34,7 @@ public class ConfigEntriesMap extends ConfigEntriesCollection {
 	}
 
 	@Override
-	public final ConfigEntry getEntry(String name) {
+	public final ConfigNode getEntry(String name) {
 		return values.get(name);
 	}
 }

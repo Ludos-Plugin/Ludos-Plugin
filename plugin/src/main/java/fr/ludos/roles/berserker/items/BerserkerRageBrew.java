@@ -119,7 +119,7 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 				player.sendMessage(
 					Component.text("Rage Brew", NamedTextColor.DARK_RED)
 						.append(Component.text(" en cooldown (", NamedTextColor.RED))
-						.append(Component.text(remaining + "s", NamedTextColor.YELLOW))
+						.append(Component.text(remaining + 's', NamedTextColor.YELLOW))
 						.append(Component.text(").", NamedTextColor.RED))
 				);
 				return;

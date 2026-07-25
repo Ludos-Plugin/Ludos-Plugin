@@ -25,10 +25,10 @@ class ArenaConfigCallTest extends ConfigTest {
 		assertJoinGroup(player3, player1);
 
 		final List<String> additionalPlayerArgs = List.of(
-			player1.getName() + " " + player2.getName(),
-			player2.getName() + " " + player3.getName(),
-			player1.getName() + " " + player3.getName(),
-			player1.getName() + " " + player2.getName() + " " + player3.getName()
+			player1.getName() + ' ' + player2.getName(),
+			player2.getName() + ' ' + player3.getName(),
+			player1.getName() + ' ' + player3.getName(),
+			player1.getName() + ' ' + player2.getName() + ' ' + player3.getName()
 		);
 
 		Game.Builder gameBuilder = ludos.getGameManager().getGameById(ArenaGame.ID);
@@ -41,17 +41,17 @@ class ArenaConfigCallTest extends ConfigTest {
 			return;
 		}
 
-		assertSetConfigValues(player1, "ludos config global game arena", arena.team1Players, additionalPlayerArgs, "everyone");
-		assertSetConfigValues(player1, "ludos config global game arena", arena.team2Players, additionalPlayerArgs, "everyone_else");
-		assertSetConfigValues(player1, "ludos config global game arena", ArenaModeOption.CONFIG, "bossfight");
-		assertSetConfigValues(player1, "ludos config global game arena", arena.rounds, "ten");
-		assertSetConfigValues(player1, "ludos config global game arena", WorldBorderArea.CONFIG, "big");
+		assertSetConfigValues(player1, "ludos config", "global game arena", arena.team1Players, additionalPlayerArgs, "everyone");
+		assertSetConfigValues(player1, "ludos config", "global game arena", arena.team2Players, additionalPlayerArgs, "everyone_else");
+		assertSetConfigValues(player1, "ludos config", "global game arena", ArenaModeOption.CONFIG, "bossfight");
+		assertSetConfigValues(player1, "ludos config", "global game arena", arena.rounds, "ten");
+		assertSetConfigValues(player1, "ludos config", "global game arena", WorldBorderArea.CONFIG, "big");
 
-		assertSetConfigValues(player1, "ludos config group game arena", arena.team1Players, additionalPlayerArgs, "everyone");
-		assertSetConfigValues(player1, "ludos config group game arena", arena.team2Players, additionalPlayerArgs, "everyone_else");
-		assertSetConfigValues(player1, "ludos config group game arena", ArenaModeOption.CONFIG, "bossfight");
-		assertSetConfigValues(player1, "ludos config group game arena", arena.rounds, "ten");
-		assertSetConfigValues(player1, "ludos config group game arena", WorldBorderArea.CONFIG, "big");
+		assertSetConfigValues(player1, "ludos config", "group game arena", arena.team1Players, additionalPlayerArgs, "everyone");
+		assertSetConfigValues(player1, "ludos config", "group game arena", arena.team2Players, additionalPlayerArgs, "everyone_else");
+		assertSetConfigValues(player1, "ludos config", "group game arena", ArenaModeOption.CONFIG, "bossfight");
+		assertSetConfigValues(player1, "ludos config", "group game arena", arena.rounds, "ten");
+		assertSetConfigValues(player1, "ludos config", "group game arena", WorldBorderArea.CONFIG, "big");
 
 		player1.performCommand("ludos group disband");
 	}

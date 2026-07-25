@@ -12,19 +12,19 @@ import fr.ludos.core.persistence.serializer.Serializer;
 import fr.ludos.core.persistence.serializer.StringSerializer;
 
 /**
- * {@link ValueConfigEntry} for {@link String}s.
+ * {@link ConfigEntry} for {@link String}s.
  */
-public final class StringConfigEntry extends ValueConfigEntry<String, String> {
+public class StringConfigEntry extends ConfigEntry<String, String> {
 	private final @NotNull Set<@NotNull String> values;
 	private final @Nullable String defaultValue;
 
-	public StringConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, @NotNull Set<@NotNull String> values, String defaultValue) {
-		super(name, key, emptyValue);
+	public StringConfigEntry(@NotNull String name, @NotNull String key, @NotNull Set<@NotNull String> values, String defaultValue) {
+		super(name, key);
 		this.values = Objects.requireNonNull(values);
 		this.defaultValue = defaultValue;
 	}
-	public StringConfigEntry(@NotNull String name, @NotNull String key, @Nullable String emptyValue, Set<String> values) {
-		this(name, key, emptyValue, values, null);
+	public StringConfigEntry(@NotNull String name, @NotNull String key, @NotNull Set<@NotNull String> values) {
+		this(name, key, values, null);
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public final class StringConfigEntry extends ValueConfigEntry<String, String> {
 	}
 
 	@Override
-	public @NotNull Set<@NotNull String> getValidOptions(CommandSender player) {
+	public @NotNull Set<@NotNull String> options(CommandSender player) {
 		return values;
 	}
 	@Override

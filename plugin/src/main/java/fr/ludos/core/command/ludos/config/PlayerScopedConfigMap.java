@@ -4,15 +4,15 @@ import java.util.Set;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
-import fr.ludos.core.persistence.config.ConfigEntriesMap;
+import fr.ludos.core.persistence.config.ConfigRootMap;
 
 /**
- * Config Options Map for Player-scoped configuration.<br>
- * This is used to limit the subsequent config options to the scope of a single Player.
+ * Config Root Map for Player-scoped configuration.<br>
+ * This is used to limit the subsequent config nodes to the scope of a single Player.
  */
-public class PlayerScopedConfigMap extends ConfigEntriesMap {
+public class PlayerScopedConfigMap extends ConfigRootMap {
 	public PlayerScopedConfigMap(Ludos ludos) {
-		super(null, Set.of(
+		super(Set.of(
 			ludos.getRoleManager().configMap,
 			PlayerConfigMap.INSTANCE
 		));

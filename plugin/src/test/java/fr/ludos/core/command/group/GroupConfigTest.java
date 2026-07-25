@@ -20,10 +20,10 @@ class GroupConfigTest extends GroupTest {
 		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
 		assertJoinGroup(player2, player1);
 
-		player1.performCommand("ludos group config group member_authorisation " + rights);
+		player1.performCommand("ludos group config set group member_authorisation " + rights);
 		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
 
-		player2.performCommand("ludos group config group member_authorisation none");
+		player2.performCommand("ludos group config set group member_authorisation none");
 		assertEquals("Members authorisation set to none", player2.nextMessage(), "Member should be allowed to configure the group when rights permit it");
 	}
 }

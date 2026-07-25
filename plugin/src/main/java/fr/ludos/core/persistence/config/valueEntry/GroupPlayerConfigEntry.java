@@ -6,8 +6,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -19,24 +17,19 @@ import fr.ludos.core.persistence.serializer.PlayerSerializer;
 import fr.ludos.core.persistence.serializer.Serializer;
 
 /**
- * {@link ValueConfigEntry} for a single {@link OfflinePlayer} instance, present in the {@link CommandSender}'s current {@link Group}.
+ * {@link ConfigEntry} for a single {@link OfflinePlayer} instance, present in the {@link CommandSender}'s current {@link Group}.
  */
-public final class GroupPlayerConfigEntry extends ValueConfigEntry<OfflinePlayer, String> {
+public class GroupPlayerConfigEntry extends ConfigEntry<OfflinePlayer, String> {
 	private final GroupManager groupManager;
 	private final boolean excludeSelf;
 
-	public GroupPlayerConfigEntry(GroupManager groupManager, @NotNull String name, @NotNull String key, @Nullable String emptyValue, boolean excludeSelf) {
-		super(name, key, emptyValue);
+	public GroupPlayerConfigEntry(GroupManager groupManager, @NotNull String name, @NotNull String key, boolean excludeSelf) {
+		super(name, key);
 		this.groupManager = Objects.requireNonNull(groupManager);
 		this.excludeSelf = excludeSelf;
 	}
-	public GroupPlayerConfigEntry(GroupManager groupManager, @NotNull String name, @NotNull String key, @Nullable String emptyValue) {
-		this(groupManager, name, key, emptyValue, false);
-	}
-
-	public String getterMessage(String value) {
-		if (value == null) return placeholderValue();
-		return value;
+	public GroupPlayerConfigEntry(GroupManager groupManager, @NotNull String name, @NotNull String key) {
+		this(groupManager, name, key, false);
 	}
 
 	@Override
@@ -45,7 +38,7 @@ public final class GroupPlayerConfigEntry extends ValueConfigEntry<OfflinePlayer
 	}
 
 	@Override
-	public Set<String> getValidOptions(CommandSender sender) {
+	public Set<String> options(CommandSender sender) {
 		if (! (sender instanceof Player player )) return Collections.emptySet();
 
 		Group group = groupManager.getGroupOfPlayer(player);
@@ -59,6 +52,14 @@ public final class GroupPlayerConfigEntry extends ValueConfigEntry<OfflinePlayer
 		}
 
 		return res;
+	}
+
+	@Override
+	public boolean validateValue(OfflinePlayer value, CommandSender sender) {
+		if (! (sender instanceof Player player )) return false;
+
+		Group group = groupManager.getGroupOfPlayer(player);
+		return (group.isPlayer(value));
 	}
 	@Override
 	protected Serializer<OfflinePlayer, String> getSerializer() {

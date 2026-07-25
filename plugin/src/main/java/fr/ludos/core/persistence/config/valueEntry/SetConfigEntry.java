@@ -11,26 +11,33 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import fr.ludos.core.persistence.config.ConfigNodeOperation;
 import fr.ludos.core.persistence.serializer.Serializer;
 import fr.ludos.core.persistence.serializer.StringSetSerializer;
 
 /**
- * {@link ValueConfigEntry} for a typed {@link Set} of values.
+ * {@link ConfigEntry} for a typed {@link Set} of values.
  * @param <T> The type of data, stored inside the parsed Set
  */
-public abstract class SetConfigEntry<T> extends ValueConfigEntry<Set<T>, List<String>> {
-	private final StringSetSerializer<T> serializer;
+public abstract class SetConfigEntry<T> extends ConfigEntry<Set<T>, List<String>> {
+	public static final String DEFAULT_PLACEHOLDER = "none";
 
-	public SetConfigEntry(@NotNull String name, @NotNull String key, StringSetSerializer<T> serializer, String placeholderValue) {
-		super(name, key, placeholderValue);
+	private final StringSetSerializer<T> serializer;
+	private final String placeholder;
+
+	public SetConfigEntry(@NotNull String name, @NotNull String key, StringSetSerializer<T> serializer, String placeholder) {
+		super(name, key);
 		this.serializer = serializer;
+		this.placeholder = placeholder != null
+			? placeholder
+			: DEFAULT_PLACEHOLDER;
 	}
-	public SetConfigEntry(@NotNull String name, @NotNull String key, Serializer<T, String> serializer, String placeholderValue) {
-		this(name, key, new StringSetSerializer<>(serializer), placeholderValue);
+	public SetConfigEntry(@NotNull String name, @NotNull String key, StringSetSerializer<T> serializer) {
+		this(name, key, serializer, null);
 	}
 
 	public String getterMessage(String value) {
-		if (value == null) return placeholderValue();
+		if (value == null) return placeholder;
 		return value;
 	}
 
@@ -40,21 +47,18 @@ public abstract class SetConfigEntry<T> extends ValueConfigEntry<Set<T>, List<St
 	}
 
 	@Override
-	public boolean isDefaultArgs(@NotNull String[] args, CommandSender sender) {
-		return args.length == 1 && args[0].equals(placeholderValue());
-	}
-	@Override
 	public Set<T> parseValueFromArgs(@NotNull String[] args, CommandSender sender) {
 		Set<T> res = Arrays.stream(args)
 			.map((s) -> serializer.getSerializer().fromString(s))
 			.filter(Objects::nonNull)
-			.filter((v) -> validateValue(v, sender))
+			.filter((v) -> validateSingleValue(v, sender))
 			.collect(Collectors.toSet());
 		if (res.isEmpty()) return null;
+		if (! validateValue(res, sender)) return null;
 		return res;
 	}
 
-	public boolean validateValue(T value, CommandSender sender) {
+	public boolean validateSingleValue(T value, CommandSender sender) {
 		return true;
 	}
 
@@ -64,17 +68,11 @@ public abstract class SetConfigEntry<T> extends ValueConfigEntry<Set<T>, List<St
 	}
 
 	@Override
-	public @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender) {
+	public @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender, ConfigNodeOperation op) {
 		Set<String> options = options(sender);
 		if (args.length <= 1) {
 			return options.stream().toList();
 		}
-
-		if (args[0].equals(placeholderValue())) {
-			return Collections.emptyList();
-		}
-
-		options.remove(placeholderValue());
 
 		for (int i = 0; i < args.length - 1; i++) {
 			options.remove(args[i]);

@@ -24,10 +24,10 @@ class RaidConfigCallTest extends ConfigTest {
 		assertJoinGroup(player3, player1);
 
 		final List<String> additionalPlayerArgs = List.of(
-			player1.getName() + " " + player2.getName(),
-			player2.getName() + " " + player3.getName(),
-			player1.getName() + " " + player3.getName(),
-			player1.getName() + " " + player2.getName() + " " + player3.getName()
+			player1.getName() + ' ' + player2.getName(),
+			player2.getName() + ' ' + player3.getName(),
+			player1.getName() + ' ' + player3.getName(),
+			player1.getName() + ' ' + player2.getName() + ' ' + player3.getName()
 		);
 
 		Game.Builder gameBuilder = ludos.getGameManager().getGameById(RaidGame.ID);
@@ -40,13 +40,13 @@ class RaidConfigCallTest extends ConfigTest {
 			return;
 		}
 
-		assertSetConfigValues(player1, "ludos config global game raid", raid.players, additionalPlayerArgs, "everyone");
-		assertSetConfigValues(player1, "ludos config global game raid", raid.waves, "five");
-		assertSetConfigValues(player1, "ludos config global game raid", WorldBorderArea.CONFIG, "big");
+		assertSetConfigValues(player1, "ludos config", "global game raid", raid.players, additionalPlayerArgs, "everyone");
+		assertSetConfigValues(player1, "ludos config", "global game raid", raid.waves, "five");
+		assertSetConfigValues(player1, "ludos config", "global game raid", WorldBorderArea.CONFIG, "big");
 
-		assertSetConfigValues(player1, "ludos config group game raid", raid.players, additionalPlayerArgs, "everyone");
-		assertSetConfigValues(player1, "ludos config group game raid", raid.waves, "five");
-		assertSetConfigValues(player1, "ludos config group game raid", WorldBorderArea.CONFIG, "big");
+		assertSetConfigValues(player1, "ludos config", "group game raid", raid.players, additionalPlayerArgs, "everyone");
+		assertSetConfigValues(player1, "ludos config", "group game raid", raid.waves, "five");
+		assertSetConfigValues(player1, "ludos config", "group game raid", WorldBorderArea.CONFIG, "big");
 
 		player1.performCommand("ludos group disband");
 	}

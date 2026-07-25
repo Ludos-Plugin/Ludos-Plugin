@@ -53,7 +53,7 @@ class GroupDisbandTest extends GroupTest {
 
 		assertJoinGroup(player3, player1);
 
-		player1.performCommand("ludos group config group member_authorisation " + rights);
+		player1.performCommand("ludos group config set group member_authorisation " + rights);
 		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
 
 		player2.performCommand("ludos group disband");
