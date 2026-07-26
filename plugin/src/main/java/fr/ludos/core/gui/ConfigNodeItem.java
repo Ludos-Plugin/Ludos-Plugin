@@ -23,6 +23,7 @@ import xyz.xenondevs.invui.window.Window;
 public class ConfigNodeItem extends AbstractItem {
 	private final ConfigNode node;
 	private final ConfigSectionContext context;
+	private List<Runnable> clickHandlers;
 	private List<Runnable> openHandlers;
 	private List<Runnable> closeHandlers;
 	private List<Consumer<InventoryClickEvent>> outsideClickHandlers;
@@ -30,6 +31,18 @@ public class ConfigNodeItem extends AbstractItem {
 	public ConfigNodeItem(ConfigNode node, ConfigSectionContext context) {
 		this.node = Objects.requireNonNull(node);
 		this.context = Objects.requireNonNull(context);
+	}
+
+	public @NotNull ConfigNodeItem setClickHandlers(@NotNull List<@NotNull Runnable> clickHandlers) {
+		this.clickHandlers = clickHandlers;
+		return this;
+	}
+	public @NotNull ConfigNodeItem addClickHandler(@NotNull Runnable clickHandler) {
+		if (clickHandlers == null)
+			clickHandlers = new ArrayList<>();
+
+		clickHandlers.add(clickHandler);
+		return this;
 	}
 
 	public @NotNull ConfigNodeItem setOpenHandlers(@NotNull List<@NotNull Runnable> openHandlers) {
@@ -70,11 +83,18 @@ public class ConfigNodeItem extends AbstractItem {
 
 	@Override
 	public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
-		Window window = node.configGui(player, context);
+		Window window = node.configWindow(player, context);
 		if (window == null) {
 			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
 			return;
 		}
+
+		if (clickHandlers != null) {
+			for (Runnable clickHandler : clickHandlers) {
+				clickHandler.run();
+			}
+		}
+
 		if (closeHandlers != null) {
 			for (Runnable closeHandler : closeHandlers) {
 				window.addCloseHandler(closeHandler);

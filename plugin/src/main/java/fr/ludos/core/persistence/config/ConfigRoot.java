@@ -37,9 +37,9 @@ public interface ConfigRoot {
 		return name()
 			.decoration(TextDecoration.ITALIC, false);
 	}
-	public Window configGui(Player player, ConfigSectionContext context);
-	public default void openConfigGui(Player player, ConfigSectionContext context) {
-		Window window = configGui(player, context);
+	public Window configWindow(Player player, ConfigSectionContext context);
+	public default void openConfigWindow(Player player, ConfigSectionContext context) {
+		Window window = configWindow(player, context);
 		if (window == null) {
 			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
 			return;

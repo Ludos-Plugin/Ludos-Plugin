@@ -63,7 +63,7 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 			case set:
 				if (args.length == 0) {
 					if (! (sender instanceof Player player)) return false;
-					openConfigGui(player, context);
+					openConfigWindow(player, context);
 					return true;
 				}
 				return set(args, sender, config);

@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +11,6 @@ import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
-import xyz.xenondevs.invui.window.Window;
 
 /**
  * {@link ConfigNode} implemented as a Collection of sub-{@link ConfigNode}.
@@ -44,12 +42,7 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 	}
 
 	@Override
-	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context, ConfigNodeOperation mode) {
-		return super.execute(args, sender, context.getDeeper(namespace), mode);
-	}
-
-	@Override
-	public Window configGui(Player player, ConfigSectionContext context) {
-		return super.configGui(player, context.getDeeper(namespace));
+	protected ConfigSectionContext prepareForChildren(ConfigSectionContext context) {
+		return context.getDeeper(namespace, this);
 	}
 }

@@ -43,7 +43,7 @@ public abstract class ConfigRootCollection implements ConfigRoot {
 	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context, ConfigNodeOperation mode) {
 		if (mode == ConfigNodeOperation.set && args.length == 0) {
 			if (! (sender instanceof Player player)) return false;
-			openConfigGui(player, context);
+			openConfigWindow(player, context);
 			return true;
 		}
 
@@ -51,7 +51,7 @@ public abstract class ConfigRootCollection implements ConfigRoot {
 		ConfigNode node = getEntry(key);
 		if (node == null) return false;
 
-		return node.execute(Arrays.copyOfRange(args, 1, args.length), sender, context, mode);
+		return node.execute(Arrays.copyOfRange(args, 1, args.length), sender, prepareForChildren(context), mode);
 	}
 
 	@Override
@@ -67,15 +67,17 @@ public abstract class ConfigRootCollection implements ConfigRoot {
 	}
 
 	@Override
-	public Window configGui(Player player, ConfigSectionContext context) {
+	public Window configWindow(Player player, ConfigSectionContext context) {
+		Boolean[] doModalBack = new Boolean[]{true};
+		ConfigSectionContext childrenContext = prepareForChildren(context);
 		List<Item> items = getEntries().stream()
 			.filter(Objects::nonNull)
-			.map(node -> new ConfigNodeItem(node, context))
+			.map(node -> new ConfigNodeItem(node, childrenContext).addClickHandler(() -> doModalBack[0] = false))
 			.collect(Collectors.toList());
 
 		if (items.isEmpty()) return null;
 
-		return Window.single()
+		Window window = Window.single()
 			.setTitle(new AdventureComponentWrapper(displayName()))
 			.setGui(PagedGui.items()
 				.setStructure(new Structure(
@@ -89,6 +91,16 @@ public abstract class ConfigRootCollection implements ConfigRoot {
 				.addIngredient('P', ChangePageItem.INSTANCE)
 				.setContent(items)
 			)
+			.addCloseHandler(() -> {
+				if (doModalBack[0]) {
+					context.openPreviousWindow(player);
+					doModalBack[0] = false;
+				}
+			})
 			.build(player);
+		return window;
+	}
+	protected ConfigSectionContext prepareForChildren(ConfigSectionContext context) {
+		return context.getDeeper(null, this);
 	}
 }

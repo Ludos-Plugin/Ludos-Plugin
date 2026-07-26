@@ -95,7 +95,7 @@ public class GroupPlayersConfigEntry extends SetConfigEntry<OfflinePlayer> {
 	}
 
 	@Override
-	public Window configGui(Player player, ConfigSectionContext context) {
+	public Window configWindow(Player player, ConfigSectionContext context) {
 		ConfigurationSection config = context.getConfig(player);
 
 		PagedGui.Builder<Item> gui = PagedGui.items()
@@ -141,6 +141,7 @@ public class GroupPlayersConfigEntry extends SetConfigEntry<OfflinePlayer> {
 		return Window.single()
 			.setTitle(new AdventureComponentWrapper(displayName()))
 			.setGui(gui.setContent(items))
+			.addCloseHandler(() -> context.openPreviousWindow(player))
 			.build(player);
 	}
 }

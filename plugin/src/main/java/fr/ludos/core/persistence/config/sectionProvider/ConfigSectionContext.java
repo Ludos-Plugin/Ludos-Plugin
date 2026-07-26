@@ -2,33 +2,60 @@ package fr.ludos.core.persistence.config.sectionProvider;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.Utility;
 import fr.ludos.core.persistence.config.ConfigNodeOperation;
+import fr.ludos.core.persistence.config.ConfigRoot;
 
 /**
  * .
  */
 public class ConfigSectionContext implements ConfigSectionProvider {
+	private final @Nullable ConfigSectionContext previous;
 	private final ConfigSectionProvider provider;
 	private final Plugin plugin;
 	private final String path;
+	private ConfigRoot node = null;
 
-	private ConfigSectionContext(ConfigSectionProvider provider, Plugin plugin, String path) {
+	private ConfigSectionContext(@Nullable ConfigSectionContext previous, ConfigSectionProvider provider, Plugin plugin, String path) {
+		this.previous = previous;
 		this.provider = provider;
 		this.plugin = plugin;
 		this.path = path;
 	}
 	public ConfigSectionContext(ConfigSectionProvider provider, Plugin plugin) {
-		this(provider, plugin, null);
+		this(null, provider, plugin, null);
 	}
 
-	public ConfigSectionContext getDeeper(String path) {
-		if (this.path == null) {
-			return new ConfigSectionContext(provider, plugin, path);
-		}
-		return new ConfigSectionContext(provider, plugin, this.path + '.' + path);
+	public ConfigSectionContext getDeeper(@Nullable String path, ConfigRoot node) {
+		this.node = node;
+
+		String finalPath = path == null
+			? this.path
+			: this.path == null
+				? path
+				: this.path + '.' + path;
+		return new ConfigSectionContext(this, provider, plugin, finalPath);
+	}
+
+	public void openWindow(Player player) {
+		if (node == null) return;
+
+		final ConfigSectionContext thiz = this;
+		new BukkitRunnable() {
+			public void run() {
+				node.openConfigWindow(player, thiz);
+			}
+		}.runTask(plugin);
+	}
+	public void openPreviousWindow(Player player) {
+		if (previous == null) return;
+
+		previous.openWindow(player);
 	}
 
 	public Plugin plugin() {

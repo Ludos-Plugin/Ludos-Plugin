@@ -67,7 +67,7 @@ public class IntegerConfigEntry extends ConfigEntry<Integer, Integer> {
 	}
 
 	@Override
-	public AnvilWindow configGui(Player player, ConfigSectionContext context) {
+	public AnvilWindow configWindow(Player player, ConfigSectionContext context) {
 		IntegerDisplayItem currentValue = new IntegerDisplayItem(this, context);
 		ResetValueItem<Integer, Gui> reset = new ResetValueItem<>(this, context).addResetHandler(() -> currentValue.notifyWindows());
 		SubmitValueItem<Integer> submit = new SubmitValueItem<>(this, context).addSubmitHandler(e -> currentValue.notifyWindows());
@@ -84,6 +84,7 @@ public class IntegerConfigEntry extends ConfigEntry<Integer, Integer> {
 					.addIngredient('V', submit)
 				)
 			)
+			.addCloseHandler(() -> context.openPreviousWindow(player))
 			.build(player);
 	}
 }

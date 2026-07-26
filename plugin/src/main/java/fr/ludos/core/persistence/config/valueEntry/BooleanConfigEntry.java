@@ -74,7 +74,7 @@ public class BooleanConfigEntry extends ConfigEntry<Boolean, Boolean> {
 		));
 
 	@Override
-	public Window configGui(Player player, ConfigSectionContext context) {
+	public Window configWindow(Player player, ConfigSectionContext context) {
 		ConfigurationSection config = context.getConfig(player);
 
 		BooleanDisplayItem currentValue = new BooleanDisplayItem(this, context, trueString, falseString);
@@ -110,6 +110,7 @@ public class BooleanConfigEntry extends ConfigEntry<Boolean, Boolean> {
 					.addIngredient('t', toggleItem)
 				)
 			)
+			.addCloseHandler(() -> context.openPreviousWindow(player))
 			.build(player);
 	}
 }
