@@ -6,10 +6,15 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+import xyz.xenondevs.invui.window.Window;
 
 /**
  * A structure to represent a Configurable value (ex: The number of waves in a Raid), and its valid values (options).
@@ -25,5 +30,20 @@ public interface ConfigRoot {
 		}
 
 		return Collections.emptyList();
+	}
+
+	public Component name();
+	public default Component displayName() {
+		return name()
+			.decoration(TextDecoration.ITALIC, false);
+	}
+	public Window configGui(Player player, ConfigSectionContext context);
+	public default void openConfigGui(Player player, ConfigSectionContext context) {
+		Window window = configGui(player, context);
+		if (window == null) {
+			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+			return;
+		}
+		window.open();
 	}
 }

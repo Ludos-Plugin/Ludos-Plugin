@@ -51,7 +51,7 @@ public final class GameManager {
 	public List<String> getGameIds() {
 		return registered.keySet().stream().collect( Collectors.toList() );
 	}
-	public List<Game.Builder> getGameBuilders() {
+	public List<Game.Builder> getBuilders() {
 		return registered.values().stream().collect( Collectors.toList() );
 	}
 

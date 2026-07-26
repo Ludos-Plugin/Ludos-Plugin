@@ -16,7 +16,7 @@ abstract class ConfigTest extends MockBukkitTestBase {
 			String stringRep = entry.toString(entry.parseValueFromArgs(value.split(" "), player));
 
 			player.performCommand(root + " set " + path + ' ' + entry.key() + ' ' + value);
-			assertEquals(entry.getName() + " set to " + stringRep, player.nextMessage(), "Could not set Config entry value to a valid option.");
+			assertEquals(entry.name().content() + " set to " + stringRep, player.nextMessage(), "Could not set Config entry value to a valid option.");
 
 			player.performCommand(root + " get " + path + ' ' + entry.key());
 			assertEquals(entry.getterMessage(stringRep), player.nextMessage(), "Invalid value return after fetching set Config entry.");
@@ -27,7 +27,7 @@ abstract class ConfigTest extends MockBukkitTestBase {
 	}
 	private <TComplex, TPrimitive> void assertResetConfigValues(PlayerMock player, String root, String path, ConfigEntry<TComplex, TPrimitive> entry) {
 		player.performCommand(root + " reset " + path + ' ' + entry.key());
-		assertEquals(entry.getName() + " reset", player.nextMessage(), "Could not reset Config entry value.");
+		assertEquals(entry.name().content() + " reset", player.nextMessage(), "Could not reset Config entry value.");
 
 		player.performCommand(root + " get " + path + ' ' + entry.key());
 		assertEquals(entry.getterMessage((String) null), player.nextMessage(), "Value was not reset after resetting Config entry.");

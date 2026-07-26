@@ -25,17 +25,15 @@ public class LudosCommand implements Subcommand {
 	private final SubcommandManager manager;
 
 	public LudosCommand(Ludos ludos) {
-		ArrayList<Subcommand> subcommands = new ArrayList<>() {{
+		manager = new SubcommandManager(new ArrayList<>() {{
 			add(new GroupSubcommand(ludos.getGroupManager()));
 			add(new GameSubcommand(ludos.getGameManager()));
 			add(new RoleSubcommand(ludos.getRoleManager()));
 			add(new LudosConfig(ludos));
 			add(new CheatsSubcommand(ludos));
 			add(new LudosGuidebook(ludos));
-		}};
-		HelpSubcommand help = new HelpSubcommand(Ludos.NAMESPACE, subcommands);
-		subcommands.add(help);
-		manager = new SubcommandManager(subcommands);
+			add(new HelpSubcommand(Ludos.NAMESPACE, this));
+		}});
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,14 +21,14 @@ public abstract class ConfigSectionCollection {
 	public abstract @NotNull ConfigSectionProvider getProvider(String key, CommandSender sender);
 	public abstract @NotNull ConfigRoot getOptions(String key, CommandSender sender);
 
-	public final boolean execute(@NotNull String[] args, CommandSender sender, ConfigNodeOperation mode) {
+	public final boolean execute(Plugin plugin, @NotNull String[] args, CommandSender sender, ConfigNodeOperation mode) {
 		if (args.length == 0) return false;
 
 		String key = args[0];
 		ConfigSectionProvider provider = getProvider(key, sender);
 		if (provider == null) return true;
 
-		ConfigSectionContext context = new ConfigSectionContext(provider);
+		ConfigSectionContext context = new ConfigSectionContext(provider, plugin);
 
 		ConfigRoot root = getOptions(key, sender);
 

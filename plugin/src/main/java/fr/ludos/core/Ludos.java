@@ -39,6 +39,7 @@ import fr.ludos.core.item.texture.TextureListener;
 import fr.ludos.core.item.texture.TextureManager;
 import fr.ludos.core.packets.player.PlayerPackets;
 import fr.ludos.core.packets.player.PlayerPacketsFactory;
+import fr.ludos.core.persistence.config.valueEntry.GroupPlayersConfigEntry;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.role.RoleManager;
 import fr.ludos.games.arena.ArenaGame;
@@ -55,6 +56,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * The main Ludos plugin.
@@ -81,6 +83,15 @@ public class Ludos extends JavaPlugin implements Listener {
 	public final PlayerScopedConfigMap playerConfigMap = new PlayerScopedConfigMap(this);
 	public final GroupScopedConfigMap groupConfigMap = new GroupScopedConfigMap(this);
 	public final GlobalScopedConfigMap globalConfigMap = new GlobalScopedConfigMap(this);
+
+	public final GroupPlayersConfigEntry playersConfig =
+		new GroupPlayersConfigEntry(
+			groupManager,
+			Component.text("Players"),
+			new ItemBuilder(Material.PLAYER_HEAD),
+			"players",
+			"all"
+		);
 
 	public final GroupManager getGroupManager() {
 		return this.groupManager;
@@ -197,7 +208,7 @@ public class Ludos extends JavaPlugin implements Listener {
 	public ItemStack createGuidebook() {
 		final int gameHeaderPageIdx = 2;
 
-		final List<Game.Builder> gameBuilders = gameManager.getGameBuilders();
+		final List<Game.Builder> gameBuilders = gameManager.getBuilders();
 		final int gameHeaderPageCount = ((2 + gameBuilders.size() * 2) + BookUtility.MC_BOOK_LINE_COUNT - 1) / BookUtility.MC_BOOK_LINE_COUNT;
 
 		int gamePageOffset = 0;

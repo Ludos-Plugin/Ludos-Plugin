@@ -6,7 +6,14 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.bukkit.Material;
+
 import fr.ludos.core.persistence.config.valueEntry.EnumConfigEntry;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * Enum representing the different {@link ArenaGame} mode options.
@@ -16,7 +23,17 @@ public enum ArenaModeOption {
 	multi("Multi", "team rounds");
 
 	public static final EnumConfigEntry<ArenaModeOption> CONFIG =
-		new EnumConfigEntry<>("Arena Mode", "arena_mode", ArenaModeOption.class);
+		new EnumConfigEntry<>(
+			Component.text("Arena Mode"),
+			new ItemBuilder(Material.WHITE_BANNER),
+			"arena_mode",
+			ArenaModeOption.class
+		) {
+			@Override
+			public ItemBuilder getItemForEnumValue(ArenaModeOption value) {
+				return value.getDisplayItem();
+			}
+		};
 
 	private final String displayName;
 	private final String description;
@@ -65,4 +82,36 @@ public enum ArenaModeOption {
 	public static final List<String> OPTIONS = Arrays.stream(ArenaModeOption.values())
 		.map(Enum::name)
 		.collect(Collectors.toList());
+
+
+	public ItemBuilder getDisplayItem() {
+		switch (this) {
+			case duel:
+				return new ItemBuilder(Material.IRON_SWORD)
+					.setDisplayName(new AdventureComponentWrapper(
+						Component.text("Duel")
+							.color(NamedTextColor.RED)
+							.decoration(TextDecoration.ITALIC, false)
+					))
+					.addLoreLines(new AdventureComponentWrapper(
+						Component.text("Two players fight each other.")
+							.decoration(TextDecoration.ITALIC, false)
+					));
+			case multi:
+				return new ItemBuilder(Material.BLUE_BANNER)
+					.setDisplayName(new AdventureComponentWrapper(
+						Component.text("Team vs Team")
+							.color(NamedTextColor.BLUE)
+							.decoration(TextDecoration.ITALIC, false)
+					))
+					.addLoreLines(
+						new AdventureComponentWrapper(
+							Component.text("Two teams fight each other.")
+								.decoration(TextDecoration.ITALIC, false)
+						)
+					);
+			default:
+				return new ItemBuilder(Material.AIR);
+		}
+	}
 }

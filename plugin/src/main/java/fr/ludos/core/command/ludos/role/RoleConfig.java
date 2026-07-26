@@ -11,6 +11,6 @@ import fr.ludos.core.role.RoleManager;
  */
 public class RoleConfig extends ConfigSubcommand {
 	public RoleConfig(RoleManager manager) {
-		super("Configure a role.", new ScopeConfigMap(manager.getLudos(), manager.configMap));
+		super(manager.getLudos(), "Configure a role.", new ScopeConfigMap(manager.getLudos(), manager.configMap));
 	}
 }

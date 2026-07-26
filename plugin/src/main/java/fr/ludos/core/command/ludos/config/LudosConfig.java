@@ -8,7 +8,7 @@ import fr.ludos.core.command.ludos.ScopeConfigMap;
  */
 public class LudosConfig extends ConfigSubcommand {
 	public LudosConfig(Ludos ludos) {
-		super("Configure Ludos.", new ScopeConfigMap(
+		super(ludos, "Configure Ludos.", new ScopeConfigMap(
 			ludos,
 			ludos.globalConfigMap,
 			ludos.groupConfigMap,

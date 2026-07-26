@@ -1,11 +1,12 @@
 package fr.ludos.games.arena;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
@@ -30,6 +31,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.util.TriState;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * Arena game implementation.
@@ -104,16 +106,42 @@ public class ArenaGame extends WaveGame {
 	 */
 	public static class Builder extends Game.Builder {
 		public final GroupPlayersConfigEntry team1Players =
-			new GroupPlayersConfigEntry(getManager().getLudos().getGroupManager(), "Team 1 players", "team_1", "random");
+			new GroupPlayersConfigEntry(
+				getManager().getLudos().getGroupManager(),
+				Component.text("Team 1 players"),
+				new ItemBuilder(Material.BLUE_BANNER),
+				"team_1", "random"
+			);
 
 		public final GroupPlayersConfigEntry team2Players =
-			new GroupPlayersConfigEntry(getManager().getLudos().getGroupManager(), "Team 2 players", "team_2", "random");
+			new GroupPlayersConfigEntry(
+				getManager().getLudos().getGroupManager(),
+				Component.text("Team 2 players"),
+				new ItemBuilder(Material.RED_BANNER),
+				"team_2", "random"
+			);
 
 		public final IntegerConfigEntry rounds =
-			new IntegerConfigEntry("Number of Rounds", "rounds", 3, true);
+			new IntegerConfigEntry(
+				Component.text("Number of Rounds"),
+				new ItemBuilder(Material.SKELETON_SKULL),
+				"rounds", 3,
+				true
+			);
 
 		private final ConfigNodeMap configMap =
-			new ConfigNodeMap(ID, Set.of(team1Players, team2Players, ArenaModeOption.CONFIG, rounds, WorldBorderArea.CONFIG));
+			new ConfigNodeMap(
+				Component.text("Arena"),
+				new ItemBuilder(Material.IRON_SWORD),
+				ID,
+				List.of(
+					team1Players,
+					team2Players,
+					ArenaModeOption.CONFIG,
+					rounds,
+					WorldBorderArea.CONFIG
+				)
+			);
 
 		public Builder(GameManager manager) {
 			super(manager);

@@ -11,6 +11,6 @@ import fr.ludos.core.game.GameManager;
  */
 public class GameConfig extends ConfigSubcommand {
 	public GameConfig(GameManager manager) {
-		super("Configure a game.", new ScopeConfigMap(manager.getLudos(), manager.configMap));
+		super(manager.getLudos(), "Configure a game.", new ScopeConfigMap(manager.getLudos(), manager.configMap));
 	}
 }

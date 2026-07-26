@@ -14,6 +14,8 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.core.persistence.config.ConfigNodeOperation;
 import fr.ludos.core.persistence.serializer.Serializer;
 import fr.ludos.core.persistence.serializer.StringSetSerializer;
+import net.kyori.adventure.text.TextComponent;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 
 /**
  * {@link ConfigEntry} for a typed {@link Set} of values.
@@ -25,15 +27,15 @@ public abstract class SetConfigEntry<T> extends ConfigEntry<Set<T>, List<String>
 	private final StringSetSerializer<T> serializer;
 	private final String placeholder;
 
-	public SetConfigEntry(@NotNull String name, @NotNull String key, StringSetSerializer<T> serializer, String placeholder) {
-		super(name, key);
+	public SetConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, StringSetSerializer<T> serializer, String placeholder) {
+		super(name, displayItem, key);
 		this.serializer = serializer;
 		this.placeholder = placeholder != null
 			? placeholder
 			: DEFAULT_PLACEHOLDER;
 	}
-	public SetConfigEntry(@NotNull String name, @NotNull String key, StringSetSerializer<T> serializer) {
-		this(name, key, serializer, null);
+	public SetConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, StringSetSerializer<T> serializer) {
+		this(name, displayItem, key, serializer, null);
 	}
 
 	public String getterMessage(String value) {
@@ -42,8 +44,8 @@ public abstract class SetConfigEntry<T> extends ConfigEntry<Set<T>, List<String>
 	}
 
 	@Override
-	public Set<T> getDefaultValue() {
-		return Collections.emptySet();
+	public final Serializer<Set<T>, List<String>> getSerializer() {
+		return serializer;
 	}
 
 	@Override
@@ -57,14 +59,13 @@ public abstract class SetConfigEntry<T> extends ConfigEntry<Set<T>, List<String>
 		if (! validateValue(res, sender)) return null;
 		return res;
 	}
-
 	public boolean validateSingleValue(T value, CommandSender sender) {
 		return true;
 	}
 
 	@Override
-	protected Serializer<Set<T>, List<String>> getSerializer() {
-		return serializer;
+	public Set<T> defaultValue() {
+		return Collections.emptySet();
 	}
 
 	@Override

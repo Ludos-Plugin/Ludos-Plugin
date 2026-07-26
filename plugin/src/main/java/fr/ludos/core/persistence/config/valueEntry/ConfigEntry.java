@@ -3,123 +3,56 @@ package fr.ludos.core.persistence.config.valueEntry;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang3.ObjectUtils;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.Ludos;
-import fr.ludos.core.game.Game;
-import fr.ludos.core.group.Group;
+import fr.ludos.core.persistence.PersistentEntry;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigNodeOperation;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import fr.ludos.core.persistence.serializer.Serializer;
-import fr.ludos.core.role.Role;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 
 /**
  * {@link ConfigNode} for flat, typed values.
  * @param <TComplex> The type of values, natively supported by this instance. Parsed to and from a String during command running.
  * @param <TPrimitive> The backing type that the value is converted to, before being set in the give {@link ConfigurationSection}
  */
-public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode {
+public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, PersistentEntry<TComplex> {
 	public static final String DEFAULT = "default";
 
-	private final @NotNull String name;
-	public @NotNull String getName() {
-		return name;
-	}
-
 	private final @NotNull String key;
-	public @NotNull String key() {
-		return key;
-	}
+	private final @NotNull TextComponent name;
+	private final @NotNull AbstractItemBuilder<?> displayItem;
 
-	public ConfigEntry(@NotNull String name, @NotNull String key) {
+	public ConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key) {
 		this.name = ObjectUtils.requireNonEmpty(name);
+		this.displayItem = ObjectUtils.requireNonEmpty(displayItem);
 		this.key = ObjectUtils.requireNonEmpty(key);
 	}
 
-	protected abstract Serializer<TComplex, TPrimitive> getSerializer();
-
-	public final @Nullable TComplex getValueOrNull(ConfigurationSection config) {
-		return getSerializer().get(key, config);
+	@Override
+	public @NotNull String key() {
+		return key;
 	}
-	public final @Nullable TComplex getValueOrDefault(ConfigurationSection config) {
-		TComplex found = getValueOrNull(config);
-		if (found != null) return found;
-
-		return getDefaultValue();
+	@Override
+	public @NotNull TextComponent name() {
+		return name;
 	}
-
-	public final @Nullable TComplex getValueOrNull(ConfigurationSection config, ConfigurationSection fallback) {
-		TComplex first = getValueOrNull(config);
-		if (first != null) return first;
-
-		TComplex second = getValueOrNull(fallback);
-		if (second != null) return second;
-
-		return null;
-	}
-	public final @Nullable TComplex getValueOrDefault(ConfigurationSection config, ConfigurationSection fallback) {
-		TComplex found = getValueOrNull(config, fallback);
-		if (found != null) return found;
-
-		return getDefaultValue();
+	@Override
+	public AbstractItemBuilder<?> item(Player player, ConfigSectionContext context) {
+		return displayItem;
 	}
 
-	public final @Nullable TComplex getValueOrNull(ConfigurationSection scopedConfig, ConfigurationSection config, ConfigurationSection fallback) {
-		TComplex first = getValueOrNull(scopedConfig);
-		if (first != null) return first;
+	public abstract Serializer<TComplex, TPrimitive> getSerializer();
 
-		TComplex second = getValueOrNull(config);
-		if (second != null) return second;
-
-		TComplex third = getValueOrNull(fallback);
-		if (third != null) return third;
-
-		return null;
-	}
-	public final @Nullable TComplex getValueOrDefault(ConfigurationSection scopedConfig, ConfigurationSection config, ConfigurationSection fallback) {
-		TComplex found = getValueOrNull(scopedConfig, config, fallback);
-		if (found != null) return found;
-
-		return getDefaultValue();
-	}
-
-	public final TComplex getPluginConfig(Ludos ludos) {
-		return getValueOrDefault(ludos.getPluginConfig());
-	}
-	public final TComplex getGroupConfig(Group group) {
-		return getValueOrDefault(group.getGroupConfig(), group.getManager().getGlobalGroupConfig());
-	}
-	public final TComplex getGameConfig(Group group, Game.Builder game) {
-		return getValueOrDefault(group.getGameConfig(game), game.getManager().getGlobalGameConfig(game));
-	}
-	public final TComplex getRoleConfig(Group group, Role.Builder role) {
-		return getValueOrDefault(group.getRoleConfig(role), role.getLudos().getGlobalRoleConfig(role));
-	}
-	public final TComplex getRoleConfig(OfflinePlayer player, Ludos ludos, Role.Builder role) {
-		ConfigurationSection playerScopedConfig = ludos.getPlayerRoleConfig(player, role);
-		ConfigurationSection globalScopedConfig = ludos.getGlobalRoleConfig(role);
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
-		if (group == null) {
-			return getValueOrDefault(playerScopedConfig, globalScopedConfig);
-		}
-		return getValueOrDefault(playerScopedConfig, group.getRoleConfig(role), globalScopedConfig);
-	}
-	public final TComplex getPlayerConfig(OfflinePlayer player, Ludos ludos) {
-		ConfigurationSection playerScopedConfig = ludos.getPlayerConfig(player);
-		ConfigurationSection globalScopedConfig = ludos.getGlobalPlayerConfig();
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
-		if (group == null) {
-			return getValueOrDefault(playerScopedConfig, globalScopedConfig);
-		}
-		return getValueOrDefault(playerScopedConfig, group.getPlayerConfig(), globalScopedConfig);
-	}
 
 	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context, ConfigNodeOperation op) {
 		if (! context.isAuthorized(sender, op)) return false;
@@ -128,6 +61,11 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode {
 			case get:
 				return get(args, sender, config);
 			case set:
+				if (args.length == 0) {
+					if (! (sender instanceof Player player)) return false;
+					openConfigGui(player, context);
+					return true;
+				}
 				return set(args, sender, config);
 			case reset:
 				return unset(args, sender, config);
@@ -200,15 +138,15 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode {
 	}
 
 	protected void notifyUnset(CommandSender sender) {
-		sender.sendMessage(getName() + " reset");
+		sender.sendMessage(name().content() + " reset");
 	}
 	protected void notifySet(TComplex value, CommandSender sender) {
 		String parsed = getSerializer().toString(value);
 		if (parsed == null) {
-			sender.sendMessage(getName() + " set to irrepresentable value");
+			sender.sendMessage(name().content() + " set to irrepresentable value");
 		}
 
-		sender.sendMessage(getName() + " set to " + parsed);
+		sender.sendMessage(name().content() + " set to " + parsed);
 	}
 
 	/**
@@ -230,7 +168,7 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode {
 	 */
 	public String getterMessage(String value) {
 		if (value == null) {
-			String defaultValue = getSerializer().toString(getDefaultValue());
+			String defaultValue = getSerializer().toString(defaultValue());
 			return defaultValue != null
 				? DEFAULT + " (" + defaultValue + ')'
 				: DEFAULT;
@@ -253,8 +191,27 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode {
 
 	/**
 	 * The default value that will be returned when fetching the value, when the option was not set, or after it was reset, using {@link #placeholderValue}.<br>
-	 * Using {@link #getDefaultValue} with {@link #getDefaultValue} should NEVER result in null, for the sake of sender messages.
+	 * Using {@link #defaultValue} with {@link #defaultValue} should NEVER result in null, for the sake of sender messages.
 	 * @return The default value. Do not return null, unless the {@link #getValueOrDefault} call-sites are null-proof.
 	 */
-	public abstract @NotNull TComplex getDefaultValue();
+	public abstract @NotNull TComplex defaultValue();
+
+	@Override
+	public AbstractItemBuilder<?> displayItem(Player player, ConfigSectionContext context) {
+		AbstractItemBuilder<?> builder = ConfigNode.super.displayItem(player, context);
+		builder.setLore(List.of(
+			new AdventureComponentWrapper(
+				Component.text(getValueLabel(toString(getValueOrDefault(context.getConfig(player)))))
+					.color(NamedTextColor.GRAY)
+			)
+		));
+		return builder;
+	}
+	protected String getValueLabel(String value) {
+		if (value == null) value = getNullValue();
+		return "Current value : " + value;
+	}
+	protected String getNullValue() {
+		return null;
+	}
 }

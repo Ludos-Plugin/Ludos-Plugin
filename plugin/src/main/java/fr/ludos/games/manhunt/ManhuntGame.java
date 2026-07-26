@@ -1,6 +1,7 @@
 package fr.ludos.games.manhunt;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -10,6 +11,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
@@ -34,7 +36,6 @@ import fr.ludos.core.lobby.Lobby.ClearMode;
 import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import fr.ludos.core.persistence.config.ConfigNodeMap;
 import fr.ludos.core.persistence.config.valueEntry.GroupPlayerConfigEntry;
-import fr.ludos.core.persistence.config.valueEntry.GroupPlayersConfigEntry;
 import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
 import fr.ludos.core.persistence.data.DataEntry;
 import fr.ludos.core.persistence.serializer.TimeSerializer;
@@ -44,6 +45,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.util.TriState;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 
 /**
@@ -111,7 +113,7 @@ public class ManhuntGame extends Game {
 			.build();
 		this.teamController = new ManhuntTeamController(
 			this,
-			builder.players.getGameConfig(group, builder),
+			builder.getLudos().playersConfig.getGameConfig(group, builder),
 			builder.prey.getGameConfig(group, builder)
 		);
 
@@ -228,17 +230,43 @@ public class ManhuntGame extends Game {
 	 * Builder for {@link ManhuntGame}.
 	 */
 	public static class Builder extends Game.Builder {
-		public final GroupPlayersConfigEntry players =
-			new GroupPlayersConfigEntry(getManager().getLudos().getGroupManager(), "Players", "players", "all");
-
 		public final GroupPlayerConfigEntry prey =
-			new GroupPlayerConfigEntry(getManager().getLudos().getGroupManager(), "Prey Player", "prey");
+			new GroupPlayerConfigEntry(
+				getManager().getLudos().getGroupManager(),
+				Component.text("Prey Player"),
+				new ItemBuilder(Material.TARGET),
+				"prey"
+			) {
+				protected String getNullValue() {
+					return "random";
+				};
+			};
 
 		public final IntegerConfigEntry revealPeriod =
-			new IntegerConfigEntry("Reveal period duration seconds", "reveal", 180, Set.of(60, 120, 180, 240, 300, 360), true);
+			new IntegerConfigEntry(
+				Component.text("Reveal period"),
+				new ItemBuilder(Material.CLOCK),
+				"reveal",
+				180, Set.of(60, 120, 180, 240, 300, 360),
+				true
+			) {
+				protected String getValueLabel(String value) {
+					return super.getValueLabel(value) + 's';
+				};
+			};
 
 		public final ConfigNodeMap config =
-			new ConfigNodeMap(ID, Set.of(players, prey, WorldBorderArea.CONFIG, revealPeriod));
+			new ConfigNodeMap(
+				Component.text("Manhunt"),
+				new ItemBuilder(Material.COMPASS),
+				ID,
+				List.of(
+					getLudos().playersConfig,
+					prey,
+					WorldBorderArea.CONFIG,
+					revealPeriod
+				)
+			);
 
 		public Builder(GameManager manager) {
 			super(manager);

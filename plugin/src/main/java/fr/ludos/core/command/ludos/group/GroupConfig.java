@@ -12,6 +12,6 @@ import fr.ludos.core.group.GroupManager;
  */
 public class GroupConfig extends ConfigSubcommand {
 	public GroupConfig(GroupManager manager) {
-		super("Configure for this group.", new ScopeConfigMap(manager.getLudos(), GroupConfigMap.INSTANCE));
+		super(manager.getLudos(), "Configure for this group.", new ScopeConfigMap(manager.getLudos(), GroupConfigMap.INSTANCE));
 	}
 }

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.command.Subcommand;
@@ -18,10 +19,12 @@ import fr.ludos.core.persistence.config.ConfigNodeOperation;
  */
 public class ConfigSubcommand implements Subcommand {
 	private static final String ID = "config";
+	private final Plugin plugin;
 	private final String description;
 	private final ScopeConfigMap map;
 
-	public ConfigSubcommand(String description, ScopeConfigMap map) {
+	public ConfigSubcommand(Plugin plugin, String description, ScopeConfigMap map) {
+		this.plugin = Objects.requireNonNull(plugin);
 		this.description = Objects.requireNonNull(description);
 		this.map = Objects.requireNonNull(map);
 	}
@@ -41,7 +44,7 @@ public class ConfigSubcommand implements Subcommand {
 
 		try {
 			ConfigNodeOperation op = Enum.valueOf(ConfigNodeOperation.class, args[0]);
-			return map.execute(Arrays.copyOfRange(args, 1, args.length), sender, op);
+			return map.execute(plugin, Arrays.copyOfRange(args, 1, args.length), sender, op);
 		} catch (Exception e) {
 			return false;
 		}

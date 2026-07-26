@@ -1,0 +1,101 @@
+package fr.ludos.core.gui;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+
+import org.bukkit.Sound;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.jetbrains.annotations.NotNull;
+
+import fr.ludos.core.persistence.config.ConfigNode;
+import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
+import xyz.xenondevs.invui.item.ItemProvider;
+import xyz.xenondevs.invui.item.impl.AbstractItem;
+import xyz.xenondevs.invui.window.Window;
+
+/**
+ *
+ */
+public class ConfigNodeItem extends AbstractItem {
+	private final ConfigNode node;
+	private final ConfigSectionContext context;
+	private List<Runnable> openHandlers;
+	private List<Runnable> closeHandlers;
+	private List<Consumer<InventoryClickEvent>> outsideClickHandlers;
+
+	public ConfigNodeItem(ConfigNode node, ConfigSectionContext context) {
+		this.node = Objects.requireNonNull(node);
+		this.context = Objects.requireNonNull(context);
+	}
+
+	public @NotNull ConfigNodeItem setOpenHandlers(@NotNull List<@NotNull Runnable> openHandlers) {
+		this.openHandlers = openHandlers;
+		return this;
+	}
+	public @NotNull ConfigNodeItem addOpenHandler(@NotNull Runnable openHandler) {
+		if (openHandlers == null)
+			openHandlers = new ArrayList<>();
+
+		openHandlers.add(openHandler);
+		return this;
+	}
+
+	public @NotNull ConfigNodeItem setCloseHandlers(@NotNull List<@NotNull Runnable> closeHandlers) {
+		this.closeHandlers = closeHandlers;
+		return this;
+	}
+	public @NotNull ConfigNodeItem addCloseHandler(@NotNull Runnable closeHandler) {
+		if (closeHandlers == null)
+			closeHandlers = new ArrayList<>();
+
+		closeHandlers.add(closeHandler);
+		return this;
+	}
+
+	public @NotNull ConfigNodeItem setOutsideClickHandlers(@NotNull List<@NotNull Consumer<InventoryClickEvent>> outsideClickHandlers) {
+		this.outsideClickHandlers = outsideClickHandlers;
+		return this;
+	}
+	public @NotNull ConfigNodeItem addOutsideClickHandler(@NotNull Consumer<InventoryClickEvent> outsideClickHandler) {
+		if (outsideClickHandlers == null)
+			outsideClickHandlers = new ArrayList<>();
+
+		outsideClickHandlers.add(outsideClickHandler);
+		return this;
+	}
+
+	@Override
+	public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
+		Window window = node.configGui(player, context);
+		if (window == null) {
+			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+			return;
+		}
+		if (closeHandlers != null) {
+			for (Runnable closeHandler : closeHandlers) {
+				window.addCloseHandler(closeHandler);
+			}
+		}
+		if (openHandlers != null) {
+			for (Runnable openHandler : openHandlers) {
+				window.addOpenHandler(openHandler);
+			}
+		}
+		if (outsideClickHandlers != null) {
+			for (Consumer<InventoryClickEvent> outsideClickHandler : outsideClickHandlers) {
+				window.addOutsideClickHandler(outsideClickHandler);
+			}
+		}
+		window.open();
+	}
+
+	@Override
+	public ItemProvider getItemProvider(Player viewer) {
+		return node.displayItem(viewer, context);
+	}
+
+}

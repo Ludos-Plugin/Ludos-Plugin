@@ -1,6 +1,7 @@
 package fr.ludos.core.persistence.config;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -13,7 +14,7 @@ import com.google.common.base.Functions;
 /**
  * {@link ConfigNode} implemented as a Map-like structure of sub-{@link ConfigNode}.
  */
-public class ConfigRootMap extends ConfigRootCollection {
+public abstract class ConfigRootMap extends ConfigRootCollection {
 	private final Map<String, ConfigNode> values;
 
 	public ConfigRootMap(Map<String, ConfigNode> values) {
@@ -22,9 +23,13 @@ public class ConfigRootMap extends ConfigRootCollection {
 	}
 	public ConfigRootMap(Collection<ConfigNode> entries) {
 		this(
-			entries.stream()
+			(Map<String, ConfigNode>) entries.stream()
 				.filter(e -> e != null && e.key() != null)
-				.collect(Collectors.toMap(ConfigNode::key, Functions.identity()))
+				.collect(Collectors.toMap(
+					ConfigNode::key, Functions.identity(),
+					(a, b) -> a,
+					LinkedHashMap::new
+				))
 		);
 	}
 
@@ -36,5 +41,9 @@ public class ConfigRootMap extends ConfigRootCollection {
 	@Override
 	public final ConfigNode getEntry(String name) {
 		return values.get(name);
+	}
+	@Override
+	public Collection<ConfigNode> getEntries() {
+		return values.values();
 	}
 }
