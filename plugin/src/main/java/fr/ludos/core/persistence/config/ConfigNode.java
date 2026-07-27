@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -44,12 +43,13 @@ public interface ConfigNode extends ConfigRoot {
 	}
 
 	public Window configWindow(Player player, ConfigSectionContext context);
-	public default void openConfigWindow(Player player, ConfigSectionContext context) {
+	public default boolean openConfigWindow(Player player, ConfigSectionContext context) {
+		if (! context.checkAuthorizationNotify(player)) return false;
+
 		Window window = configWindow(player, context);
-		if (window == null) {
-			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
-			return;
-		}
+		if (window == null) return false;
+
 		window.open();
+		return true;
 	}
 }

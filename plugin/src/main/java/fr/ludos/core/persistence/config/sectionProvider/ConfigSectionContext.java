@@ -1,5 +1,6 @@
 package fr.ludos.core.persistence.config.sectionProvider;
 
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -9,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.Utility;
 import fr.ludos.core.persistence.config.ConfigNode;
-import fr.ludos.core.persistence.config.ConfigNodeOperation;
 import fr.ludos.core.persistence.config.ConfigRoot;
 
 /**
@@ -54,9 +54,13 @@ public class ConfigSectionContext implements ConfigSectionProvider {
 		new BukkitRunnable() {
 			public void run() {
 				if (config instanceof ConfigNode node) {
-					node.openConfigWindow(player, thiz);
+					if (! node.openConfigWindow(player, thiz)) {
+						player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+					}
 				} else if (config instanceof ConfigSectionCollection root) {
-					root.openConfigWindow(player, plugin);
+					if (! root.openConfigWindow(player, plugin)) {
+						player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+					}
 				}
 			}
 		}.runTaskLater(plugin, 0);
@@ -78,8 +82,8 @@ public class ConfigSectionContext implements ConfigSectionProvider {
 	}
 
 	@Override
-	public boolean isAuthorized(CommandSender sender, ConfigNodeOperation op) {
-		return provider.isAuthorized(sender, op);
+	public String getValidationError(CommandSender sender) {
+		return provider.getValidationError(sender);
 	}
 
 	@Override

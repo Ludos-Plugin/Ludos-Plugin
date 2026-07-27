@@ -90,6 +90,11 @@ public abstract class ConfigProviderItem extends AbstractItem {
 
 	@Override
 	public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
+		if (! provider.checkAuthorizationNotify(player)) {
+			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+			return;
+		}
+
 		ConfigSectionContext context = new ConfigSectionContext(provider, plugin);
 		Window window = node.configWindow(player, context.getDeeper(null, root));
 		if (window == null) {

@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.persistence.config.ConfigNode;
-import fr.ludos.core.persistence.config.ConfigNodeOperation;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
 
 /**
@@ -29,8 +28,8 @@ public final class PlayerConfigProvider implements ConfigSectionProvider {
 	}
 
 	@Override
-	public boolean isAuthorized(CommandSender sender, ConfigNodeOperation op) {
-		return true;
+	public String getValidationError(CommandSender sender) {
+		return null;
 	}
 
 	@Override

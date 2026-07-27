@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +60,9 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context, ConfigNodeOperation mode) {
 		if (mode == ConfigNodeOperation.set && args.length == 0) {
 			if (! (sender instanceof Player player)) return false;
-			openConfigWindow(player, context);
+			if (! openConfigWindow(player, context)) {
+				player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+			}
 			return true;
 		}
 

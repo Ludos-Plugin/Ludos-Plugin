@@ -8,7 +8,6 @@ import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupManager;
 import fr.ludos.core.persistence.config.ConfigNode;
-import fr.ludos.core.persistence.config.ConfigNodeOperation;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
 
 /**
@@ -37,27 +36,22 @@ public final class GroupConfigProvider implements ConfigSectionProvider {
 	}
 
 	@Override
-	public boolean isAuthorized(CommandSender sender, ConfigNodeOperation op) {
+	public String getValidationError(CommandSender sender) {
 		if (! (sender instanceof Player player)) {
-			sender.sendMessage("Only players can configure through a group.");
-			return false;
+			return "Only players can configure through a group.";
 		}
 
 		Group group = manager.getGroupOfPlayer(player);
 		if (group == null) {
-			sender.sendMessage("You are not in a group.");
-			return false;
+			return "You are not in a group.";
 		}
-
-		if (op == ConfigNodeOperation.get) return true;
 
 		boolean membersCanConfig = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canConfig();
 		if (! group.isLeader(player) && ! membersCanConfig) {
-			sender.sendMessage("Only the group leader can configure the group.");
-			return false;
+			return "Only the group leader can configure the group.";
 		}
 
-		return true;
+		return null;
 	}
 
 	@Override

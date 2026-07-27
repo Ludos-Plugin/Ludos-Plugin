@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -71,17 +72,31 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 
 	public abstract Serializer<TComplex, TPrimitive> getSerializer();
 
+	/**
+	 * The default value that will be returned when fetching the value, when the option was not set, or after it was reset.<br>
+	 * @return The default value. Do NOT return null, unless the {@link #getValueOrDefault} call-sites are null-proof.
+	 */
+	public abstract @NotNull TComplex defaultValue();
+
 
 	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context, ConfigNodeOperation op) {
-		if (! context.isAuthorized(sender, op)) return false;
+		if (! context.checkAuthorizationNotify(sender)) {
+			if (sender instanceof Player player) {
+				player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+			}
+			return false;
+		}
 		ConfigurationSection config = context.getConfig(sender);
+
 		switch (op) {
 			case get:
 				return get(args, sender, config);
 			case set:
-				if (args.length == 0) {
-					if (! (sender instanceof Player player)) return false;
-					openConfigWindow(player, context);
+				if (args.length == 0 && (sender instanceof Player player)) {
+					if (! openConfigWindow(player, context)) {
+						player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+						return false;
+					}
 					return true;
 				}
 				return set(args, sender, config);
@@ -206,12 +221,5 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 	public TComplex fromString(String string) {
 		return getSerializer().fromString(string);
 	}
-
-	/**
-	 * The default value that will be returned when fetching the value, when the option was not set, or after it was reset, using {@link #placeholderValue}.<br>
-	 * Using {@link #defaultValue} with {@link #defaultValue} should NEVER result in null, for the sake of sender messages.
-	 * @return The default value. Do not return null, unless the {@link #getValueOrDefault} call-sites are null-proof.
-	 */
-	public abstract @NotNull TComplex defaultValue();
 
 }

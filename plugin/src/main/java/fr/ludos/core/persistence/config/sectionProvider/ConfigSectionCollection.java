@@ -38,13 +38,17 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 	public final boolean execute(Plugin plugin, @NotNull String[] args, CommandSender sender) {
 		if (args.length == 0) {
 			if (! (sender instanceof Player player)) return false;
-			openConfigWindow(player, plugin);
+			if (! openConfigWindow(player, plugin)) {
+				player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+			}
 			return true;
 		}
 
 		String key = args[0];
 		ConfigSectionProvider provider = getProvider(key, sender);
 		if (provider == null) return false;
+		if (! provider.checkAuthorizationNotify(sender)) return true;
+
 		ConfigNode node = getNode(key);
 		if (node == null) return false;
 
@@ -52,7 +56,9 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 
 		if (args.length == 1) {
 			if (! (sender instanceof Player player)) return false;
-			node.openConfigWindow(player, context);
+			if (! node.openConfigWindow(player, context)) {
+				player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+			}
 			return true;
 		}
 
@@ -95,14 +101,17 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 		if (options.isEmpty()) return null;
 
 		List<Item> items = options.stream()
-			.map(key ->
-				new ConfigProviderItem(getProvider(key, player), plugin, this, getNode(key)) {
+			.map(key -> {
+				ConfigSectionProvider provider = getProvider(key, player);
+				if (provider == null || ! provider.checkAuthorizationSilent(player)) return null;
+
+				return new ConfigProviderItem(provider, plugin, this, getNode(key)) {
 					@Override
 					public ItemProvider getItemProvider(Player viewer) {
 						return getItem(key, player);
 					}
-				}
-			)
+				};
+			})
 			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
 
@@ -124,12 +133,11 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 			)
 			.build(player);
 	}
-	public void openConfigWindow(Player player, Plugin plugin) {
+	public boolean openConfigWindow(Player player, Plugin plugin) {
 		Window window = configWindow(player, plugin);
-		if (window == null) {
-			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
-			return;
-		}
+		if (window == null) return false;
+
 		window.open();
+		return true;
 	}
 }

@@ -2,11 +2,9 @@ package fr.ludos.core.command.ludos;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.persistence.config.ConfigNode;
-import fr.ludos.core.persistence.config.ConfigNodeOperation;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
 
 /**
@@ -24,19 +22,12 @@ public final class GlobalConfigProvider implements ConfigSectionProvider {
 	}
 
 	@Override
-	public boolean isAuthorized(CommandSender sender, ConfigNodeOperation op) {
-		if (op == ConfigNodeOperation.get) return true;
-
-		if (! (sender instanceof Player player)) {
-			sender.sendMessage("Only Server Operators are allowed to globally configure Ludos.");
-			return false;
-		}
-		if (! player.isOp()) {
-			sender.sendMessage("Only Server Operators are allowed to globally configure Ludos.");
-			return false;
+	public String getValidationError(CommandSender sender) {
+		if (! sender.isOp()) {
+			return "Only Server Operators are allowed to globally configure Ludos.";
 		}
 
-		return true;
+		return null;
 	}
 
 	@Override
