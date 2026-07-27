@@ -20,13 +20,13 @@ import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 public class ConfigNodeMap extends ConfigNodeCollection {
 	private final Map<String, ConfigNode> values;
 
-	public ConfigNodeMap(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, String namespace, Map<String, ConfigNode> values) {
-		super(name, displayItem, namespace);
+	public ConfigNodeMap(@NotNull TextComponent name, String namespace, AbstractItemBuilder<?> displayItem, Map<String, ConfigNode> values) {
+		super(name, namespace, displayItem);
 		this.values = values;
 	}
-	public ConfigNodeMap(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, String namespace, Collection<ConfigNode> entries) {
+	public ConfigNodeMap(@NotNull TextComponent name, String namespace, AbstractItemBuilder<?> displayItem, Collection<ConfigNode> entries) {
 		this(
-			name, displayItem, namespace,
+			name, namespace, displayItem,
 			(Map<String, ConfigNode>) entries.stream()
 				.filter(e -> e != null && e.key() != null)
 				.collect(Collectors.toMap(
@@ -43,11 +43,11 @@ public class ConfigNodeMap extends ConfigNodeCollection {
 	}
 
 	@Override
-	public Collection<ConfigNode> getEntries() {
+	public Collection<ConfigNode> getNodes() {
 		return values.values();
 	}
 	@Override
-	public final ConfigNode getEntry(String name) {
+	public final ConfigNode getNode(String name) {
 		return values.get(name);
 	}
 }

@@ -2,51 +2,134 @@ package fr.ludos.core.persistence.config.sectionProvider;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import fr.ludos.core.gui.BorderItem;
+import fr.ludos.core.gui.ChangePageItem;
+import fr.ludos.core.gui.ConfigProviderItem;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigNodeOperation;
-import fr.ludos.core.persistence.config.ConfigRoot;
+import fr.ludos.core.persistence.config.ConfigRootCollection;
+import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
+import xyz.xenondevs.invui.gui.PagedGui;
+import xyz.xenondevs.invui.gui.structure.Markers;
+import xyz.xenondevs.invui.gui.structure.Structure;
+import xyz.xenondevs.invui.item.Item;
+import xyz.xenondevs.invui.item.ItemProvider;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.window.Window;
 
 /**
  * Collection of {@link ConfigSectionProvider}s, with their corresponding {@link ConfigNode}.
  */
-public abstract class ConfigSectionCollection {
-	public abstract @NotNull Set<String> getProviderKeys(CommandSender sender);
+public abstract class ConfigSectionCollection extends ConfigRootCollection {
 	public abstract @NotNull ConfigSectionProvider getProvider(String key, CommandSender sender);
-	public abstract @NotNull ConfigRoot getOptions(String key, CommandSender sender);
+	public abstract @NotNull AbstractItemBuilder<?> getItem(String key, CommandSender sender);
 
-	public final boolean execute(Plugin plugin, @NotNull String[] args, CommandSender sender, ConfigNodeOperation mode) {
-		if (args.length == 0) return false;
+	public final boolean execute(Plugin plugin, @NotNull String[] args, CommandSender sender) {
+		if (args.length == 0) {
+			if (! (sender instanceof Player player)) return false;
+			openConfigWindow(player, plugin);
+			return true;
+		}
 
 		String key = args[0];
 		ConfigSectionProvider provider = getProvider(key, sender);
-		if (provider == null) return true;
+		if (provider == null) return false;
+		ConfigNode node = getNode(key);
+		if (node == null) return false;
 
-		ConfigSectionContext context = new ConfigSectionContext(provider, plugin);
+		ConfigSectionContext context = new ConfigSectionContext(provider, plugin).getDeeper(null, this);
 
-		ConfigRoot root = getOptions(key, sender);
+		if (args.length == 1) {
+			if (! (sender instanceof Player player)) return false;
+			node.openConfigWindow(player, context);
+			return true;
+		}
 
-		if (root.execute(Arrays.copyOfRange(args, 1, args.length), sender, context, mode) && mode != ConfigNodeOperation.get) {
+		ConfigNodeOperation op;
+		try {
+			op = Enum.valueOf(ConfigNodeOperation.class, args[1]);
+		} catch (Exception e) {
+			return false;
+		}
+
+		if (node.execute(Arrays.copyOfRange(args, 2, args.length), sender, context, op) && op != ConfigNodeOperation.get) {
 			provider.saveConfig();
 		}
 		return true;
 	}
 
-	public final @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender, ConfigNodeOperation mode) {
+	public final @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender) {
 		if (args.length <= 1) {
-			return getProviderKeys(sender).stream().toList();
+			return options(sender).stream().toList();
 		}
 
-		String key = args[0];
+		ConfigNode root = getNode(args[0]);
+		if (root == null) return null;
 
-		ConfigRoot root = getOptions(key, sender);
+		if (args.length <= 2) {
+			return Arrays.stream(ConfigNodeOperation.values()).map(Enum::name).toList();
+		}
+		ConfigNodeOperation op;
+		try {
+			op = Enum.valueOf(ConfigNodeOperation.class, args[1]);
+		} catch (Exception e) {
+			return null;
+		}
 
-		return root.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender, mode);
+		return root.tabComplete(Arrays.copyOfRange(args, 2, args.length), sender, op);
+	}
+
+	public Window configWindow(Player player, Plugin plugin) {
+		Set<String> options = options(player);
+		if (options.isEmpty()) return null;
+
+		List<Item> items = options.stream()
+			.map(key ->
+				new ConfigProviderItem(getProvider(key, player), plugin, this, getNode(key)) {
+					@Override
+					public ItemProvider getItemProvider(Player viewer) {
+						return getItem(key, player);
+					}
+				}
+			)
+			.filter(Objects::nonNull)
+			.collect(Collectors.toList());
+
+		if (items.isEmpty()) return null;
+
+		return Window.single()
+			.setTitle(new AdventureComponentWrapper(displayName()))
+			.setGui(PagedGui.items()
+				.setStructure(new Structure(
+					"# # # # # # # # #",
+					"# x x x x x x x #",
+					"# x x x x x x x #",
+					"# # # # P # # # #")
+				)
+				.addIngredient('#', BorderItem.INSTANCE)
+				.addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
+				.addIngredient('P', ChangePageItem.INSTANCE)
+				.setContent(items)
+			)
+			.build(player);
+	}
+	public void openConfigWindow(Player player, Plugin plugin) {
+		Window window = configWindow(player, plugin);
+		if (window == null) {
+			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+			return;
+		}
+		window.open();
 	}
 }

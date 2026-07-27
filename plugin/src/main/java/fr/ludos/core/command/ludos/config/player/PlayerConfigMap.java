@@ -27,8 +27,8 @@ public final class PlayerConfigMap extends ConfigNodeMap {
 	private PlayerConfigMap() {
 		super(
 			Component.text("Player Configuration"),
-			new ItemBuilder(Material.PLAYER_HEAD),
 			Ludos.PLAYER_NAMESPACE,
+			new ItemBuilder(Material.PLAYER_HEAD),
 			List.of(
 				GUIDEBOOK_MESSAGE
 			)

@@ -1,6 +1,5 @@
 package fr.ludos.core.command.ludos.config;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -12,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.ludos.ScopeConfigMap;
-import fr.ludos.core.persistence.config.ConfigNodeOperation;
 
 /**
  * Subcommand for configuration.
@@ -40,31 +38,15 @@ public class ConfigSubcommand implements Subcommand {
 	}
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		if (args.length == 0) return false;
-
-		try {
-			ConfigNodeOperation op = Enum.valueOf(ConfigNodeOperation.class, args[0]);
-			return map.execute(plugin, Arrays.copyOfRange(args, 1, args.length), sender, op);
-		} catch (Exception e) {
-			return false;
-		}
+		return map.execute(plugin, args, sender);
 	}
 	@Override
 	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		if (args.length <= 1) {
-			return Arrays.stream(ConfigNodeOperation.values()).map(Enum::name).toList();
-		}
-
-		try {
-			ConfigNodeOperation op = Enum.valueOf(ConfigNodeOperation.class, args[0]);
-			return map.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender, op);
-		} catch (Exception e) {
-			return null;
-		}
+		return map.tabComplete(args, sender);
 	}
 	@Override
 	public String getUsage(@NotNull CommandSender sender) {
-		return '<' + Arrays.stream(ConfigNodeOperation.values()).map(Enum::name).collect(Collectors.joining(" | ")) + "> <" + map.getProviderKeys(sender).stream().collect(Collectors.joining(" | ")) + "> [config] [name] [option]";
+		return '<' + map.options(sender).stream().collect(Collectors.joining(" | ")) + "> [config] [name] [option]";
 	}
 	@Override
 	public boolean requireOp() {

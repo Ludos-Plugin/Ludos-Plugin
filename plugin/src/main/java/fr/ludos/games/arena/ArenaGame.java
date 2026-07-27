@@ -132,8 +132,8 @@ public class ArenaGame extends WaveGame {
 		private final ConfigNodeMap configMap =
 			new ConfigNodeMap(
 				Component.text("Arena"),
-				new ItemBuilder(Material.IRON_SWORD),
 				ID,
+				new ItemBuilder(Material.IRON_SWORD),
 				List.of(
 					team1Players,
 					team2Players,

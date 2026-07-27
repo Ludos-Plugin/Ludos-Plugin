@@ -14,7 +14,7 @@ import com.google.common.base.Functions;
 /**
  * {@link ConfigNode} implemented as a Map-like structure of sub-{@link ConfigNode}.
  */
-public abstract class ConfigRootMap extends ConfigRootCollection {
+public abstract class ConfigRootMap implements ConfigRoot {
 	private final Map<String, ConfigNode> values;
 
 	public ConfigRootMap(Map<String, ConfigNode> values) {
@@ -36,14 +36,5 @@ public abstract class ConfigRootMap extends ConfigRootCollection {
 	@Override
 	public final @NotNull Set<@NotNull String> options(CommandSender sender) {
 		return values.keySet();
-	}
-
-	@Override
-	public final ConfigNode getEntry(String name) {
-		return values.get(name);
-	}
-	@Override
-	public Collection<ConfigNode> getEntries() {
-		return values.values();
 	}
 }

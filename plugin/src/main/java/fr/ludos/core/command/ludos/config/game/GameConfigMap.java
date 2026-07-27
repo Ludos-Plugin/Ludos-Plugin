@@ -9,12 +9,12 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.core.command.ludos.game.GameConfig;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameManager;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import fr.ludos.core.persistence.config.ConfigNodeMap;
-import net.kyori.adventure.text.Component;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
@@ -25,9 +25,9 @@ public class GameConfigMap extends ConfigNodeCollection {
 
 	public GameConfigMap(GameManager manager) {
 		super(
-			Component.text("Game Configuration"),
-			new ItemBuilder(Material.MUSIC_DISC_CHIRP),
-			Game.NAMESPACE
+			GameConfig.WINDOW_TITLE,
+			Game.NAMESPACE,
+			new ItemBuilder(Material.MUSIC_DISC_CHIRP)
 		);
 		this.manager = Objects.requireNonNull(manager);
 	}
@@ -38,14 +38,14 @@ public class GameConfigMap extends ConfigNodeCollection {
 	}
 
 	@Override
-	public ConfigNode getEntry(String name) {
+	public ConfigNode getNode(String name) {
 		Game.Builder game = manager.getGameById(name);
 		if (game == null) return null;
 
 		return game.getConfig();
 	}
 	@Override
-	public Collection<ConfigNode> getEntries() {
+	public Collection<ConfigNode> getNodes() {
 		return manager.getBuilders().stream()
 			.map(b -> (ConfigNode) b.getConfig())
 			.toList();

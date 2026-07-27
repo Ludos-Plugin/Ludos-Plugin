@@ -8,6 +8,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.Utility;
+import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigNodeOperation;
 import fr.ludos.core.persistence.config.ConfigRoot;
 
@@ -19,7 +20,7 @@ public class ConfigSectionContext implements ConfigSectionProvider {
 	private final ConfigSectionProvider provider;
 	private final Plugin plugin;
 	private final String path;
-	private ConfigRoot node = null;
+	private ConfigRoot config = null;
 
 	private ConfigSectionContext(@Nullable ConfigSectionContext previous, ConfigSectionProvider provider, Plugin plugin, String path) {
 		this.previous = previous;
@@ -27,12 +28,16 @@ public class ConfigSectionContext implements ConfigSectionProvider {
 		this.plugin = plugin;
 		this.path = path;
 	}
+	public ConfigSectionContext(ConfigSectionProvider provider, Plugin plugin, ConfigRoot currentConfig) {
+		this(null, provider, plugin, null);
+		this.config = currentConfig;
+	}
 	public ConfigSectionContext(ConfigSectionProvider provider, Plugin plugin) {
 		this(null, provider, plugin, null);
 	}
 
-	public ConfigSectionContext getDeeper(@Nullable String path, ConfigRoot node) {
-		this.node = node;
+	public ConfigSectionContext getDeeper(@Nullable String path, ConfigRoot currentConfig) {
+		this.config = currentConfig;
 
 		String finalPath = path == null
 			? this.path
@@ -43,14 +48,18 @@ public class ConfigSectionContext implements ConfigSectionProvider {
 	}
 
 	public void openWindow(Player player) {
-		if (node == null) return;
+		if (config == null) return;
 
 		final ConfigSectionContext thiz = this;
 		new BukkitRunnable() {
 			public void run() {
-				node.openConfigWindow(player, thiz);
+				if (config instanceof ConfigNode node) {
+					node.openConfigWindow(player, thiz);
+				} else if (config instanceof ConfigSectionCollection root) {
+					root.openConfigWindow(player, plugin);
+				}
 			}
-		}.runTask(plugin);
+		}.runTaskLater(plugin, 0);
 	}
 	public void openPreviousWindow(Player player) {
 		if (previous == null) return;

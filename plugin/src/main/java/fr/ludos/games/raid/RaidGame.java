@@ -112,6 +112,7 @@ public class RaidGame extends WaveGame {
 		public final ConfigNodeMap config =
 			new ConfigNodeMap(
 				Component.text("Raid"),
+				ID,
 				new BannerBuilder(Material.BLACK_BANNER)
 					.addPattern(new Pattern(DyeColor.CYAN, PatternType.RHOMBUS_MIDDLE))
 					.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.STRIPE_BOTTOM))
@@ -120,7 +121,6 @@ public class RaidGame extends WaveGame {
 					.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.HALF_HORIZONTAL))
 					.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.CIRCLE_MIDDLE))
 					.addPattern(new Pattern(DyeColor.BLACK, PatternType.BORDER)),
-				ID,
 				List.of(
 					getLudos().playersConfig,
 					waves,

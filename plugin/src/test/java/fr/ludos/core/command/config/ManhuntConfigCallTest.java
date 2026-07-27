@@ -40,15 +40,15 @@ class ManhuntConfigCallTest extends ConfigTest {
 			return;
 		}
 
-		// assertSetConfigValues(player1, "ludos config", "global game manhunt", manhunt.players, additionalPlayerArgs, "everyone");
-		assertSetConfigValues(player1, "ludos config", "global game manhunt", manhunt.prey, "me");
-		assertSetConfigValues(player1, "ludos config", "global game manhunt", WorldBorderArea.CONFIG, "big");
-		assertSetConfigValues(player1, "ludos config", "global game manhunt", manhunt.revealPeriod, "one_minute");
+		// assertSetConfigValues(player1, "ludos config global", "game manhunt", manhunt.players, additionalPlayerArgs, "everyone");
+		assertSetConfigValues(player1, "ludos config global", "game manhunt", manhunt.prey, "me");
+		assertSetConfigValues(player1, "ludos config global", "game manhunt", WorldBorderArea.CONFIG, "big");
+		assertSetConfigValues(player1, "ludos config global", "game manhunt", manhunt.revealPeriod, "one_minute");
 
-		// assertSetConfigValues(player1, "ludos config", "group game manhunt", manhunt.players, additionalPlayerArgs, "everyone");
-		assertSetConfigValues(player1, "ludos config", "group game manhunt", manhunt.prey, "me");
-		assertSetConfigValues(player1, "ludos config", "group game manhunt", WorldBorderArea.CONFIG, "big");
-		assertSetConfigValues(player1, "ludos config", "group game manhunt", manhunt.revealPeriod, "one_minute");
+		// assertSetConfigValues(player1, "ludos config group", "game manhunt", manhunt.players, additionalPlayerArgs, "everyone");
+		assertSetConfigValues(player1, "ludos config group", "game manhunt", manhunt.prey, "me");
+		assertSetConfigValues(player1, "ludos config group", "game manhunt", WorldBorderArea.CONFIG, "big");
+		assertSetConfigValues(player1, "ludos config group", "game manhunt", manhunt.revealPeriod, "one_minute");
 
 		player1.performCommand("ludos group disband");
 	}

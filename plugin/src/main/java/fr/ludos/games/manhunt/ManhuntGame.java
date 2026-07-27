@@ -258,8 +258,8 @@ public class ManhuntGame extends Game {
 		public final ConfigNodeMap config =
 			new ConfigNodeMap(
 				Component.text("Manhunt"),
-				new ItemBuilder(Material.COMPASS),
 				ID,
+				new ItemBuilder(Material.COMPASS),
 				List.of(
 					getLudos().playersConfig,
 					prey,

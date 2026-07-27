@@ -47,8 +47,26 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 		return name;
 	}
 	@Override
-	public AbstractItemBuilder<?> item(Player player, ConfigSectionContext context) {
+	public AbstractItemBuilder<?> item(Player player) {
 		return displayItem;
+	}
+	@Override
+	public AbstractItemBuilder<?> displayItem(Player player, ConfigSectionContext context) {
+		AbstractItemBuilder<?> builder = ConfigNode.super.displayItem(player, context);
+		builder.setLore(List.of(
+			new AdventureComponentWrapper(
+				Component.text(getValueLabel(toString(getValueOrDefault(context.getConfig(player)))))
+					.color(NamedTextColor.GRAY)
+			)
+		));
+		return builder;
+	}
+	protected String getValueLabel(String value) {
+		if (value == null) value = getNullValue();
+		return "Current value : " + value;
+	}
+	protected String getNullValue() {
+		return null;
 	}
 
 	public abstract Serializer<TComplex, TPrimitive> getSerializer();
@@ -196,22 +214,4 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 	 */
 	public abstract @NotNull TComplex defaultValue();
 
-	@Override
-	public AbstractItemBuilder<?> displayItem(Player player, ConfigSectionContext context) {
-		AbstractItemBuilder<?> builder = ConfigNode.super.displayItem(player, context);
-		builder.setLore(List.of(
-			new AdventureComponentWrapper(
-				Component.text(getValueLabel(toString(getValueOrDefault(context.getConfig(player)))))
-					.color(NamedTextColor.GRAY)
-			)
-		));
-		return builder;
-	}
-	protected String getValueLabel(String value) {
-		if (value == null) value = getNullValue();
-		return "Current value : " + value;
-	}
-	protected String getNullValue() {
-		return null;
-	}
 }

@@ -18,8 +18,8 @@ public final class LudosConfigMap extends ConfigNodeMap {
 	private LudosConfigMap() {
 		super(
 			Component.text("Ludos Configuration"),
-			new ItemBuilder(Material.NETHER_STAR),
 			Ludos.NAMESPACE,
+			new ItemBuilder(Material.NETHER_STAR),
 			List.of()
 		);
 	}

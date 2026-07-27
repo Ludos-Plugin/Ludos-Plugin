@@ -25,8 +25,8 @@ public class RoleConfigMap extends ConfigNodeCollection {
 	public RoleConfigMap(RoleManager manager) {
 		super(
 			Component.text("Role Configuration"),
-			new ItemBuilder(Material.NAME_TAG),
-			Role.NAMESPACE
+			Role.NAMESPACE,
+			new ItemBuilder(Material.NAME_TAG)
 		);
 		this.manager = Objects.requireNonNull(manager);
 	}
@@ -37,14 +37,14 @@ public class RoleConfigMap extends ConfigNodeCollection {
 	}
 
 	@Override
-	public ConfigNode getEntry(String name) {
+	public ConfigNode getNode(String name) {
 		Role.Builder role = manager.getRoleById(name);
 		if (role == null) return null;
 
 		return role.getConfig();
 	}
 	@Override
-	public Collection<ConfigNode> getEntries() {
+	public Collection<ConfigNode> getNodes() {
 		return manager.getBuilders().stream()
 			.map(b -> (ConfigNode) b.getConfig())
 			.toList();
