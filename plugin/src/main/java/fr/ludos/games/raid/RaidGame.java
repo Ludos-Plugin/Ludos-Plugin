@@ -13,6 +13,7 @@ import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.banner.PatternType;
+import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
@@ -30,6 +31,7 @@ import fr.ludos.core.world.WorldManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.BannerBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
@@ -104,29 +106,37 @@ public class RaidGame extends WaveGame {
 		public final IntegerConfigEntry waves =
 			new IntegerConfigEntry(
 				Component.text("Number of Waves"),
-				new ItemBuilder(Material.SKELETON_SKULL),
 				"waves", 0,
 				true
-			);
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.SKELETON_SKULL);
+				}
+			};
 
 		public final ConfigNodeMap config =
 			new ConfigNodeMap(
 				Component.text("Raid"),
 				ID,
-				new BannerBuilder(Material.BLACK_BANNER)
-					.addPattern(new Pattern(DyeColor.CYAN, PatternType.RHOMBUS_MIDDLE))
-					.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.STRIPE_BOTTOM))
-					.addPattern(new Pattern(DyeColor.GRAY, PatternType.STRIPE_CENTER))
-					.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_MIDDLE))
-					.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.HALF_HORIZONTAL))
-					.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.CIRCLE_MIDDLE))
-					.addPattern(new Pattern(DyeColor.BLACK, PatternType.BORDER)),
 				List.of(
 					getLudos().playersConfig,
 					waves,
 					WorldBorderArea.CONFIG
 				)
-			);
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new BannerBuilder(Material.BLACK_BANNER)
+						.addPattern(new Pattern(DyeColor.CYAN, PatternType.RHOMBUS_MIDDLE))
+						.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.STRIPE_BOTTOM))
+						.addPattern(new Pattern(DyeColor.GRAY, PatternType.STRIPE_CENTER))
+						.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_MIDDLE))
+						.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.HALF_HORIZONTAL))
+						.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.CIRCLE_MIDDLE))
+						.addPattern(new Pattern(DyeColor.BLACK, PatternType.BORDER));
+				}
+			};
 
 
 		public Builder(GameManager manager) {

@@ -51,7 +51,7 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 		ConfigNode node = getNode(key);
 		if (node == null) return false;
 
-		ConfigSectionContext context = new ConfigSectionContext(provider, plugin).getDeeper(null, this);
+		ConfigSectionContext context = new ConfigSectionContext(provider, plugin);
 
 		if (args.length == 1) {
 			if (! (sender instanceof Player player)) return false;

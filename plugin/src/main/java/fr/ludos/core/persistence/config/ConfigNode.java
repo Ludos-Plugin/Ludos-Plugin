@@ -21,9 +21,9 @@ import xyz.xenondevs.invui.window.Window;
 public interface ConfigNode extends ConfigRoot {
 	public @Nullable String key();
 
-	public AbstractItemBuilder<?> item(Player player);
+	public AbstractItemBuilder<?> createItem(Player player);
 	public default AbstractItemBuilder<?> displayItem(Player player) {
-		AbstractItemBuilder<?> builder = item(player);
+		AbstractItemBuilder<?> builder = createItem(player);
 		builder.setDisplayName(new AdventureComponentWrapper(displayName()));
 		builder.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DYE, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_POTION_EFFECTS);
 		return builder;

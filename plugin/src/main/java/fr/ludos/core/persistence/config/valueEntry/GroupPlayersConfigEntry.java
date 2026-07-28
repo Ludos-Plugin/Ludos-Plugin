@@ -38,31 +38,30 @@ import xyz.xenondevs.invui.gui.structure.Markers;
 import xyz.xenondevs.invui.gui.structure.Structure;
 import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.item.ItemProvider;
-import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.window.Window;
 
 /**
  * {@link ConfigEntry} for multiple {@link OfflinePlayer} instances, present in the {@link CommandSender}'s current {@link Group}.
  */
-public class GroupPlayersConfigEntry extends SetConfigEntry<OfflinePlayer> {
+public abstract class GroupPlayersConfigEntry extends SetConfigEntry<OfflinePlayer> {
 	private final GroupManager groupManager;
 	private final @Nullable Integer limit;
 	private final boolean excludeSelf;
 
-	public GroupPlayersConfigEntry(GroupManager groupManager, @NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, String placeholder, @Nullable Integer limit, boolean excludeSelf) {
-		super(name, displayItem, key, new StringSetSerializer<>(PlayerSerializer.INSTANCE), placeholder);
+	public GroupPlayersConfigEntry(GroupManager groupManager, @NotNull TextComponent name, @NotNull String key, String placeholder, @Nullable Integer limit, boolean excludeSelf) {
+		super(name, key, new StringSetSerializer<>(PlayerSerializer.INSTANCE), placeholder);
 		this.groupManager = Objects.requireNonNull(groupManager);
 		this.limit = limit;
 		this.excludeSelf = excludeSelf;
 	}
-	public GroupPlayersConfigEntry(GroupManager groupManager, @NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, String placeholder, @Nullable Integer limit) {
-		this(groupManager, name, displayItem, key, placeholder, limit, false);
+	public GroupPlayersConfigEntry(GroupManager groupManager, @NotNull TextComponent name, @NotNull String key, String placeholder, @Nullable Integer limit) {
+		this(groupManager, name, key, placeholder, limit, false);
 	}
-	public GroupPlayersConfigEntry(GroupManager groupManager, @NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, String placeholder, boolean excludeSelf) {
-		this(groupManager, name, displayItem, key, placeholder, null, excludeSelf);
+	public GroupPlayersConfigEntry(GroupManager groupManager, @NotNull TextComponent name, @NotNull String key, String placeholder, boolean excludeSelf) {
+		this(groupManager, name, key, placeholder, null, excludeSelf);
 	}
-	public GroupPlayersConfigEntry(GroupManager groupManager, @NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, String placeholder) {
-		this(groupManager, name, displayItem, key, placeholder, false);
+	public GroupPlayersConfigEntry(GroupManager groupManager, @NotNull TextComponent name, @NotNull String key, String placeholder) {
+		this(groupManager, name, key, placeholder, false);
 	}
 
 	@Override

@@ -32,7 +32,6 @@ import xyz.xenondevs.invui.gui.structure.Markers;
 import xyz.xenondevs.invui.gui.structure.Structure;
 import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.item.ItemProvider;
-import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.window.Window;
 
@@ -45,14 +44,14 @@ public abstract class EnumConfigEntry<T extends Enum<T>> extends ConfigEntry<T, 
 	private final EnumSerializer<T> serializer;
 	private final @Nullable T defaultValue;
 
-	public EnumConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, @NotNull Class<T> clazz, @Nullable T defaultValue) {
-		super(name, displayItem, key);
+	public EnumConfigEntry(@NotNull TextComponent name, @NotNull String key, @NotNull Class<T> clazz, @Nullable T defaultValue) {
+		super(name, key);
 		this.clazz = Objects.requireNonNull(clazz);
 		this.serializer = Objects.requireNonNull(new EnumSerializer<>(clazz));
 		this.defaultValue = defaultValue;
 	}
-	public EnumConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, @NotNull Class<T> clazz) {
-		this(name, displayItem, key, clazz, null);
+	public EnumConfigEntry(@NotNull TextComponent name, @NotNull String key, @NotNull Class<T> clazz) {
+		this(name, key, clazz, null);
 	}
 
 	@Override

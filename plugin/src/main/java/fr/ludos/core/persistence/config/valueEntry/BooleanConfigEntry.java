@@ -23,14 +23,13 @@ import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.gui.structure.Structure;
 import xyz.xenondevs.invui.item.ItemProvider;
-import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.window.Window;
 
 /**
  * {@link ConfigEntry} for {@link Boolean}s.
  */
-public class BooleanConfigEntry extends ConfigEntry<Boolean, Boolean> {
+public abstract class BooleanConfigEntry extends ConfigEntry<Boolean, Boolean> {
 	public static final String TRUE_STRING = "True";
 	public static final String FALSE_STRING = "False";
 	private final boolean defaultValue;
@@ -38,8 +37,8 @@ public class BooleanConfigEntry extends ConfigEntry<Boolean, Boolean> {
 	private final String trueString;
 	private final String falseString;
 
-	public BooleanConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, Boolean defaultValue, String trueName, String falseName) {
-		super(name, displayItem, key);
+	public BooleanConfigEntry(@NotNull TextComponent name, @NotNull String key, Boolean defaultValue, String trueName, String falseName) {
+		super(name, key);
 		this.defaultValue = defaultValue;
 		this.trueString = trueName == null
 			? TRUE_STRING
@@ -48,8 +47,8 @@ public class BooleanConfigEntry extends ConfigEntry<Boolean, Boolean> {
 			? FALSE_STRING
 			: falseName;
 	}
-	public BooleanConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, Boolean defaultValue) {
-		this(name, displayItem, key, defaultValue, null, null);
+	public BooleanConfigEntry(@NotNull TextComponent name, @NotNull String key, Boolean defaultValue) {
+		this(name, key, defaultValue, null, null);
 	}
 
 	@Override

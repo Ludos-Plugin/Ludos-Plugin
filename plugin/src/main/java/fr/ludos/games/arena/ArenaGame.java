@@ -11,6 +11,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
+import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
@@ -31,6 +32,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.util.TriState;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
@@ -109,31 +111,42 @@ public class ArenaGame extends WaveGame {
 			new GroupPlayersConfigEntry(
 				getManager().getLudos().getGroupManager(),
 				Component.text("Team 1 players"),
-				new ItemBuilder(Material.BLUE_BANNER),
 				"team_1", "random"
-			);
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.BLUE_BANNER);
+				}
+			};
 
 		public final GroupPlayersConfigEntry team2Players =
 			new GroupPlayersConfigEntry(
 				getManager().getLudos().getGroupManager(),
 				Component.text("Team 2 players"),
-				new ItemBuilder(Material.RED_BANNER),
 				"team_2", "random"
-			);
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.RED_BANNER);
+				}
+			};
 
 		public final IntegerConfigEntry rounds =
 			new IntegerConfigEntry(
 				Component.text("Number of Rounds"),
-				new ItemBuilder(Material.SKELETON_SKULL),
 				"rounds", 3,
 				true
-			);
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.SKELETON_SKULL);
+				}
+			};
 
 		private final ConfigNodeMap configMap =
 			new ConfigNodeMap(
 				Component.text("Arena"),
 				ID,
-				new ItemBuilder(Material.IRON_SWORD),
 				List.of(
 					team1Players,
 					team2Players,
@@ -141,7 +154,12 @@ public class ArenaGame extends WaveGame {
 					rounds,
 					WorldBorderArea.CONFIG
 				)
-			);
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.IRON_SWORD);
+				}
+			};
 
 		public Builder(GameManager manager) {
 			super(manager);

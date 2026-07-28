@@ -14,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.core.persistence.serializer.Serializer;
 import fr.ludos.core.persistence.serializer.StringSetSerializer;
 import net.kyori.adventure.text.TextComponent;
-import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 
 /**
  * {@link ConfigEntry} for a typed {@link Set} of values.
@@ -26,15 +25,15 @@ public abstract class SetConfigEntry<T> extends ConfigEntry<Set<T>, List<String>
 	private final StringSetSerializer<T> serializer;
 	private final String placeholder;
 
-	public SetConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, StringSetSerializer<T> serializer, String placeholder) {
-		super(name, displayItem, key);
+	public SetConfigEntry(@NotNull TextComponent name, @NotNull String key, StringSetSerializer<T> serializer, String placeholder) {
+		super(name, key);
 		this.serializer = serializer;
 		this.placeholder = placeholder != null
 			? placeholder
 			: DEFAULT_PLACEHOLDER;
 	}
-	public SetConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, StringSetSerializer<T> serializer) {
-		this(name, displayItem, key, serializer, null);
+	public SetConfigEntry(@NotNull TextComponent name, @NotNull String key, StringSetSerializer<T> serializer) {
+		this(name, key, serializer, null);
 	}
 
 	public String getterMessage(String value) {

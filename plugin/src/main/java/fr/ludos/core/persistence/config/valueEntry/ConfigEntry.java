@@ -32,11 +32,9 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 
 	private final @NotNull String key;
 	private final @NotNull TextComponent name;
-	private final @NotNull AbstractItemBuilder<?> displayItem;
 
-	public ConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key) {
+	public ConfigEntry(@NotNull TextComponent name, @NotNull String key) {
 		this.name = ObjectUtils.requireNonEmpty(name);
-		this.displayItem = ObjectUtils.requireNonEmpty(displayItem);
 		this.key = ObjectUtils.requireNonEmpty(key);
 	}
 
@@ -49,18 +47,17 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 		return name;
 	}
 	@Override
-	public AbstractItemBuilder<?> item(Player player) {
-		return displayItem;
-	}
-	@Override
 	public AbstractItemBuilder<?> displayItem(Player player, ConfigSectionContext context) {
 		AbstractItemBuilder<?> builder = ConfigNode.super.displayItem(player, context);
-		builder.setLore(List.of(
-			new AdventureComponentWrapper(
-				Component.text(getValueLabel(toString(getValueOrDefault(context.getConfig(player)))))
-					.color(NamedTextColor.GRAY)
-			)
-		));
+		AdventureComponentWrapper currentValueLoreLine = new AdventureComponentWrapper(
+			Component.text(getValueLabel(toString(getValueOrDefault(context.getConfig(player)))))
+				.color(NamedTextColor.GRAY)
+		);
+		if (builder.getLore() != null) {
+			builder.getLore().set(0, currentValueLoreLine);
+		} else {
+			builder.addLoreLines(currentValueLoreLine);
+		}
 		return builder;
 	}
 	protected String getValueLabel(String value) {

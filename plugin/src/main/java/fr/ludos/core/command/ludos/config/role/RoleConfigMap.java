@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.persistence.config.ConfigNode;
@@ -14,6 +15,7 @@ import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.role.RoleManager;
 import net.kyori.adventure.text.Component;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
@@ -25,10 +27,14 @@ public class RoleConfigMap extends ConfigNodeCollection {
 	public RoleConfigMap(RoleManager manager) {
 		super(
 			Component.text("Role Configuration"),
-			Role.NAMESPACE,
-			new ItemBuilder(Material.NAME_TAG)
+			Role.NAMESPACE
 		);
 		this.manager = Objects.requireNonNull(manager);
+	}
+
+	@Override
+	public AbstractItemBuilder<?> createItem(Player player) {
+		return new ItemBuilder(Material.NAME_TAG);
 	}
 
 	@Override

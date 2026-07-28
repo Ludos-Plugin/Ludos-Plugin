@@ -37,23 +37,22 @@ import xyz.xenondevs.invui.gui.structure.Markers;
 import xyz.xenondevs.invui.gui.structure.Structure;
 import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.item.ItemProvider;
-import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.window.Window;
 
 /**
  * {@link ConfigEntry} for a single {@link OfflinePlayer} instance, present in the {@link CommandSender}'s current {@link Group}.
  */
-public class GroupPlayerConfigEntry extends ConfigEntry<OfflinePlayer, String> {
+public abstract class GroupPlayerConfigEntry extends ConfigEntry<OfflinePlayer, String> {
 	private final GroupManager groupManager;
 	private final boolean excludeSelf;
 
-	public GroupPlayerConfigEntry(GroupManager groupManager, @NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, boolean excludeSelf) {
-		super(name, displayItem, key);
+	public GroupPlayerConfigEntry(GroupManager groupManager, @NotNull TextComponent name, @NotNull String key, boolean excludeSelf) {
+		super(name, key);
 		this.groupManager = Objects.requireNonNull(groupManager);
 		this.excludeSelf = excludeSelf;
 	}
-	public GroupPlayerConfigEntry(GroupManager groupManager, @NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key) {
-		this(groupManager, name, displayItem, key, false);
+	public GroupPlayerConfigEntry(GroupManager groupManager, @NotNull TextComponent name, @NotNull String key) {
+		this(groupManager, name, key, false);
 	}
 
 	@Override

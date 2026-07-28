@@ -21,34 +21,33 @@ import net.kyori.adventure.text.TextComponent;
 import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.gui.structure.Structure;
-import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.window.AnvilWindow;
 
 /**
  * {@link ConfigEntry} for {@link Number}s.
  */
-public class IntegerConfigEntry extends ConfigEntry<Integer, Integer> {
+public abstract class IntegerConfigEntry extends ConfigEntry<Integer, Integer> {
 	private final static Set<String> NUMBERS = new HashSet<>() {{add("1"); add("2"); add("3");}};
 	private final IntegerSerializer serializer;
 	private final @Nullable Set<@NotNull String> suggestions;
 	private final @Nullable Integer defaultValue;
 
-	public IntegerConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions, boolean unsigned) {
-		super(name, displayItem, key);
+	public IntegerConfigEntry(@NotNull TextComponent name, @NotNull String key, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions, boolean unsigned) {
+		super(name, key);
 		this.defaultValue = Objects.requireNonNull(defaultValue);
 		this.serializer = unsigned ? IntegerSerializer.UNSIGNED : IntegerSerializer.SIGNED;
 		this.suggestions = suggestions != null
 			? suggestions.stream().map(i -> i.toString()).collect(Collectors.toSet())
 			: null;
 	}
-	public IntegerConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions) {
-		this(name, displayItem, key, defaultValue, suggestions, false);
+	public IntegerConfigEntry(@NotNull TextComponent name, @NotNull String key, @NotNull Integer defaultValue, @Nullable Set<@NotNull Integer> suggestions) {
+		this(name, key, defaultValue, suggestions, false);
 	}
-	public IntegerConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, @NotNull Integer defaultValue, boolean unsigned) {
-		this(name, displayItem, key, defaultValue, null, unsigned);
+	public IntegerConfigEntry(@NotNull TextComponent name, @NotNull String key, @NotNull Integer defaultValue, boolean unsigned) {
+		this(name, key, defaultValue, null, unsigned);
 	}
-	public IntegerConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, @NotNull Integer defaultValue) {
-		this(name, displayItem, key, defaultValue, null);
+	public IntegerConfigEntry(@NotNull TextComponent name, @NotNull String key, @NotNull Integer defaultValue) {
+		this(name, key, defaultValue, null);
 	}
 	@Override
 	public final Serializer<Integer, Integer> getSerializer() {

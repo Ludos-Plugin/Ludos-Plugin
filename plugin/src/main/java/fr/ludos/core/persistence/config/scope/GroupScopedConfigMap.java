@@ -3,6 +3,7 @@ package fr.ludos.core.persistence.config.scope;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
@@ -14,6 +15,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
@@ -24,11 +26,6 @@ public class GroupScopedConfigMap extends ConfigNodeMap {
 	public GroupScopedConfigMap(Ludos ludos) {
 		super(
 			Component.text("Group-wide Configuration"), null,
-			new ItemBuilder(Material.BLUE_BANNER)
-				.addLoreLines(new AdventureComponentWrapper(Component.text("Configure options for your group.")
-					.decoration(TextDecoration.ITALIC, false)
-					.color(NamedTextColor.GRAY)
-				)),
 			List.of(
 				GroupConfigMap.INSTANCE,
 				ludos.getGameManager().configMap,
@@ -36,5 +33,13 @@ public class GroupScopedConfigMap extends ConfigNodeMap {
 				PlayerConfigMap.INSTANCE
 			)
 		);
+	}
+	@Override
+	public AbstractItemBuilder<?> createItem(Player player) {
+		return new ItemBuilder(Material.BLUE_BANNER)
+			.addLoreLines(new AdventureComponentWrapper(Component.text("Configure options for your group.")
+				.decoration(TextDecoration.ITALIC, false)
+				.color(NamedTextColor.GRAY)
+			));
 	}
 }

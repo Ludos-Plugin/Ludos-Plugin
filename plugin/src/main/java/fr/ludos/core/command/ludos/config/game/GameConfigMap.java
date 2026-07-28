@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.command.ludos.game.GameConfig;
@@ -15,6 +16,7 @@ import fr.ludos.core.game.GameManager;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import fr.ludos.core.persistence.config.ConfigNodeMap;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
@@ -26,10 +28,14 @@ public class GameConfigMap extends ConfigNodeCollection {
 	public GameConfigMap(GameManager manager) {
 		super(
 			GameConfig.WINDOW_TITLE,
-			Game.NAMESPACE,
-			new ItemBuilder(Material.MUSIC_DISC_CHIRP)
+			Game.NAMESPACE
 		);
 		this.manager = Objects.requireNonNull(manager);
+	}
+
+	@Override
+	public AbstractItemBuilder<?> createItem(Player player) {
+		return new ItemBuilder(Material.MUSIC_DISC_CHIRP);
 	}
 
 	@Override

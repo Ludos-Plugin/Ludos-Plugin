@@ -56,6 +56,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
@@ -88,10 +89,14 @@ public class Ludos extends JavaPlugin implements Listener {
 		new GroupPlayersConfigEntry(
 			groupManager,
 			Component.text("Players"),
-			new ItemBuilder(Material.PLAYER_HEAD),
 			"players",
 			"all"
-		);
+		) {
+			@Override
+			public AbstractItemBuilder<?> createItem(Player player) {
+				return new ItemBuilder(Material.PLAYER_HEAD);
+			}
+		};
 
 	public final GroupManager getGroupManager() {
 		return this.groupManager;

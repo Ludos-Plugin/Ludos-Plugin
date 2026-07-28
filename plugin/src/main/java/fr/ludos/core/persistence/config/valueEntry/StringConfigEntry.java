@@ -19,28 +19,27 @@ import net.kyori.adventure.text.TextComponent;
 import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.gui.structure.Structure;
-import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.window.AnvilWindow;
 
 /**
  * {@link ConfigEntry} for {@link String}s.
  */
-public class StringConfigEntry extends ConfigEntry<String, String> {
+public abstract class StringConfigEntry extends ConfigEntry<String, String> {
 	private final @NotNull Set<@NotNull String> suggestions;
 	private final @Nullable String defaultValue;
 
-	public StringConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, @Nullable Set<@NotNull String> suggestions, String defaultValue) {
-		super(name, displayItem, key);
+	public StringConfigEntry(@NotNull TextComponent name, @NotNull String key, @Nullable Set<@NotNull String> suggestions, String defaultValue) {
+		super(name, key);
 		this.suggestions = suggestions == null
 			? Collections.emptySet()
 			: suggestions;
 		this.defaultValue = defaultValue;
 	}
-	public StringConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, @Nullable Set<@NotNull String> suggestions) {
-		this(name, displayItem, key, suggestions, null);
+	public StringConfigEntry(@NotNull TextComponent name, @NotNull String key, @Nullable Set<@NotNull String> suggestions) {
+		this(name, key, suggestions, null);
 	}
-	public StringConfigEntry(@NotNull TextComponent name, AbstractItemBuilder<?> displayItem, @NotNull String key, String defaultValue) {
-		this(name, displayItem, key, null, defaultValue);
+	public StringConfigEntry(@NotNull TextComponent name, @NotNull String key, String defaultValue) {
+		this(name, key, null, defaultValue);
 	}
 
 	@Override

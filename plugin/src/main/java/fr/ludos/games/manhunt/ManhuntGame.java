@@ -45,6 +45,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.util.TriState;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 
@@ -234,9 +235,12 @@ public class ManhuntGame extends Game {
 			new GroupPlayerConfigEntry(
 				getManager().getLudos().getGroupManager(),
 				Component.text("Prey Player"),
-				new ItemBuilder(Material.TARGET),
 				"prey"
 			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.TARGET);
+				}
 				protected String getNullValue() {
 					return "random";
 				};
@@ -245,11 +249,14 @@ public class ManhuntGame extends Game {
 		public final IntegerConfigEntry revealPeriod =
 			new IntegerConfigEntry(
 				Component.text("Reveal period"),
-				new ItemBuilder(Material.CLOCK),
 				"reveal",
 				180, Set.of(60, 120, 180, 240, 300, 360),
 				true
 			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.CLOCK);
+				}
 				protected String getValueLabel(String value) {
 					return super.getValueLabel(value) + 's';
 				};
@@ -259,14 +266,18 @@ public class ManhuntGame extends Game {
 			new ConfigNodeMap(
 				Component.text("Manhunt"),
 				ID,
-				new ItemBuilder(Material.COMPASS),
 				List.of(
 					getLudos().playersConfig,
 					prey,
 					WorldBorderArea.CONFIG,
 					revealPeriod
 				)
-			);
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.COMPASS);
+				}
+			};
 
 		public Builder(GameManager manager) {
 			super(manager);

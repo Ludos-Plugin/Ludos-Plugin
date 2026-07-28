@@ -23,7 +23,6 @@ import xyz.xenondevs.invui.gui.PagedGui;
 import xyz.xenondevs.invui.gui.structure.Markers;
 import xyz.xenondevs.invui.gui.structure.Structure;
 import xyz.xenondevs.invui.item.Item;
-import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.window.Window;
 
 /**
@@ -32,12 +31,10 @@ import xyz.xenondevs.invui.window.Window;
 public abstract class ConfigNodeCollection extends ConfigRootCollection implements ConfigNode {
 	private final TextComponent name;
 	private final String namespace;
-	private final AbstractItemBuilder<?> displayItem;
 
-	public ConfigNodeCollection(@NotNull TextComponent name, @Nullable String namespace, AbstractItemBuilder<?> displayItem) {
+	public ConfigNodeCollection(@NotNull TextComponent name, @Nullable String namespace) {
 		this.name = Objects.requireNonNull(name);
 		this.namespace = namespace;
-		this.displayItem = Objects.requireNonNull(displayItem);
 	}
 
 	public String namespace() {
@@ -50,10 +47,6 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 	@Override
 	public Component name() {
 		return name;
-	}
-	@Override
-	public AbstractItemBuilder<?> item(Player player) {
-		return displayItem;
 	}
 
 	@Override

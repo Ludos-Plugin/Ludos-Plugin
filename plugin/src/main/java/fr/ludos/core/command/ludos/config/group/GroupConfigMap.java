@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 
 import fr.ludos.core.game.teamController.GameJoinOption;
 import fr.ludos.core.group.Group;
@@ -15,6 +16,7 @@ import fr.ludos.core.persistence.config.valueEntry.EnumConfigEntry;
 import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
@@ -24,10 +26,13 @@ public final class GroupConfigMap extends ConfigNodeMap {
 	public static final EnumConfigEntry<GroupRightsOption> MEMBERS_AUTH =
 		new EnumConfigEntry<>(
 			Component.text("Members authorisation"),
-			new ItemBuilder(Material.SHIELD),
 			"member_authorisation",
 			GroupRightsOption.class, GroupRightsOption.invite
 		) {
+			@Override
+			public AbstractItemBuilder<?> createItem(Player player) {
+				return new ItemBuilder(Material.SHIELD);
+			}
 			public ItemBuilder getItemForEnumValue(GroupRightsOption value) {
 				return value.getDisplayItem();
 			}
@@ -36,10 +41,13 @@ public final class GroupConfigMap extends ConfigNodeMap {
 	public static final EnumConfigEntry<GroupJoinOption> GROUP_JOIN =
 		new EnumConfigEntry<>(
 			Component.text("Players can join the group"),
-			new ItemBuilder(Material.BLUE_BANNER),
 			"group_join",
 			GroupJoinOption.class, GroupJoinOption.manual_accept
 		) {
+			@Override
+			public AbstractItemBuilder<?> createItem(Player player) {
+				return new ItemBuilder(Material.BLUE_BANNER);
+			}
 			@Override
 			public ItemBuilder getItemForEnumValue(GroupJoinOption value) {
 				return value.getDisplayItem();
@@ -49,10 +57,13 @@ public final class GroupConfigMap extends ConfigNodeMap {
 	public static final EnumConfigEntry<GameJoinOption> GAME_JOIN =
 		new EnumConfigEntry<>(
 			Component.text("Member can join ongoing Games"),
-			new ItemBuilder(Material.BLUE_BED),
 			"game_join",
 			GameJoinOption.class, GameJoinOption.yes
 		) {
+			@Override
+			public AbstractItemBuilder<?> createItem(Player player) {
+				return new ItemBuilder(Material.BLUE_BED);
+			}
 			@Override
 			public ItemBuilder getItemForEnumValue(GameJoinOption value) {
 				return value.getDisplayItem();
@@ -62,10 +73,13 @@ public final class GroupConfigMap extends ConfigNodeMap {
 	public static final EnumConfigEntry<LobbyWaitPlayersOption> WAIT_PLAYERS =
 		new EnumConfigEntry<>(
 			Component.text("Players to wait in lobby"),
-			new ItemBuilder(Material.PLAYER_HEAD),
 			"wait_players",
 			LobbyWaitPlayersOption.class, LobbyWaitPlayersOption.all
 		) {
+			@Override
+			public AbstractItemBuilder<?> createItem(Player player) {
+				return new ItemBuilder(Material.PLAYER_HEAD);
+			}
 			@Override
 			public ItemBuilder getItemForEnumValue(LobbyWaitPlayersOption value) {
 				return value.getDisplayItem();
@@ -75,11 +89,14 @@ public final class GroupConfigMap extends ConfigNodeMap {
 	public static final IntegerConfigEntry START_DELAY =
 		new IntegerConfigEntry(
 			Component.text("Lobby start delay seconds"),
-			new ItemBuilder(Material.CLOCK),
 			"start_delay",
 			10, Set.of(5, 10, 30),
 			true
 		) {
+			@Override
+			public AbstractItemBuilder<?> createItem(Player player) {
+				return new ItemBuilder(Material.CLOCK);
+			}
 			@Override
 			protected String getValueLabel(String value) {
 				return super.getValueLabel(value) + 's';
@@ -93,7 +110,6 @@ public final class GroupConfigMap extends ConfigNodeMap {
 		super(
 			WINDOW_TITLE,
 			Group.NAMESPACE,
-			new ItemBuilder(Material.BLUE_BANNER),
 			List.of(
 				MEMBERS_AUTH,
 				GROUP_JOIN,
@@ -102,5 +118,10 @@ public final class GroupConfigMap extends ConfigNodeMap {
 				START_DELAY
 			)
 		);
+	}
+
+	@Override
+	public AbstractItemBuilder<?> createItem(Player player) {
+		return new ItemBuilder(Material.BLUE_BANNER);
 	}
 }
