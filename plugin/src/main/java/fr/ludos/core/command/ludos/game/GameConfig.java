@@ -1,10 +1,10 @@
 package fr.ludos.core.command.ludos.game;
 
 import fr.ludos.core.command.Subcommand;
-import fr.ludos.core.command.ludos.ScopeConfigMap;
 import fr.ludos.core.command.ludos.config.ConfigSubcommand;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameManager;
+import fr.ludos.core.persistence.config.scope.ScopeConfigMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 

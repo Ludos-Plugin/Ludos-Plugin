@@ -1,4 +1,4 @@
-package fr.ludos.core.command.ludos;
+package fr.ludos.core.persistence.config.scope;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;

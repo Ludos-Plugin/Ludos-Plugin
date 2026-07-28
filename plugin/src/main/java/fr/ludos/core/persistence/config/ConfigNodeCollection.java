@@ -57,9 +57,8 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 	}
 
 	@Override
-	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context, ConfigNodeOperation mode) {
-		if (mode == ConfigNodeOperation.set && args.length == 0) {
-			if (! (sender instanceof Player player)) return false;
+	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context) {
+		if (args.length == 0 && sender instanceof Player player) {
 			if (! openConfigWindow(player, context)) {
 				player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
 			}
@@ -70,11 +69,11 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 		ConfigNode node = getNode(key);
 		if (node == null) return false;
 
-		return node.execute(Arrays.copyOfRange(args, 1, args.length), sender, context.getDeeper(namespace, this), mode);
+		return node.execute(Arrays.copyOfRange(args, 1, args.length), sender, context.getDeeper(namespace, null));
 	}
 
 	@Override
-	public @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender, ConfigNodeOperation mode) {
+	public @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender) {
 		if (args.length <= 1) {
 			return options(sender).stream().toList();
 		}
@@ -82,7 +81,7 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 		ConfigNode node = getNode(args[0]);
 		if (node == null) return null;
 
-		return node.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender, mode);
+		return node.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender);
 	}
 
 	public Window configWindow(Player player, ConfigSectionContext context) {

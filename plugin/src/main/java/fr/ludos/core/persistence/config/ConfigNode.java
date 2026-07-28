@@ -32,9 +32,9 @@ public interface ConfigNode extends ConfigRoot {
 		return displayItem(player);
 	}
 
-	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context, ConfigNodeOperation mode);
+	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context);
 
-	public default @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender, ConfigNodeOperation mode) {
+	public default @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender) {
 		if (args.length <= 1) {
 			return options(sender).stream().toList();
 		}

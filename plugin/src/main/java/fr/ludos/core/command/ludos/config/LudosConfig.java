@@ -1,7 +1,7 @@
 package fr.ludos.core.command.ludos.config;
 
 import fr.ludos.core.Ludos;
-import fr.ludos.core.command.ludos.ScopeConfigMap;
+import fr.ludos.core.persistence.config.scope.ScopeConfigMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 

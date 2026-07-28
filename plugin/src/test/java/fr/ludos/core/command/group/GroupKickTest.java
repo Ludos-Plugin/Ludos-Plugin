@@ -56,7 +56,7 @@ class GroupKickTest extends GroupTest {
 
 		assertJoinGroup(player3, player1);
 
-		player1.performCommand("ludos group config group set member_authorisation " + rights);
+		player1.performCommand("ludos group config group member_authorisation set " + rights);
 		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
 
 		player2.performCommand("ludos group kick " + player3.getName());
@@ -77,7 +77,7 @@ class GroupKickTest extends GroupTest {
 
 		assertJoinGroup(player3, player1);
 
-		player1.performCommand("ludos group config group set member_authorisation " + rights);
+		player1.performCommand("ludos group config group member_authorisation set " + rights);
 		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
 
 		player2.performCommand("ludos group kick " + player3.getName());
@@ -97,7 +97,7 @@ class GroupKickTest extends GroupTest {
 		assertInvitePlayerToGroup(player1, Collections.singletonList(player3));
 		assertJoinGroup(player3, player1);
 
-		player1.performCommand("ludos group config group set member_authorisation " + GroupRightsOption.none.name());
+		player1.performCommand("ludos group config group member_authorisation set " + GroupRightsOption.none.name());
 		assertEquals("Members authorisation set to " + GroupRightsOption.none.name(), player1.nextMessage(), "Could not set group rights");
 
 		player2.performCommand("ludos group kick " + player3.getName());

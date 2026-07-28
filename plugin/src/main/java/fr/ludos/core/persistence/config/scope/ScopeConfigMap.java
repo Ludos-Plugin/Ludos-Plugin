@@ -1,4 +1,4 @@
-package fr.ludos.core.command.ludos;
+package fr.ludos.core.persistence.config.scope;
 
 import java.util.Collection;
 import java.util.HashSet;

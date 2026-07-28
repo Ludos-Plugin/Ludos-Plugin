@@ -17,7 +17,6 @@ import fr.ludos.core.gui.BorderItem;
 import fr.ludos.core.gui.ChangePageItem;
 import fr.ludos.core.gui.ConfigProviderItem;
 import fr.ludos.core.persistence.config.ConfigNode;
-import fr.ludos.core.persistence.config.ConfigNodeOperation;
 import fr.ludos.core.persistence.config.ConfigRootCollection;
 import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
 import xyz.xenondevs.invui.gui.PagedGui;
@@ -62,14 +61,7 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 			return true;
 		}
 
-		ConfigNodeOperation op;
-		try {
-			op = Enum.valueOf(ConfigNodeOperation.class, args[1]);
-		} catch (Exception e) {
-			return false;
-		}
-
-		if (node.execute(Arrays.copyOfRange(args, 2, args.length), sender, context, op) && op != ConfigNodeOperation.get) {
+		if (node.execute(Arrays.copyOfRange(args, 1, args.length), sender, context)) {
 			provider.saveConfig();
 		}
 		return true;
@@ -83,17 +75,7 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 		ConfigNode root = getNode(args[0]);
 		if (root == null) return null;
 
-		if (args.length <= 2) {
-			return Arrays.stream(ConfigNodeOperation.values()).map(Enum::name).toList();
-		}
-		ConfigNodeOperation op;
-		try {
-			op = Enum.valueOf(ConfigNodeOperation.class, args[1]);
-		} catch (Exception e) {
-			return null;
-		}
-
-		return root.tabComplete(Arrays.copyOfRange(args, 2, args.length), sender, op);
+		return root.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender);
 	}
 
 	public Window configWindow(Player player, Plugin plugin) {

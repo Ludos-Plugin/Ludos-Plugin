@@ -1,11 +1,11 @@
 package fr.ludos.core.command.ludos.group;
 
 import fr.ludos.core.command.Subcommand;
-import fr.ludos.core.command.ludos.ScopeConfigMap;
 import fr.ludos.core.command.ludos.config.ConfigSubcommand;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupManager;
+import fr.ludos.core.persistence.config.scope.ScopeConfigMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 

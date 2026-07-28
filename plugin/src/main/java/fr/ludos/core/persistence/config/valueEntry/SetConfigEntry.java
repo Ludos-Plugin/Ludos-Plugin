@@ -11,7 +11,6 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import fr.ludos.core.persistence.config.ConfigNodeOperation;
 import fr.ludos.core.persistence.serializer.Serializer;
 import fr.ludos.core.persistence.serializer.StringSetSerializer;
 import net.kyori.adventure.text.TextComponent;
@@ -69,7 +68,7 @@ public abstract class SetConfigEntry<T> extends ConfigEntry<Set<T>, List<String>
 	}
 
 	@Override
-	public @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender, ConfigNodeOperation op) {
+	public @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender) {
 		Set<String> options = options(sender);
 		if (args.length <= 1) {
 			return options.stream().toList();

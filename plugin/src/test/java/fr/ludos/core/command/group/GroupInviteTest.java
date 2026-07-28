@@ -70,7 +70,7 @@ class GroupInviteTest extends GroupTest {
 		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
 		assertJoinGroup(player2, player1);
 
-		player1.performCommand("ludos group config group set member_authorisation " + rights);
+		player1.performCommand("ludos group config group member_authorisation set " + rights);
 		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
 
 		PlayerMock player3 = createPlayer("Player3");
@@ -92,7 +92,7 @@ class GroupInviteTest extends GroupTest {
 		assertEquals("You have joined " + player1.getName() + "'s group.", player2.nextMessage(), "Join should be accepted after invite");
 		assertEquals(player2.getName() + " has joined the group.", player1.nextMessage(), "Leader should be notified on join");
 
-		player1.performCommand("ludos group config group set member_authorisation " + rights);
+		player1.performCommand("ludos group config group member_authorisation set " + rights);
 		assertEquals("Members authorisation set to none", player1.nextMessage(), "Could not set group rights");
 
 		player2.performCommand("ludos group invite " + player3.getName());

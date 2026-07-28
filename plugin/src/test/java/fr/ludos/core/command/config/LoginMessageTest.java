@@ -18,7 +18,7 @@ class LoginMessageTest extends ConfigTest {
 		player1.setOp(true);
 		clearMessages(player1);
 
-		player1.performCommand("ludos config global reset player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key());
+		player1.performCommand("ludos config global player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + " reset");
 		assertEquals(PlayerConfigMap.GUIDEBOOK_MESSAGE.name().content() + " reset", player1.nextMessage(), "Invalid Reset message for configuration.");
 	}
 
@@ -28,14 +28,14 @@ class LoginMessageTest extends ConfigTest {
 		assertNotNull(player1.nextMessage());
 		player1.setOp(true);
 
-		assertSetConfigValues(player1, "ludos config global", "player", PlayerConfigMap.GUIDEBOOK_MESSAGE, "invalid");
+		assertSetConfigValues(player1, "ludos config global player", PlayerConfigMap.GUIDEBOOK_MESSAGE, "invalid");
 
-		player1.performCommand("ludos config global set player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + ' ' + BooleanSerializer.FALSE_STRING);
+		player1.performCommand("ludos config global player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + " set " + BooleanSerializer.FALSE_STRING);
 		assertEquals(PlayerConfigMap.GUIDEBOOK_MESSAGE.name().content() + " set to " + BooleanSerializer.FALSE_STRING, player1.nextMessage(), "Could not disable login message globally.");
 		PlayerMock player2 = createPlayer("Player2");
 		assertNull(player2.nextMessage(), "Player received login message when disabled.");
 
-		player1.performCommand("ludos config global set player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + ' ' + BooleanSerializer.TRUE_STRING);
+		player1.performCommand("ludos config global player " + PlayerConfigMap.GUIDEBOOK_MESSAGE.key() + " set " + BooleanSerializer.TRUE_STRING);
 		assertEquals(PlayerConfigMap.GUIDEBOOK_MESSAGE.name().content() + " set to " + BooleanSerializer.TRUE_STRING, player1.nextMessage(), "Could not enable login message globally.");
 		PlayerMock player3 = createPlayer("Player3");
 		assertNotNull(player3.nextMessage(), "Player dit not receive login message when enabled.");

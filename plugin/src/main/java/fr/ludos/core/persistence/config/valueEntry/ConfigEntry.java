@@ -1,5 +1,6 @@
 package fr.ludos.core.persistence.config.valueEntry;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -79,7 +80,7 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 	public abstract @NotNull TComplex defaultValue();
 
 
-	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context, ConfigNodeOperation op) {
+	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context) {
 		if (! context.checkAuthorizationNotify(sender)) {
 			if (sender instanceof Player player) {
 				player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
@@ -88,17 +89,27 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 		}
 		ConfigurationSection config = context.getConfig(sender);
 
+		if (args.length == 0 && (sender instanceof Player player)) {
+			if (! openConfigWindow(player, context)) {
+				player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+				return false;
+			}
+			return true;
+		}
+
+		ConfigNodeOperation op;
+		try {
+			op = Enum.valueOf(ConfigNodeOperation.class, args[0]);
+		} catch (Exception e) {
+			return false;
+		}
+
+		args = Arrays.copyOfRange(args, 1, args.length);
+
 		switch (op) {
 			case get:
 				return get(args, sender, config);
 			case set:
-				if (args.length == 0 && (sender instanceof Player player)) {
-					if (! openConfigWindow(player, context)) {
-						player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
-						return false;
-					}
-					return true;
-				}
 				return set(args, sender, config);
 			case reset:
 				return unset(args, sender, config);
@@ -135,13 +146,24 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 	}
 
 	@Override
-	public List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender, ConfigNodeOperation mode) {
-		switch (mode) {
+	public List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender) {
+		if (args.length <= 1) {
+			return Arrays.stream(ConfigNodeOperation.values()).map(Enum::name).toList();
+		}
+
+		ConfigNodeOperation op;
+		try {
+			op = Enum.valueOf(ConfigNodeOperation.class, args[0]);
+		} catch (Exception e) {
+			return null;
+		}
+
+		switch (op) {
 			case get:
 			case reset:
 				return Collections.emptyList();
 			case set:
-				return setTabComplete(args, sender);
+				return setTabComplete(Arrays.copyOfRange(args, 1, args.length), sender);
 			default:
 				return null;
 		}
@@ -161,6 +183,7 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 	 * @return A valid instance of T if the args were valid, or null.
 	 */
 	public TComplex parseValueFromArgs(@NotNull String[] args, CommandSender sender) {
+		if (args.length == 0) return null;
 		String val = args[0];
 		TComplex parsed = getSerializer().fromString(val);
 		if (! validateValue(parsed, sender)) return null;

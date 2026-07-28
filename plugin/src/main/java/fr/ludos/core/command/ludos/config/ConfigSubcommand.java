@@ -10,7 +10,7 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.command.Subcommand;
-import fr.ludos.core.command.ludos.ScopeConfigMap;
+import fr.ludos.core.persistence.config.scope.ScopeConfigMap;
 
 /**
  * Subcommand for configuration.

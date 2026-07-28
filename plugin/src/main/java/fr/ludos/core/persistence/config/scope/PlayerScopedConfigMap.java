@@ -1,4 +1,4 @@
-package fr.ludos.core.command.ludos.config;
+package fr.ludos.core.persistence.config.scope;
 
 import java.util.List;
 
