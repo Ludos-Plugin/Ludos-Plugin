@@ -17,6 +17,7 @@ import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
 import fr.ludos.core.game.GameProcessBase;
+import fr.ludos.core.gui.Named;
 import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -123,7 +124,7 @@ public abstract class Role extends GameProcessBase {
 	 * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
 	 * It contains configuration for the Role itself.
 	 */
-	public static abstract class Builder {
+	public static abstract class Builder implements Named {
 		private final RoleManager manager;
 		public final RoleManager getManager() {
 			return manager;
@@ -141,13 +142,12 @@ public abstract class Role extends GameProcessBase {
 			return EnumSet.noneOf(RoleFlag.class);
 		}
 
-		public abstract TextComponent getDisplayName();
 		public abstract TextComponent getDescription();
 
 		public TextComponent[] buildPages() {
 			return BookUtility.truncatePage(
 				Component.text()
-					.append(BookUtility.centerBookLine(getDisplayName()))
+					.append(BookUtility.centerBookLine(normalizedDisplayName()))
 					.append(
 						BookUtility.spaceBookLine(
 							Component.text("Reset")
@@ -176,7 +176,7 @@ public abstract class Role extends GameProcessBase {
 			ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
 			BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
 
-			meta.title(getDisplayName());
+			meta.title(normalizedDisplayName());
 			meta.author(Component.text("Ludos"));
 
 			for (TextComponent page : buildPages()) {

@@ -369,10 +369,10 @@ public class BookUtility {
 		}
 	}
 
-	public static int getPixelWidth(TextComponent component) {
+	public static int getPixelWidth(Component component) {
 		return getPixelWidth(component, false);
 	}
-	public static int getPixelWidth(TextComponent component, boolean isBold) {
+	public static int getPixelWidth(Component component, boolean isBold) {
 		MiniMessage mm = MiniMessage.miniMessage();
 
 		Root tree = mm.deserializeToTree(mm.serialize(component));
@@ -380,10 +380,10 @@ public class BookUtility {
 		return getNodePixelWidth(tree, isBold);
 	}
 
-	public static TextComponent spaceBookLine(TextComponent leftComponent, TextComponent rightComponent) {
+	public static Component spaceBookLine(Component leftComponent, Component rightComponent) {
 		return spaceBookLine(leftComponent, rightComponent, MC_BOOK_LINE_WIDTH);
 	}
-	public static TextComponent spaceBookLine(TextComponent leftComponent, TextComponent rightComponent, int lineWidth) {
+	public static Component spaceBookLine(Component leftComponent, Component rightComponent, int lineWidth) {
 		int leftWidth = getPixelWidth(leftComponent);
 		int rightWidth = getPixelWidth(rightComponent);
 		int totalWidth = leftWidth + rightWidth;
@@ -406,10 +406,10 @@ public class BookUtility {
 			.build();
 	}
 
-	public static TextComponent alignRightBookLine(TextComponent component) {
+	public static Component alignRightBookLine(Component component) {
 		return alignRightBookLine(component, MC_BOOK_LINE_WIDTH);
 	}
-	public static TextComponent alignRightBookLine(TextComponent component, int lineWidth) {
+	public static Component alignRightBookLine(Component component, int lineWidth) {
 		int textWidth = getPixelWidth(component);
 		if (textWidth >= lineWidth) return component;
 
@@ -422,11 +422,16 @@ public class BookUtility {
 			.build();
 	}
 
-	// Center a TextComponent line, considering decorations (bold, italic)
-	public static TextComponent centerBookLine(TextComponent component) {
+	/**
+	 * Center a {@link Component} line, considering decorations (bold, italic).<br>
+	 * Adds padding to the left-side of the given component, making it look centered, as long as it is placed inside a normal Minecraft book.
+	 * @param component The component to center
+	 * @return returns the given {@link Component}, with left-side padding, to look centered.
+	 */
+	public static Component centerBookLine(Component component) {
 		return centerBookLine(component, MC_BOOK_LINE_WIDTH);
 	}
-	public static TextComponent centerBookLine(TextComponent component, int lineWidth) {
+	public static Component centerBookLine(Component component, int lineWidth) {
 		int textWidth = getPixelWidth(component);
 		if (textWidth >= lineWidth) return component;
 

@@ -402,7 +402,7 @@ public class Utility {
 		return location;
 	}
 
-	public static <T> List<? extends Collection<T>> split(Collection<T> items, int size) {
+	public static <T> List<List<T>> split(Collection<T> items, int size) {
 		if (size <= 0) return List.of();
 
 		List<List<T>> result = new ArrayList<>(size);

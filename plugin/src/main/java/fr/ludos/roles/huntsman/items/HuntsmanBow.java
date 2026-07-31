@@ -17,7 +17,6 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 
 /**
  * Implementation of the Huntsman Bow, for use by any Player with {@link HuntsmanRole}.
@@ -32,9 +31,8 @@ public class HuntsmanBow extends SpecialItem<HuntsmanBow> {
 
 
 	@Override
-	public Component getName(){
-		return Component.text("Stolen Bow")
-			.decoration(TextDecoration.ITALIC, false);
+	public Component displayName(){
+		return Component.text("Stolen Bow");
 	}
 
 	@Override

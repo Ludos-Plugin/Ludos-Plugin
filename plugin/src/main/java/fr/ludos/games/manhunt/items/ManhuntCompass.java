@@ -37,9 +37,8 @@ public class ManhuntCompass extends SpecialItem<ManhuntCompass> {
 
 
 	@Override
-	public Component getName() {
-		return Component.text("Hunter's Compass")
-			.decoration(TextDecoration.ITALIC, false);
+	public Component displayName() {
+		return Component.text("Hunter's Compass");
 	}
 
 	@Override

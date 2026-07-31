@@ -42,7 +42,7 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
-import fr.ludos.core.persistence.data.DataEntry;
+import fr.ludos.core.persistence.PersistentEntry;
 import fr.ludos.core.persistence.serializer.IntegerSerializer;
 import fr.ludos.other.ExcludeFromJacocoGeneratedReport;
 import net.kyori.adventure.text.Component;
@@ -56,8 +56,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialItemInterface {
 	public final static String NAMESPACE = "item";
 
-	public static final DataEntry<Integer> ENTITY_KILLS = new DataEntry<>("entity_kills", IntegerSerializer.UNSIGNED);
-	public static final DataEntry<Integer> PLAYER_KILLS = new DataEntry<>("player_kills", IntegerSerializer.UNSIGNED);
+	public static final PersistentEntry<Integer> ENTITY_KILLS = PersistentEntry.of(IntegerSerializer.UNSIGNED, "entity_kills", 0);
+	public static final PersistentEntry<Integer> PLAYER_KILLS = PersistentEntry.of(IntegerSerializer.UNSIGNED, "player_kills", 0);
 
 	public final static int USAGE_COOLDOWN = 4;
 
@@ -96,7 +96,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 	public void updateName() {
 		ItemStack stack = getStack();
 		ItemMeta meta = stack.getItemMeta();
-		meta.displayName(getName());
+		meta.displayName(normalizedDisplayName());
 		stack.setItemMeta(meta);
 	}
 	public void updateLore() {
@@ -480,10 +480,10 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			}
 		}
 
-		public void recordKill(T item, DataEntry<Integer> entry) {
+		public void recordKill(T item, PersistentEntry<Integer> entry) {
 			ConfigurationSection killerData = getGame().ludos().getItemData(item.getOwner(), this);
 
-			int currentKills = entry.getOr(killerData, 0);
+			int currentKills = entry.getOrDefault(killerData);
 			entry.set(currentKills + 1, killerData);
 
 			getGame().ludos().savePlayersConfig();
@@ -520,7 +520,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			T item = getItem(weapon);
 			if (item == null) return;
 
-			DataEntry<Integer> killData = (victim instanceof Player)
+			PersistentEntry<Integer> killData = (victim instanceof Player)
 				? PLAYER_KILLS
 				: ENTITY_KILLS;
 			recordKill(item, killData);

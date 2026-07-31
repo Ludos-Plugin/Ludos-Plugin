@@ -569,7 +569,7 @@ class UtilityTest {
 	@DisplayName("Should split collection into equal sized parts")
 	void testSplitCollection() {
 		List<Integer> items = Arrays.asList(1, 2, 3, 4, 5);
-		List<List<Integer>> result = (List<List<Integer>>) Utility.split(items, 2);
+		List<List<Integer>> result = Utility.split(items, 2);
 
 
 		assertEquals(2, result.size());

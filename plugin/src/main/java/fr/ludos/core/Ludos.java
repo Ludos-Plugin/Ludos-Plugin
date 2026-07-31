@@ -234,7 +234,7 @@ public class Ludos extends JavaPlugin implements Listener {
 			gameHeaderPageBuilder
 				.append(
 					BookUtility.spaceBookLine(
-						builder.getDisplayName().append(Component.text(" :")),
+						builder.normalizedDisplayName().append(Component.text(" :")),
 						Component.text("Page " + gamePageIdx)
 							.decoration(TextDecoration.UNDERLINED, true)
 							.clickEvent(ClickEvent.changePage(gamePageIdx))
@@ -273,7 +273,7 @@ public class Ludos extends JavaPlugin implements Listener {
 			roleHeaderPageBuilder
 				.append(
 					BookUtility.spaceBookLine(
-						builder.getDisplayName().append(Component.text(" :")),
+						builder.normalizedDisplayName().append(Component.text(" :")),
 						Component.text("Page " + rolePageIdx)
 							.decoration(TextDecoration.UNDERLINED, true)
 							.clickEvent(ClickEvent.changePage(rolePageIdx))

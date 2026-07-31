@@ -115,7 +115,7 @@ public class RampartRole extends Role {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public TextComponent displayName() {
 			return Component.text("Rampart")
 				.color(NamedTextColor.GOLD);
 		}

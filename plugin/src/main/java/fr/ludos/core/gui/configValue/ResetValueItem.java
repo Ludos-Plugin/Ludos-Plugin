@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Objects;
 
 import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.core.gui.WindowProvider;
+import fr.ludos.core.persistence.PersistentAccessor;
 import fr.ludos.core.persistence.PersistentEntry;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import net.kyori.adventure.text.Component;
@@ -31,22 +31,19 @@ import xyz.xenondevs.invui.item.impl.controlitem.ControlItem;
  * @param <G> The type of Gui
  */
 public class ResetValueItem<T, G extends Gui> extends ControlItem<G> {
-	private final PersistentEntry<T> entry;
-	private final ConfigSectionContext context;
+	private final PersistentAccessor<T> entry;
 
 	private List<Runnable> resetHandlers;
 
-	public ResetValueItem(PersistentEntry<T> entry, ConfigSectionContext context) {
+	public ResetValueItem(PersistentAccessor<T> entry) {
 		this.entry = Objects.requireNonNull(entry);
-		this.context = Objects.requireNonNull(context);
 	}
 
 	@Override
 	public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
-		ConfigurationSection config = context.getConfig(player);
-		entry.unsetValue(config);
-		player.playSound(player.getLocation(), Sound.UI_STONECUTTER_SELECT_RECIPE, 0.1f, 0.7f);
-		context.saveConfig();
+		entry.unset();
+		WindowProvider.playClickSound(player);
+		entry.save();
 
 
 		for (SlotElement element : getGui().getSlotElements()) {

@@ -7,15 +7,15 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.gui.BorderItem;
-import fr.ludos.core.gui.ChangePageItem;
-import fr.ludos.core.gui.ConfigNodeItem;
-import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
+import fr.ludos.core.gui.GuiContext;
+import fr.ludos.core.gui.WindowProvider;
+import fr.ludos.core.gui.item.BorderItem;
+import fr.ludos.core.gui.item.ChangePageItem;
+import fr.ludos.core.gui.item.ConfigNodeItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
@@ -45,15 +45,15 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 		return namespace;
 	}
 	@Override
-	public Component name() {
+	public Component displayName() {
 		return name;
 	}
 
 	@Override
-	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context) {
+	public boolean execute(@NotNull String[] args, CommandSender sender, GuiContext context) {
 		if (args.length == 0 && sender instanceof Player player) {
 			if (! openConfigWindow(player, context)) {
-				player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+				WindowProvider.playDenySound(player);
 			}
 			return true;
 		}
@@ -62,7 +62,7 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 		ConfigNode node = getNode(key);
 		if (node == null) return false;
 
-		return node.execute(Arrays.copyOfRange(args, 1, args.length), sender, context.getDeeper(namespace, null));
+		return node.execute(Arrays.copyOfRange(args, 1, args.length), sender, context.deeper(namespace));
 	}
 
 	@Override
@@ -77,8 +77,8 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 		return node.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender);
 	}
 
-	public Window configWindow(Player player, ConfigSectionContext context) {
-		ConfigSectionContext childrenContext = context.getDeeper(namespace, this);
+	public Window configWindow(Player player, GuiContext context) {
+		GuiContext childrenContext = context.setWindow(this).deeper(namespace);
 
 		Boolean[] doModalBack = new Boolean[]{true};
 		List<Item> items = getNodes().stream()
@@ -89,7 +89,7 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 		if (items.isEmpty()) return null;
 
 		return Window.single()
-			.setTitle(new AdventureComponentWrapper(displayName()))
+			.setTitle(new AdventureComponentWrapper(normalizedDisplayName()))
 			.setGui(PagedGui.items()
 				.setStructure(new Structure(
 					"# # # # # # # # #",

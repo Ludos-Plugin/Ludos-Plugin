@@ -72,7 +72,7 @@ class SpecialItemTest {
 		}
 
 		@Override
-		public Component getName() {
+		public Component displayName() {
 			return Component.text("Test Item");
 		}
 		@Override

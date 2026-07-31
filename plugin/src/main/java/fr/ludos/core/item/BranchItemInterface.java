@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.gui.Named;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -93,14 +94,14 @@ public interface BranchItemInterface<T extends BranchItemInterface<T, TBranch>, 
 		if (branch == null) return Component.empty();
 
 		return Component.text('(')
-			.append(branch.getName())
+			.append(branch.displayName())
 			.append(Component.text(')'))
 			.decoration(TextDecoration.ITALIC, false);
 	}
 	public static <TBranch extends Branch> Component getBranchLoreField(TBranch branch) {
 		return Component.text("Mode: ")
 				.color(NamedTextColor.GRAY)
-			.append(branch.getName()
+			.append(branch.displayName()
 				.color(NamedTextColor.YELLOW))
 			.decoration(TextDecoration.ITALIC, false);
 	}
@@ -108,9 +109,8 @@ public interface BranchItemInterface<T extends BranchItemInterface<T, TBranch>, 
 	/**
 	 * A strategy-pattern like system for {@link SpecialItem}s to switch between, at will.
 	 */
-	public static interface Branch {
+	public static interface Branch extends Named {
 		public String id();
-		public Component getName();
 		public Component getDescription();
 
 		/**

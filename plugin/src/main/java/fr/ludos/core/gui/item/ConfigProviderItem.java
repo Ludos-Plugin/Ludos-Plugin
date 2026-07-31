@@ -1,19 +1,18 @@
-package fr.ludos.core.gui;
+package fr.ludos.core.gui.item;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.core.gui.GuiContext;
+import fr.ludos.core.gui.WindowProvider;
 import fr.ludos.core.persistence.config.ConfigNode;
-import fr.ludos.core.persistence.config.ConfigRoot;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
 import xyz.xenondevs.invui.item.ItemProvider;
@@ -21,22 +20,20 @@ import xyz.xenondevs.invui.item.impl.AbstractItem;
 import xyz.xenondevs.invui.window.Window;
 
 /**
- *
+ * A clickable sub-menu item used to pick a {@link ConfigSectionProvider} for all subsequent Config {@link WindowProvider}s.
  */
 public abstract class ConfigProviderItem extends AbstractItem {
+	private final GuiContext context;
 	private final ConfigSectionProvider provider;
-	private final Plugin plugin;
-	private final ConfigRoot root;
 	private final ConfigNode node;
 	private List<Runnable> clickHandlers;
 	private List<Runnable> openHandlers;
 	private List<Runnable> closeHandlers;
 	private List<Consumer<InventoryClickEvent>> outsideClickHandlers;
 
-	public ConfigProviderItem(ConfigSectionProvider provider, Plugin plugin, ConfigRoot root, ConfigNode node) {
+	public ConfigProviderItem(GuiContext context, ConfigSectionProvider provider, ConfigNode node) {
+		this.context = Objects.requireNonNull(context);
 		this.provider = Objects.requireNonNull(provider);
-		this.plugin = Objects.requireNonNull(plugin);
-		this.root = Objects.requireNonNull(root);
 		this.node = Objects.requireNonNull(node);
 	}
 
@@ -90,15 +87,14 @@ public abstract class ConfigProviderItem extends AbstractItem {
 
 	@Override
 	public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
-		if (! provider.checkAuthorizationNotify(player)) {
-			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+		if (! context.checkAuthorizationNotify(player)) {
+			WindowProvider.playDenySound(player);
 			return;
 		}
 
-		ConfigSectionContext context = new ConfigSectionContext(provider, plugin);
-		Window window = node.configWindow(player, context.getDeeper(null, root));
+		Window window = node.configWindow(player, context.deeper(new ConfigSectionContext(provider)));
 		if (window == null) {
-			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+			WindowProvider.playDenySound(player);
 			return;
 		}
 

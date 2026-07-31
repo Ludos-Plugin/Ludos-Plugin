@@ -11,9 +11,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.core.gui.GuiContext;
 import fr.ludos.core.gui.configValue.ResetValueItem;
 import fr.ludos.core.gui.configValue.SubmitValueItem;
 import fr.ludos.core.gui.configValue.display.IntegerDisplayItem;
+import fr.ludos.core.persistence.PersistentAccessor;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import fr.ludos.core.persistence.serializer.IntegerSerializer;
 import fr.ludos.core.persistence.serializer.Serializer;
@@ -66,13 +68,18 @@ public abstract class IntegerConfigEntry extends ConfigEntry<Integer, Integer> {
 	}
 
 	@Override
-	public AnvilWindow configWindow(Player player, ConfigSectionContext context) {
-		IntegerDisplayItem currentValue = new IntegerDisplayItem(this, context);
-		ResetValueItem<Integer, Gui> reset = new ResetValueItem<>(this, context).addResetHandler(() -> currentValue.notifyWindows());
-		SubmitValueItem<Integer> submit = new SubmitValueItem<>(this, context).addSubmitHandler(e -> currentValue.notifyWindows());
+	public AnvilWindow configWindow(Player player, GuiContext context) {
+		ConfigSectionContext configContext = context.configContext();
+		if (configContext == null) return null;
+
+		PersistentAccessor<Integer> accessor = asAccessor(configContext, player);
+
+		IntegerDisplayItem currentValue = new IntegerDisplayItem(accessor);
+		ResetValueItem<Integer, Gui> reset = new ResetValueItem<>(accessor).addResetHandler(() -> currentValue.notifyWindows());
+		SubmitValueItem<Integer> submit = new SubmitValueItem<>(accessor).addSubmitHandler(e -> currentValue.notifyWindows());
 
 		return AnvilWindow.single()
-			.setTitle(new AdventureComponentWrapper(displayName()))
+			.setTitle(new AdventureComponentWrapper(normalizedDisplayName()))
 			.addRenameHandler(str -> {
 				submit.setValue(getSerializer().fromString(str));
 			})

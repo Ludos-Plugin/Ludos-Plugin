@@ -35,9 +35,8 @@ public class AssassinDagger extends LevelItem<AssassinDagger, AssassinDaggerLeve
 	}
 
 	@Override
-	public Component getName() {
-		return Component.text("Dague d'Assassin")
-			.decoration(TextDecoration.ITALIC, false);
+	public Component displayName() {
+		return Component.text("Dague d'Assassin");
 	}
 
 	@Override

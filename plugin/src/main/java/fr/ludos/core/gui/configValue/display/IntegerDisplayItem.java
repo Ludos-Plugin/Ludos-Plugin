@@ -3,8 +3,7 @@ package fr.ludos.core.gui.configValue.display;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
-import fr.ludos.core.persistence.PersistentEntry;
-import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
+import fr.ludos.core.persistence.PersistentAccessor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -13,11 +12,11 @@ import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
- * Dummy item that automatically fetches a {@link PersistentEntry}'s value. Needs to be manually updated via {@link #notifyWindows()}.
+ * Dummy item that automatically fetches a {@link PersistentAccessor}'s value. Needs to be manually updated via {@link #notifyWindows()}.
  */
 public class IntegerDisplayItem extends DisplayValueItem<Integer> {
-	public IntegerDisplayItem(PersistentEntry<Integer> entry, ConfigSectionContext context) {
-		super(entry, context);
+	public IntegerDisplayItem(PersistentAccessor<Integer> entry) {
+		super(entry);
 	}
 
 	@Override

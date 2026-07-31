@@ -171,7 +171,7 @@ public class ArenaGame extends WaveGame {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public TextComponent displayName() {
 			return Component.text("Arena")
 				.color(NamedTextColor.DARK_GRAY);
 		}

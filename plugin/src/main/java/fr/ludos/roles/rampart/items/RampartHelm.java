@@ -11,7 +11,6 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 
 /**
  * Implementation of the Rampart Helm, for use by any Player with {@link RampartRole}.
@@ -26,9 +25,8 @@ public class RampartHelm extends SpecialItem<RampartHelm> {
 
 
 	@Override
-	public Component getName() {
-		return Component.text("Rampart Helm")
-				.decoration(TextDecoration.ITALIC, false);
+	public Component displayName() {
+		return Component.text("Rampart Helm");
 	}
 
 	/**

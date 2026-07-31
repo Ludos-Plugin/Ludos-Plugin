@@ -153,7 +153,7 @@ public interface LevelItemInterface extends SpecialItemInterface {
 	public static <T extends SpecialItem<T>> @NotNull TextComponent getLevelUpMessage(SpecialItem<T> item) { // TODO: Translate
 		return Component.text("Your ")
 			.color(NamedTextColor.GREEN)
-		.append(item.getName())
+		.append(item.normalizedDisplayName())
 		.append(
 			Component.text(" has leveled up!")
 			.color(NamedTextColor.GREEN)

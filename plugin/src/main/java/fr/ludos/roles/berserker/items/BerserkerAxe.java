@@ -73,9 +73,8 @@ public class BerserkerAxe extends LevelItem<BerserkerAxe, BerserkerAxeLevels> {
 	}
 
 	@Override
-	public Component getName() {
-		return Component.text("Berserker Axe")
-			.decoration(TextDecoration.ITALIC, false);
+	public Component displayName() {
+		return Component.text("Berserker Axe");
 	}
 
 	@Override

@@ -1,34 +1,34 @@
-package fr.ludos.core.gui;
+package fr.ludos.core.gui.item;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.core.gui.GuiContext;
+import fr.ludos.core.gui.WindowProvider;
 import fr.ludos.core.persistence.config.ConfigNode;
-import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.item.impl.AbstractItem;
 import xyz.xenondevs.invui.window.Window;
 
 /**
- *
+ * Clickable sub-menu item to interact with a {@link ConfigNode}'s config.
  */
 public class ConfigNodeItem extends AbstractItem {
 	private final ConfigNode node;
-	private final ConfigSectionContext context;
+	private final GuiContext context;
 	private List<Runnable> clickHandlers;
 	private List<Runnable> openHandlers;
 	private List<Runnable> closeHandlers;
 	private List<Consumer<InventoryClickEvent>> outsideClickHandlers;
 
-	public ConfigNodeItem(ConfigNode node, ConfigSectionContext context) {
+	public ConfigNodeItem(ConfigNode node, GuiContext context) {
 		this.node = Objects.requireNonNull(node);
 		this.context = Objects.requireNonNull(context);
 	}
@@ -83,9 +83,9 @@ public class ConfigNodeItem extends AbstractItem {
 
 	@Override
 	public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
-		Window window = node.configWindow(player, context);
+		Window window = node.configWindow(player, context.withWindow(node));
 		if (window == null) {
-			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+			WindowProvider.playDenySound(player);
 			return;
 		}
 

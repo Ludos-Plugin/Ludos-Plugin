@@ -78,7 +78,7 @@ public class HarvesterRole extends Role {
 		double oreXp = getOreReward(block);
 		if (oreXp == 0) return;
 		for (var events : getGameEvents().values()) {
-			if (events instanceof SpecialItem.Events itemEvents) {
+			if (events instanceof SpecialItem.Events<?> itemEvents) {
 				LevelItem.findAll(inventory, itemEvents::getItem)
 					.stream()
 					.filter(o -> o instanceof LevelItemInterface)
@@ -143,7 +143,7 @@ public class HarvesterRole extends Role {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public TextComponent displayName() {
 			return Component.text("Harvester")
 				.color(NamedTextColor.GREEN);
 		}

@@ -22,7 +22,7 @@ public final class GlobalConfigProvider implements ConfigSectionProvider {
 	}
 
 	@Override
-	public String getValidationError(CommandSender sender) {
+	public String getAccessError(CommandSender sender) {
 		if (! sender.isOp()) {
 			return "Only Server Operators are allowed to globally configure Ludos.";
 		}

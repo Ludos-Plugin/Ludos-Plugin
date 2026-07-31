@@ -53,7 +53,7 @@ public class ScopeConfigMap extends ConfigSectionCollection {
 	}
 
 	@Override
-	public Component name() {
+	public Component displayName() {
 		return name;
 	}
 	@Override

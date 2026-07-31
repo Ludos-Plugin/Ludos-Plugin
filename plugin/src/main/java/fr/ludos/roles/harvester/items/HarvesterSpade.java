@@ -48,10 +48,8 @@ public class HarvesterSpade extends LevelItem<HarvesterSpade, HarvesterSpadeLeve
 	}
 
 	@Override
-	public Component getName() {
-		return
-			Component.text("Harvester's Spade")
-			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
+	public Component displayName() {
+		return Component.text("Harvester's Spade"); // TODO: Translate
 	}
 
 	@Override

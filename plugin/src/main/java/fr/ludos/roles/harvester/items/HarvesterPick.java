@@ -42,11 +42,9 @@ public final class HarvesterPick extends LevelBranchItem<HarvesterPick, Harveste
 
 
 	@Override
-	public Component getName() {
-		return Component.text("Harvester's Pick (")
-			.append(getBranch().getName())
-			.append(Component.text(')'))
-			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
+	public Component displayName() {
+		return Component.text("Harvester's Pick ")
+			.append(getBranchAnnotation()); // TODO: Translate
 	}
 
 	@Override

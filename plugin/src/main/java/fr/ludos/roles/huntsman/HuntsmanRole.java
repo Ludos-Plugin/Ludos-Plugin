@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
-import fr.ludos.core.persistence.data.DataEntry;
+import fr.ludos.core.persistence.PersistentEntry;
 import fr.ludos.core.persistence.serializer.DoubleSerializer;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.huntsman.items.HuntsmanArrow;
@@ -36,7 +36,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public class HuntsmanRole extends Role {
 	public static final String ID = "huntsman";
 
-	public static final DataEntry<Double> SNIPE_DISTANCE = new DataEntry<>("snipe_distance", DoubleSerializer.INSTANCE);
+	public static final PersistentEntry<Double> SNIPE_DISTANCE = PersistentEntry.of(DoubleSerializer.INSTANCE, "snipe_distance", 0d);
 
 
 	public HuntsmanRole(Builder builder, Game game) {
@@ -59,7 +59,7 @@ public class HuntsmanRole extends Role {
 	public void recordSnipeDistance(Player player, double distance) {
 		ConfigurationSection data = getLudos().getRoleData(player, getBuilder());
 
-		Double currentRecord = SNIPE_DISTANCE.get(data);
+		Double currentRecord = SNIPE_DISTANCE.getOrDefault(data);
 		if (currentRecord == null || distance > currentRecord) {
 			SNIPE_DISTANCE.set(distance, data);
 			getLudos().savePlayersConfig();
@@ -135,7 +135,7 @@ public class HuntsmanRole extends Role {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public TextComponent displayName() {
 			return Component.text("Huntsman")
 				.color(NamedTextColor.DARK_PURPLE);
 		}

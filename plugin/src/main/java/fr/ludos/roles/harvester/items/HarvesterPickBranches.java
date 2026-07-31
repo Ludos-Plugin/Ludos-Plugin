@@ -84,7 +84,7 @@ public enum HarvesterPickBranches implements HarvesterPickBranch {
 
 	private final Component name;
 	@Override
-	public Component getName() {
+	public Component displayName() {
 		return name;
 	}
 

@@ -3,7 +3,7 @@ package fr.ludos.core.gui.configValue.display;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
-import fr.ludos.core.persistence.PersistentEntry;
+import fr.ludos.core.persistence.PersistentAccessor;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -44,8 +44,8 @@ public class BooleanDisplayItem extends DisplayValueItem<Boolean> {
 	private final ItemBuilder thisTrueItem;
 	private final ItemBuilder thisFalseItem;
 
-	public BooleanDisplayItem(PersistentEntry<Boolean> entry, ConfigSectionContext context, String trueName, String falseName) {
-		super(entry, context);
+	public BooleanDisplayItem(PersistentAccessor<Boolean> entry, String trueName, String falseName) {
+		super(entry);
 		this.trueItem = trueName == null
 			? TRUE_ITEM
 			: createTrueItem(trueName);
@@ -71,8 +71,8 @@ public class BooleanDisplayItem extends DisplayValueItem<Boolean> {
 				.decoration(TextDecoration.ITALIC, false)
 		));
 	}
-	public BooleanDisplayItem(PersistentEntry<Boolean> entry, ConfigSectionContext context) {
-		this(entry, context, null, null);
+	public BooleanDisplayItem(PersistentAccessor<Boolean> entry, ConfigSectionContext context) {
+		this(entry, null, null);
 	}
 
 	@Override

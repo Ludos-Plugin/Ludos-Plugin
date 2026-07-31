@@ -149,7 +149,7 @@ public class RaidGame extends WaveGame {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public TextComponent displayName() {
 			return Component.text("Raid")
 				.color(NamedTextColor.GOLD);
 		}

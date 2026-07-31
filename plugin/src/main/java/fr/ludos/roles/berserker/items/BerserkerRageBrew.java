@@ -36,9 +36,8 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 
 
 	@Override
-	public Component getName() {
-		return Component.text("Rage Brew")
-			.decoration(TextDecoration.ITALIC, false);
+	public Component displayName() {
+		return Component.text("Rage Brew");
 	}
 
 	@Override

@@ -7,13 +7,13 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.core.gui.WindowProvider;
+import fr.ludos.core.persistence.PersistentAccessor;
 import fr.ludos.core.persistence.PersistentEntry;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import net.kyori.adventure.text.Component;
@@ -30,17 +30,15 @@ import xyz.xenondevs.invui.item.impl.controlitem.ControlItem;
  * @param <T> The type of the data of the entry
  */
 public class SubmitValueItem<T> extends ControlItem<Gui> {
-	private final PersistentEntry<T> entry;
-	private final ConfigSectionContext context;
+	private final PersistentAccessor<T> entry;
 
 	private List<Consumer<T>> submitHandlers;
 
 	private T value;
 	private Supplier<T> valueProvider;
 
-	public SubmitValueItem(PersistentEntry<T> entry, ConfigSectionContext context) {
+	public SubmitValueItem(PersistentAccessor<T> entry) {
 		this.entry = Objects.requireNonNull(entry);
-		this.context = Objects.requireNonNull(context);
 	}
 
 	public SubmitValueItem<T> setValue(T value) {
@@ -73,16 +71,15 @@ public class SubmitValueItem<T> extends ControlItem<Gui> {
 
 	@Override
 	public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
-		final ConfigurationSection config = context.getConfig(player);
 		final T newValue = getValue();
 		if (newValue == null) {
-			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+			WindowProvider.playDenySound(player);
 			return;
 		}
 
-		entry.setValue(newValue, config);
-		player.playSound(player.getLocation(), Sound.UI_STONECUTTER_SELECT_RECIPE, 0.1f, 0.7f);
-		context.saveConfig();
+		entry.set(newValue);
+		WindowProvider.playClickSound(player);
+		entry.save();
 
 		notifyWindows();
 		for (Consumer<T> handler : submitHandlers) {

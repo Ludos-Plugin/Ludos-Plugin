@@ -142,7 +142,7 @@ public final class ManhuntTeamController extends GameTeamController {
 		ManhuntTimer timer = ((ManhuntGame)game()).timer;
 		Duration newRecord = timer.getDuration();
 		String newRecordString = timer.formatDuration(newRecord);
-		Duration oldRecord = ManhuntGame.SURVIVAL_TIME.get(preyData);
+		Duration oldRecord = ManhuntGame.SURVIVAL_TIME.getOrDefault(preyData);
 		String oldRecordString = oldRecord != null
 			? timer.formatDuration(oldRecord)
 			: null;

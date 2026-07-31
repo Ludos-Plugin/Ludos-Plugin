@@ -1,4 +1,4 @@
-package fr.ludos.core.gui;
+package fr.ludos.core.gui.item;
 
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;

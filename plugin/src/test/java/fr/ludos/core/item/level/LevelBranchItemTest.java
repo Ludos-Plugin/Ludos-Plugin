@@ -65,13 +65,13 @@ class LevelBranchItemTest {
 		}
 
 		@Override
-		public net.kyori.adventure.text.Component getName() {
-			return net.kyori.adventure.text.Component.text(name);
+		public Component displayName() {
+			return Component.text(name);
 		}
 
 		@Override
-		public net.kyori.adventure.text.Component getDescription() {
-			return net.kyori.adventure.text.Component.text(description);
+		public Component getDescription() {
+			return Component.text(description);
 		}
 
 		@Override
@@ -127,7 +127,7 @@ class LevelBranchItemTest {
 		}
 
 		@Override
-		public Component getName() {
+		public Component displayName() {
 			return Component.text("Test Level Branch Item");
 		}
 

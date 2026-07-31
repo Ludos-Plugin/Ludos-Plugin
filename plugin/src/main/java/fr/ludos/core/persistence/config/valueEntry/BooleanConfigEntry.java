@@ -4,14 +4,15 @@ import java.util.Set;
 
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.gui.BorderItem;
+import fr.ludos.core.gui.GuiContext;
 import fr.ludos.core.gui.configValue.ResetValueItem;
 import fr.ludos.core.gui.configValue.SubmitValueItem;
 import fr.ludos.core.gui.configValue.display.BooleanDisplayItem;
+import fr.ludos.core.gui.item.BorderItem;
+import fr.ludos.core.persistence.PersistentAccessor;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import fr.ludos.core.persistence.serializer.BooleanSerializer;
 import fr.ludos.core.persistence.serializer.Serializer;
@@ -73,32 +74,35 @@ public abstract class BooleanConfigEntry extends ConfigEntry<Boolean, Boolean> {
 		));
 
 	@Override
-	public Window configWindow(Player player, ConfigSectionContext context) {
-		ConfigurationSection config = context.getConfig(player);
+	public Window configWindow(Player player, GuiContext context) {
+		ConfigSectionContext configContext = context.configContext();
+		if (configContext == null) return null;
 
-		BooleanDisplayItem currentValue = new BooleanDisplayItem(this, context, trueString, falseString);
-		SubmitValueItem<Boolean> toggleItem = new SubmitValueItem<Boolean>(this, context) {
+		PersistentAccessor<Boolean> accessor = asAccessor(configContext, player);
+
+		BooleanDisplayItem currentValue = new BooleanDisplayItem(accessor, trueString, falseString);
+		SubmitValueItem<Boolean> toggleItem = new SubmitValueItem<Boolean>(accessor) {
 			public ItemProvider getItemProvider(Gui gui) {
 				return TOGGLE_ITEM;
 			};
-		}.setValue(() -> ! getValueOrDefault(config)).addSubmitHandler(e -> currentValue.notifyWindows());
+		}.setValue(() -> ! accessor.getOrDefault()).addSubmitHandler(e -> currentValue.notifyWindows());
 
-		SubmitValueItem<Boolean> trueItem = new SubmitValueItem<Boolean>(this, context) {
+		SubmitValueItem<Boolean> trueItem = new SubmitValueItem<Boolean>(accessor) {
 			public ItemProvider getItemProvider(Gui gui) { return currentValue.trueItem; };
 		}.setValue(true).addSubmitHandler(e -> currentValue.notifyWindows());
 
-		SubmitValueItem<Boolean> falseItem = new SubmitValueItem<Boolean>(this, context) {
+		SubmitValueItem<Boolean> falseItem = new SubmitValueItem<Boolean>(accessor) {
 			public ItemProvider getItemProvider(Gui gui) { return currentValue.falseItem; };
 		}.setValue(false).addSubmitHandler(e -> currentValue.notifyWindows());
 
-		ResetValueItem<Boolean, Gui> reset = new ResetValueItem<>(this, context);
+		ResetValueItem<Boolean, Gui> reset = new ResetValueItem<>(accessor);
 
 		return Window.single()
-			.setTitle(new AdventureComponentWrapper(displayName()))
+			.setTitle(new AdventureComponentWrapper(normalizedDisplayName()))
 			.setGui(Gui.normal()
 				.setStructure(new Structure(
 					"# V #",
-					"t # R",
+						"t # R",
 						"T # F"
 					)
 					.addIngredient('#', BorderItem.INSTANCE)

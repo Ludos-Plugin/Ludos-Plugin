@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -20,11 +19,13 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupManager;
-import fr.ludos.core.gui.BorderItem;
-import fr.ludos.core.gui.ChangePageItem;
-import fr.ludos.core.gui.MultiPickerItem;
-import fr.ludos.core.gui.PlayerItemBuilder;
+import fr.ludos.core.gui.GuiContext;
 import fr.ludos.core.gui.configValue.ResetValueItem;
+import fr.ludos.core.gui.item.BorderItem;
+import fr.ludos.core.gui.item.ChangePageItem;
+import fr.ludos.core.gui.item.MultiPickerItem;
+import fr.ludos.core.gui.item.PlayerItemBuilder;
+import fr.ludos.core.persistence.PersistentAccessor;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import fr.ludos.core.persistence.serializer.PlayerSerializer;
 import fr.ludos.core.persistence.serializer.StringSetSerializer;
@@ -94,8 +95,11 @@ public abstract class GroupPlayersConfigEntry extends SetConfigEntry<OfflinePlay
 	}
 
 	@Override
-	public Window configWindow(Player player, ConfigSectionContext context) {
-		ConfigurationSection config = context.getConfig(player);
+	public Window configWindow(Player player, GuiContext context) {
+		ConfigSectionContext configContext = context.configContext();
+		if (configContext == null) return null;
+
+		PersistentAccessor<Set<OfflinePlayer>> accessor = new PersistentAccessor<>(this, configContext, player);
 
 		PagedGui.Builder<Item> gui = PagedGui.items()
 			.setStructure(new Structure(
@@ -108,7 +112,7 @@ public abstract class GroupPlayersConfigEntry extends SetConfigEntry<OfflinePlay
 			.addIngredient('#', BorderItem.INSTANCE)
 			.addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
 			.addIngredient('P', ChangePageItem.INSTANCE)
-			.addIngredient('R', new ResetValueItem<>(this, context));
+			.addIngredient('R', new ResetValueItem<>(accessor));
 
 		Group group = groupManager.getGroupOfPlayer(player);
 		Collection<OfflinePlayer> players = group == null
@@ -117,11 +121,11 @@ public abstract class GroupPlayersConfigEntry extends SetConfigEntry<OfflinePlay
 
 		List<Item> items = players.stream()
 			.map(playerValue ->
-				new MultiPickerItem<OfflinePlayer, Set<OfflinePlayer>, Item>(playerValue, this, context, HashSet::new) {
+				new MultiPickerItem<OfflinePlayer, Set<OfflinePlayer>, Item>(playerValue, accessor, HashSet::new) {
 					@Override
 					public ItemProvider getItemProvider(PagedGui<Item> gui) {
 						PlayerItemBuilder item = new PlayerItemBuilder(playerValue);
-						Set<OfflinePlayer> selected = getValueOrDefault(config);
+						Set<OfflinePlayer> selected = accessor.getOrDefault();
 
 						return selected != null && selected.contains(playerValue)
 							? item.addItemFlags(ItemFlag.HIDE_ENCHANTS)
@@ -138,7 +142,7 @@ public abstract class GroupPlayersConfigEntry extends SetConfigEntry<OfflinePlay
 			.collect(Collectors.toList());
 
 		return Window.single()
-			.setTitle(new AdventureComponentWrapper(displayName()))
+			.setTitle(new AdventureComponentWrapper(normalizedDisplayName()))
 			.setGui(gui.setContent(items))
 			.addCloseHandler(() -> context.openPreviousWindow(player))
 			.build(player);

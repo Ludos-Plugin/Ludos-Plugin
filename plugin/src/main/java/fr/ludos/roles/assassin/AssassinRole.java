@@ -143,7 +143,7 @@ public class AssassinRole extends Role {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public TextComponent displayName() {
 			return Component.text("Assassin")
 				.color(NamedTextColor.DARK_BLUE);
 		}

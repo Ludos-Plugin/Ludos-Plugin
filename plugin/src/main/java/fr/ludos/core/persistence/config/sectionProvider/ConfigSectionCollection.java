@@ -6,16 +6,17 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import fr.ludos.core.gui.BorderItem;
-import fr.ludos.core.gui.ChangePageItem;
-import fr.ludos.core.gui.ConfigProviderItem;
+import fr.ludos.core.gui.GuiContext;
+import fr.ludos.core.gui.WindowProvider;
+import fr.ludos.core.gui.item.BorderItem;
+import fr.ludos.core.gui.item.ChangePageItem;
+import fr.ludos.core.gui.item.ConfigProviderItem;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigRootCollection;
 import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
@@ -35,10 +36,12 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 	public abstract @NotNull AbstractItemBuilder<?> getItem(String key, CommandSender sender);
 
 	public final boolean execute(Plugin plugin, @NotNull String[] args, CommandSender sender) {
+		GuiContext context = GuiContext.of(plugin, this);
+
 		if (args.length == 0) {
 			if (! (sender instanceof Player player)) return false;
-			if (! openConfigWindow(player, plugin)) {
-				player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+			if (! openConfigWindow(player, context)) {
+				WindowProvider.playDenySound(player);
 			}
 			return true;
 		}
@@ -51,12 +54,12 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 		ConfigNode node = getNode(key);
 		if (node == null) return false;
 
-		ConfigSectionContext context = new ConfigSectionContext(provider, plugin);
+		context.setConfig(new ConfigSectionContext(provider));
 
 		if (args.length == 1) {
 			if (! (sender instanceof Player player)) return false;
 			if (! node.openConfigWindow(player, context)) {
-				player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+				WindowProvider.playDenySound(player);
 			}
 			return true;
 		}
@@ -78,7 +81,7 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 		return root.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender);
 	}
 
-	public Window configWindow(Player player, Plugin plugin) {
+	public Window configWindow(Player player, GuiContext context) {
 		Set<String> options = options(player);
 		if (options.isEmpty()) return null;
 
@@ -87,7 +90,9 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 				ConfigSectionProvider provider = getProvider(key, player);
 				if (provider == null || ! provider.checkAuthorizationSilent(player)) return null;
 
-				return new ConfigProviderItem(provider, plugin, this, getNode(key)) {
+				ConfigNode node = getNode(key);
+
+				return new ConfigProviderItem(context, provider, node) {
 					@Override
 					public ItemProvider getItemProvider(Player viewer) {
 						return getItem(key, player);
@@ -100,7 +105,7 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 		if (items.isEmpty()) return null;
 
 		return Window.single()
-			.setTitle(new AdventureComponentWrapper(displayName()))
+			.setTitle(new AdventureComponentWrapper(normalizedDisplayName()))
 			.setGui(PagedGui.items()
 				.setStructure(new Structure(
 					"# # # # # # # # #",
@@ -114,12 +119,5 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 				.setContent(items)
 			)
 			.build(player);
-	}
-	public boolean openConfigWindow(Player player, Plugin plugin) {
-		Window window = configWindow(player, plugin);
-		if (window == null) return false;
-
-		window.open();
-		return true;
 	}
 }

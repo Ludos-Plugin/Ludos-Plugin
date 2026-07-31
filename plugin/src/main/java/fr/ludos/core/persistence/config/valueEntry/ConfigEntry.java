@@ -5,12 +5,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import fr.ludos.core.gui.GuiContext;
+import fr.ludos.core.gui.WindowProvider;
 import fr.ludos.core.persistence.PersistentEntry;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigNodeOperation;
@@ -43,14 +44,17 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 		return key;
 	}
 	@Override
-	public @NotNull TextComponent name() {
+	public @NotNull TextComponent displayName() {
 		return name;
 	}
 	@Override
-	public AbstractItemBuilder<?> displayItem(Player player, ConfigSectionContext context) {
+	public AbstractItemBuilder<?> displayItem(Player player, GuiContext context) {
+		ConfigSectionContext configContext = context.configContext();
+		if (configContext == null) return null;
+
 		AbstractItemBuilder<?> builder = ConfigNode.super.displayItem(player, context);
 		AdventureComponentWrapper currentValueLoreLine = new AdventureComponentWrapper(
-			Component.text(getValueLabel(toString(getValueOrDefault(context.getConfig(player)))))
+			Component.text(getValueLabel(toString(getOrDefault(configContext.getConfig(player)))))
 				.color(NamedTextColor.GRAY)
 		);
 		if (builder.getLore() != null) {
@@ -77,18 +81,21 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 	public abstract @NotNull TComplex defaultValue();
 
 
-	public boolean execute(@NotNull String[] args, CommandSender sender, ConfigSectionContext context) {
+	public boolean execute(@NotNull String[] args, CommandSender sender, GuiContext context) {
 		if (! context.checkAuthorizationNotify(sender)) {
 			if (sender instanceof Player player) {
-				player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+				WindowProvider.playDenySound(player);
 			}
 			return false;
 		}
-		ConfigurationSection config = context.getConfig(sender);
+		ConfigSectionContext configContext = context.configContext();
+		if (configContext == null) return false;
+
+		ConfigurationSection config = configContext.getConfig(sender);
 
 		if (args.length == 0 && (sender instanceof Player player)) {
 			if (! openConfigWindow(player, context)) {
-				player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.1f, 0.8f);
+				WindowProvider.playDenySound(player);
 				return false;
 			}
 			return true;
@@ -191,15 +198,15 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 	}
 
 	protected void notifyUnset(CommandSender sender) {
-		sender.sendMessage(name().content() + " reset");
+		sender.sendMessage(displayName().content() + " reset");
 	}
 	protected void notifySet(TComplex value, CommandSender sender) {
 		String parsed = getSerializer().toString(value);
 		if (parsed == null) {
-			sender.sendMessage(name().content() + " set to irrepresentable value");
+			sender.sendMessage(displayName().content() + " set to irrepresentable value");
 		}
 
-		sender.sendMessage(name().content() + " set to " + parsed);
+		sender.sendMessage(displayName().content() + " set to " + parsed);
 	}
 
 	/**
@@ -210,7 +217,7 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 	 * @return A more detailed, if necessary, value to return to the player.
 	 */
 	public @NotNull String getterMessage(ConfigurationSection config) {
-		String valueString = getSerializer().toString(getValueOrNull(config));
+		String valueString = getSerializer().toString(getOrNull(config));
 		return getterMessage(valueString);
 	}
 	/**

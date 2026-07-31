@@ -87,7 +87,7 @@ class LevelItemTest {
 		}
 
 		@Override
-		public Component getName() {
+		public Component displayName() {
 			return Component.text("Test Level Item");
 		}
 

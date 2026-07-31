@@ -33,9 +33,9 @@ public final class CheatsSubcommand extends SubcommandHandler {
 		}
 	}
 
-	public static @Nullable SpecialItem findHeldSpecialItem(Game game, ItemStack stack) {
+	public static @Nullable SpecialItem<?> findHeldSpecialItem(Game game, ItemStack stack) {
 		for (SpecialItem.Events<?> event : game.getActiveItems()) {
-			SpecialItem item = event.getItem(stack);
+			SpecialItem<?> item = event.getItem(stack);
 			if (item != null) {
 				return item;
 			}

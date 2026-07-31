@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.SpecialItemInterface;
 import io.papermc.paper.entity.LookAnchor;
 import net.kyori.adventure.text.Component;
@@ -93,7 +94,7 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 
 	private final Component name;
 	@Override
-	public Component getName() {
+	public Component displayName() {
 		return name;
 	}
 

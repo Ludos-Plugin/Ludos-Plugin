@@ -53,9 +53,8 @@ public class HarvesterScythe extends LevelItem<HarvesterScythe, HarvesterScytheL
 	}
 
 	@Override
-	public Component getName() {
-		return Component.text("Harvester's Scythe")
-			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
+	public Component displayName() {
+		return Component.text("Harvester's Scythe"); // TODO: Translate
 	}
 
 	@Override

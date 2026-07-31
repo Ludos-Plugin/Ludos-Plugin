@@ -25,6 +25,7 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.gui.Named;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import fr.ludos.core.role.Role;
@@ -268,7 +269,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 	/**
 	 * A simple Factory for a {@link Game}. Useful for registering Games in {@link Ludos}.
 	 */
-	public static abstract class Builder {
+	public static abstract class Builder implements Named {
 		private final GameManager manager;
 
 
@@ -287,13 +288,12 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 		public abstract String getId();
 
-		public abstract TextComponent getDisplayName();
 		public abstract TextComponent getDescription();
 
 		public TextComponent[] buildPages() {
 			return BookUtility.truncatePage(
 				Component.text()
-					.append(BookUtility.centerBookLine(getDisplayName()))
+					.append(BookUtility.centerBookLine(normalizedDisplayName()))
 					.append(
 						BookUtility.alignRightBookLine(
 							Component.text("Start")
@@ -315,7 +315,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 			ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
 			BookMetaBuilder meta = ((BookMeta) book.getItemMeta()).toBuilder();
 
-			meta.title(getDisplayName());
+			meta.title(normalizedDisplayName());
 			meta.author(Component.text("Ludos"));
 
 			for (TextComponent page : buildPages()) {

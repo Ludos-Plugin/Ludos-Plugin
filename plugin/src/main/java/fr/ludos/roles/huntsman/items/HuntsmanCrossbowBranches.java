@@ -182,7 +182,8 @@ public enum HuntsmanCrossbowBranches implements HuntsmanCrossbowBranch {
 
 
 	private Component name;
-	public Component getName() {
+	@Override
+	public Component displayName() {
 		return name;
 	}
 

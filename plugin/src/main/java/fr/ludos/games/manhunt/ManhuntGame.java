@@ -33,11 +33,11 @@ import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
+import fr.ludos.core.persistence.PersistentEntry;
 import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import fr.ludos.core.persistence.config.ConfigNodeMap;
 import fr.ludos.core.persistence.config.valueEntry.GroupPlayerConfigEntry;
 import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
-import fr.ludos.core.persistence.data.DataEntry;
 import fr.ludos.core.persistence.serializer.TimeSerializer;
 import fr.ludos.core.world.WorldManager;
 import fr.ludos.games.manhunt.items.ManhuntCompass;
@@ -55,7 +55,7 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
 public class ManhuntGame extends Game {
 	public static final String ID = "manhunt";
 
-	public static final DataEntry<Duration> SURVIVAL_TIME = new DataEntry<>("survival_time", TimeSerializer.INSTANCE);
+	public static final PersistentEntry<Duration> SURVIVAL_TIME = PersistentEntry.of(TimeSerializer.INSTANCE, "survival_time", Duration.ZERO);
 
 	private final Builder builder;
 	public final Builder builder() {
@@ -289,7 +289,7 @@ public class ManhuntGame extends Game {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public TextComponent displayName() {
 			return Component.text("Manhunt")
 				.color(NamedTextColor.RED);
 		}

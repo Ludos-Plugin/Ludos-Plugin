@@ -67,7 +67,7 @@ class MultiLevelBranchItemTest {
 		}
 
 		@Override
-		public Component getName() {
+		public Component displayName() {
 			return Component.text(name());
 		}
 
@@ -113,7 +113,7 @@ class MultiLevelBranchItemTest {
 		}
 
 		@Override
-		public Component getName() {
+		public Component displayName() {
 			return Component.text("Test Multi Level Branch Item");
 		}
 
@@ -528,7 +528,7 @@ class MultiLevelBranchItemTest {
 	// 		}
 
 	// 		@Override
-	// 		public Component getName() {
+	// 		public Component displayName() {
 	// 			return Component.text(name);
 	// 		}
 
@@ -561,7 +561,7 @@ class MultiLevelBranchItemTest {
 	// 		protected TestBranchItem getItemInternal(BranchItem.ItemData<CustomBranch> info) {
 	// 			return new TestBranchItem(info, this) {
 	// 				@Override
-	// 				public Component getName() {
+	// 				public Component displayName() {
 	// 					return Component.text("Custom Branch Item");
 	// 				}
 	// 			};

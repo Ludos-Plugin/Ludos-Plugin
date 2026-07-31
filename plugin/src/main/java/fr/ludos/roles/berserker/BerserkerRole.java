@@ -218,7 +218,7 @@ public class BerserkerRole extends Role {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public TextComponent displayName() {
 			return Component.text("Berserker")
 				.color(NamedTextColor.RED);
 		}
