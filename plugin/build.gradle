@@ -56,6 +56,11 @@ dependencies {
             force 'org.apache.logging.log4j:log4j-slf4j2-impl:2.26.1'
 
             eachDependency { details ->
+                if (details.requested.group == 'mysql') {
+                    if (details.requested.name == 'mysql-connector-java') {
+                        details.useVersion '8.4.0'
+                    }
+                }
                 if (details.requested.group == 'com.mojang') {
                     if (details.requested.name == 'logging') {
                         details.useVersion '1.2.7'
@@ -92,7 +97,7 @@ dependencies {
                     }
                 }
                 if (details.requested.group == 'io.netty') {
-                    details.useVersion '4.2.15.Final'
+                    details.useVersion '4.2.16.Final'
                 }
                 if (details.requested.group == 'com.google.protobuf') {
                     details.useVersion '3.25.5'
