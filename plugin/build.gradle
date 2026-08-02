@@ -134,6 +134,9 @@ checkstyle {
 }
 
 dependencyCheck {
+    failBuildOnCVSS = 7
+    failOnError = true
+
     nvd.apiKey = System.getenv('NVD_API_KEY')
     suppressionFile = "${rootDir}/config/owasp/suppressions.xml"
 
