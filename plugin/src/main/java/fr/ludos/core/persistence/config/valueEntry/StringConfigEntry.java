@@ -59,7 +59,7 @@ public abstract class StringConfigEntry extends ConfigEntry<String, String> {
 	}
 
 	@Override
-	public AnvilWindow configWindow(Player player, GuiContext context) {
+	public AnvilWindow window(Player player, GuiContext context) {
 		ConfigSectionContext configContext = context.configContext();
 		if (configContext == null) return null;
 

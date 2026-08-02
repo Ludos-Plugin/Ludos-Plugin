@@ -94,7 +94,7 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 		ConfigurationSection config = configContext.getConfig(sender);
 
 		if (args.length == 0 && (sender instanceof Player player)) {
-			if (! openConfigWindow(player, context)) {
+			if (! openWindow(player, context)) {
 				WindowProvider.playDenySound(player);
 				return false;
 			}

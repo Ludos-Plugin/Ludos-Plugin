@@ -92,7 +92,7 @@ public abstract class ConfigProviderItem extends AbstractItem {
 			return;
 		}
 
-		Window window = node.configWindow(player, context.deeper(new ConfigSectionContext(provider)));
+		Window window = node.window(player, context.deeper(new ConfigSectionContext(provider)));
 		if (window == null) {
 			WindowProvider.playDenySound(player);
 			return;

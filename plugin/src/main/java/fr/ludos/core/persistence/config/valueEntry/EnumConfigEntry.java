@@ -75,7 +75,7 @@ public abstract class EnumConfigEntry<T extends Enum<T>> extends ConfigEntry<T, 
 
 
 	@Override
-	public Window configWindow(Player player, GuiContext context) {
+	public Window window(Player player, GuiContext context) {
 		ConfigSectionContext configContext = context.configContext();
 		if (configContext == null) return null;
 

@@ -95,7 +95,7 @@ public abstract class GroupPlayersConfigEntry extends SetConfigEntry<OfflinePlay
 	}
 
 	@Override
-	public Window configWindow(Player player, GuiContext context) {
+	public Window window(Player player, GuiContext context) {
 		ConfigSectionContext configContext = context.configContext();
 		if (configContext == null) return null;
 

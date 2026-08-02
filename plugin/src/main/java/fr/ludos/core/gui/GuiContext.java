@@ -2,6 +2,7 @@ package fr.ludos.core.gui;
 
 import java.util.Objects;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
@@ -13,17 +14,18 @@ import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import fr.ludos.core.security.AccessAuthorization;
 
 /**
- *
+ * Context for GUI operations, used to manage the state and configuration of nested GUI interactions.<br>
+ * This provides the ability to maintain a stack of GUI contexts, allowing for modal-like navigation between windows.
  */
 public class GuiContext implements AccessAuthorization {
-	private final Plugin plugin;
+	private final @Nonnull Plugin plugin;
 	private final @Nullable GuiContext previous;
-	private WindowProvider window;
+	private @Nullable WindowProvider window;
 	private @Nullable AccessAuthorization auth;
 	private @Nullable ConfigSectionContext configContext;
 
 	private GuiContext(
-		Plugin plugin,
+		@Nonnull Plugin plugin,
 		@Nullable GuiContext previous,
 		@Nullable WindowProvider window,
 		@Nullable AccessAuthorization auth,
@@ -80,7 +82,7 @@ public class GuiContext implements AccessAuthorization {
 		final GuiContext thiz = this;
 		new BukkitRunnable() {
 			public void run() {
-				if (! window.openConfigWindow(player, thiz)) {
+				if (! window.openWindow(player, thiz)) {
 					WindowProvider.playDenySound(player);
 				}
 			}

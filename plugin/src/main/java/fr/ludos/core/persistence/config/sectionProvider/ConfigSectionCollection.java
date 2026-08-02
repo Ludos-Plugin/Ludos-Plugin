@@ -40,7 +40,7 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 
 		if (args.length == 0) {
 			if (! (sender instanceof Player player)) return false;
-			if (! openConfigWindow(player, context)) {
+			if (! openWindow(player, context)) {
 				WindowProvider.playDenySound(player);
 			}
 			return true;
@@ -58,7 +58,7 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 
 		if (args.length == 1) {
 			if (! (sender instanceof Player player)) return false;
-			if (! node.openConfigWindow(player, context)) {
+			if (! node.openWindow(player, context)) {
 				WindowProvider.playDenySound(player);
 			}
 			return true;
@@ -81,7 +81,7 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 		return root.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender);
 	}
 
-	public Window configWindow(Player player, GuiContext context) {
+	public Window window(Player player, GuiContext context) {
 		Set<String> options = options(player);
 		if (options.isEmpty()) return null;
 

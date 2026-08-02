@@ -83,7 +83,7 @@ public class ConfigNodeItem extends AbstractItem {
 
 	@Override
 	public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
-		Window window = node.configWindow(player, context.withWindow(node));
+		Window window = node.window(player, context.withWindow(node));
 		if (window == null) {
 			WindowProvider.playDenySound(player);
 			return;

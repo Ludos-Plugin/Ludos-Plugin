@@ -9,11 +9,24 @@ import xyz.xenondevs.invui.window.Window;
  * Interface for classes which provide a visual interface via the use of {@link Window}s.
  */
 public interface WindowProvider extends Named {
-	public Window configWindow(Player player, GuiContext context);
-	public default boolean openConfigWindow(Player player, GuiContext context) {
+	/**
+	 * Creates a {@link Window} for the given {@link Player}, under the given {@link GuiContext}.
+	 * @param player The player for which the window is created
+	 * @param context The context in which the window is created
+	 * @return The created window, or null if the window could not be created
+	 * (for example, if the player does not have permission to view the window)
+	 */
+	public Window window(Player player, GuiContext context);
+	/**
+	 * Opens a {@link Window} for the given {@link Player}, under the given {@link GuiContext}.
+	 * @param player The player for which the window is opened
+	 * @param context The context in which the window is opened
+	 * @return true if the window was opened successfully, false otherwise
+	 */
+	public default boolean openWindow(Player player, GuiContext context) {
 		if (! context.checkAuthorizationNotify(player)) return false;
 
-		Window window = configWindow(player, context);
+		Window window = window(player, context);
 		if (window == null) return false;
 
 		window.open();

@@ -52,7 +52,7 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 	@Override
 	public boolean execute(@NotNull String[] args, CommandSender sender, GuiContext context) {
 		if (args.length == 0 && sender instanceof Player player) {
-			if (! openConfigWindow(player, context)) {
+			if (! openWindow(player, context)) {
 				WindowProvider.playDenySound(player);
 			}
 			return true;
@@ -77,7 +77,7 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 		return node.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender);
 	}
 
-	public Window configWindow(Player player, GuiContext context) {
+	public Window window(Player player, GuiContext context) {
 		GuiContext childrenContext = context.setWindow(this).deeper(namespace);
 
 		Boolean[] doModalBack = new Boolean[]{true};
