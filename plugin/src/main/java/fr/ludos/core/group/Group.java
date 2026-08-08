@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -165,6 +166,10 @@ public final class Group {
 		return player.getUniqueId().equals(leaderId) || memberIds.contains(player.getUniqueId());
 	}
 
+	public final Predicate<OfflinePlayer> belongs() {
+		return this::isPlayer;
+	}
+
 	public final void disband() {
 		Game game = getGame();
 		if (game != null) {
@@ -312,7 +317,7 @@ public final class Group {
 		return true;
 	}
 
-	public final AddPlayerResult requestAddPlayer(Player player, AddPlayerMethod method) {
+	public final AddPlayerResult requestAddPlayer(OfflinePlayer player, AddPlayerMethod method) {
 		if (player == null) return AddPlayerResult.Failed;
 		if (isLeader(player)) return AddPlayerResult.Failed;
 		if (isMember(player)) return AddPlayerResult.Failed;
@@ -336,7 +341,10 @@ public final class Group {
 				Player onlineLeader = leader.getPlayer();
 				if (onlineLeader == null) {
 					Component offlineMessage = Component.text(leader.getName() + " is currently offline and cannot accept your request.");
-					player.sendMessage(offlineMessage);
+					Player onlinePlayer = player.getPlayer();
+					if (onlinePlayer != null) {
+						onlinePlayer.sendMessage(offlineMessage);
+					}
 				}
 				else {
 					Component joinRequestMessage = Component.text(player.getName() + " has requested to join your group. Click ")
@@ -363,7 +371,11 @@ public final class Group {
 							)
 					)
 					.append(Component.text(" to join."));
-				player.sendMessage(invitationMessage);
+
+				Player onlinePlayer = player.getPlayer();
+				if (onlinePlayer != null) {
+					onlinePlayer.sendMessage(invitationMessage);
+				}
 
 				joinRequests.put(player.getUniqueId(), AddPlayerMethod.Invite);
 				break;

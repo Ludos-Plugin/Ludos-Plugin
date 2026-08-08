@@ -28,11 +28,6 @@ public final class PlayerConfigProvider implements ConfigSectionProvider {
 	}
 
 	@Override
-	public String getAccessError(CommandSender sender) {
-		return null;
-	}
-
-	@Override
 	public boolean saveConfig() {
 		ludos.savePlayersConfig();
 		return true;

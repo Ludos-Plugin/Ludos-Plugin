@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.HelpSubcommand;
 import fr.ludos.core.command.SubcommandHandler;
+import fr.ludos.core.command.SubcommandManager;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.SpecialItem;
 
@@ -17,11 +18,16 @@ import fr.ludos.core.item.SpecialItem;
 public final class CheatsSubcommand extends SubcommandHandler {
 
 	public CheatsSubcommand(Ludos ludos) {
-		super("cheats", "Use Ludos cheats", true, new ArrayList<>() {{
-			add(new CheatsLevel(ludos));
-			add(new CheatsXp(ludos));
-			add(new HelpSubcommand("cheats", this));
-		}});
+		super(
+			"cheats",
+			"Use Ludos cheats",
+			true,
+			new SubcommandManager(new ArrayList<>() {{
+				add(new CheatsLevel(ludos));
+				add(new CheatsXp(ludos));
+				add(new HelpSubcommand("cheats", this));
+			}})
+		);
 	}
 
 	public static @Nullable Integer parsePositiveInt(String raw) {

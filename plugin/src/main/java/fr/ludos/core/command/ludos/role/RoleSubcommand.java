@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import fr.ludos.core.command.HelpSubcommand;
 import fr.ludos.core.command.SubcommandHandler;
+import fr.ludos.core.command.SubcommandManager;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.role.RoleManager;
 
@@ -12,13 +13,18 @@ import fr.ludos.core.role.RoleManager;
  */
 public final class RoleSubcommand extends SubcommandHandler {
 	public RoleSubcommand(RoleManager manager) {
-		super(Role.NAMESPACE, "Manage Ludos Roles", false, new ArrayList<>() {{
-			add(new RoleGet(manager));
-			add(new RoleSet(manager));
-			add(new RoleReset(manager));
-			add(new RoleConfig(manager));
-			add(new RoleGuidebook(manager));
-			add(new HelpSubcommand(Role.NAMESPACE, this));
-		}});
+		super(
+			Role.NAMESPACE,
+			"Manage Ludos Roles",
+			false,
+			new SubcommandManager(new ArrayList<>() {{
+				add(new RoleGet(manager));
+				add(new RoleSet(manager));
+				add(new RoleReset(manager));
+				add(new RoleConfig(manager));
+				add(new RoleGuidebook(manager));
+				add(new HelpSubcommand(Role.NAMESPACE, this));
+			}})
+		);
 	}
 }

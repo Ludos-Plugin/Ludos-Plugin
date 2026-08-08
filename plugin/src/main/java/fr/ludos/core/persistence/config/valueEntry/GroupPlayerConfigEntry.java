@@ -18,6 +18,8 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupManager;
 import fr.ludos.core.gui.GuiContext;
+import fr.ludos.core.gui.WindowUtility;
+import fr.ludos.core.gui.WindowUtility.WindowSettings;
 import fr.ludos.core.gui.configValue.ResetValueItem;
 import fr.ludos.core.gui.configValue.display.PlayerDisplayItem;
 import fr.ludos.core.gui.item.BorderItem;
@@ -98,19 +100,21 @@ public abstract class GroupPlayerConfigEntry extends ConfigEntry<OfflinePlayer, 
 
 		PersistentAccessor<OfflinePlayer> accessor = asAccessor(configContext, player);
 
-		PagedGui.Builder<Item> gui = PagedGui.items()
-			.setStructure(new Structure(
-				"# # # # # # # # #",
-				"# x x x x x x x #",
-				"# x x x x x x x #",
-				"# x x x x x x x #",
-				"V # # # P # # # R")
-			)
-			.addIngredient('#', BorderItem.INSTANCE)
-			.addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
-			.addIngredient('P', ChangePageItem.INSTANCE)
-			.addIngredient('V', new PlayerDisplayItem(accessor))
-			.addIngredient('R', new ResetValueItem<>(accessor));
+		WindowUtility.WindowSettings settings = new WindowSettings(true)
+			.setStructure(
+				new Structure(
+					"# # # # # # # # #",
+					"# x x x x x x x #",
+					"# x x x x x x x #",
+					"# x x x x x x x #",
+					"V # # # P # # # R"
+				)
+				.addIngredient('#', BorderItem.INSTANCE)
+				.addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
+				.addIngredient('P', ChangePageItem.INSTANCE)
+				.addIngredient('V', new PlayerDisplayItem(accessor))
+				.addIngredient('R', new ResetValueItem<>(accessor))
+			);
 
 		Group group = groupManager.getGroupOfPlayer(player);
 		Collection<OfflinePlayer> players = group == null
@@ -119,7 +123,7 @@ public abstract class GroupPlayerConfigEntry extends ConfigEntry<OfflinePlayer, 
 
 		List<Item> items = players.stream()
 			.map(playerValue ->
-				new SinglePickerItem<OfflinePlayer, Item>(playerValue, accessor) {
+				new SinglePickerItem<OfflinePlayer, PagedGui<Item>>(playerValue, accessor) {
 					@Override
 					public ItemProvider getItemProvider(PagedGui<Item> gui) {
 						PlayerItemBuilder item = new PlayerItemBuilder(playerValue);
@@ -139,10 +143,6 @@ public abstract class GroupPlayerConfigEntry extends ConfigEntry<OfflinePlayer, 
 			)
 			.collect(Collectors.toList());
 
-		return Window.single()
-			.setTitle(new AdventureComponentWrapper(normalizedDisplayName()))
-			.setGui(gui.setContent(items))
-			.addCloseHandler(() -> context.openPreviousWindow(player))
-			.build(player);
+		return WindowUtility.pagedItemsWindow(player, context, items, normalizedDisplayName(), settings);
 	}
 }

@@ -40,7 +40,12 @@ public class GroupJoin implements Subcommand {
 			sender.sendMessage("Only players can join groups.");
 			return true;
 		}
-		if (args.length < 1) return false;
+		if (args.length == 0) {
+			if (! manager.getJoinGui().openWindow(player, manager.getLudos())) {
+				sender.sendMessage("No available groups to join.");
+			}
+			return true;
+		}
 
 		Player target = CommandUtility.getPlayerFromArg(args, 0);
 		if (target == null) {
@@ -62,7 +67,7 @@ public class GroupJoin implements Subcommand {
 		AddPlayerResult res = group.requestAddPlayer(player, AddPlayerMethod.Join);
 		switch (res) {
 			case Succeeded:
-				manager.saveConfig();
+				manager.saveData();
 				break;
 			case Requested:
 				player.sendMessage("Requested to join " + target.getName() + "'s group.");

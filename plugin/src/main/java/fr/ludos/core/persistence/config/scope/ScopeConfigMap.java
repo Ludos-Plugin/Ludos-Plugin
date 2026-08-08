@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
+import fr.ludos.core.group.GroupManager;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionCollection;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
@@ -39,14 +40,20 @@ public class ScopeConfigMap extends ConfigSectionCollection {
 	private final @Nullable ConfigNode playerRoot;
 	private final @Nullable PlayerConfigProvider playerProvider;
 
-	public ScopeConfigMap(TextComponent name, Ludos ludos, @Nullable ConfigNode globalRoot, @Nullable ConfigNode groupRoot, @Nullable ConfigNode playerRoot) {
+	public ScopeConfigMap(TextComponent name, Ludos ludos, GroupManager groupManager, @Nullable ConfigNode globalRoot, @Nullable ConfigNode groupRoot, @Nullable ConfigNode playerRoot) {
 		this.name = name;
 		this.globalRoot = globalRoot;
 		this.groupRoot = groupRoot;
 		this.playerRoot = playerRoot;
 		this.globalProvider = globalRoot != null ? new GlobalConfigProvider(ludos) : null;
-		this.groupProvider = groupRoot != null ? new GroupConfigProvider(ludos.getGroupManager()) : null;
+		this.groupProvider = groupRoot != null ? new GroupConfigProvider(groupManager) : null;
 		this.playerProvider = playerRoot != null ? new PlayerConfigProvider(ludos) : null;
+	}
+	public ScopeConfigMap(TextComponent name, Ludos ludos, @Nullable ConfigNode globalRoot, @Nullable ConfigNode groupRoot, @Nullable ConfigNode playerRoot) {
+		this(name, ludos, ludos.getGroupManager(), globalRoot, groupRoot, playerRoot);
+	}
+	public ScopeConfigMap(TextComponent name, Ludos ludos, GroupManager groupManager, @Nullable ConfigNode root) {
+		this(name, ludos, groupManager, root, root, root);
 	}
 	public ScopeConfigMap(TextComponent name, Ludos ludos, @Nullable ConfigNode root) {
 		this(name, ludos, root, root, root);

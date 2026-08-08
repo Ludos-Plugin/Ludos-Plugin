@@ -6,12 +6,14 @@ import org.bukkit.configuration.ConfigurationSection;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
+import fr.ludos.core.security.AccessAuthorization;
 
 /**
  * {@link ConfigSectionProvider} to scope subsequent {@link ConfigNode} within the Global Ludos config ({@link Ludos#getConfig}).
  */
 public final class GlobalConfigProvider implements ConfigSectionProvider {
 	private final Ludos ludos;
+
 	public GlobalConfigProvider(Ludos ludos) {
 		this.ludos = ludos;
 	}
@@ -22,17 +24,13 @@ public final class GlobalConfigProvider implements ConfigSectionProvider {
 	}
 
 	@Override
-	public String getAccessError(CommandSender sender) {
-		if (! sender.isOp()) {
-			return "Only Server Operators are allowed to globally configure Ludos.";
-		}
-
-		return null;
-	}
-
-	@Override
 	public boolean saveConfig() {
 		ludos.saveConfig();
 		return true;
+	}
+
+	@Override
+	public AccessAuthorization getAccessAuthorization() {
+		return ludos.getAdminAuthz();
 	}
 }

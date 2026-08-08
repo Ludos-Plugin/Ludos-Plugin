@@ -13,15 +13,10 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.gui.GuiContext;
 import fr.ludos.core.gui.WindowProvider;
-import fr.ludos.core.gui.item.BorderItem;
-import fr.ludos.core.gui.item.ChangePageItem;
-import fr.ludos.core.gui.item.ConfigNodeItem;
+import fr.ludos.core.gui.WindowUtility;
+import fr.ludos.core.gui.item.WindowItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
-import xyz.xenondevs.invui.gui.PagedGui;
-import xyz.xenondevs.invui.gui.structure.Markers;
-import xyz.xenondevs.invui.gui.structure.Structure;
 import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.window.Window;
 
@@ -80,34 +75,12 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 	public Window window(Player player, GuiContext context) {
 		GuiContext childrenContext = context.setWindow(this).deeper(namespace);
 
-		Boolean[] doModalBack = new Boolean[]{true};
+		WindowUtility.WindowSettings settings = new WindowUtility.WindowSettings(true);
 		List<Item> items = getNodes().stream()
 			.filter(Objects::nonNull)
-			.map(node -> new ConfigNodeItem(node, childrenContext).addClickHandler(() -> doModalBack[0] = false))
+			.map(node -> WindowItem.of(node, childrenContext).addClickHandler(() -> settings.doReturn = false))
 			.collect(Collectors.toList());
 
-		if (items.isEmpty()) return null;
-
-		return Window.single()
-			.setTitle(new AdventureComponentWrapper(normalizedDisplayName()))
-			.setGui(PagedGui.items()
-				.setStructure(new Structure(
-					"# # # # # # # # #",
-					"# x x x x x x x #",
-					"# x x x x x x x #",
-					"# # # # P # # # #")
-				)
-				.addIngredient('#', BorderItem.INSTANCE)
-				.addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
-				.addIngredient('P', ChangePageItem.INSTANCE)
-				.setContent(items)
-			)
-			.addCloseHandler(() -> {
-				if (doModalBack[0]) {
-					context.openPreviousWindow(player);
-					doModalBack[0] = false;
-				}
-			})
-			.build(player);
+		return WindowUtility.pagedItemsWindow(player, context, items, normalizedDisplayName(), settings);
 	}
 }

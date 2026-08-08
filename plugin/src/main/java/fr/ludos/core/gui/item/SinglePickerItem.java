@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.gui.WindowProvider;
 import fr.ludos.core.persistence.PersistentAccessor;
-import xyz.xenondevs.invui.gui.PagedGui;
+import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.gui.SlotElement;
 import xyz.xenondevs.invui.gui.SlotElement.ItemSlotElement;
 import xyz.xenondevs.invui.item.impl.controlitem.ControlItem;
@@ -18,9 +18,9 @@ import xyz.xenondevs.invui.item.impl.controlitem.ControlItem;
  * Used to pick a single value, to be persisted via a {@link PersistentAccessor}.<br>
  * When clicked, adds
  * @param <T> The type of value to pick.
- * @param <Content> The type of Gui Content.
+ * @param <G> The type of Gui.
  */
-public abstract class SinglePickerItem<T, Content> extends ControlItem<PagedGui<Content>> {
+public abstract class SinglePickerItem<T, G extends Gui> extends ControlItem<G> {
 	private final T value;
 	private final PersistentAccessor<T> entry;
 

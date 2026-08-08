@@ -48,6 +48,15 @@ public class GuiContext implements AccessAuthorization {
 		return new GuiContext(plugin, null, window, null, config);
 	}
 
+	public GuiContext deeper() {
+		return new GuiContext(plugin, this, null, auth, configContext);
+	}
+	public GuiContext deeper(@Nullable WindowProvider window) {
+		return new GuiContext(plugin, this, window, auth, configContext);
+	}
+	public GuiContext deeper(@Nullable AccessAuthorization auth) {
+		return new GuiContext(plugin, this, null, auth, configContext);
+	}
 	public GuiContext deeper(@Nullable String path) {
 		return new GuiContext(plugin, this, null, auth, configContext != null ? configContext.getDeeper(path) : configContext);
 	}

@@ -1,22 +1,25 @@
 package fr.ludos.core.persistence.config.scope;
 
+import java.util.Objects;
+
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
-import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupManager;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
+import fr.ludos.core.security.AccessAuthorization;
 
 /**
  * {@link ConfigSectionProvider} to scope subsequent {@link ConfigNode} within the Group's config ({@link Group#getConfig()}).
  */
 public final class GroupConfigProvider implements ConfigSectionProvider {
 	private final GroupManager manager;
+
 	public GroupConfigProvider(GroupManager manager) {
-		this.manager = manager;
+		this.manager = Objects.requireNonNull(manager);
 	}
 
 	@Override
@@ -36,28 +39,13 @@ public final class GroupConfigProvider implements ConfigSectionProvider {
 	}
 
 	@Override
-	public String getAccessError(CommandSender sender) {
-		if (! (sender instanceof Player player)) {
-			return "Only players can configure through a group.";
-		}
-
-		Group group = manager.getGroupOfPlayer(player);
-		if (group == null) {
-			return "You are not in a group.";
-		}
-
-		boolean membersCanConfig = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canConfig();
-		if (! group.isLeader(player) && ! membersCanConfig) {
-			return "Only the group leader can configure the group.";
-		}
-
-		return null;
-	}
-
-	@Override
 	public boolean saveConfig() {
-		manager.saveConfig();
+		manager.saveData();
 		return true;
 	}
 
+	@Override
+	public AccessAuthorization getAccessAuthorization() {
+		return manager.getConfigAuthz();
+	}
 }

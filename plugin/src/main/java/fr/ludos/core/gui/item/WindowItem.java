@@ -11,45 +11,38 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.gui.GuiContext;
+import fr.ludos.core.gui.GuiObject;
 import fr.ludos.core.gui.WindowProvider;
 import fr.ludos.core.persistence.config.ConfigNode;
 import xyz.xenondevs.invui.item.ItemProvider;
-import xyz.xenondevs.invui.item.impl.AbstractItem;
 import xyz.xenondevs.invui.window.Window;
 
 /**
  * Clickable sub-menu item to interact with a {@link ConfigNode}'s config.
  */
-public class ConfigNodeItem extends AbstractItem {
-	private final ConfigNode node;
+public class WindowItem extends EventItem<WindowItem> {
+	private final WindowProvider provider;
+	private final GuiObject object;
 	private final GuiContext context;
-	private List<Runnable> clickHandlers;
 	private List<Runnable> openHandlers;
 	private List<Runnable> closeHandlers;
 	private List<Consumer<InventoryClickEvent>> outsideClickHandlers;
 
-	public ConfigNodeItem(ConfigNode node, GuiContext context) {
-		this.node = Objects.requireNonNull(node);
+	public WindowItem(WindowProvider provider, GuiObject object, GuiContext context) {
+		this.provider = Objects.requireNonNull(provider);
+		this.object = Objects.requireNonNull(object);
 		this.context = Objects.requireNonNull(context);
 	}
 
-	public @NotNull ConfigNodeItem setClickHandlers(@NotNull List<@NotNull Runnable> clickHandlers) {
-		this.clickHandlers = clickHandlers;
-		return this;
-	}
-	public @NotNull ConfigNodeItem addClickHandler(@NotNull Runnable clickHandler) {
-		if (clickHandlers == null)
-			clickHandlers = new ArrayList<>();
-
-		clickHandlers.add(clickHandler);
-		return this;
+	public static <T extends WindowProvider & GuiObject> WindowItem of(T object, GuiContext context) {
+		return new WindowItem(object, object, context);
 	}
 
-	public @NotNull ConfigNodeItem setOpenHandlers(@NotNull List<@NotNull Runnable> openHandlers) {
+	public @NotNull WindowItem setOpenHandlers(@NotNull List<@NotNull Runnable> openHandlers) {
 		this.openHandlers = openHandlers;
 		return this;
 	}
-	public @NotNull ConfigNodeItem addOpenHandler(@NotNull Runnable openHandler) {
+	public @NotNull WindowItem addOpenHandler(@NotNull Runnable openHandler) {
 		if (openHandlers == null)
 			openHandlers = new ArrayList<>();
 
@@ -57,11 +50,11 @@ public class ConfigNodeItem extends AbstractItem {
 		return this;
 	}
 
-	public @NotNull ConfigNodeItem setCloseHandlers(@NotNull List<@NotNull Runnable> closeHandlers) {
+	public @NotNull WindowItem setCloseHandlers(@NotNull List<@NotNull Runnable> closeHandlers) {
 		this.closeHandlers = closeHandlers;
 		return this;
 	}
-	public @NotNull ConfigNodeItem addCloseHandler(@NotNull Runnable closeHandler) {
+	public @NotNull WindowItem addCloseHandler(@NotNull Runnable closeHandler) {
 		if (closeHandlers == null)
 			closeHandlers = new ArrayList<>();
 
@@ -69,11 +62,11 @@ public class ConfigNodeItem extends AbstractItem {
 		return this;
 	}
 
-	public @NotNull ConfigNodeItem setOutsideClickHandlers(@NotNull List<@NotNull Consumer<InventoryClickEvent>> outsideClickHandlers) {
+	public @NotNull WindowItem setOutsideClickHandlers(@NotNull List<@NotNull Consumer<InventoryClickEvent>> outsideClickHandlers) {
 		this.outsideClickHandlers = outsideClickHandlers;
 		return this;
 	}
-	public @NotNull ConfigNodeItem addOutsideClickHandler(@NotNull Consumer<InventoryClickEvent> outsideClickHandler) {
+	public @NotNull WindowItem addOutsideClickHandler(@NotNull Consumer<InventoryClickEvent> outsideClickHandler) {
 		if (outsideClickHandlers == null)
 			outsideClickHandlers = new ArrayList<>();
 
@@ -82,17 +75,11 @@ public class ConfigNodeItem extends AbstractItem {
 	}
 
 	@Override
-	public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
-		Window window = node.window(player, context.withWindow(node));
+	public void handleClickInternal(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
+		Window window = provider.window(player, context.withWindow(provider));
 		if (window == null) {
 			WindowProvider.playDenySound(player);
 			return;
-		}
-
-		if (clickHandlers != null) {
-			for (Runnable clickHandler : clickHandlers) {
-				clickHandler.run();
-			}
 		}
 
 		if (closeHandlers != null) {
@@ -115,7 +102,7 @@ public class ConfigNodeItem extends AbstractItem {
 
 	@Override
 	public ItemProvider getItemProvider(Player viewer) {
-		return node.displayItem(viewer, context);
+		return object.displayItem(viewer, context);
 	}
 
 }

@@ -47,7 +47,7 @@ public class GroupCreate implements Subcommand {
 			group.requestAddPlayer(member, AddPlayerMethod.Invite);
 		}
 
-		manager.saveConfig();
+		manager.saveData();
 
 		return true;
 	}

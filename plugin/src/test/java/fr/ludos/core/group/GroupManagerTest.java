@@ -59,7 +59,7 @@ class GroupManagerTest {
 		PlayerMock leader = server.addPlayer("LeaderName");
 		PlayerMock member1 = server.addPlayer("Member1");
 
-		doNothing().when(manager).saveConfig();
+		doNothing().when(manager).saveData();
 
 
 		Group group = manager.createGroup(leader, Set.of(member1));
@@ -81,7 +81,7 @@ class GroupManagerTest {
 		GroupManager manager = spy(new GroupManager(mockLudos));
 		PlayerMock leaderPlayer = server.addPlayer("LeaderName");
 
-		doNothing().when(manager).saveConfig();
+		doNothing().when(manager).saveData();
 
 
 		Group group = manager.createGroup(leaderPlayer, null);
@@ -102,7 +102,7 @@ class GroupManagerTest {
 		OfflinePlayer leader = server.addPlayer("DeserializedLeader");
 		UUID incorrectUuid = UUID.randomUUID();
 
-		doNothing().when(manager).saveConfig();
+		doNothing().when(manager).saveData();
 
 		Map<String, Object> data = new HashMap<>();
 		data.put("leader", leader.getUniqueId().toString());
@@ -125,7 +125,7 @@ class GroupManagerTest {
 		GroupManager manager = spy(new GroupManager(mockLudos));
 		PlayerMock player = server.addPlayer("PlayerName");
 
-		doNothing().when(manager).saveConfig();
+		doNothing().when(manager).saveData();
 
 
 		Group oldGroup = manager.createGroup(player, null);

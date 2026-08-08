@@ -15,6 +15,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.gui.GuiContext;
+import fr.ludos.core.gui.WindowUtility;
+import fr.ludos.core.gui.WindowUtility.WindowSettings;
 import fr.ludos.core.gui.configValue.ResetValueItem;
 import fr.ludos.core.gui.item.BorderItem;
 import fr.ludos.core.gui.item.ChangePageItem;
@@ -81,21 +83,23 @@ public abstract class EnumConfigEntry<T extends Enum<T>> extends ConfigEntry<T, 
 
 		PersistentAccessor<T> accessor = asAccessor(configContext, player);
 
-		PagedGui.Builder<Item> gui = PagedGui.items()
-			.setStructure(new Structure(
-				"# # # # # # # # #",
-				"# x x x x x x x #",
-				"# x x x x x x x #",
-				"# # # # P # # # R")
-			)
-			.addIngredient('#', BorderItem.INSTANCE)
-			.addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
-			.addIngredient('P', ChangePageItem.INSTANCE)
-			.addIngredient('R', new ResetValueItem<>(accessor));
+		WindowUtility.WindowSettings settings = new WindowSettings(true)
+			.setStructure(
+				new Structure(
+					"# # # # # # # # #",
+					"# x x x x x x x #",
+					"# x x x x x x x #",
+					"# # # # P # # # R"
+				)
+				.addIngredient('#', BorderItem.INSTANCE)
+				.addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
+				.addIngredient('P', ChangePageItem.INSTANCE)
+				.addIngredient('R', new ResetValueItem<>(accessor))
+			);
 
 		List<Item> items = Arrays.stream(clazz.getEnumConstants())
 			.map(value ->
-				new SinglePickerItem<T, Item>(value, accessor) {
+				new SinglePickerItem<T, PagedGui<Item>>(value, accessor) {
 					@Override
 					public ItemProvider getItemProvider(PagedGui<Item> gui) {
 						ItemBuilder item = getItemForEnumValue(value);
@@ -115,11 +119,7 @@ public abstract class EnumConfigEntry<T extends Enum<T>> extends ConfigEntry<T, 
 			)
 			.collect(Collectors.toList());
 
-		return Window.single()
-			.setTitle(new AdventureComponentWrapper(normalizedDisplayName()))
-			.setGui(gui.setContent(items))
-			.addCloseHandler(() -> context.openPreviousWindow(player))
-			.build(player);
+		return WindowUtility.pagedItemsWindow(player, context, items, normalizedDisplayName(), settings);
 	}
 
 	public abstract ItemBuilder getItemForEnumValue(T value);

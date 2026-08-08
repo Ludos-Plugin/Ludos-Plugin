@@ -14,15 +14,11 @@ import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.gui.GuiContext;
 import fr.ludos.core.gui.WindowProvider;
-import fr.ludos.core.gui.item.BorderItem;
-import fr.ludos.core.gui.item.ChangePageItem;
+import fr.ludos.core.gui.WindowUtility;
+import fr.ludos.core.gui.WindowUtility.WindowSettings;
 import fr.ludos.core.gui.item.ConfigProviderItem;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigRootCollection;
-import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
-import xyz.xenondevs.invui.gui.PagedGui;
-import xyz.xenondevs.invui.gui.structure.Markers;
-import xyz.xenondevs.invui.gui.structure.Structure;
 import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
@@ -85,6 +81,7 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 		Set<String> options = options(player);
 		if (options.isEmpty()) return null;
 
+		WindowUtility.WindowSettings state = new WindowSettings(true);
 		List<Item> items = options.stream()
 			.map(key -> {
 				ConfigSectionProvider provider = getProvider(key, player);
@@ -97,27 +94,11 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 					public ItemProvider getItemProvider(Player viewer) {
 						return getItem(key, player);
 					}
-				};
+				}.addClickHandler(() -> state.doReturn = false);
 			})
 			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
 
-		if (items.isEmpty()) return null;
-
-		return Window.single()
-			.setTitle(new AdventureComponentWrapper(normalizedDisplayName()))
-			.setGui(PagedGui.items()
-				.setStructure(new Structure(
-					"# # # # # # # # #",
-					"# x x x x x x x #",
-					"# x x x x x x x #",
-					"# # # # P # # # #")
-				)
-				.addIngredient('#', BorderItem.INSTANCE)
-				.addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
-				.addIngredient('P', ChangePageItem.INSTANCE)
-				.setContent(items)
-			)
-			.build(player);
+		return WindowUtility.pagedItemsWindow(player, context, items, normalizedDisplayName(), state);
 	}
 }

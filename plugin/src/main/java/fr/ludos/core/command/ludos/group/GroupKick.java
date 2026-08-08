@@ -44,7 +44,6 @@ public class GroupKick implements Subcommand {
 			sender.sendMessage("Only players can kick members from groups.");
 			return true;
 		}
-		if (args.length < 1) return false;
 
 		Group group = manager.getGroupOfPlayer(player);
 		if (group == null) {
@@ -55,6 +54,13 @@ public class GroupKick implements Subcommand {
 		boolean membersCanManage = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canManage();
 		if (! group.isLeader(player) && ! membersCanManage) {
 			sender.sendMessage("Only the group leader can kick members.");
+			return true;
+		}
+
+		if (args.length == 0) {
+			if (! manager.getKickGui().openWindow(player, manager.getLudos())) {
+				sender.sendMessage("No available players to kick.");
+			}
 			return true;
 		}
 
@@ -73,7 +79,7 @@ public class GroupKick implements Subcommand {
 		}
 
 		if (success) {
-			manager.saveConfig();
+			manager.saveData();
 		}
 
 		return true;

@@ -5,6 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.Utility;
+import fr.ludos.core.security.AccessAuthorization;
 
 /**
  * .
@@ -37,12 +38,12 @@ public class ConfigSectionContext implements ConfigSectionProvider {
 	}
 
 	@Override
-	public String getAccessError(CommandSender sender) {
-		return provider.getAccessError(sender);
+	public boolean saveConfig() {
+		return provider.saveConfig();
 	}
 
 	@Override
-	public boolean saveConfig() {
-		return provider.saveConfig();
+	public AccessAuthorization getAccessAuthorization() {
+		return provider.getAccessAuthorization();
 	}
 }

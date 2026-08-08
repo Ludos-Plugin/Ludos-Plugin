@@ -42,6 +42,7 @@ import fr.ludos.core.persistence.config.scope.PlayerScopedConfigMap;
 import fr.ludos.core.persistence.config.valueEntry.GroupPlayersConfigEntry;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.role.RoleManager;
+import fr.ludos.core.security.AdminAuthz;
 import fr.ludos.games.arena.ArenaGame;
 import fr.ludos.games.manhunt.ManhuntGame;
 import fr.ludos.games.raid.RaidGame;
@@ -73,17 +74,21 @@ public class Ludos extends JavaPlugin implements Listener {
 	public static final String CONFIG_NAMESPACE = "config";
 	public static final String DATA_NAMESPACE = "data";
 
+	private final AdminAuthz adminAuthz = new AdminAuthz();
+
 	private final GroupManager groupManager = new GroupManager(this);
 	private final GameManager gameManager = new GameManager(this);
 	private final RoleManager roleManager = new RoleManager(this);
 
 	private final TextureManager textureManager = new TextureManager(this);
 	private final TextureListener textureListener = new TextureListener(this);
-	public final PlayerPackets playerPackets = PlayerPacketsFactory.createHandler();
 
 	public final PlayerScopedConfigMap playerConfigMap = new PlayerScopedConfigMap(this);
 	public final GroupScopedConfigMap groupConfigMap = new GroupScopedConfigMap(this);
 	public final GlobalScopedConfigMap globalConfigMap = new GlobalScopedConfigMap(this);
+
+
+	public final PlayerPackets playerPackets = PlayerPacketsFactory.createHandler();
 
 	public final GroupPlayersConfigEntry playersConfig =
 		new GroupPlayersConfigEntry(
@@ -97,6 +102,10 @@ public class Ludos extends JavaPlugin implements Listener {
 				return new ItemBuilder(Material.PLAYER_HEAD);
 			}
 		};
+
+	public final AdminAuthz getAdminAuthz() {
+		return this.adminAuthz;
+	}
 
 	public final GroupManager getGroupManager() {
 		return this.groupManager;

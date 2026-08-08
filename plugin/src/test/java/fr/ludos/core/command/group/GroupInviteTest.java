@@ -1,7 +1,6 @@
 package fr.ludos.core.command.group;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
@@ -19,10 +18,6 @@ class GroupInviteTest extends GroupTest {
 
 		player1.performCommand("ludos group create");
 		assertEquals("You have created a new group.", player1.nextMessage(), "Could not create group");
-
-		boolean isValid = player1.performCommand("ludos group invite");
-		player1.nextMessage();
-		assertFalse(isValid, "Successfully invited no one to group");
 
 		player1.performCommand("ludos group invite Player1");
 		assertEquals("No valid player names provided.", player1.nextMessage(), "Successfully invited self to group");

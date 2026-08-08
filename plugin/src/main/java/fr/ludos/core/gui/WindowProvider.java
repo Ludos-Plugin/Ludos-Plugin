@@ -1,14 +1,18 @@
 package fr.ludos.core.gui;
 
 import org.bukkit.Sound;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Nullable;
 
+import fr.ludos.core.security.AccessAuthorization;
 import xyz.xenondevs.invui.window.Window;
 
 /**
  * Interface for classes which provide a visual interface via the use of {@link Window}s.
  */
-public interface WindowProvider extends Named {
+public interface WindowProvider extends AccessAuthorization, Named {
 	/**
 	 * Creates a {@link Window} for the given {@link Player}, under the given {@link GuiContext}.
 	 * @param player The player for which the window is created
@@ -20,10 +24,21 @@ public interface WindowProvider extends Named {
 	/**
 	 * Opens a {@link Window} for the given {@link Player}, under the given {@link GuiContext}.
 	 * @param player The player for which the window is opened
+	 * @param plugin The plugin for which the window is created
+	 * @return true if the window was opened successfully, false otherwise
+	 */
+	public default boolean openWindow(Player player, Plugin plugin) {
+		return openWindow(player, GuiContext.of(plugin, this));
+	}
+	/**
+	 * Opens a {@link Window} for the given {@link Player}, under the given {@link GuiContext}.
+	 * @param player The player for which the window is opened
 	 * @param context The context in which the window is opened
 	 * @return true if the window was opened successfully, false otherwise
 	 */
 	public default boolean openWindow(Player player, GuiContext context) {
+		AccessAuthorization authz = getAccessAuthorization();
+		if (authz != null && ! authz.checkAuthorizationNotify(player)) return false;
 		if (! context.checkAuthorizationNotify(player)) return false;
 
 		Window window = window(player, context);
@@ -31,6 +46,23 @@ public interface WindowProvider extends Named {
 
 		window.open();
 		return true;
+	}
+
+	/**
+	 * Optional {@link AccessAuthorization} instance, to intrinsically link the WindowProvider and its Authorization system.
+	 * @return an {@link AccessAuthorization} instance, or null to pass-through.
+	 */
+	public default @Nullable AccessAuthorization getAccessAuthorization() {
+		return null;
+	}
+
+	@Override
+	default @Nullable String getAccessError(CommandSender sender) {
+		AccessAuthorization authz = getAccessAuthorization();
+		if (authz == null) {
+			return null;
+		}
+		return authz.getAccessError(sender);
 	}
 
 	public static void playDenySound(Player player) {

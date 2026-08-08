@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.gui.WindowProvider;
 import fr.ludos.core.persistence.PersistentAccessor;
-import xyz.xenondevs.invui.gui.PagedGui;
+import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.gui.SlotElement;
 import xyz.xenondevs.invui.gui.SlotElement.ItemSlotElement;
 import xyz.xenondevs.invui.item.impl.controlitem.ControlItem;
@@ -21,9 +21,9 @@ import xyz.xenondevs.invui.item.impl.controlitem.ControlItem;
  * When clicked, adds
  * @param <T> The type of values to pick.
  * @param <C> The collection type, used to aggregate all selected values.
- * @param <Content> The type of Gui Content.
+ * @param <G> The type of Gui.
  */
-public abstract class MultiPickerItem<T, C extends Collection<T>, Content> extends ControlItem<PagedGui<Content>> {
+public abstract class MultiPickerItem<T, C extends Collection<T>, G extends Gui> extends ControlItem<G> {
 	private final T value;
 	private final PersistentAccessor<C> entry;
 	private final Supplier<C> constructor;

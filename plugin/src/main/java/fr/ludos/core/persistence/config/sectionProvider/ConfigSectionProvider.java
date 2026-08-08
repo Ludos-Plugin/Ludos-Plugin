@@ -2,6 +2,7 @@ package fr.ludos.core.persistence.config.sectionProvider;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.security.AccessAuthorization;
@@ -12,4 +13,17 @@ import fr.ludos.core.security.AccessAuthorization;
 public interface ConfigSectionProvider extends AccessAuthorization {
 	public ConfigurationSection getConfig(CommandSender sender);
 	public boolean saveConfig();
+
+	public default AccessAuthorization getAccessAuthorization() {
+		return null;
+	}
+
+	@Override
+	default @Nullable String getAccessError(CommandSender sender) {
+		AccessAuthorization authz = getAccessAuthorization();
+		if (authz == null) {
+			return null;
+		}
+		return authz.getAccessError(sender);
+	}
 }
