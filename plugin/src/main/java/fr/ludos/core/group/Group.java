@@ -319,10 +319,12 @@ public final class Group {
 		if (method == null) return AddPlayerResult.Failed;
 
 		GroupJoinOption joinBehaviour = GroupConfigMap.GROUP_JOIN.getGroupConfig(this);
+		boolean canAutoJoin = joinBehaviour == GroupJoinOption.auto_accept && method == AddPlayerMethod.Join;
 
 		AddPlayerMethod currentMethod = joinRequests.get(player.getUniqueId());
 		boolean consentIsTwoSided = currentMethod != null && currentMethod != method;
-		if (joinBehaviour == GroupJoinOption.auto_accept || consentIsTwoSided) {
+
+		if (canAutoJoin || consentIsTwoSided) {
 			joinRequests.remove(player.getUniqueId());
 			addPlayer(player);
 			return AddPlayerResult.Succeeded;
