@@ -26,6 +26,7 @@ import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.core.item.level.LevelValue;
 import fr.ludos.roles.berserker.BerserkerRole;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -73,7 +74,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxe, BerserkerAxeLevels> {
 	}
 
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return Component.text("Berserker Axe");
 	}
 

@@ -25,9 +25,14 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.gui.Named;
+import fr.ludos.core.gui.ConfigHolder;
+import fr.ludos.core.gui.GuiObject;
+import fr.ludos.core.gui.GuidebookProvider;
 import fr.ludos.core.item.SpecialItem;
+import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigNodeCollection;
+import fr.ludos.core.persistence.config.ConfigNodeMap;
+import fr.ludos.core.persistence.config.scope.ScopeConfigMap;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.world.WorldManager;
 import net.kyori.adventure.text.Component;
@@ -41,6 +46,7 @@ import net.kyori.adventure.text.format.TextDecoration;
  */
 public abstract class Game extends TwoStepGameProcessBase {
 	public static final String NAMESPACE = "game";
+	public static final TextComponent WINDOW_TITLE = Component.text("Game Configuration");
 
 	private static final String SCHEDULE_END_GAME_TEXT = "Game finished, returning in %s seconds...";
 
@@ -82,6 +88,16 @@ public abstract class Game extends TwoStepGameProcessBase {
 		this.builder = builder;
 		this.group = group;
 		this.scoreboard = builder.getLudos().getServer().getScoreboardManager().getNewScoreboard();
+	}
+
+	public static ScopeConfigMap scopeConfig(Ludos ludos, ConfigNodeCollection nodes) {
+		return new ScopeConfigMap(
+			WINDOW_TITLE,
+			ludos,
+			nodes,
+			nodes,
+			null
+		);
 	}
 
 	public Builder builder() {
@@ -269,7 +285,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 	/**
 	 * A simple Factory for a {@link Game}. Useful for registering Games in {@link Ludos}.
 	 */
-	public static abstract class Builder implements Named {
+	public static abstract class Builder implements GuiObject, ConfigHolder, GuidebookProvider {
 		private final GameManager manager;
 
 
@@ -330,6 +346,10 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
+		public final ConfigNodeMap getConfigMap(List<ConfigNode> configNodes) {
+			return getConfigMap(getId(), this, configNodes);
+		}
+		@Override
 		public ConfigNodeCollection getConfig() {
 			return null;
 		}

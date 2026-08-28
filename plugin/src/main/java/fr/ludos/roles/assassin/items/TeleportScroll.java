@@ -24,6 +24,7 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 /**
  * Implementation of the Assassin Teleport Scroll, for use by any Player with {@link AssassinRole}.
@@ -36,7 +37,7 @@ public class TeleportScroll extends SpecialItem<TeleportScroll> {
 	}
 
 	@Override
-	public Component displayName(){
+	public TextComponent displayName(){
 		return Component.text("Parchemin de Téléportation");
 	}
 

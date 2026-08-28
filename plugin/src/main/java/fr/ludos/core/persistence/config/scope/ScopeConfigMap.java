@@ -60,7 +60,7 @@ public class ScopeConfigMap extends ConfigSectionCollection {
 	}
 
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return name;
 	}
 	@Override

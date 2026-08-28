@@ -47,6 +47,10 @@ public class WindowUtility {
 			this(false);
 		}
 
+		public final void disableModalReturn() {
+			doReturn = false;
+		}
+
 		public final WindowSettings setStructure(Structure structure) {
 			this.structure = structure;
 			return this;

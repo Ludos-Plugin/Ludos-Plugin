@@ -262,22 +262,14 @@ public class ManhuntGame extends Game {
 				};
 			};
 
-		public final ConfigNodeMap config =
-			new ConfigNodeMap(
-				Component.text("Manhunt"),
-				ID,
-				List.of(
-					getLudos().playersConfig,
-					prey,
-					WorldBorderArea.CONFIG,
-					revealPeriod
-				)
-			) {
-				@Override
-				public AbstractItemBuilder<?> createItem(Player player) {
-					return new ItemBuilder(Material.COMPASS);
-				}
-			};
+
+		public final ConfigNodeMap configMap = getConfigMap(
+			List.of(
+				getLudos().playersConfig,
+				prey,
+				WorldBorderArea.CONFIG,
+				revealPeriod
+			));
 
 		public Builder(GameManager manager) {
 			super(manager);
@@ -286,6 +278,11 @@ public class ManhuntGame extends Game {
 		@Override
 		public String getId() {
 			return ID;
+		}
+
+		@Override
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new ItemBuilder(Material.COMPASS);
 		}
 
 		@Override
@@ -325,7 +322,7 @@ public class ManhuntGame extends Game {
 
 		@Override
 		public ConfigNodeCollection getConfig() {
-			return config;
+			return configMap;
 		}
 
 		@Override

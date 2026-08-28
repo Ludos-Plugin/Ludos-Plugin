@@ -12,6 +12,7 @@ import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupManager;
 import fr.ludos.core.gui.GuiObject;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.item.ItemProvider;
@@ -53,7 +54,7 @@ public class LeaveGroupItem<G extends Gui> extends ControlItem<G> implements Gui
 	}
 
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return Component.text("Leave current Group").color(NamedTextColor.DARK_PURPLE);
 	}
 

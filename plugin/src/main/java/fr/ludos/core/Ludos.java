@@ -16,6 +16,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -23,6 +25,7 @@ import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.command.ludos.LudosCommand;
@@ -59,6 +62,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
+import xyz.xenondevs.invui.item.impl.AbstractItem;
 
 /**
  * The main Ludos plugin.
@@ -89,6 +93,14 @@ public class Ludos extends JavaPlugin implements Listener {
 
 
 	public final PlayerPackets playerPackets = PlayerPacketsFactory.createHandler();
+
+	public final AbstractItem guidebookGuiItem = new AbstractItem() {
+		@Override
+		public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
+			// TODO Auto-generated method stub
+
+		}
+	};
 
 	public final GroupPlayersConfigEntry playersConfig =
 		new GroupPlayersConfigEntry(

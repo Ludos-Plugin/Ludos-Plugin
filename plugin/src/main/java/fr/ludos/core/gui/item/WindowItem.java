@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.gui.GuiContext;
@@ -38,10 +39,12 @@ public class WindowItem extends EventItem<WindowItem> {
 		return new WindowItem(object, object, context);
 	}
 
+	@Contract("_ -> this")
 	public @NotNull WindowItem setOpenHandlers(@NotNull List<@NotNull Runnable> openHandlers) {
 		this.openHandlers = openHandlers;
 		return this;
 	}
+	@Contract("_ -> this")
 	public @NotNull WindowItem addOpenHandler(@NotNull Runnable openHandler) {
 		if (openHandlers == null)
 			openHandlers = new ArrayList<>();
@@ -50,10 +53,12 @@ public class WindowItem extends EventItem<WindowItem> {
 		return this;
 	}
 
+	@Contract("_ -> this")
 	public @NotNull WindowItem setCloseHandlers(@NotNull List<@NotNull Runnable> closeHandlers) {
 		this.closeHandlers = closeHandlers;
 		return this;
 	}
+	@Contract("_ -> this")
 	public @NotNull WindowItem addCloseHandler(@NotNull Runnable closeHandler) {
 		if (closeHandlers == null)
 			closeHandlers = new ArrayList<>();
@@ -62,10 +67,12 @@ public class WindowItem extends EventItem<WindowItem> {
 		return this;
 	}
 
+	@Contract("_ -> this")
 	public @NotNull WindowItem setOutsideClickHandlers(@NotNull List<@NotNull Consumer<InventoryClickEvent>> outsideClickHandlers) {
 		this.outsideClickHandlers = outsideClickHandlers;
 		return this;
 	}
+	@Contract("_ -> this")
 	public @NotNull WindowItem addOutsideClickHandler(@NotNull Consumer<InventoryClickEvent> outsideClickHandler) {
 		if (outsideClickHandlers == null)
 			outsideClickHandlers = new ArrayList<>();

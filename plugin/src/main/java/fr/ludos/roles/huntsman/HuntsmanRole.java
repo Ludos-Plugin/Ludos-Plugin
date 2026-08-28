@@ -2,6 +2,7 @@ package fr.ludos.roles.huntsman;
 
 import java.util.LinkedHashMap;
 
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
@@ -29,6 +30,8 @@ import fr.ludos.roles.huntsman.items.HuntsmanCrossbow;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * Implementation of the Huntsman {@link Role}.
@@ -132,6 +135,11 @@ public class HuntsmanRole extends Role {
 		@Override
 		public HuntsmanRole build(Game game) {
 			return new HuntsmanRole(this, game);
+		}
+
+		@Override
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new ItemBuilder(Material.BOW);
 		}
 
 		@Override

@@ -115,28 +115,11 @@ public class RaidGame extends WaveGame {
 				}
 			};
 
-		public final ConfigNodeMap config =
-			new ConfigNodeMap(
-				Component.text("Raid"),
-				ID,
-				List.of(
-					getLudos().playersConfig,
-					waves,
-					WorldBorderArea.CONFIG
-				)
-			) {
-				@Override
-				public AbstractItemBuilder<?> createItem(Player player) {
-					return new BannerBuilder(Material.BLACK_BANNER)
-						.addPattern(new Pattern(DyeColor.CYAN, PatternType.RHOMBUS_MIDDLE))
-						.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.STRIPE_BOTTOM))
-						.addPattern(new Pattern(DyeColor.GRAY, PatternType.STRIPE_CENTER))
-						.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_MIDDLE))
-						.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.HALF_HORIZONTAL))
-						.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.CIRCLE_MIDDLE))
-						.addPattern(new Pattern(DyeColor.BLACK, PatternType.BORDER));
-				}
-			};
+		public final ConfigNodeMap configMap = getConfigMap(List.of(
+			getLudos().playersConfig,
+			waves,
+			WorldBorderArea.CONFIG
+		));
 
 
 		public Builder(GameManager manager) {
@@ -149,11 +132,22 @@ public class RaidGame extends WaveGame {
 		}
 
 		@Override
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new BannerBuilder(Material.BLACK_BANNER)
+				.addPattern(new Pattern(DyeColor.CYAN, PatternType.RHOMBUS_MIDDLE))
+				.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.STRIPE_BOTTOM))
+				.addPattern(new Pattern(DyeColor.GRAY, PatternType.STRIPE_CENTER))
+				.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_MIDDLE))
+				.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.HALF_HORIZONTAL))
+				.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.CIRCLE_MIDDLE))
+				.addPattern(new Pattern(DyeColor.BLACK, PatternType.BORDER));
+		}
+
+		@Override
 		public TextComponent displayName() {
 			return Component.text("Raid")
 				.color(NamedTextColor.GOLD);
 		}
-
 		@Override
 		public TextComponent getDescription() {
 			return Component.text("Fight against hordes of Enemies with your friends.\n\n" +
@@ -173,7 +167,7 @@ public class RaidGame extends WaveGame {
 
 		@Override
 		public ConfigNodeCollection getConfig() {
-			return config;
+			return configMap;
 		}
 
 		@Override

@@ -16,6 +16,7 @@ import fr.ludos.core.gui.WindowProvider;
 import fr.ludos.core.gui.WindowUtility;
 import fr.ludos.core.security.AccessAuthorization;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
@@ -32,7 +33,7 @@ public class GroupKickGui implements WindowObject {
 	}
 
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return Component.text("Kick Players from Group");
 	}
 

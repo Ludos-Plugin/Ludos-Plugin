@@ -143,23 +143,14 @@ public class ArenaGame extends WaveGame {
 				}
 			};
 
-		private final ConfigNodeMap configMap =
-			new ConfigNodeMap(
-				Component.text("Arena"),
-				ID,
-				List.of(
-					team1Players,
-					team2Players,
-					ArenaModeOption.CONFIG,
-					rounds,
-					WorldBorderArea.CONFIG
-				)
-			) {
-				@Override
-				public AbstractItemBuilder<?> createItem(Player player) {
-					return new ItemBuilder(Material.IRON_SWORD);
-				}
-			};
+		public final ConfigNodeMap configMap = getConfigMap(
+			List.of(
+				team1Players,
+				team2Players,
+				ArenaModeOption.CONFIG,
+				rounds,
+				WorldBorderArea.CONFIG
+			));
 
 		public Builder(GameManager manager) {
 			super(manager);
@@ -171,11 +162,15 @@ public class ArenaGame extends WaveGame {
 		}
 
 		@Override
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new ItemBuilder(Material.IRON_SWORD);
+		}
+
+		@Override
 		public TextComponent displayName() {
 			return Component.text("Arena")
 				.color(NamedTextColor.DARK_GRAY);
 		}
-
 		@Override
 		public TextComponent getDescription() {
 			return Component.text("Fight against each other.\n\n" +

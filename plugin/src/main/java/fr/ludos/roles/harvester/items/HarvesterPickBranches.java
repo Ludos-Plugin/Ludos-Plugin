@@ -12,6 +12,7 @@ import org.bukkit.potion.PotionEffectType;
 import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.SpecialItemInterface;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 /**
@@ -82,9 +83,9 @@ public enum HarvesterPickBranches implements HarvesterPickBranch {
 		}
 	};
 
-	private final Component name;
+	private final TextComponent name;
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return name;
 	}
 
@@ -102,7 +103,7 @@ public enum HarvesterPickBranches implements HarvesterPickBranch {
 	public abstract void onBreakBlock(HarvesterPick pick, BlockBreakEvent event);
 
 
-	private HarvesterPickBranches(Component name, Component description) {
+	private HarvesterPickBranches(TextComponent name, Component description) {
 		this.name = name;
 		this.description = description;
 	}

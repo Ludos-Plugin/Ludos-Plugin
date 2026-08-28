@@ -2,6 +2,7 @@ package fr.ludos.core.command.ludos.game;
 
 import java.util.ArrayList;
 
+import fr.ludos.core.command.GuiCommand;
 import fr.ludos.core.command.HelpSubcommand;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.SubcommandHandler;
@@ -18,13 +19,16 @@ public final class GameSubcommand extends SubcommandHandler {
 			Game.NAMESPACE,
 			"Manage Ludos Games",
 			false,
-			new SubcommandManager(new ArrayList<>() {{
-				add(new GameStart(manager));
-				add(new GameStop(manager));
-				add(new GameConfig(manager));
-				add(new GameGuidebook(manager));
-				add(new HelpSubcommand(Game.NAMESPACE, this));
-			}})
+			new SubcommandManager(
+				new ArrayList<>() {{
+					add(new GameStart(manager));
+					add(new GameStop(manager));
+					add(new GameConfig(manager));
+					add(new GameGuidebook(manager));
+					add(new HelpSubcommand(Game.NAMESPACE, this));
+				}},
+				new GuiCommand(manager.getLudos(), manager.getGui())
+			)
 		);
 	}
 }

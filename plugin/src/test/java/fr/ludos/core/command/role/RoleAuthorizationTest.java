@@ -33,7 +33,7 @@ class RoleAuthorizationTest extends RoleTest {
 		assertNull(player1.nextMessage(), "Extra role set message on set self role");
 
 		player1.performCommand("ludos role set " + role.getId() + ' ' + player2.getName());
-		assertEquals("The role of Player " + player2.getName() + " is now " + role.getId(), player1.nextMessage(), "Role was not set");
+		assertEquals("The role of player " + player2.getName() + " is now " + role.getId(), player1.nextMessage(), "Role was not set");
 		assertEquals("Your role is now " + role.getId(), player2.nextMessage(), "Role was not set");
 
 		player1.performCommand("ludos role get " + player2.getName());
@@ -58,7 +58,7 @@ class RoleAuthorizationTest extends RoleTest {
 		Role.Builder role = getValidRole();
 
 		player1.performCommand("ludos role set " + role.getId() + ' ' + player2.getName());
-		assertEquals("You are not authorized to reset this player's role", player1.nextMessage(), "Role was set despite missing any authorization");
+		assertEquals("You are not authorized to set this player's role", player1.nextMessage(), "Role was set despite missing any authorization");
 
 		player1.performCommand("ludos group create " + player2.getName());
 		assertEquals("You have created a new group.", player1.nextMessage(), "Could not create group");
@@ -69,11 +69,11 @@ class RoleAuthorizationTest extends RoleTest {
 		assertEquals(player2.getName() + " has joined the group.", player1.nextMessage(), "Leader did not receive join notification");
 
 		player1.performCommand("ludos role set " + role.getId() + ' ' + player2.getName());
-		assertEquals("The role of Player " + player2.getName() + " is now " + role.getId(), player1.nextMessage(), "Role was not set despite having group leadership authorization");
+		assertEquals("The role of player " + player2.getName() + " is now " + role.getId(), player1.nextMessage(), "Role was not set despite having group leadership authorization");
 		assertEquals("Your role is now " + role.getId(), player2.nextMessage(), "Role set message was not received by other player");
 
 		player2.performCommand("ludos role set " + role.getId() + ' ' + player1.getName());
-		assertEquals("You are not authorized to reset this player's role", player2.nextMessage(), "Role was set despite not having group leadership authorization");
+		assertEquals("You are not authorized to set this player's role", player2.nextMessage(), "Role was set despite not having group leadership authorization");
 		assertEquals(null, player2.nextMessage(), "Role set message was received by other player");
 	}
 }

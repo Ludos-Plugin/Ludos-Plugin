@@ -60,5 +60,4 @@ public class ChangePageItem extends ControlItem<PagedGui<?>> {
 				)
 			);
 	}
-
 }

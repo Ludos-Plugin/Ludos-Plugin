@@ -22,6 +22,8 @@ import fr.ludos.roles.harvester.items.HarvesterSpade;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * Implementation of the Harvester {@link Role}.
@@ -140,6 +142,11 @@ public class HarvesterRole extends Role {
 		@Override
 		public Role build(Game game){
 			return new HarvesterRole(this, game);
+		}
+
+		@Override
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new ItemBuilder(Material.IRON_PICKAXE);
 		}
 
 		@Override

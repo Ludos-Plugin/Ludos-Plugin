@@ -21,6 +21,7 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.roles.berserker.BerserkerRole;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -36,7 +37,7 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 
 
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return Component.text("Rage Brew");
 	}
 

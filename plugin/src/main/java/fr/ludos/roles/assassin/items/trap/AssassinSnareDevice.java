@@ -31,6 +31,7 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 /**
  * Implementation of the Assassin Snare Device, for use by any Player with {@link AssassinRole}.
@@ -45,7 +46,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDevice, Assassi
 
 
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return
 			Component.text("Snare Grimoire ")
 			.append(getBranchAnnotation());

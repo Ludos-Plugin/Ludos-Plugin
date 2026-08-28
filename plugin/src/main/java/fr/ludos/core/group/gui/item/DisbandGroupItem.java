@@ -13,6 +13,7 @@ import fr.ludos.core.group.GroupManager;
 import fr.ludos.core.gui.GuiObject;
 import fr.ludos.core.gui.WindowProvider;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.item.ItemProvider;
@@ -58,7 +59,7 @@ public class DisbandGroupItem<G extends Gui> extends ControlItem<G> implements G
 	}
 
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return Component.text("Disband Group").color(NamedTextColor.RED);
 	}
 

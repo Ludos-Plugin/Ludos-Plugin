@@ -33,6 +33,8 @@ import fr.ludos.roles.berserker.items.BerserkerRageBrew;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 
 /**
@@ -215,6 +217,11 @@ public class BerserkerRole extends Role {
 		@Override
 		public String getId() {
 			return ID;
+		}
+
+		@Override
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new ItemBuilder(Material.GOLDEN_AXE);
 		}
 
 		@Override

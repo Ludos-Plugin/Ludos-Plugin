@@ -16,6 +16,7 @@ import fr.ludos.core.gui.WindowObject;
 import fr.ludos.core.gui.WindowProvider;
 import fr.ludos.core.gui.WindowUtility;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
@@ -32,7 +33,7 @@ public class GroupJoinGui implements WindowObject {
 	}
 
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return Component.text("Join another Player's Group");
 	}
 

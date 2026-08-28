@@ -17,6 +17,7 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.games.manhunt.ManhuntGame;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextDecoration;
 
 /**
@@ -37,7 +38,7 @@ public class ManhuntCompass extends SpecialItem<ManhuntCompass> {
 
 
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return Component.text("Hunter's Compass");
 	}
 

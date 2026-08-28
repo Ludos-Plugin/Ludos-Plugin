@@ -10,7 +10,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.command.ludos.game.GameConfig;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameManager;
 import fr.ludos.core.persistence.config.ConfigNode;
@@ -27,7 +26,7 @@ public class GameConfigMap extends ConfigNodeCollection {
 
 	public GameConfigMap(GameManager manager) {
 		super(
-			GameConfig.WINDOW_TITLE,
+			Game.WINDOW_TITLE,
 			Game.NAMESPACE
 		);
 		this.manager = Objects.requireNonNull(manager);

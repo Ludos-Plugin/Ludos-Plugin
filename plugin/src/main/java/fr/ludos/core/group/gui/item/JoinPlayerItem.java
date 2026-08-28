@@ -23,7 +23,7 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.controlitem.ControlItem;
 
 /**
- * An item that represents a player that can be invited to a group. When clicked, it will attempt to invite the player to the group.
+ * An item that represents a player whose group can be join. When clicked, it will attempt to join the player's group.
  * @param <G> The type of Gui.
  */
 public class JoinPlayerItem<G extends Gui> extends ControlItem<G> {

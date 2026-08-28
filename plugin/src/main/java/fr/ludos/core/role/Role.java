@@ -3,6 +3,7 @@ package fr.ludos.core.role;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Material;
@@ -17,8 +18,13 @@ import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
 import fr.ludos.core.game.GameProcessBase;
-import fr.ludos.core.gui.Named;
+import fr.ludos.core.gui.ConfigHolder;
+import fr.ludos.core.gui.GuiObject;
+import fr.ludos.core.gui.GuidebookProvider;
+import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigNodeCollection;
+import fr.ludos.core.persistence.config.ConfigNodeMap;
+import fr.ludos.core.persistence.config.scope.ScopeConfigMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -32,6 +38,7 @@ import net.kyori.adventure.text.format.TextDecoration;
  */
 public abstract class Role extends GameProcessBase {
 	public static final String NAMESPACE = "role";
+	public static final TextComponent WINDOW_TITLE = Component.text("Role Configuration");
 	public static final String NONE_LABEL = "none";
 
 	private final Game game;
@@ -65,6 +72,14 @@ public abstract class Role extends GameProcessBase {
 		this.game = game;
 		this.builder = builder;
 		gameEvents = game.digestRoleEvents(builder.getId(), createGameEvents(builder, game));
+	}
+
+	public static ScopeConfigMap scopeConfig(Ludos ludos, ConfigNodeCollection nodes) {
+		return new ScopeConfigMap(
+			WINDOW_TITLE,
+			ludos,
+			nodes
+		);
 	}
 
 	@Override
@@ -124,7 +139,7 @@ public abstract class Role extends GameProcessBase {
 	 * The Builder class is used to configure a Role before it is initialized and serves as the data for the Role.
 	 * It contains configuration for the Role itself.
 	 */
-	public static abstract class Builder implements Named {
+	public static abstract class Builder implements GuiObject, ConfigHolder, GuidebookProvider {
 		private final RoleManager manager;
 		public final RoleManager getManager() {
 			return manager;
@@ -192,6 +207,10 @@ public abstract class Role extends GameProcessBase {
 		public void populateGuidebook(BookMetaBuilder builder) { }
 
 
+		public final ConfigNodeMap getConfigMap(List<ConfigNode> configNodes) {
+			return getConfigMap(getId(), this, configNodes);
+		}
+		@Override
 		public ConfigNodeCollection getConfig() {
 			return null;
 		}

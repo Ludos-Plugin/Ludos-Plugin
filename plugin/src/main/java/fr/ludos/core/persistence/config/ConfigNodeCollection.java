@@ -15,7 +15,6 @@ import fr.ludos.core.gui.GuiContext;
 import fr.ludos.core.gui.WindowProvider;
 import fr.ludos.core.gui.WindowUtility;
 import fr.ludos.core.gui.item.WindowItem;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.window.Window;
@@ -40,7 +39,7 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 		return namespace;
 	}
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return name;
 	}
 
@@ -78,7 +77,7 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 		WindowUtility.WindowSettings settings = new WindowUtility.WindowSettings(true);
 		List<Item> items = getNodes().stream()
 			.filter(Objects::nonNull)
-			.map(node -> WindowItem.of(node, childrenContext).addClickHandler(() -> settings.doReturn = false))
+			.map(node -> WindowItem.of(node, childrenContext).addClickHandler(settings::disableModalReturn))
 			.collect(Collectors.toList());
 
 		return WindowUtility.pagedItemsWindow(player, context, items, normalizedDisplayName(), settings);

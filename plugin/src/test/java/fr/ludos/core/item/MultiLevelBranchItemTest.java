@@ -45,6 +45,7 @@ import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelState;
 import fr.ludos.core.item.level.LevelValue;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MultiLevelBranchItemTest {
@@ -67,7 +68,7 @@ class MultiLevelBranchItemTest {
 		}
 
 		@Override
-		public Component displayName() {
+		public TextComponent displayName() {
 			return Component.text(name());
 		}
 
@@ -113,7 +114,7 @@ class MultiLevelBranchItemTest {
 		}
 
 		@Override
-		public Component displayName() {
+		public TextComponent displayName() {
 			return Component.text("Test Multi Level Branch Item");
 		}
 

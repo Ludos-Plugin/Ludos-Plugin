@@ -34,7 +34,6 @@ class RoleAssignmentTest extends RoleTest {
 
 		player1.performCommand("ludos role reset");
 		assertEquals("Your role was reset", player1.nextMessage(), "Role reset message was not sent");
-		assertEquals("You now have no role", player1.nextMessage(), "None role message was not sent");
 
 		player1.performCommand("ludos role get");
 		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was not unset");

@@ -31,6 +31,7 @@ import fr.ludos.core.persistence.PersistentEntry;
 import fr.ludos.core.persistence.serializer.DoubleSerializer;
 import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -138,7 +139,7 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 	}
 
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return Component.text("Rampart Shield");
 	}
 

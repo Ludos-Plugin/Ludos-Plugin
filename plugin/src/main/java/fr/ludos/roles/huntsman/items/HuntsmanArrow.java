@@ -21,6 +21,7 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 /**
  * A simple non-throwable, infinite source of arrows, notably for {@link HuntsmanBow}s and {@link HuntsmanCrossbow}s.
@@ -35,7 +36,7 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 
 
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return Component.text("Stolen Arrow");
 	}
 

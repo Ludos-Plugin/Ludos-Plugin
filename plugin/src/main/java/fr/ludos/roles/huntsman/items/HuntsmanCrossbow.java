@@ -30,6 +30,7 @@ import fr.ludos.core.item.MultiLevelBranchItem;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.roles.huntsman.HuntsmanRole;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 /**
  * Implementation of the Huntsman Crossbow, for use by any Player with {@link HuntsmanRole}.
@@ -45,7 +46,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, Hun
 
 
 	@Override
-	public Component displayName() {
+	public TextComponent displayName() {
 		return
 			Component.text("Cursed Crossbow ")
 			.append(getBranchAnnotation()); // TODO: Translate

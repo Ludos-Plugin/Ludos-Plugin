@@ -39,18 +39,7 @@ public class RoleReset implements Subcommand {
 			return true;
 		}
 
-		if (manager.isAuthorizedToEditRole(sender, target)) {
-			if (manager.getPlayerRole(target) == null) return true;
-
-			sender.sendMessage(
-				sender == target ?
-				"Your role was reset" :
-				"The role of player " + target.getName() + " was reset"
-			);
-			manager.unsetRole(target);
-		} else {
-			sender.sendMessage("You are not authorized to reset this player's role");
-		}
+		manager.userUnsetRole(sender, target);
 
 		return true;
 	}
