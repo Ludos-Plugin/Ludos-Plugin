@@ -13,9 +13,9 @@ class GameJoinOptionTest {
 	@DisplayName("Should return all join options and usage format")
 	void testGetOptionsAndUsage() {
 		String usage = GameJoinOption.getUsage();
-		assertTrue(usage.contains("auto"));
-		assertTrue(usage.contains("manual"));
-		assertTrue(usage.contains("none"));
+		assertTrue(usage.contains("yes"));
+		assertTrue(usage.contains("spectator"));
+		assertTrue(usage.contains("no"));
 		assertTrue(usage.startsWith("<") && usage.endsWith(">"));
 	}
 }

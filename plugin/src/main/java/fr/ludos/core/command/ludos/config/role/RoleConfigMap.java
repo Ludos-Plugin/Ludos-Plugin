@@ -1,24 +1,38 @@
 package fr.ludos.core.command.ludos.config.role;
 
+import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import fr.ludos.core.persistence.config.ConfigEntry;
-import fr.ludos.core.persistence.config.ConfigEntriesCollection;
+import fr.ludos.core.persistence.config.ConfigNode;
+import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.role.RoleManager;
+import net.kyori.adventure.text.Component;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 
 /**
- * Config Options Map for Role-specific configuration.
+ * Config Nodes Map for Role-specific configuration.
  */
-public class RoleConfigMap extends ConfigEntriesCollection {
-	private RoleManager manager;
+public class RoleConfigMap extends ConfigNodeCollection {
+	private final RoleManager manager;
 
 	public RoleConfigMap(RoleManager manager) {
-		super(Role.NAMESPACE);
+		super(
+			Component.text("Role Configuration"),
+			Role.NAMESPACE
+		);
+		this.manager = Objects.requireNonNull(manager);
+	}
+
+	@Override
+	public AbstractItemBuilder<?> createItem(Player player) {
+		return Role.createItem();
 	}
 
 	@Override
@@ -27,10 +41,16 @@ public class RoleConfigMap extends ConfigEntriesCollection {
 	}
 
 	@Override
-	public ConfigEntry getEntry(String name) {
+	public ConfigNode getNode(String name) {
 		Role.Builder role = manager.getRoleById(name);
 		if (role == null) return null;
 
 		return role.getConfig();
+	}
+	@Override
+	public Collection<ConfigNode> getNodes() {
+		return manager.getBuilders().stream()
+			.map(b -> (ConfigNode) b.getConfig())
+			.toList();
 	}
 }

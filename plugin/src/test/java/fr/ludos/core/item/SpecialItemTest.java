@@ -57,6 +57,7 @@ import fr.ludos.core.group.Group;
 import fr.ludos.core.item.SpecialItem.Events.Info;
 import fr.ludos.core.item.level.LevelItem;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextDecoration;
 
 
@@ -72,7 +73,7 @@ class SpecialItemTest {
 		}
 
 		@Override
-		public Component getName() {
+		public TextComponent displayName() {
 			return Component.text("Test Item");
 		}
 		@Override

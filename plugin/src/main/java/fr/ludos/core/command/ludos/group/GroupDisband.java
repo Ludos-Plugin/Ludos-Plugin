@@ -53,7 +53,7 @@ public class GroupDisband implements Subcommand {
 
 		group.disband();
 
-		manager.saveConfig();
+		manager.saveData();
 
 		return true;
 	}

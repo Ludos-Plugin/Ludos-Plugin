@@ -1,4 +1,4 @@
 #!/bin/bash
 cd "$(dirname "$0")/plugin"
-./gradlew build
+./gradlew build $@
 cp build/output/*.jar ../data/plugins/

@@ -21,6 +21,7 @@ import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextDecoration;
 
 /**
@@ -35,9 +36,8 @@ public class AssassinDagger extends LevelItem<AssassinDagger, AssassinDaggerLeve
 	}
 
 	@Override
-	public Component getName() {
-		return Component.text("Dague d'Assassin")
-			.decoration(TextDecoration.ITALIC, false);
+	public TextComponent displayName() {
+		return Component.text("Dague d'Assassin");
 	}
 
 	@Override

@@ -21,6 +21,7 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.roles.berserker.BerserkerRole;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -36,9 +37,8 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 
 
 	@Override
-	public Component getName() {
-		return Component.text("Rage Brew")
-			.decoration(TextDecoration.ITALIC, false);
+	public TextComponent displayName() {
+		return Component.text("Rage Brew");
 	}
 
 	@Override
@@ -119,7 +119,7 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 				player.sendMessage(
 					Component.text("Rage Brew", NamedTextColor.DARK_RED)
 						.append(Component.text(" en cooldown (", NamedTextColor.RED))
-						.append(Component.text(remaining + "s", NamedTextColor.YELLOW))
+						.append(Component.text(remaining + 's', NamedTextColor.YELLOW))
 						.append(Component.text(").", NamedTextColor.RED))
 				);
 				return;

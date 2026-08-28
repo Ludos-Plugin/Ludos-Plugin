@@ -10,12 +10,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.Utility;
 import fr.ludos.core.command.ludos.config.game.GameConfigMap;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
+import fr.ludos.core.game.gui.GameGui;
 import fr.ludos.core.group.Group;
 
 /**
@@ -28,6 +31,8 @@ public final class GameManager {
 	private final Set<Game> active = new HashSet<>();
 
 	public final GameConfigMap configMap = new GameConfigMap(this);
+
+	public final GameGui gui = new GameGui(this);
 
 
 	public GameManager(Ludos ludos) {
@@ -51,7 +56,7 @@ public final class GameManager {
 	public List<String> getGameIds() {
 		return registered.keySet().stream().collect( Collectors.toList() );
 	}
-	public List<Game.Builder> getGameBuilders() {
+	public List<Game.Builder> getBuilders() {
 		return registered.values().stream().collect( Collectors.toList() );
 	}
 
@@ -63,10 +68,40 @@ public final class GameManager {
 		return Collections.unmodifiableSet(active);
 	}
 
+	public boolean playerStartGame(Player player, String id) {
+		Game.Builder builder = registered.get(id);
+		if (builder == null) {
+			player.sendMessage("Game not found: " + id);
+			return false;
+		}
+
+		return playerStartGame(player, builder);
+	}
+	public boolean playerStartGame(Player player, Game.Builder builder) {
+		Group group = getLudos().getGroupManager().getGroupOfPlayer(player);
+		if (group == null) {
+			player.sendMessage("You are not in a group.");
+			return true;
+		}
+
+		boolean membersCanRunGames = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canRunGames();
+		if (! group.isLeader(player) && ! membersCanRunGames) {
+			player.sendMessage("Only the group leader can start games.");
+			return true;
+		}
+
+		startGame(builder, group);
+		return true;
+	}
+
 	public boolean startGame(String id, Group group) {
 		Game.Builder builder = registered.get(id);
 		if (builder == null) return false;
 
+		startGame(builder, group);
+		return true;
+	}
+	public final void startGame(Game.Builder builder, Group group) {
 		Game oldGame = group.getGame();
 		if (oldGame != null) {
 			oldGame.stop();
@@ -76,20 +111,18 @@ public final class GameManager {
 					public void run() {
 						if (! oldGame.isClear()) return;
 
-						startGame(builder, group);
+						startGameInternal(builder, group);
 						cancel();
 					}
 				}.runTaskTimer(oldGame.getPlugin(), 0, 20);
-				return true;
+				return;
 			}
 		}
 
-		startGame(builder, group);
-
-		return true;
+		startGameInternal(builder, group);
 	}
 
-	private final void startGame(Game.Builder builder, Group group) {
+	private final void startGameInternal(Game.Builder builder, Group group) {
 		Game game = builder.build(group);
 		game.addSetupListener(() -> {
 			group.setGame(game);

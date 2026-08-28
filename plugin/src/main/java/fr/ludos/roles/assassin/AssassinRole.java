@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,6 +29,8 @@ import fr.ludos.roles.assassin.items.trap.AssassinSnareDevice;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * Implementation of the Assassin {@link Role}.
@@ -143,7 +146,12 @@ public class AssassinRole extends Role {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new ItemBuilder(Material.STONE_SWORD);
+		}
+
+		@Override
+		public TextComponent displayName() {
 			return Component.text("Assassin")
 				.color(NamedTextColor.DARK_BLUE);
 		}

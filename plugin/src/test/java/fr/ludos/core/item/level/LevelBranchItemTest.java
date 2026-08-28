@@ -41,6 +41,7 @@ import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.persistence.pdc.LevelValuePersistentDataType;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LevelBranchItemTest {
@@ -65,13 +66,13 @@ class LevelBranchItemTest {
 		}
 
 		@Override
-		public net.kyori.adventure.text.Component getName() {
-			return net.kyori.adventure.text.Component.text(name);
+		public TextComponent displayName() {
+			return Component.text(name);
 		}
 
 		@Override
-		public net.kyori.adventure.text.Component getDescription() {
-			return net.kyori.adventure.text.Component.text(description);
+		public Component getDescription() {
+			return Component.text(description);
 		}
 
 		@Override
@@ -127,7 +128,7 @@ class LevelBranchItemTest {
 		}
 
 		@Override
-		public Component getName() {
+		public TextComponent displayName() {
 			return Component.text("Test Level Branch Item");
 		}
 

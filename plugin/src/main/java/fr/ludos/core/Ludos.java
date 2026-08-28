@@ -26,9 +26,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.book.BookUtility;
 import fr.ludos.core.command.ludos.LudosCommand;
-import fr.ludos.core.command.ludos.config.GlobalScopedConfigMap;
-import fr.ludos.core.command.ludos.config.GroupScopedConfigMap;
-import fr.ludos.core.command.ludos.config.PlayerScopedConfigMap;
 import fr.ludos.core.command.ludos.config.ludos.LudosConfigMap;
 import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
 import fr.ludos.core.game.Game;
@@ -39,8 +36,14 @@ import fr.ludos.core.item.texture.TextureListener;
 import fr.ludos.core.item.texture.TextureManager;
 import fr.ludos.core.packets.player.PlayerPackets;
 import fr.ludos.core.packets.player.PlayerPacketsFactory;
+import fr.ludos.core.persistence.config.scope.GlobalScopedConfigMap;
+import fr.ludos.core.persistence.config.scope.GroupScopedConfigMap;
+import fr.ludos.core.persistence.config.scope.PlayerScopedConfigMap;
+import fr.ludos.core.persistence.config.scope.ScopeConfigMap;
+import fr.ludos.core.persistence.config.valueEntry.GroupPlayersConfigEntry;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.role.RoleManager;
+import fr.ludos.core.security.AdminAuthz;
 import fr.ludos.games.arena.ArenaGame;
 import fr.ludos.games.manhunt.ManhuntGame;
 import fr.ludos.games.raid.RaidGame;
@@ -55,6 +58,8 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * The main Ludos plugin.
@@ -70,17 +75,48 @@ public class Ludos extends JavaPlugin implements Listener {
 	public static final String CONFIG_NAMESPACE = "config";
 	public static final String DATA_NAMESPACE = "data";
 
+	private final AdminAuthz adminAuthz = new AdminAuthz();
+
 	private final GroupManager groupManager = new GroupManager(this);
 	private final GameManager gameManager = new GameManager(this);
 	private final RoleManager roleManager = new RoleManager(this);
 
 	private final TextureManager textureManager = new TextureManager(this);
 	private final TextureListener textureListener = new TextureListener(this);
+
+	public final LudosConfigMap configMap = new LudosConfigMap(this);
+	public final PlayerConfigMap playerConfigMap = new PlayerConfigMap(this);
+
+	public final PlayerScopedConfigMap playerScopedConfigMap = new PlayerScopedConfigMap(this);
+	public final GroupScopedConfigMap groupScopedConfigMap = new GroupScopedConfigMap(this);
+	public final GlobalScopedConfigMap globalScopedConfigMap = new GlobalScopedConfigMap(this);
+	public final ScopeConfigMap scopeConfigMap = new ScopeConfigMap(
+		Component.text("Ludos configuration"),
+		this,
+		globalScopedConfigMap,
+		groupScopedConfigMap,
+		playerScopedConfigMap
+	);
+
+
 	public final PlayerPackets playerPackets = PlayerPacketsFactory.createHandler();
 
-	public final PlayerScopedConfigMap playerConfigMap = new PlayerScopedConfigMap(this);
-	public final GroupScopedConfigMap groupConfigMap = new GroupScopedConfigMap(this);
-	public final GlobalScopedConfigMap globalConfigMap = new GlobalScopedConfigMap(this);
+	public final GroupPlayersConfigEntry playersConfig =
+		new GroupPlayersConfigEntry(
+			groupManager,
+			Component.text("Players"),
+			"players",
+			"all"
+		) {
+			@Override
+			public AbstractItemBuilder<?> createItem(Player player) {
+				return new ItemBuilder(Material.PLAYER_HEAD);
+			}
+		};
+
+	public final AdminAuthz getAdminAuthz() {
+		return this.adminAuthz;
+	}
 
 	public final GroupManager getGroupManager() {
 		return this.groupManager;
@@ -93,13 +129,13 @@ public class Ludos extends JavaPlugin implements Listener {
 	}
 
 	public ConfigurationSection getPluginConfig() {
-		return Utility.getOrCreateConfigSection(getConfig(), LudosConfigMap.INSTANCE.namespace());
+		return Utility.getOrCreateConfigSection(getConfig(), configMap.namespace());
 	}
 	public ConfigurationSection getGlobalRoleConfig(Role.Builder role) {
 		return Utility.getOrCreateConfigSection(getConfig(), roleManager.configMap.namespace() + '.' + role.getId());
 	}
 	public ConfigurationSection getGlobalPlayerConfig() {
-		return Utility.getOrCreateConfigSection(getConfig(), PlayerConfigMap.INSTANCE.namespace());
+		return Utility.getOrCreateConfigSection(getConfig(), playerConfigMap.namespace());
 	}
 
 	public final FileConfiguration getPlayersConfig() {
@@ -150,6 +186,8 @@ public class Ludos extends JavaPlugin implements Listener {
 		return textureManager;
 	}
 
+	public final LudosGui gui = new LudosGui(this);
+
 	@Override
 	public void onEnable() {
 		super.onEnable();
@@ -197,7 +235,7 @@ public class Ludos extends JavaPlugin implements Listener {
 	public ItemStack createGuidebook() {
 		final int gameHeaderPageIdx = 2;
 
-		final List<Game.Builder> gameBuilders = gameManager.getGameBuilders();
+		final List<Game.Builder> gameBuilders = gameManager.getBuilders();
 		final int gameHeaderPageCount = ((2 + gameBuilders.size() * 2) + BookUtility.MC_BOOK_LINE_COUNT - 1) / BookUtility.MC_BOOK_LINE_COUNT;
 
 		int gamePageOffset = 0;
@@ -218,7 +256,7 @@ public class Ludos extends JavaPlugin implements Listener {
 			gameHeaderPageBuilder
 				.append(
 					BookUtility.spaceBookLine(
-						builder.getDisplayName().append(Component.text(" :")),
+						builder.normalizedDisplayName().append(Component.text(" :")),
 						Component.text("Page " + gamePageIdx)
 							.decoration(TextDecoration.UNDERLINED, true)
 							.clickEvent(ClickEvent.changePage(gamePageIdx))
@@ -257,7 +295,7 @@ public class Ludos extends JavaPlugin implements Listener {
 			roleHeaderPageBuilder
 				.append(
 					BookUtility.spaceBookLine(
-						builder.getDisplayName().append(Component.text(" :")),
+						builder.normalizedDisplayName().append(Component.text(" :")),
 						Component.text("Page " + rolePageIdx)
 							.decoration(TextDecoration.UNDERLINED, true)
 							.clickEvent(ClickEvent.changePage(rolePageIdx))

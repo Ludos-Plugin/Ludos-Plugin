@@ -21,6 +21,8 @@ import fr.ludos.roles.rampart.items.RampartShield;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * Implementation of the Rampart {@link Role}.
@@ -115,7 +117,12 @@ public class RampartRole extends Role {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new ItemBuilder(Material.SHIELD);
+		}
+
+		@Override
+		public TextComponent displayName() {
 			return Component.text("Rampart")
 				.color(NamedTextColor.GOLD);
 		}

@@ -211,7 +211,7 @@ public abstract class GameTeamController extends GameProcessBase {
 
 	public final void addPlayer(OfflinePlayer player) {
 		Player onlinePlayer = player.getPlayer();
-		if (onlinePlayer != null && joinOption == GameJoinOption.none) {
+		if (onlinePlayer != null && joinOption == GameJoinOption.no) {
 			onlinePlayer.sendMessage("Joining is not enabled for this game session.");
 			return;
 		}
@@ -222,7 +222,7 @@ public abstract class GameTeamController extends GameProcessBase {
 	public abstract void removePlayer(OfflinePlayer player);
 
 	public final void tryJoinPlayer(OfflinePlayer player) {
-		if (joinOption == GameJoinOption.auto) {
+		if (joinOption == GameJoinOption.yes) {
 			joinPlayer(player);
 		}
 		else {

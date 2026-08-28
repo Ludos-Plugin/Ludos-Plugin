@@ -9,9 +9,11 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.SpecialItemInterface;
 import io.papermc.paper.entity.LookAnchor;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -91,9 +93,9 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 
 	public final static AssassinSnareDeviceBranches[] VALUES = AssassinSnareDeviceBranches.values();
 
-	private final Component name;
+	private final TextComponent name;
 	@Override
-	public Component getName() {
+	public TextComponent displayName() {
 		return name;
 	}
 
@@ -114,10 +116,10 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 	}
 
 
-	private AssassinSnareDeviceBranches(Component name, Component description, Material type) {
+	private AssassinSnareDeviceBranches(TextComponent name, Component description, Material type) {
 		this(name, description, type, 0);
 	}
-	private AssassinSnareDeviceBranches(Component name, Component description, Material type, int limit) {
+	private AssassinSnareDeviceBranches(TextComponent name, Component description, Material type, int limit) {
 		this.name = name;
 		this.description = description;
 		this.type = type;

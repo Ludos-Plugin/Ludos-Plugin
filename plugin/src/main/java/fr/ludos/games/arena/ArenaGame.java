@@ -1,15 +1,17 @@
 package fr.ludos.games.arena;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
+import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
@@ -19,8 +21,8 @@ import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
-import fr.ludos.core.persistence.config.ConfigEntriesCollection;
-import fr.ludos.core.persistence.config.ConfigEntriesMap;
+import fr.ludos.core.persistence.config.ConfigNodeCollection;
+import fr.ludos.core.persistence.config.ConfigNodeMap;
 import fr.ludos.core.persistence.config.valueEntry.GroupPlayersConfigEntry;
 import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
 import fr.ludos.core.wave.WaveController;
@@ -30,6 +32,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.util.TriState;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * Arena game implementation.
@@ -104,16 +108,49 @@ public class ArenaGame extends WaveGame {
 	 */
 	public static class Builder extends Game.Builder {
 		public final GroupPlayersConfigEntry team1Players =
-			new GroupPlayersConfigEntry(getManager().getLudos().getGroupManager(), "Team 1 players", "team_1", "random");
+			new GroupPlayersConfigEntry(
+				getManager().getLudos().getGroupManager(),
+				Component.text("Team 1 players"),
+				"team_1", "random"
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.BLUE_BANNER);
+				}
+			};
 
 		public final GroupPlayersConfigEntry team2Players =
-			new GroupPlayersConfigEntry(getManager().getLudos().getGroupManager(), "Team 2 players", "team_2", "random");
+			new GroupPlayersConfigEntry(
+				getManager().getLudos().getGroupManager(),
+				Component.text("Team 2 players"),
+				"team_2", "random"
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.RED_BANNER);
+				}
+			};
 
 		public final IntegerConfigEntry rounds =
-			new IntegerConfigEntry("Number of Rounds", "rounds", null, 3, true);
+			new IntegerConfigEntry(
+				Component.text("Number of Rounds"),
+				"rounds", 3,
+				true
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.SKELETON_SKULL);
+				}
+			};
 
-		private final ConfigEntriesMap configMap =
-			new ConfigEntriesMap(ID, Set.of(team1Players, team2Players, ArenaModeOption.CONFIG, rounds, WorldBorderArea.CONFIG));
+		public final ConfigNodeMap configMap = getConfigMap(
+			List.of(
+				team1Players,
+				team2Players,
+				ArenaModeOption.CONFIG,
+				rounds,
+				WorldBorderArea.CONFIG
+			));
 
 		public Builder(GameManager manager) {
 			super(manager);
@@ -125,11 +162,15 @@ public class ArenaGame extends WaveGame {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new ItemBuilder(Material.IRON_SWORD);
+		}
+
+		@Override
+		public TextComponent displayName() {
 			return Component.text("Arena")
 				.color(NamedTextColor.DARK_GRAY);
 		}
-
 		@Override
 		public TextComponent getDescription() {
 			return Component.text("Fight against each other.\n\n" +
@@ -149,7 +190,7 @@ public class ArenaGame extends WaveGame {
 		}
 
 		@Override
-		public ConfigEntriesCollection getConfig() {
+		public ConfigNodeCollection getConfig() {
 			return configMap;
 		}
 

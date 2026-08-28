@@ -39,8 +39,6 @@ public class GroupInvite implements Subcommand {
 	}
 	@Override
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-		if (args.length < 1) return false;
-
 		if (!(sender instanceof Player player)) {
 			sender.sendMessage("Only players can invite others to groups.");
 			return true;
@@ -52,18 +50,25 @@ public class GroupInvite implements Subcommand {
 			return true;
 		}
 
+		boolean membersCanInvite = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canInvite();
+		if (! group.isLeader(player) && ! membersCanInvite) {
+			sender.sendMessage("Only the group leader can invite new members.");
+			return true;
+		}
+
+		if (args.length == 0) {
+			if (! manager.getInviteGui().openWindow(player, manager.getLudos())) {
+				sender.sendMessage("No available players to invite.");
+			}
+			return true;
+		}
+
 		List<Player> targets = CommandUtility.getPlayersFromArgs(args, sender).stream()
 			.filter(p -> ! group.isPlayer(p))
 			.collect(Collectors.toCollection(ArrayList::new));
 
 		if (targets.isEmpty()) {
 			sender.sendMessage("No valid player names provided.");
-			return true;
-		}
-
-		boolean membersCanInvite = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canInvite();
-		if (! group.isLeader(player) && ! membersCanInvite) {
-			sender.sendMessage("Only the group leader can invite new members.");
 			return true;
 		}
 
@@ -80,7 +85,7 @@ public class GroupInvite implements Subcommand {
 			}
 		}
 		if (hasJoined) {
-			manager.saveConfig();
+			manager.saveData();
 		}
 
 		if (targets.size() > 0) {

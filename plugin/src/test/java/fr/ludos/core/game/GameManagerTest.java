@@ -74,7 +74,7 @@ class GameManagerTest {
 		assertNotNull(manager.getGameById(mockBuilderId));
 		assertEquals(mockBuilder, manager.getGameById(mockBuilderId));
 		assertTrue(manager.getGameIds().contains(mockBuilderId));
-		assertTrue(manager.getGameBuilders().contains(mockBuilder));
+		assertTrue(manager.getBuilders().contains(mockBuilder));
 	}
 
 

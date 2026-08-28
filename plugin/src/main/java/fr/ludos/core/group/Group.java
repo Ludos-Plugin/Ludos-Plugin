@@ -11,12 +11,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -24,16 +26,37 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.gui.GuiObject;
 import fr.ludos.core.role.Role;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * A structure to encapsulate a Group of Players. Meant for {@link Game} instances.
  */
 public final class Group {
 	public static final String NAMESPACE = "group";
+
+	public final static ItemBuilder createItem() {
+		return new ItemBuilder(Material.BLUE_BANNER);
+	}
+	public final static GuiObject GUI_OBJECT = new GuiObject() {
+		@Override
+		public @NotNull AbstractItemBuilder<?> createItem(Player player) {
+			return Group.createItem();
+		}
+		@Override
+		public TextComponent displayName() {
+			return Component.text("Group")
+				.color(NamedTextColor.GREEN)
+				.decoration(TextDecoration.ITALIC, false);
+		}
+	};
 
 	GroupManager groupManager;
 	private @Nullable Game game;
@@ -163,6 +186,10 @@ public final class Group {
 	public final boolean isPlayer(OfflinePlayer player) {
 		if (player == null) return false;
 		return player.getUniqueId().equals(leaderId) || memberIds.contains(player.getUniqueId());
+	}
+
+	public final Predicate<OfflinePlayer> belongs() {
+		return this::isPlayer;
 	}
 
 	public final void disband() {
@@ -312,17 +339,19 @@ public final class Group {
 		return true;
 	}
 
-	public final AddPlayerResult requestAddPlayer(Player player, AddPlayerMethod method) {
+	public final AddPlayerResult requestAddPlayer(OfflinePlayer player, AddPlayerMethod method) {
 		if (player == null) return AddPlayerResult.Failed;
 		if (isLeader(player)) return AddPlayerResult.Failed;
 		if (isMember(player)) return AddPlayerResult.Failed;
 		if (method == null) return AddPlayerResult.Failed;
 
 		GroupJoinOption joinBehaviour = GroupConfigMap.GROUP_JOIN.getGroupConfig(this);
+		boolean canAutoJoin = joinBehaviour == GroupJoinOption.auto_accept && method == AddPlayerMethod.Join;
 
 		AddPlayerMethod currentMethod = joinRequests.get(player.getUniqueId());
 		boolean consentIsTwoSided = currentMethod != null && currentMethod != method;
-		if (joinBehaviour == GroupJoinOption.auto_accept || consentIsTwoSided) {
+
+		if (canAutoJoin || consentIsTwoSided) {
 			joinRequests.remove(player.getUniqueId());
 			addPlayer(player);
 			return AddPlayerResult.Succeeded;
@@ -334,7 +363,10 @@ public final class Group {
 				Player onlineLeader = leader.getPlayer();
 				if (onlineLeader == null) {
 					Component offlineMessage = Component.text(leader.getName() + " is currently offline and cannot accept your request.");
-					player.sendMessage(offlineMessage);
+					Player onlinePlayer = player.getPlayer();
+					if (onlinePlayer != null) {
+						onlinePlayer.sendMessage(offlineMessage);
+					}
 				}
 				else {
 					Component joinRequestMessage = Component.text(player.getName() + " has requested to join your group. Click ")
@@ -361,7 +393,11 @@ public final class Group {
 							)
 					)
 					.append(Component.text(" to join."));
-				player.sendMessage(invitationMessage);
+
+				Player onlinePlayer = player.getPlayer();
+				if (onlinePlayer != null) {
+					onlinePlayer.sendMessage(invitationMessage);
+				}
 
 				joinRequests.put(player.getUniqueId(), AddPlayerMethod.Invite);
 				break;

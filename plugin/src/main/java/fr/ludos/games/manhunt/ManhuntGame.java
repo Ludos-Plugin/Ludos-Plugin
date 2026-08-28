@@ -1,6 +1,7 @@
 package fr.ludos.games.manhunt;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -10,6 +11,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
@@ -31,12 +33,11 @@ import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
-import fr.ludos.core.persistence.config.ConfigEntriesCollection;
-import fr.ludos.core.persistence.config.ConfigEntriesMap;
+import fr.ludos.core.persistence.PersistentEntry;
+import fr.ludos.core.persistence.config.ConfigNodeCollection;
+import fr.ludos.core.persistence.config.ConfigNodeMap;
 import fr.ludos.core.persistence.config.valueEntry.GroupPlayerConfigEntry;
-import fr.ludos.core.persistence.config.valueEntry.GroupPlayersConfigEntry;
 import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
-import fr.ludos.core.persistence.data.DataEntry;
 import fr.ludos.core.persistence.serializer.TimeSerializer;
 import fr.ludos.core.world.WorldManager;
 import fr.ludos.games.manhunt.items.ManhuntCompass;
@@ -44,6 +45,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.util.TriState;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 
 /**
@@ -52,7 +55,7 @@ import net.kyori.adventure.util.TriState;
 public class ManhuntGame extends Game {
 	public static final String ID = "manhunt";
 
-	public static final DataEntry<Duration> SURVIVAL_TIME = new DataEntry<>("survival_time", TimeSerializer.INSTANCE);
+	public static final PersistentEntry<Duration> SURVIVAL_TIME = PersistentEntry.of(TimeSerializer.INSTANCE, "survival_time", Duration.ZERO);
 
 	private final Builder builder;
 	public final Builder builder() {
@@ -111,7 +114,7 @@ public class ManhuntGame extends Game {
 			.build();
 		this.teamController = new ManhuntTeamController(
 			this,
-			builder.players.getGameConfig(group, builder),
+			builder.getLudos().playersConfig.getGameConfig(group, builder),
 			builder.prey.getGameConfig(group, builder)
 		);
 
@@ -228,17 +231,45 @@ public class ManhuntGame extends Game {
 	 * Builder for {@link ManhuntGame}.
 	 */
 	public static class Builder extends Game.Builder {
-		public final GroupPlayersConfigEntry players =
-			new GroupPlayersConfigEntry(getManager().getLudos().getGroupManager(), "Players", "players", "all");
-
 		public final GroupPlayerConfigEntry prey =
-			new GroupPlayerConfigEntry(getManager().getLudos().getGroupManager(), "Prey Player", "prey", "random");
+			new GroupPlayerConfigEntry(
+				getManager().getLudos().getGroupManager(),
+				Component.text("Prey Player"),
+				"prey"
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.TARGET);
+				}
+				protected String getNullValueString() {
+					return "random";
+				};
+			};
 
 		public final IntegerConfigEntry revealPeriod =
-			new IntegerConfigEntry("Reveal period duration seconds", "reveal", null, 180, Set.of(60, 120, 180, 240, 300, 360), true);
+			new IntegerConfigEntry(
+				Component.text("Reveal period"),
+				"reveal",
+				180, Set.of(60, 120, 180, 240, 300, 360),
+				true
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.CLOCK);
+				}
+				protected String formatValueString(String value) {
+					return super.formatValueString(value) + 's';
+				};
+			};
 
-		public final ConfigEntriesMap config =
-			new ConfigEntriesMap(ID, Set.of(players, prey, WorldBorderArea.CONFIG, revealPeriod));
+
+		public final ConfigNodeMap configMap = getConfigMap(
+			List.of(
+				getLudos().playersConfig,
+				prey,
+				WorldBorderArea.CONFIG,
+				revealPeriod
+			));
 
 		public Builder(GameManager manager) {
 			super(manager);
@@ -250,7 +281,12 @@ public class ManhuntGame extends Game {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new ItemBuilder(Material.COMPASS);
+		}
+
+		@Override
+		public TextComponent displayName() {
 			return Component.text("Manhunt")
 				.color(NamedTextColor.RED);
 		}
@@ -285,8 +321,8 @@ public class ManhuntGame extends Game {
 		}
 
 		@Override
-		public ConfigEntriesCollection getConfig() {
-			return config;
+		public ConfigNodeCollection getConfig() {
+			return configMap;
 		}
 
 		@Override

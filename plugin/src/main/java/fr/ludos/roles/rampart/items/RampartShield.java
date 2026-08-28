@@ -27,10 +27,11 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.level.LevelItem;
-import fr.ludos.core.persistence.data.DataEntry;
+import fr.ludos.core.persistence.PersistentEntry;
 import fr.ludos.core.persistence.serializer.DoubleSerializer;
 import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -40,7 +41,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels> {
 	public static final String ID = "rampart_shield";
 
-	public static final DataEntry<Double> DAMAGE_ABSORBED = new DataEntry<>("damage_absorbed", DoubleSerializer.INSTANCE);
+	public static final PersistentEntry<Double> DAMAGE_ABSORBED = PersistentEntry.of(DoubleSerializer.INSTANCE, "damage_absorbed", 0d);
 
 	private static final int COOLDOWN_DURATION_SECONDS = 10;
 	private static final Vector ALLY_PROTECTION_RANGE = new Vector(2.0, 2.0, 2.0);
@@ -132,15 +133,14 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 	public void saveDamageAbsorbed(double damage) {
 		ConfigurationSection data = getGame().ludos().getItemData(getOwner(), getEvents());
 
-		double currentDamage = DAMAGE_ABSORBED.getOr(data, 0d);
+		double currentDamage = DAMAGE_ABSORBED.getOrDefault(data);
 		DAMAGE_ABSORBED.set(currentDamage + damage, data);
 		getGame().ludos().savePlayersConfig();
 	}
 
 	@Override
-	public Component getName() {
-		return Component.text("Rampart Shield")
-				.decoration(TextDecoration.ITALIC, false);
+	public TextComponent displayName() {
+		return Component.text("Rampart Shield");
 	}
 
 	@Override

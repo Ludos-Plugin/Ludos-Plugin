@@ -159,7 +159,7 @@ public final class ResourcePackLoader {
 	//     override.add("predicate", predicate);
 
 	//     String modelName = capitalize(model.variant()) + capitalize(model.mode());
-	//     override.addProperty("model", "item/" + model.providerPath() + "/" + modelName);
+	//     override.addProperty("model", "item/" + model.providerPath() + '/' + modelName);
 
 	//     overrides.add(override);
 	// }

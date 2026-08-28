@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.command.Subcommand;
-import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
@@ -42,26 +41,10 @@ public class GameStart implements Subcommand {
 			sender.sendMessage("Only players can start games.");
 			return true;
 		}
-
 		String startGameId = args[0].toLowerCase();
-		if (! manager.getRegistered().containsKey(startGameId) ) {
-			sender.sendMessage("Game not found: " + startGameId);
-			return true;
-		}
 
-		Group group = manager.getLudos().getGroupManager().getGroupOfPlayer(player);
-		if (group == null) {
-			sender.sendMessage("You are not in a group.");
-			return true;
-		}
+		manager.playerStartGame(player, startGameId);
 
-		boolean membersCanRunGames = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canRunGames();
-		if (! group.isLeader(player) && ! membersCanRunGames) {
-			sender.sendMessage("Only the group leader can start games.");
-			return true;
-		}
-
-		manager.startGame(startGameId, group);
 		return true;
 	}
 	@Override
@@ -72,10 +55,10 @@ public class GameStart implements Subcommand {
 	}
 	@Override
 	public String getUsage(@NotNull CommandSender sender) {
-		return "<" +
+		return '<' +
 			manager.getRegistered().keySet().stream().sorted()
 				.collect(Collectors.joining(" | "))
-			+ ">";
+			+ '>';
 	}
 	@Override
 	public boolean requireOp() {

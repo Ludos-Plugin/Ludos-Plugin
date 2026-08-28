@@ -19,7 +19,7 @@ import fr.ludos.core.item.ItemSlot;
 import fr.ludos.core.item.SpecialItem;
 import fr.ludos.roles.assassin.AssassinRole;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.TextComponent;
 
 /**
  * Implementation of the Assassin Boots, for use by any Player with {@link AssassinRole}.
@@ -32,9 +32,8 @@ public class AssassinBoots extends SpecialItem<AssassinBoots> {
 	}
 
 	@Override
-	public Component getName(){
-		return Component.text("Bottes d'Assassin")
-			.decoration(TextDecoration.ITALIC, false);
+	public TextComponent displayName(){
+		return Component.text("Bottes d'Assassin");
 	}
 
 	@Override

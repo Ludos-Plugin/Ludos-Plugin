@@ -3,19 +3,37 @@ package fr.ludos.core.area;
 import java.util.Set;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.WorldBorder;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.Utility;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
+import net.kyori.adventure.text.Component;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * Area that is delimited by a Minecraft {@link WorldBorder}.
  */
 public class WorldBorderArea extends Area {
 	public static final IntegerConfigEntry CONFIG =
-		new IntegerConfigEntry("WorldBorder Area diameter", "area", null, 150, Set.of(150, 250, 350), true);
+		new IntegerConfigEntry(
+			Component.text("Area diameter"),
+			"area",
+			150, Set.of(150, 250, 350),
+			true
+		) {
+			@Override
+			public AbstractItemBuilder<?> createItem(Player player) {
+				return new ItemBuilder(Material.MAP);
+			}
+			protected String formatValueString(String value) {
+				return super.formatValueString(value) + " blocks";
+			};
+		};
 
 	private final Builder builder;
 	@Override

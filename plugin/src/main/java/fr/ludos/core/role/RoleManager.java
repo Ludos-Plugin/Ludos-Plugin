@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.ServerOperator;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.ludos.config.role.RoleConfigMap;
 import fr.ludos.core.group.Group;
+import fr.ludos.core.role.gui.RoleGui;
 
 /**
  * Manager class for {@link Role}s, used to maintain a registry of roles for use in {@link Ludos}.
@@ -29,6 +31,8 @@ public final class RoleManager {
 	private Map<UUID, String> playerRoles = new HashMap<UUID, String>();
 
 	public final RoleConfigMap configMap = new RoleConfigMap(this);
+
+	public final RoleGui gui = new RoleGui(this);
 
 
 	public RoleManager(Ludos ludos) {
@@ -131,12 +135,11 @@ public final class RoleManager {
 		return playerRoles;
 	}
 
-	public void setRole(OfflinePlayer player, String roleId) {
+	public void setRole(OfflinePlayer player, Role.Builder role) {
+		String roleId = role.getId();
+
 		UUID playerUUID = player.getUniqueId();
 		if ( playerRoles.containsKey(playerUUID) && playerRoles.get(playerUUID).equalsIgnoreCase(roleId) ) return;
-
-		Role.Builder role = getRegistered().get(roleId);
-		if (role == null) return;
 
 		playerRoles.put(playerUUID, roleId);
 
@@ -147,6 +150,31 @@ public final class RoleManager {
 		if (online != null) {
 			online.sendMessage("Your role is now " + roleId);
 		}
+	}
+	public void setRole(OfflinePlayer player, String id) {
+		Role.Builder role = getRegistered().get(id);
+		if (role == null) return;
+
+		setRole(player, role);
+	}
+
+	public boolean userSetRole(CommandSender user, OfflinePlayer target, String id) {
+		Role.Builder role = getRegistered().get(id);
+		if (role == null) {
+			user.sendMessage("Role not found: " + id);
+			return false;
+		}
+
+		if (! isAuthorizedToEditRole(user, target)) {
+			user.sendMessage("You are not authorized to set this player's role");
+			return false;
+		}
+
+		setRole(target, role);
+		if (user != target) {
+			user.sendMessage("The role of player " + target.getName() + " is now " + id);
+		}
+		return true;
 	}
 
 	public void unsetRole(OfflinePlayer player) {
@@ -162,7 +190,23 @@ public final class RoleManager {
 
 		Player online = player.getPlayer();
 		if (online != null) {
-			online.sendMessage("You now have no role");
+			online.sendMessage("Your role was reset");
 		}
+	}
+
+	public boolean userUnsetRole(CommandSender user, OfflinePlayer target) {
+		if (! isAuthorizedToEditRole(user, target)) {
+			user.sendMessage("You are not authorized to reset this player's role");
+			return false;
+		}
+
+		if (getPlayerRole(target) == null) return true;
+
+		unsetRole(target);
+		if (user != target) {
+			user.sendMessage("The role of player " + target.getName() + " was reset");
+		}
+
+		return true;
 	}
 }

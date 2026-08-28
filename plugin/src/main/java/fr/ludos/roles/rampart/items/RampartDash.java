@@ -26,7 +26,7 @@ import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.roles.rampart.RampartRole;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.TextComponent;
 
 /**
  * Implementation of the Rampart Dash/Charge, for use by any Player with {@link RampartRole}.
@@ -122,9 +122,8 @@ public class RampartDash extends SpecialItem<RampartDash> {
 	}
 
 	@Override
-	public Component getName() {
-		return Component.text("Rampart Charge")
-				.decoration(TextDecoration.ITALIC, false);
+	public TextComponent displayName() {
+		return Component.text("Rampart Charge");
 	}
 
 	@Override

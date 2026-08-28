@@ -46,7 +46,7 @@ public class GroupLeave implements Subcommand {
 
 		group.removePlayer(player, false);
 
-		manager.saveConfig();
+		manager.saveData();
 
 		return true;
 	}

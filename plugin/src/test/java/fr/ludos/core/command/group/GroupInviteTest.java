@@ -1,7 +1,6 @@
 package fr.ludos.core.command.group;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
@@ -19,10 +18,6 @@ class GroupInviteTest extends GroupTest {
 
 		player1.performCommand("ludos group create");
 		assertEquals("You have created a new group.", player1.nextMessage(), "Could not create group");
-
-		boolean isValid = player1.performCommand("ludos group invite");
-		player1.nextMessage();
-		assertFalse(isValid, "Successfully invited no one to group");
 
 		player1.performCommand("ludos group invite Player1");
 		assertEquals("No valid player names provided.", player1.nextMessage(), "Successfully invited self to group");
@@ -70,7 +65,7 @@ class GroupInviteTest extends GroupTest {
 		assertCreateGroupWithInvite(player1, Collections.singletonList(player2));
 		assertJoinGroup(player2, player1);
 
-		player1.performCommand("ludos group config group member_authorisation " + rights);
+		player1.performCommand("ludos group config group member_authorisation set " + rights);
 		assertEquals("Members authorisation set to " + rights, player1.nextMessage(), "Could not set group rights");
 
 		PlayerMock player3 = createPlayer("Player3");
@@ -92,7 +87,7 @@ class GroupInviteTest extends GroupTest {
 		assertEquals("You have joined " + player1.getName() + "'s group.", player2.nextMessage(), "Join should be accepted after invite");
 		assertEquals(player2.getName() + " has joined the group.", player1.nextMessage(), "Leader should be notified on join");
 
-		player1.performCommand("ludos group config group member_authorisation " + rights);
+		player1.performCommand("ludos group config group member_authorisation set " + rights);
 		assertEquals("Members authorisation set to none", player1.nextMessage(), "Could not set group rights");
 
 		player2.performCommand("ludos group invite " + player3.getName());

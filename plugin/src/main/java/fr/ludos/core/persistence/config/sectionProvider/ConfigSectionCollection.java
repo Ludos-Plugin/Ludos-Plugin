@@ -2,51 +2,103 @@ package fr.ludos.core.persistence.config.sectionProvider;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import fr.ludos.core.persistence.config.ConfigEntry;
+import fr.ludos.core.gui.GuiContext;
+import fr.ludos.core.gui.WindowProvider;
+import fr.ludos.core.gui.WindowUtility;
+import fr.ludos.core.gui.WindowUtility.WindowSettings;
+import fr.ludos.core.gui.item.ConfigProviderItem;
+import fr.ludos.core.persistence.config.ConfigNode;
+import fr.ludos.core.persistence.config.ConfigRootCollection;
+import xyz.xenondevs.invui.item.Item;
+import xyz.xenondevs.invui.item.ItemProvider;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.window.Window;
 
 /**
- * Collection of {@link ConfigSectionProvider}s, with their corresponding {@link ConfigEntry}.
+ * Collection of {@link ConfigSectionProvider}s, with their corresponding {@link ConfigNode}.
  */
-public abstract class ConfigSectionCollection {
-	public abstract @NotNull Set<String> getProviderKeys(CommandSender sender);
+public abstract class ConfigSectionCollection extends ConfigRootCollection {
 	public abstract @NotNull ConfigSectionProvider getProvider(String key, CommandSender sender);
-	public abstract @NotNull ConfigEntry getOptions(String key, CommandSender sender);
+	public abstract @NotNull AbstractItemBuilder<?> getItem(String key, CommandSender sender);
 
-	public final boolean exec(@NotNull String[] args, CommandSender sender) {
-		if (args.length == 0) return false;
+	public final boolean execute(Plugin plugin, @NotNull String[] args, CommandSender sender) {
+		GuiContext context = GuiContext.of(plugin, this);
+
+		if (args.length == 0) {
+			if (! (sender instanceof Player player)) return false;
+			if (! openWindow(player, context)) {
+				WindowProvider.playDenySound(player);
+			}
+			return true;
+		}
 
 		String key = args[0];
 		ConfigSectionProvider provider = getProvider(key, sender);
-		if (provider == null) return true;
+		if (provider == null) return false;
+		if (! provider.checkAuthorizationNotify(sender)) return true;
 
-		ConfigurationSection config = provider.getConfig(sender);
-		if (config == null) return true;
+		ConfigNode node = getNode(key);
+		if (node == null) return false;
 
-		ConfigEntry options = getOptions(key, sender);
+		context.setConfig(new ConfigSectionContext(provider));
 
-		boolean success = options.execute(Arrays.copyOfRange(args, 1, args.length), sender, config);
-		if (success) {
-			provider.saveConfig(config, sender);
+		if (args.length == 1) {
+			if (! (sender instanceof Player player)) return false;
+			if (! node.openWindow(player, context)) {
+				WindowProvider.playDenySound(player);
+			}
+			return true;
+		}
+
+		if (node.execute(Arrays.copyOfRange(args, 1, args.length), sender, context)) {
+			provider.saveConfig();
 		}
 		return true;
 	}
 
 	public final @Nullable List<@NotNull String> tabComplete(@NotNull String[] args, CommandSender sender) {
 		if (args.length <= 1) {
-			return getProviderKeys(sender).stream().toList();
+			return options(sender).stream().toList();
 		}
 
-		String key = args[0];
+		ConfigNode root = getNode(args[0]);
+		if (root == null) return null;
 
-		ConfigEntry options = getOptions(key, sender);
+		return root.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender);
+	}
 
-		return options.tabComplete(Arrays.copyOfRange(args, 1, args.length), sender);
+	public Window window(Player player, GuiContext context) {
+		Set<String> options = options(player);
+		if (options.isEmpty()) return null;
+
+		WindowUtility.WindowSettings state = new WindowSettings(true);
+		List<Item> items = options.stream()
+			.map(key -> {
+				ConfigSectionProvider provider = getProvider(key, player);
+				if (provider == null || ! provider.checkAuthorizationSilent(player)) return null;
+
+				ConfigNode node = getNode(key);
+
+				return new ConfigProviderItem(context, provider, node) {
+					@Override
+					public ItemProvider getItemProvider(Player viewer) {
+						return getItem(key, player);
+					}
+				}.addClickHandler(() -> state.doReturn = false);
+			})
+			.filter(Objects::nonNull)
+			.collect(Collectors.toList());
+
+		return WindowUtility.pagedItemsWindow(player, context, items, normalizedDisplayName(), state);
 	}
 }

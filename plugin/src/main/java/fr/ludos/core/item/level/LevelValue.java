@@ -110,6 +110,6 @@ public final record LevelValue(int level, double xp) implements Serializable {
 
 	@Override
 	public final String toString() {
-		return "LevelValue[level=" + level + ", xp=" + xp + "]";
+		return "LevelValue[level=" + level + ", xp=" + xp + ']';
 	}
 }

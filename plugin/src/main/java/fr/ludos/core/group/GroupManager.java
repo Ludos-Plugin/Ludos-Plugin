@@ -27,15 +27,25 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.Utility;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
-import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.group.gui.GroupGui;
+import fr.ludos.core.group.gui.GroupInviteGui;
+import fr.ludos.core.group.gui.GroupJoinGui;
+import fr.ludos.core.group.gui.GroupKickGui;
+import fr.ludos.core.persistence.config.scope.ScopeConfigMap;
 import fr.ludos.core.role.Role;
+import fr.ludos.core.security.group.GroupConfigAuthz;
+import fr.ludos.core.security.group.GroupInviteAuthz;
+import fr.ludos.core.security.group.GroupManageAuthz;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 /**
  * Manager class for {@link Group}s, used to maintain the state of current Groups, for use in {@link Ludos}.
  */
 public class GroupManager implements Listener {
+	public static final TextComponent WINDOW_TITLE = Component.text("Group configuration");
+
 	public static final String LEADER_KEY = "leader";
 	public static final String MEMBERS_KEY = "members";
 
@@ -47,16 +57,61 @@ public class GroupManager implements Listener {
 	private final Set<Group> groups = new HashSet<>();
 	private final Map<UUID, Group> playerGroupMap = new HashMap<>();
 
+	private final GroupInviteAuthz inviteAuthz = new GroupInviteAuthz(this);
+	private final GroupConfigAuthz configAuthz = new GroupConfigAuthz(this);
+	private final GroupManageAuthz manageAuthz = new GroupManageAuthz(this);
+
+	public final GroupConfigMap configMap = new GroupConfigMap(this);
+	private final ScopeConfigMap scopeConfigMap;
+
+	public final GroupJoinGui joinGui = new GroupJoinGui(this);
+	public final GroupInviteGui inviteGui = new GroupInviteGui(this);
+	public final GroupKickGui kickGui = new GroupKickGui(this);
+	public final GroupGui gui = new GroupGui(this, joinGui, inviteGui, kickGui);
+
 
 	public GroupManager(Ludos ludos) {
 		this.ludos = Objects.requireNonNull(ludos);
 
 		groupsFile = new File(ludos.getDataFolder(), "groups.yml");
 		groupsData = YamlConfiguration.loadConfiguration(groupsFile);
+
+		scopeConfigMap = new ScopeConfigMap(
+			WINDOW_TITLE,
+			ludos,
+			this,
+			configMap,
+			configMap,
+			null
+		);
 	}
 
 	public final Ludos getLudos() {
 		return ludos;
+	}
+
+	public final GroupInviteAuthz getInviteAuthz() {
+		return inviteAuthz;
+	}
+	public final GroupConfigAuthz getConfigAuthz() {
+		return configAuthz;
+	}
+	public final GroupManageAuthz getManageAuthz() {
+		return manageAuthz;
+	}
+
+	public final GroupJoinGui getJoinGui() {
+		return joinGui;
+	}
+	public final GroupInviteGui getInviteGui() {
+		return inviteGui;
+	}
+	public final GroupKickGui getKickGui() {
+		return kickGui;
+	}
+
+	public final ScopeConfigMap getScopeConfigMap() {
+		return scopeConfigMap;
 	}
 
 	public final Set<Group> getAllGroups() {
@@ -188,7 +243,7 @@ public class GroupManager implements Listener {
 	}
 
 	public ConfigurationSection getGlobalGroupConfig() {
-		return Utility.getOrCreateConfigSection(getLudos().getConfig(), GroupConfigMap.INSTANCE.namespace());
+		return Utility.getOrCreateConfigSection(getLudos().getConfig(), configMap.namespace());
 	}
 	public ConfigurationSection getConfigSection(Group group) {
 		return Utility.getOrCreateConfigSection(groupsData, group.getId().toString());
@@ -200,7 +255,7 @@ public class GroupManager implements Listener {
 		return Utility.getOrCreateConfigSection(getConfigSection(group), "config." + path);
 	}
 	public ConfigurationSection getGroupConfig(Group group) {
-		return getScopedConfig(group, GroupConfigMap.INSTANCE.namespace());
+		return getScopedConfig(group, configMap.namespace());
 	}
 	public ConfigurationSection getGameConfig(Group group, Game.Builder game) {
 		return getScopedConfig(group, game.getManager().configMap.namespace() + '.' + game.getId());
@@ -209,7 +264,7 @@ public class GroupManager implements Listener {
 		return getScopedConfig(group, role.getManager().configMap.namespace() + '.' + role.getId());
 	}
 	public ConfigurationSection getPlayerConfig(Group group) {
-		return getScopedConfig(group, PlayerConfigMap.INSTANCE.namespace());
+		return getScopedConfig(group, getLudos().playerConfigMap.namespace());
 	}
 
 	public void loadConfigGroups() {
@@ -231,7 +286,7 @@ public class GroupManager implements Listener {
 		}
 	}
 
-	public void saveConfig() {
+	public void saveData() {
 		try {
 			groupsData.save(groupsFile);
 		} catch (IOException ex) {

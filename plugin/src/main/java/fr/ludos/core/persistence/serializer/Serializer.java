@@ -13,6 +13,11 @@ public interface Serializer<TComplex, TPrimitive extends Object> {
 		if (got == null) return null;
 		return parse(got);
 	}
+	public default TComplex getOr(String key, ConfigurationSection config, TComplex or) {
+		TComplex got = get(key, config);
+		if (got == null) return or;
+		return got;
+	}
 	public default boolean set(String key, TComplex value, ConfigurationSection config) {
 		TPrimitive serialized = serialize(value);
 		if (serialized == null) return false;

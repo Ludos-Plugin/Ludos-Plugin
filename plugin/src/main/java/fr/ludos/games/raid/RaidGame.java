@@ -1,14 +1,19 @@
 package fr.ludos.games.raid;
 
+import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
+import org.bukkit.block.banner.Pattern;
+import org.bukkit.block.banner.PatternType;
+import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.area.WorldBorderArea;
@@ -17,9 +22,8 @@ import fr.ludos.core.game.GameManager;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.lobby.Lobby.ClearMode;
-import fr.ludos.core.persistence.config.ConfigEntriesCollection;
-import fr.ludos.core.persistence.config.ConfigEntriesMap;
-import fr.ludos.core.persistence.config.valueEntry.GroupPlayersConfigEntry;
+import fr.ludos.core.persistence.config.ConfigNodeCollection;
+import fr.ludos.core.persistence.config.ConfigNodeMap;
 import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
 import fr.ludos.core.wave.WaveController;
 import fr.ludos.core.wave.WaveGame;
@@ -27,6 +31,9 @@ import fr.ludos.core.world.WorldManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.BannerBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * Implementation of the Raid {@link Game}.
@@ -88,7 +95,7 @@ public class RaidGame extends WaveGame {
 
 		this.teamController = new RaidTeamController(
 			this,
-			builder.players.getGameConfig(group, builder)
+			builder().getLudos().playersConfig.getGameConfig(group, builder)
 		);
 	}
 
@@ -96,14 +103,23 @@ public class RaidGame extends WaveGame {
 	 * Builder for {@link RaidGame}.
 	 */
 	public static class Builder extends Game.Builder {
-		public final GroupPlayersConfigEntry players =
-			new GroupPlayersConfigEntry(getManager().getLudos().getGroupManager(), "Players", "players", "all");
-
 		public final IntegerConfigEntry waves =
-			new IntegerConfigEntry("Number of Waves", "waves", null, 0, true);
+			new IntegerConfigEntry(
+				Component.text("Number of Waves"),
+				"waves", 0,
+				true
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.SKELETON_SKULL);
+				}
+			};
 
-		public final ConfigEntriesMap config =
-			new ConfigEntriesMap(ID, Set.of(players, waves, WorldBorderArea.CONFIG));
+		public final ConfigNodeMap configMap = getConfigMap(List.of(
+			getLudos().playersConfig,
+			waves,
+			WorldBorderArea.CONFIG
+		));
 
 
 		public Builder(GameManager manager) {
@@ -116,11 +132,22 @@ public class RaidGame extends WaveGame {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new BannerBuilder(Material.BLACK_BANNER)
+				.addPattern(new Pattern(DyeColor.CYAN, PatternType.RHOMBUS_MIDDLE))
+				.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.STRIPE_BOTTOM))
+				.addPattern(new Pattern(DyeColor.GRAY, PatternType.STRIPE_CENTER))
+				.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_MIDDLE))
+				.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.HALF_HORIZONTAL))
+				.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.CIRCLE_MIDDLE))
+				.addPattern(new Pattern(DyeColor.BLACK, PatternType.BORDER));
+		}
+
+		@Override
+		public TextComponent displayName() {
 			return Component.text("Raid")
 				.color(NamedTextColor.GOLD);
 		}
-
 		@Override
 		public TextComponent getDescription() {
 			return Component.text("Fight against hordes of Enemies with your friends.\n\n" +
@@ -139,8 +166,8 @@ public class RaidGame extends WaveGame {
 		}
 
 		@Override
-		public ConfigEntriesCollection getConfig() {
-			return config;
+		public ConfigNodeCollection getConfig() {
+			return configMap;
 		}
 
 		@Override

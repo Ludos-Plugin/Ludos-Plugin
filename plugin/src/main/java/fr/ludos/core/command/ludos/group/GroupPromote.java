@@ -69,7 +69,7 @@ public class GroupPromote implements Subcommand {
 		}
 
 		if (group.promoteToLeader(target)) {
-			manager.saveConfig();
+			manager.saveData();
 		}
 
 		return true;

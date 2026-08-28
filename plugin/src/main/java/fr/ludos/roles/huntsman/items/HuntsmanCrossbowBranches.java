@@ -14,6 +14,7 @@ import org.bukkit.potion.PotionEffectType;
 import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.SpecialItemInterface;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -181,8 +182,9 @@ public enum HuntsmanCrossbowBranches implements HuntsmanCrossbowBranch {
 
 
 
-	private Component name;
-	public Component getName() {
+	private TextComponent name;
+	@Override
+	public TextComponent displayName() {
 		return name;
 	}
 
@@ -197,7 +199,7 @@ public enum HuntsmanCrossbowBranches implements HuntsmanCrossbowBranch {
 	}
 
 
-	private HuntsmanCrossbowBranches(Component name, Component description, double xpThreshold) {
+	private HuntsmanCrossbowBranches(TextComponent name, Component description, double xpThreshold) {
 		this.name = name;
 		this.xpThreshold = xpThreshold;
 		this.description = description;

@@ -22,6 +22,8 @@ import fr.ludos.roles.harvester.items.HarvesterSpade;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * Implementation of the Harvester {@link Role}.
@@ -78,7 +80,7 @@ public class HarvesterRole extends Role {
 		double oreXp = getOreReward(block);
 		if (oreXp == 0) return;
 		for (var events : getGameEvents().values()) {
-			if (events instanceof SpecialItem.Events itemEvents) {
+			if (events instanceof SpecialItem.Events<?> itemEvents) {
 				LevelItem.findAll(inventory, itemEvents::getItem)
 					.stream()
 					.filter(o -> o instanceof LevelItemInterface)
@@ -143,7 +145,12 @@ public class HarvesterRole extends Role {
 		}
 
 		@Override
-		public TextComponent getDisplayName() {
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new ItemBuilder(Material.IRON_PICKAXE);
+		}
+
+		@Override
+		public TextComponent displayName() {
 			return Component.text("Harvester")
 				.color(NamedTextColor.GREEN);
 		}

@@ -1,51 +1,70 @@
 package fr.ludos.core.persistence.config.valueEntry;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupManager;
+import fr.ludos.core.gui.GuiContext;
+import fr.ludos.core.gui.WindowUtility;
+import fr.ludos.core.gui.WindowUtility.WindowSettings;
+import fr.ludos.core.gui.configValue.ResetValueItem;
+import fr.ludos.core.gui.configValue.display.PlayerDisplayItem;
+import fr.ludos.core.gui.item.BorderItem;
+import fr.ludos.core.gui.item.ChangePageItem;
+import fr.ludos.core.gui.item.PlayerItemBuilder;
+import fr.ludos.core.gui.item.SinglePickerItem;
+import fr.ludos.core.persistence.PersistentAccessor;
+import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import fr.ludos.core.persistence.serializer.PlayerSerializer;
 import fr.ludos.core.persistence.serializer.Serializer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
+import xyz.xenondevs.invui.gui.PagedGui;
+import xyz.xenondevs.invui.gui.structure.Markers;
+import xyz.xenondevs.invui.gui.structure.Structure;
+import xyz.xenondevs.invui.item.Item;
+import xyz.xenondevs.invui.item.ItemProvider;
+import xyz.xenondevs.invui.window.Window;
 
 /**
- * {@link ValueConfigEntry} for a single {@link OfflinePlayer} instance, present in the {@link CommandSender}'s current {@link Group}.
+ * {@link ConfigEntry} for a single {@link OfflinePlayer} instance, present in the {@link CommandSender}'s current {@link Group}.
  */
-public final class GroupPlayerConfigEntry extends ValueConfigEntry<OfflinePlayer, String> {
+public abstract class GroupPlayerConfigEntry extends ConfigEntry<OfflinePlayer, String> {
 	private final GroupManager groupManager;
 	private final boolean excludeSelf;
 
-	public GroupPlayerConfigEntry(GroupManager groupManager, @NotNull String name, @NotNull String key, @Nullable String emptyValue, boolean excludeSelf) {
-		super(name, key, emptyValue);
+	public GroupPlayerConfigEntry(GroupManager groupManager, @NotNull TextComponent name, @NotNull String key, boolean excludeSelf) {
+		super(name, key);
 		this.groupManager = Objects.requireNonNull(groupManager);
 		this.excludeSelf = excludeSelf;
 	}
-	public GroupPlayerConfigEntry(GroupManager groupManager, @NotNull String name, @NotNull String key, @Nullable String emptyValue) {
-		this(groupManager, name, key, emptyValue, false);
-	}
-
-	public String getterMessage(String value) {
-		if (value == null) return placeholderValue();
-		return value;
+	public GroupPlayerConfigEntry(GroupManager groupManager, @NotNull TextComponent name, @NotNull String key) {
+		this(groupManager, name, key, false);
 	}
 
 	@Override
-	public OfflinePlayer getDefaultValue() {
-		return null;
+	public final Serializer<OfflinePlayer, String> getSerializer() {
+		return PlayerSerializer.INSTANCE;
 	}
 
 	@Override
-	public Set<String> getValidOptions(CommandSender sender) {
+	public Set<String> options(CommandSender sender) {
 		if (! (sender instanceof Player player )) return Collections.emptySet();
 
 		Group group = groupManager.getGroupOfPlayer(player);
@@ -61,7 +80,69 @@ public final class GroupPlayerConfigEntry extends ValueConfigEntry<OfflinePlayer
 		return res;
 	}
 	@Override
-	protected Serializer<OfflinePlayer, String> getSerializer() {
-		return PlayerSerializer.INSTANCE;
+	public boolean validateValue(OfflinePlayer value, CommandSender sender) {
+		if (! (sender instanceof Player player )) return false;
+
+		Group group = groupManager.getGroupOfPlayer(player);
+		return (group.isPlayer(value));
+	}
+
+	@Override
+	public OfflinePlayer defaultValue() {
+		return null;
+	}
+
+
+	@Override
+	public Window window(Player player, GuiContext context) {
+		ConfigSectionContext configContext = context.configContext();
+		if (configContext == null) return null;
+
+		PersistentAccessor<OfflinePlayer> accessor = asAccessor(configContext, player);
+
+		WindowUtility.WindowSettings settings = new WindowSettings(true)
+			.setStructure(
+				new Structure(
+					"# # # # # # # # #",
+					"# x x x x x x x #",
+					"# x x x x x x x #",
+					"# x x x x x x x #",
+					"V # # # P # # # R"
+				)
+				.addIngredient('#', BorderItem.INSTANCE)
+				.addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
+				.addIngredient('P', ChangePageItem.INSTANCE)
+				.addIngredient('V', new PlayerDisplayItem(accessor))
+				.addIngredient('R', new ResetValueItem<>(accessor))
+			);
+
+		Group group = groupManager.getGroupOfPlayer(player);
+		Collection<OfflinePlayer> players = group == null
+			? Collections.emptyList()
+			: group.getPlayers();
+
+		List<Item> items = players.stream()
+			.map(playerValue ->
+				new SinglePickerItem<OfflinePlayer, PagedGui<Item>>(playerValue, accessor) {
+					@Override
+					public ItemProvider getItemProvider(PagedGui<Item> gui) {
+						PlayerItemBuilder item = new PlayerItemBuilder(playerValue);
+						OfflinePlayer currentPlayer = accessor.getOrDefault();
+
+						return playerValue.equals(currentPlayer)
+							? item.addItemFlags(ItemFlag.HIDE_ENCHANTS)
+								.addEnchantment(Enchantment.CHANNELING, 1, false)
+								.addLoreLines(new AdventureComponentWrapper(
+									Component.text("Currently selected")
+										.decoration(TextDecoration.ITALIC, false)
+										.color(NamedTextColor.GRAY)
+								))
+							: item;
+					}
+				}
+			)
+			.collect(Collectors.toList());
+
+		return WindowUtility.pagedItemsWindow(player, context, items, normalizedDisplayName(), settings);
 	}
 }

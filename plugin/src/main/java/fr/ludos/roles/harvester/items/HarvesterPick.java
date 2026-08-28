@@ -24,6 +24,7 @@ import fr.ludos.core.item.level.LevelBranchItem;
 import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.roles.harvester.HarvesterRole;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -42,11 +43,9 @@ public final class HarvesterPick extends LevelBranchItem<HarvesterPick, Harveste
 
 
 	@Override
-	public Component getName() {
-		return Component.text("Harvester's Pick (")
-			.append(getBranch().getName())
-			.append(Component.text(")"))
-			.decoration(TextDecoration.ITALIC, false); // TODO: Translate
+	public TextComponent displayName() {
+		return Component.text("Harvester's Pick ")
+			.append(getBranchAnnotation()); // TODO: Translate
 	}
 
 	@Override
@@ -63,7 +62,7 @@ public final class HarvesterPick extends LevelBranchItem<HarvesterPick, Harveste
 		lore.add(
 			Component.text("Size: ")
 				.color(NamedTextColor.GRAY)
-			.append(Component.text(size + "x" + size)
+			.append(Component.text(size + 'x' + size)
 				.color(NamedTextColor.YELLOW))
 			.decoration(TextDecoration.ITALIC, false)
 		);

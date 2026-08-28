@@ -142,7 +142,7 @@ public final class ManhuntTeamController extends GameTeamController {
 		ManhuntTimer timer = ((ManhuntGame)game()).timer;
 		Duration newRecord = timer.getDuration();
 		String newRecordString = timer.formatDuration(newRecord);
-		Duration oldRecord = ManhuntGame.SURVIVAL_TIME.get(preyData);
+		Duration oldRecord = ManhuntGame.SURVIVAL_TIME.getOrDefault(preyData);
 		String oldRecordString = oldRecord != null
 			? timer.formatDuration(oldRecord)
 			: null;
@@ -160,7 +160,7 @@ public final class ManhuntTeamController extends GameTeamController {
 		Component timeMessage =
 			Component.text("You survived ")
 				.append(Component.text(newRecordString).color(NamedTextColor.GOLD))
-				.append(Component.text("!"));
+				.append(Component.text('!'));
 		if (oldRecordString != null) {
 			timeMessage = timeMessage
 				.append(Component.text(" Previous Best : "))

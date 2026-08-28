@@ -1,6 +1,5 @@
 package fr.ludos.core.command;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.command.Command;
@@ -17,11 +16,11 @@ public class SubcommandHandler implements Subcommand {
 	private final boolean requireOp;
 	private final SubcommandManager manager;
 
-	public SubcommandHandler(String id, String description, boolean requireOp, ArrayList<Subcommand> subcommands) {
+	public SubcommandHandler(String id, String description, boolean requireOp, SubcommandManager manager) {
 		this.id = id;
 		this.description = description;
 		this.requireOp = requireOp;
-		manager = new SubcommandManager(subcommands);
+		this.manager = manager;
 	}
 
 	@Override

@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.gui.Named;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -23,7 +24,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 /**
  * A {@link Game} or {@link Role}-managed Item ({@link ItemStack}) with special Abilities or functionality.
  */
-public interface SpecialItemInterface {
+public interface SpecialItemInterface extends Named {
 	public static final String TYPE_ID_KEY_STRING = "type_id";
 	public static final NamespacedKey TYPE_ID_KEY = new NamespacedKey(Ludos.NAMESPACE, TYPE_ID_KEY_STRING);
 
@@ -39,7 +40,6 @@ public interface SpecialItemInterface {
 	public Player getOwner();
 
 	public String getTypeId();
-	public Component getName();
 	public default List<Component> getLore() {
 		return new ArrayList<>();
 	}

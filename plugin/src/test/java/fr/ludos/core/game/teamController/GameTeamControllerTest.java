@@ -68,7 +68,7 @@ class GameTeamControllerTest {
 
 
 		// Create a concrete implementation for testing
-		controller = new GameTeamController(mockGame, GameJoinOption.auto) {
+		controller = new GameTeamController(mockGame, GameJoinOption.yes) {
 			@Override
 			public Collection<Team> getTeams() {
 				return Collections.singletonList(mockTeam);
@@ -168,7 +168,7 @@ class GameTeamControllerTest {
 	@Test
 	@DisplayName("Should handle GameJoinOption none correctly")
 	void testJoinOptionNone() {
-		GameTeamController noJoinController = new GameTeamController(mockGame, GameJoinOption.none) {
+		GameTeamController noJoinController = new GameTeamController(mockGame, GameJoinOption.no) {
 			@Override
 			public Collection<Team> getTeams() { return Collections.emptyList(); }
 			@Override
