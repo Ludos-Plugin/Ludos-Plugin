@@ -108,7 +108,7 @@ dependencies {
                     }
                 }
                 if (details.requested.group == 'org.jline') {
-                    details.useVersion '3.25.+'
+                    details.useVersion '3.30.+'
                 }
                 if (details.requested.group == 'org.xerial') {
                     if (details.requested.name == 'sqlite-jdbc') {
