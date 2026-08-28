@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import fr.ludos.core.Ludos;
+import fr.ludos.core.command.GuiCommand;
 import fr.ludos.core.command.HelpSubcommand;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.command.SubcommandManager;
@@ -25,15 +26,18 @@ public class LudosCommand implements Subcommand {
 	private final SubcommandManager manager;
 
 	public LudosCommand(Ludos ludos) {
-		manager = new SubcommandManager(new ArrayList<>() {{
-			add(new GroupSubcommand(ludos.getGroupManager()));
-			add(new GameSubcommand(ludos.getGameManager()));
-			add(new RoleSubcommand(ludos.getRoleManager()));
-			add(new LudosConfig(ludos));
-			add(new CheatsSubcommand(ludos));
-			add(new LudosGuidebook(ludos));
-			add(new HelpSubcommand(Ludos.NAMESPACE, this));
-		}});
+		manager = new SubcommandManager(
+			new ArrayList<>() {{
+				add(new GroupSubcommand(ludos.getGroupManager()));
+				add(new GameSubcommand(ludos.getGameManager()));
+				add(new RoleSubcommand(ludos.getRoleManager()));
+				add(new LudosConfig(ludos));
+				add(new CheatsSubcommand(ludos));
+				add(new LudosGuidebook(ludos));
+				add(new HelpSubcommand(Ludos.NAMESPACE, this));
+			}},
+			new GuiCommand(ludos, ludos.gui)
+		);
 	}
 
 	@Override

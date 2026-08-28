@@ -31,7 +31,7 @@ public interface ConfigHolder {
 		};
 	}
 
-	public static final GuiObject CONFIG_OBJECT = new GuiObject() {
+	public static final GuiObject CONFIG_GUI_OBJECT = new GuiObject() {
 		@Override
 		public AbstractItemBuilder<?> createItem(Player player) {
 			return new ItemBuilder(Material.LEVER);

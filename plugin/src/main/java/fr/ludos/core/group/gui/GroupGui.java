@@ -60,11 +60,12 @@ public class GroupGui implements WindowProvider {
 			}
 		}
 
-		boolean canConfig = manager.getManageAuthz().checkAuthorizationSilent(player);
+		boolean canConfig = manager.getConfigAuthz().checkAuthorizationSilent(player);
 		Item configItem = canConfig
-			? new WindowItem(manager.getConfigMap(), ConfigHolder.CONFIG_OBJECT, childrenContext).addClickHandler(settings::disableModalReturn)
+			? new WindowItem(manager.getScopeConfigMap(), ConfigHolder.CONFIG_GUI_OBJECT, childrenContext).addClickHandler(settings::disableModalReturn)
 			: BorderItem.INSTANCE;
-		Item disbandItem = canConfig
+		boolean canManage = manager.getManageAuthz().checkAuthorizationSilent(player);
+		Item disbandItem = canManage
 			? new DisbandGroupItem<>(manager)
 			: BorderItem.INSTANCE;
 

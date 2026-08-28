@@ -62,7 +62,7 @@ public class GameMenuGui implements WindowProvider {
 		ConfigNodeCollection gameConfig = game.getConfig();
 		boolean canConfig = gameConfig != null && manager.getLudos().getGroupManager().getConfigAuthz().checkAuthorizationSilent(player);
 		Item configItem = canConfig
-			? new WindowItem(Game.scopeConfig(manager.getLudos(), gameConfig), ConfigHolder.CONFIG_OBJECT, childrenContext).addClickHandler(settings::disableModalReturn)
+			? new WindowItem(Game.scopeConfig(manager.getLudos(), gameConfig), ConfigHolder.CONFIG_GUI_OBJECT, childrenContext).addClickHandler(settings::disableModalReturn)
 			: BorderItem.INSTANCE;
 
 		settings

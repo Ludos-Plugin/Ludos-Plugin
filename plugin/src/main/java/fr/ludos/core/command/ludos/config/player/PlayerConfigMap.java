@@ -28,9 +28,7 @@ public final class PlayerConfigMap extends ConfigNodeMap {
 			}
 		};
 
-	public static final PlayerConfigMap INSTANCE = new PlayerConfigMap();
-
-	private PlayerConfigMap() {
+	public PlayerConfigMap(Ludos ludos) {
 		super(
 			Component.text("Player Configuration"),
 			Ludos.PLAYER_NAMESPACE,

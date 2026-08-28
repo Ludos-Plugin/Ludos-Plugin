@@ -30,8 +30,8 @@ public class WorldBorderArea extends Area {
 			public AbstractItemBuilder<?> createItem(Player player) {
 				return new ItemBuilder(Material.MAP);
 			}
-			protected String getValueLabel(String value) {
-				return super.getValueLabel(value) + " blocks";
+			protected String formatValueString(String value) {
+				return super.formatValueString(value) + " blocks";
 			};
 		};
 

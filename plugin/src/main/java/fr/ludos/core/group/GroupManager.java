@@ -27,7 +27,6 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.Utility;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
-import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.gui.GroupGui;
 import fr.ludos.core.group.gui.GroupInviteGui;
@@ -62,12 +61,14 @@ public class GroupManager implements Listener {
 	private final GroupConfigAuthz configAuthz = new GroupConfigAuthz(this);
 	private final GroupManageAuthz manageAuthz = new GroupManageAuthz(this);
 
-	private final GroupJoinGui joinGui = new GroupJoinGui(this);
-	private final GroupInviteGui inviteGui = new GroupInviteGui(this);
-	private final GroupKickGui kickGui = new GroupKickGui(this);
-	private final GroupGui gui = new GroupGui(this, joinGui, inviteGui, kickGui);
+	public final GroupConfigMap configMap = new GroupConfigMap(this);
+	private final ScopeConfigMap scopeConfigMap;
 
-	private final ScopeConfigMap configMap;
+	public final GroupJoinGui joinGui = new GroupJoinGui(this);
+	public final GroupInviteGui inviteGui = new GroupInviteGui(this);
+	public final GroupKickGui kickGui = new GroupKickGui(this);
+	public final GroupGui gui = new GroupGui(this, joinGui, inviteGui, kickGui);
+
 
 	public GroupManager(Ludos ludos) {
 		this.ludos = Objects.requireNonNull(ludos);
@@ -75,12 +76,12 @@ public class GroupManager implements Listener {
 		groupsFile = new File(ludos.getDataFolder(), "groups.yml");
 		groupsData = YamlConfiguration.loadConfiguration(groupsFile);
 
-		configMap = new ScopeConfigMap(
+		scopeConfigMap = new ScopeConfigMap(
 			WINDOW_TITLE,
 			ludos,
 			this,
-			GroupConfigMap.INSTANCE,
-			GroupConfigMap.INSTANCE,
+			configMap,
+			configMap,
 			null
 		);
 	}
@@ -108,12 +109,9 @@ public class GroupManager implements Listener {
 	public final GroupKickGui getKickGui() {
 		return kickGui;
 	}
-	public final GroupGui getGui() {
-		return gui;
-	}
 
-	public final ScopeConfigMap getConfigMap() {
-		return configMap;
+	public final ScopeConfigMap getScopeConfigMap() {
+		return scopeConfigMap;
 	}
 
 	public final Set<Group> getAllGroups() {
@@ -245,7 +243,7 @@ public class GroupManager implements Listener {
 	}
 
 	public ConfigurationSection getGlobalGroupConfig() {
-		return Utility.getOrCreateConfigSection(getLudos().getConfig(), GroupConfigMap.INSTANCE.namespace());
+		return Utility.getOrCreateConfigSection(getLudos().getConfig(), configMap.namespace());
 	}
 	public ConfigurationSection getConfigSection(Group group) {
 		return Utility.getOrCreateConfigSection(groupsData, group.getId().toString());
@@ -257,7 +255,7 @@ public class GroupManager implements Listener {
 		return Utility.getOrCreateConfigSection(getConfigSection(group), "config." + path);
 	}
 	public ConfigurationSection getGroupConfig(Group group) {
-		return getScopedConfig(group, GroupConfigMap.INSTANCE.namespace());
+		return getScopedConfig(group, configMap.namespace());
 	}
 	public ConfigurationSection getGameConfig(Group group, Game.Builder game) {
 		return getScopedConfig(group, game.getManager().configMap.namespace() + '.' + game.getId());
@@ -266,7 +264,7 @@ public class GroupManager implements Listener {
 		return getScopedConfig(group, role.getManager().configMap.namespace() + '.' + role.getId());
 	}
 	public ConfigurationSection getPlayerConfig(Group group) {
-		return getScopedConfig(group, PlayerConfigMap.INSTANCE.namespace());
+		return getScopedConfig(group, getLudos().playerConfigMap.namespace());
 	}
 
 	public void loadConfigGroups() {

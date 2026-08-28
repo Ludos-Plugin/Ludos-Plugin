@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -25,16 +26,37 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
+import fr.ludos.core.gui.GuiObject;
 import fr.ludos.core.role.Role;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * A structure to encapsulate a Group of Players. Meant for {@link Game} instances.
  */
 public final class Group {
 	public static final String NAMESPACE = "group";
+
+	public final static ItemBuilder createItem() {
+		return new ItemBuilder(Material.BLUE_BANNER);
+	}
+	public final static GuiObject GUI_OBJECT = new GuiObject() {
+		@Override
+		public @NotNull AbstractItemBuilder<?> createItem(Player player) {
+			return Group.createItem();
+		}
+		@Override
+		public TextComponent displayName() {
+			return Component.text("Group")
+				.color(NamedTextColor.GREEN)
+				.decoration(TextDecoration.ITALIC, false);
+		}
+	};
 
 	GroupManager groupManager;
 	private @Nullable Game game;

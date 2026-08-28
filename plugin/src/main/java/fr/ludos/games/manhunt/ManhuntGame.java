@@ -241,7 +241,7 @@ public class ManhuntGame extends Game {
 				public AbstractItemBuilder<?> createItem(Player player) {
 					return new ItemBuilder(Material.TARGET);
 				}
-				protected String getNullValue() {
+				protected String getNullValueString() {
 					return "random";
 				};
 			};
@@ -257,8 +257,8 @@ public class ManhuntGame extends Game {
 				public AbstractItemBuilder<?> createItem(Player player) {
 					return new ItemBuilder(Material.CLOCK);
 				}
-				protected String getValueLabel(String value) {
-					return super.getValueLabel(value) + 's';
+				protected String formatValueString(String value) {
+					return super.formatValueString(value) + 's';
 				};
 			};
 

@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +15,6 @@ import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import fr.ludos.core.persistence.config.ConfigNodeMap;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
-import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * {@link ConfigNodeMap} for {@link Game}-specific configuration.
@@ -34,7 +32,7 @@ public class GameConfigMap extends ConfigNodeCollection {
 
 	@Override
 	public AbstractItemBuilder<?> createItem(Player player) {
-		return new ItemBuilder(Material.MUSIC_DISC_CHIRP);
+		return Game.createItem();
 	}
 
 	@Override

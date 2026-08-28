@@ -8,10 +8,12 @@ import java.util.Map;
 
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.book.BookUtility;
@@ -30,6 +32,8 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 
 /**
@@ -40,6 +44,22 @@ public abstract class Role extends GameProcessBase {
 	public static final String NAMESPACE = "role";
 	public static final TextComponent WINDOW_TITLE = Component.text("Role Configuration");
 	public static final String NONE_LABEL = "none";
+
+	public final static ItemBuilder createItem() {
+		return new ItemBuilder(Material.NAME_TAG);
+	}
+	public final static GuiObject GUI_OBJECT = new GuiObject() {
+		@Override
+		public @NotNull AbstractItemBuilder<?> createItem(Player player) {
+			return Role.createItem();
+		}
+		@Override
+		public TextComponent displayName() {
+			return Component.text("Role")
+				.color(NamedTextColor.GOLD)
+				.decoration(TextDecoration.ITALIC, false);
+		}
+	};
 
 	private final Game game;
 	public Game getGame() {

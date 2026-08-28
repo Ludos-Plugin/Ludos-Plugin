@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import fr.ludos.core.game.teamController.GameJoinOption;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupJoinOption;
+import fr.ludos.core.group.GroupManager;
 import fr.ludos.core.group.GroupRightsOption;
 import fr.ludos.core.lobby.LobbyWaitPlayersOption;
 import fr.ludos.core.persistence.config.ConfigNodeMap;
@@ -98,15 +99,14 @@ public final class GroupConfigMap extends ConfigNodeMap {
 				return new ItemBuilder(Material.CLOCK);
 			}
 			@Override
-			protected String getValueLabel(String value) {
-				return super.getValueLabel(value) + 's';
+			protected String formatValueString(String value) {
+				return super.formatValueString(value) + 's';
 			}
 		};
 
 	public static final TextComponent WINDOW_TITLE = Component.text("Group Configuration");
-	public static final GroupConfigMap INSTANCE = new GroupConfigMap();
 
-	private GroupConfigMap() {
+	public GroupConfigMap(GroupManager manager) {
 		super(
 			WINDOW_TITLE,
 			Group.NAMESPACE,
@@ -122,6 +122,6 @@ public final class GroupConfigMap extends ConfigNodeMap {
 
 	@Override
 	public AbstractItemBuilder<?> createItem(Player player) {
-		return new ItemBuilder(Material.BLUE_BANNER);
+		return Group.createItem();
 	}
 }

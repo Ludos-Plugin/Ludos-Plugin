@@ -6,7 +6,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
-import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
 import fr.ludos.core.persistence.config.ConfigNodeMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -25,7 +24,7 @@ public class PlayerScopedConfigMap extends ConfigNodeMap {
 			Component.text("Player-specific Configuration"), null,
 			List.of(
 				ludos.getRoleManager().configMap,
-				PlayerConfigMap.INSTANCE
+				ludos.playerConfigMap
 			)
 		);
 	}

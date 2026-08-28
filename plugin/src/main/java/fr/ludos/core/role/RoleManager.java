@@ -30,9 +30,9 @@ public final class RoleManager {
 	private Map<String, Role.Builder> registered = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	private Map<UUID, String> playerRoles = new HashMap<UUID, String>();
 
-	private final RoleGui gui = new RoleGui(this);
-
 	public final RoleConfigMap configMap = new RoleConfigMap(this);
+
+	public final RoleGui gui = new RoleGui(this);
 
 
 	public RoleManager(Ludos ludos) {
@@ -42,10 +42,6 @@ public final class RoleManager {
 
 	public Ludos getLudos() {
 		return ludos;
-	}
-
-	public final RoleGui getGui() {
-		return gui;
 	}
 
 	public Map<String, Role.Builder> getRegistered() {

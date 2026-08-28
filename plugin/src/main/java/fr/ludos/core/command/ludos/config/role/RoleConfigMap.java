@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +15,6 @@ import fr.ludos.core.role.Role;
 import fr.ludos.core.role.RoleManager;
 import net.kyori.adventure.text.Component;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
-import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * Config Nodes Map for Role-specific configuration.
@@ -34,7 +32,7 @@ public class RoleConfigMap extends ConfigNodeCollection {
 
 	@Override
 	public AbstractItemBuilder<?> createItem(Player player) {
-		return new ItemBuilder(Material.NAME_TAG);
+		return Role.createItem();
 	}
 
 	@Override

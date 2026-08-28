@@ -20,6 +20,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.BookMetaBuilder;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
+import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.book.BookUtility;
@@ -40,6 +41,8 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 /**
  * An encapsulation of a Game instance's logic within a Ludos environment.
@@ -47,6 +50,22 @@ import net.kyori.adventure.text.format.TextDecoration;
 public abstract class Game extends TwoStepGameProcessBase {
 	public static final String NAMESPACE = "game";
 	public static final TextComponent WINDOW_TITLE = Component.text("Game Configuration");
+
+	public final static ItemBuilder createItem() {
+		return new ItemBuilder(Material.MUSIC_DISC_CHIRP);
+	}
+	public final static GuiObject GUI_OBJECT = new GuiObject() {
+		@Override
+		public @NotNull AbstractItemBuilder<?> createItem(Player player) {
+			return Game.createItem();
+		}
+		@Override
+		public TextComponent displayName() {
+			return Component.text("Game")
+				.color(NamedTextColor.RED)
+				.decoration(TextDecoration.ITALIC, false);
+		}
+	};
 
 	private static final String SCHEDULE_END_GAME_TEXT = "Game finished, returning in %s seconds...";
 

@@ -10,6 +10,6 @@ import fr.ludos.core.group.GroupManager;
  */
 public class GroupConfig extends ConfigSubcommand {
 	public GroupConfig(GroupManager manager) {
-		super(manager.getLudos(), "Configure for this group.", manager.getConfigMap());
+		super(manager.getLudos(), "Configure for this group.", manager.getScopeConfigMap());
 	}
 }

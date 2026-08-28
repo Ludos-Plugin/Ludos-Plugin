@@ -27,7 +27,7 @@ public final class RoleSubcommand extends SubcommandHandler {
 					add(new RoleGuidebook(manager));
 					add(new HelpSubcommand(Role.NAMESPACE, this));
 				}},
-				new GuiCommand(manager.getLudos(), manager.getGui())
+				new GuiCommand(manager.getLudos(), manager.gui)
 			)
 		);
 	}

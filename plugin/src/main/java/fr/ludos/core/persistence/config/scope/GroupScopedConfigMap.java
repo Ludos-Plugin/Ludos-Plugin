@@ -6,8 +6,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
-import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
-import fr.ludos.core.command.ludos.config.player.PlayerConfigMap;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigNodeMap;
@@ -27,10 +25,10 @@ public class GroupScopedConfigMap extends ConfigNodeMap {
 		super(
 			Component.text("Group-wide Configuration"), null,
 			List.of(
-				GroupConfigMap.INSTANCE,
+				ludos.getGroupManager().configMap,
 				ludos.getGameManager().configMap,
 				ludos.getRoleManager().configMap,
-				PlayerConfigMap.INSTANCE
+				ludos.playerConfigMap
 			)
 		);
 	}

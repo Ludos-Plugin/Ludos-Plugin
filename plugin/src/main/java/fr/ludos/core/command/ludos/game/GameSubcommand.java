@@ -27,7 +27,7 @@ public final class GameSubcommand extends SubcommandHandler {
 					add(new GameGuidebook(manager));
 					add(new HelpSubcommand(Game.NAMESPACE, this));
 				}},
-				new GuiCommand(manager.getLudos(), manager.getGui())
+				new GuiCommand(manager.getLudos(), manager.gui)
 			)
 		);
 	}

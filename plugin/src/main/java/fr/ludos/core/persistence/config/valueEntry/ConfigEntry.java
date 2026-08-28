@@ -54,7 +54,7 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 
 		AbstractItemBuilder<?> builder = ConfigNode.super.displayItem(player, context);
 		AdventureComponentWrapper currentValueLoreLine = new AdventureComponentWrapper(
-			Component.text(getValueLabel(toString(getOrDefault(configContext.getConfig(player)))))
+			Component.text("Current value : " + formatValueString(toString(getOrDefault(configContext.getConfig(player)))))
 				.color(NamedTextColor.GRAY)
 		);
 		if (builder.getLore() != null) {
@@ -64,11 +64,11 @@ public abstract class ConfigEntry<TComplex, TPrimitive> implements ConfigNode, P
 		}
 		return builder;
 	}
-	protected String getValueLabel(String value) {
-		if (value == null) value = getNullValue();
-		return "Current value : " + value;
+	protected String formatValueString(String value) {
+		if (value == null) return getNullValueString();
+		return value;
 	}
-	protected String getNullValue() {
+	protected String getNullValueString() {
 		return null;
 	}
 

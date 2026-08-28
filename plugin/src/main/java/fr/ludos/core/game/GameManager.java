@@ -30,9 +30,9 @@ public final class GameManager {
 	private final Map<String, Game.Builder> registered = new HashMap<>();
 	private final Set<Game> active = new HashSet<>();
 
-	private final GameGui gui = new GameGui(this);
-
 	public final GameConfigMap configMap = new GameConfigMap(this);
+
+	public final GameGui gui = new GameGui(this);
 
 
 	public GameManager(Ludos ludos) {
@@ -42,10 +42,6 @@ public final class GameManager {
 
 	public final Ludos getLudos() {
 		return ludos;
-	}
-
-	public final GameGui getGui() {
-		return gui;
 	}
 
 	public Map<String, Game.Builder> getRegistered() {

@@ -32,7 +32,7 @@ public final class GroupSubcommand extends SubcommandHandler {
 					add(new GroupInfo(manager));
 					add(new HelpSubcommand(Group.NAMESPACE, this));
 				}},
-				new GuiCommand(manager.getLudos(), manager.getGui())
+				new GuiCommand(manager.getLudos(), manager.gui)
 			)
 		);
 	}
