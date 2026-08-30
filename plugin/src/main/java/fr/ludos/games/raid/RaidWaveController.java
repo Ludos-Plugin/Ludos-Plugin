@@ -22,6 +22,7 @@ import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.AbstractSkeleton;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -38,6 +39,7 @@ import fr.ludos.core.Utility;
 import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.generator.OceanChunkGenerator;
 import fr.ludos.core.item.Categories;
+import fr.ludos.core.item.Category;
 import fr.ludos.core.lobby.Lobby.ClearMode;
 import fr.ludos.core.wave.DefaultWaveLoadout;
 import fr.ludos.core.wave.WaveController;
@@ -324,8 +326,8 @@ public final class RaidWaveController extends WaveController {
 
 	private void grantWaterBossMobilityKit() {
 		ItemStack mobilityTrident = new ItemStack(Material.TRIDENT);
-		mobilityTrident.addUnsafeEnchantment(org.bukkit.enchantments.Enchantment.RIPTIDE, 2);
-		mobilityTrident.addUnsafeEnchantment(org.bukkit.enchantments.Enchantment.DURABILITY, 3);
+		mobilityTrident.addUnsafeEnchantment(Enchantment.RIPTIDE, 2);
+		mobilityTrident.addUnsafeEnchantment(Enchantment.DURABILITY, 3);
 
 		for (Player player : game.getTeamController().getOnlinePlayers()) {
 			player.getInventory().addItem(mobilityTrident.clone());
@@ -432,10 +434,10 @@ public final class RaidWaveController extends WaveController {
 		double weaponChance = Math.min(0.95, 0.25 + currentWave * 0.035);
 		int tier = Math.min(4, Math.max(0, (currentWave - 1) / 5));
 
-		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setHelmet(createArmor(tier, Categories.Group.HELMETS));
-		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setChestplate(createArmor(tier, Categories.Group.CHESTPLATES));
-		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setLeggings(createArmor(tier, Categories.Group.LEGGINGS));
-		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setBoots(createArmor(tier, Categories.Group.BOOTS));
+		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setHelmet(createArmor(tier, Categories.ARMOR_TYPE.HELMETS));
+		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setChestplate(createArmor(tier, Categories.ARMOR_TYPE.CHESTPLATES));
+		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setLeggings(createArmor(tier, Categories.ARMOR_TYPE.LEGGINGS));
+		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setBoots(createArmor(tier, Categories.ARMOR_TYPE.BOOTS));
 
 		if (ThreadLocalRandom.current().nextDouble() < weaponChance) {
 			ItemStack weapon = createWeapon(tier);
@@ -449,13 +451,18 @@ public final class RaidWaveController extends WaveController {
 		equipment.setItemInMainHandDropChance(0f);
 	}
 
-	private ItemStack createArmor(int tier, Categories.Group armorGroup) {
+	private ItemStack createArmor(int tier, Categories.ARMOR_TYPE armorGroup) {
 		String suffix = switch (armorGroup) {
 			case HELMETS -> "HELMET";
 			case CHESTPLATES -> "CHESTPLATE";
 			case LEGGINGS -> "LEGGINGS";
 			case BOOTS -> "BOOTS";
-			default -> throw new IllegalArgumentException("Unsupported armor group: " + armorGroup);
+		};
+		Category category = switch (armorGroup) {
+			case HELMETS -> Categories.HELMETS;
+			case CHESTPLATES -> Categories.CHESTPLATES;
+			case LEGGINGS -> Categories.LEGGINGS;
+			case BOOTS -> Categories.BOOTS;
 		};
 
 		String prefix = switch (Math.min(4, Math.max(0, tier))) {
@@ -467,8 +474,8 @@ public final class RaidWaveController extends WaveController {
 		};
 
 		Material material = Material.matchMaterial(prefix + '_' + suffix);
-		if (material == null || !Categories.is(armorGroup, material)) {
-			material = Categories.get(armorGroup).stream().findFirst().orElse(Material.LEATHER_HELMET);
+		if (material == null || ! category.contains(material)) {
+			material = category.stream().findFirst().orElse(Material.AIR);
 		}
 
 		int currentWave = getCurrentWave();
@@ -477,19 +484,18 @@ public final class RaidWaveController extends WaveController {
 
 		int protection = Math.min(4, 1 + currentWave / 8);
 		if (ThreadLocalRandom.current().nextDouble() < Math.min(0.9, 0.15 + currentWave * 0.03)) {
-			item.addUnsafeEnchantment(org.bukkit.enchantments.Enchantment.PROTECTION_ENVIRONMENTAL, protection);
+			item.addUnsafeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, protection);
 		}
 		return item;
 	}
 
 	@Nullable
 	private ItemStack createWeapon(int tier) {
-		Categories.Group weaponGroup = ThreadLocalRandom.current().nextBoolean()
-			? Categories.Group.SWORDS
-			: Categories.Group.AXES;
+		Categories.MELEE_WEAPON_TYPE weaponGroup = ThreadLocalRandom.current().nextBoolean()
+			? Categories.MELEE_WEAPON_TYPE.SWORDS
+			: Categories.MELEE_WEAPON_TYPE.SWORDS;
 
 		Material picked = resolveTierWeaponMaterial(tier, weaponGroup);
-
 		if (picked == null) return null;
 
 		int currentWave = getCurrentWave();
@@ -498,18 +504,21 @@ public final class RaidWaveController extends WaveController {
 
 		int sharpness = Math.min(5, 1 + currentWave / 10);
 		if (ThreadLocalRandom.current().nextDouble() < Math.min(0.95, 0.2 + currentWave * 0.03)) {
-			weapon.addUnsafeEnchantment(org.bukkit.enchantments.Enchantment.DAMAGE_ALL, sharpness);
+			weapon.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, sharpness);
 		}
 
 		return weapon;
 	}
 
 	@Nullable
-	private Material resolveTierWeaponMaterial(int tier, Categories.Group weaponGroup) {
-		String suffix = switch (weaponGroup) {
+	private Material resolveTierWeaponMaterial(int tier, Categories.MELEE_WEAPON_TYPE weaponGroup) {
+		String suffix = switch(weaponGroup) {
 			case SWORDS -> "SWORD";
 			case AXES -> "AXE";
-			default -> throw new IllegalArgumentException("Unsupported weapon group: " + weaponGroup);
+		};
+		Category category = switch (weaponGroup) {
+			case SWORDS -> Categories.SWORDS;
+			case AXES -> Categories.AXES;
 		};
 
 		String prefix = switch (Math.min(4, Math.max(0, tier))) {
@@ -521,8 +530,8 @@ public final class RaidWaveController extends WaveController {
 		};
 
 		Material material = Material.matchMaterial(prefix + '_' + suffix);
-		if (material == null || !Categories.is(weaponGroup, material)) {
-			return Categories.get(weaponGroup).stream().findFirst().orElse(null);
+		if (material == null || ! category.contains(material)) {
+			return category.stream().findFirst().orElse(null);
 		}
 
 		return material;

@@ -27,6 +27,7 @@ import org.bukkit.scheduler.BukkitTask;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
+import fr.ludos.core.item.Categories;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.berserker.items.BerserkerAxe;
 import fr.ludos.roles.berserker.items.BerserkerRageBrew;
@@ -42,6 +43,8 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
  */
 public class BerserkerRole extends Role {
 	public static final String ID = "berserker";
+
+	public static final AttributeModifier DAMAGE_MODIFIER = new AttributeModifier("berserker_offhand_damage", 4.0, AttributeModifier.Operation.ADD_NUMBER);
 
 	private static final int AXE_COOLDOWN_TICKS = 32;
 	private static final int RAGE_COOLDOWN_TICKS = 16;
@@ -123,8 +126,8 @@ public class BerserkerRole extends Role {
 
 	@EventHandler
 	public void onOffHandAttack(PlayerInteractEvent event) {
-		if (event.getHand() != EquipmentSlot.HAND) return;
-		BerserkerAxe.Events axeEvents = (BerserkerAxe.Events) getGameEvents().get("axe");
+		if (event.getHand() != EquipmentSlot.HAND && event.getHand() != EquipmentSlot.OFF_HAND) return;
+		BerserkerAxe.Events axeEvents = (BerserkerAxe.Events) getGameEvents().get(BerserkerAxe.ID);
 		if (axeEvents == null) return;
 
 		Action action = event.getAction();
@@ -137,30 +140,26 @@ public class BerserkerRole extends Role {
 		BerserkerAxe offHandAxe = axeEvents.getItem(player.getInventory().getItemInOffHand());
 		if (offHandAxe == null) return;
 
-		player.swingOffHand();
-
-		Entity target = player.getTargetEntity(4);
-		if (! (target instanceof LivingEntity livingTarget)) return;
+		Material mainHandMaterial = player.getInventory().getItemInMainHand().getType();
+		if (! mainHandMaterial.isEmpty() && ! Categories.MELEE_WEAPONS.contains(mainHandMaterial)) return;
 
 		Material offHandAxeMaterial = offHandAxe.getStack().getType();
 		if (player.getCooldown(offHandAxeMaterial) > 0) return;
 		player.setCooldown(offHandAxeMaterial, calculateCooldown(player));
 
-		BerserkerAxe mainHandAxe = axeEvents.getItem(player.getInventory().getItemInMainHand());
-		if (mainHandAxe != null) {
-			Material mainHandAxeMaterial = mainHandAxe.getStack().getType();
-			player.setCooldown(mainHandAxeMaterial, calculateCooldown(player));
-		}
+		player.swingOffHand();
 
-		AttributeModifier damageModifier = new AttributeModifier("berserker_offhand_damage", 4.0, AttributeModifier.Operation.ADD_NUMBER);
+		Entity target = player.getTargetEntity(4);
+		if (! (target instanceof LivingEntity livingTarget)) return;
+
 		AttributeInstance attackDamageAttribute = player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
 		if (attackDamageAttribute == null) return;
-		attackDamageAttribute.addModifier(damageModifier);
+		attackDamageAttribute.addModifier(DAMAGE_MODIFIER);
 
 		player.attack(livingTarget);
 		event.setCancelled(true);
 
-		attackDamageAttribute.removeModifier(damageModifier);
+		attackDamageAttribute.removeModifier(DAMAGE_MODIFIER);
 	}
 
 	private void spawnLifestealParticles(Player player, LivingEntity target) {

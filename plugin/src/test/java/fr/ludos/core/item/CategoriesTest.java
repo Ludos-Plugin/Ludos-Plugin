@@ -1,8 +1,6 @@
 package fr.ludos.core.item;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.bukkit.Material;
@@ -23,8 +21,7 @@ class CategoriesTest {
 	@DisplayName("Verifies that valid helmets return true for isHelmet")
 	void testIsHelmetTrue(Material material) {
 		ItemStack item = new ItemStack(material);
-		assertTrue(Categories.isHelmet(item));
-		assertTrue(Categories.is(Categories.Group.HELMETS, material));
+		assertTrue(Categories.HELMETS.contains(item));
 	}
 
 	@ParameterizedTest(name = "Material {0} must be in the CHESTPLATES group")
@@ -37,8 +34,7 @@ class CategoriesTest {
 	@DisplayName("Verifies that valid chestplates return true for isChestplate")
 	void testIsChestplateTrue(Material material) {
 		ItemStack item = new ItemStack(material);
-		assertTrue(Categories.isChestplate(item));
-		assertTrue(Categories.is(Categories.Group.CHESTPLATES, material));
+		assertTrue(Categories.CHESTPLATES.contains(item));
 	}
 
 	@ParameterizedTest(name = "Material {0} must be in the LEGGINGS group")
@@ -51,8 +47,7 @@ class CategoriesTest {
 	@DisplayName("Verifies that valid leggings return true for isLeggings")
 	void testIsLeggingsTrue(Material material) {
 		ItemStack item = new ItemStack(material);
-		assertTrue(Categories.isLeggings(item));
-		assertTrue(Categories.is(Categories.Group.LEGGINGS, material));
+		assertTrue(Categories.LEGGINGS.contains(item));
 	}
 
 	@ParameterizedTest(name = "Material {0} must be in the BOOTS group")
@@ -65,8 +60,7 @@ class CategoriesTest {
 	@DisplayName("Verifies that valid boots return true for isBoots")
 	void testIsBootsTrue(Material material) {
 		ItemStack item = new ItemStack(material);
-		assertTrue(Categories.isBoots(item));
-		assertTrue(Categories.is(Categories.Group.BOOTS, material));
+		assertTrue(Categories.BOOTS.contains(item));
 	}
 
 	@ParameterizedTest(name = "Material {0} must be in the SWORDS group")
@@ -79,8 +73,7 @@ class CategoriesTest {
 	@DisplayName("Verifies that valid swords return true for isSword")
 	void testIsSwordTrue(Material material) {
 		ItemStack item = new ItemStack(material);
-		assertTrue(Categories.isSword(item));
-		assertTrue(Categories.is(Categories.Group.SWORDS, material));
+		assertTrue(Categories.SWORDS.contains(item));
 	}
 
 	@ParameterizedTest(name = "Material {0} must be in the AXES group")
@@ -93,8 +86,7 @@ class CategoriesTest {
 	@DisplayName("Verifies that valid axes return true for isAxe")
 	void testIsAxeTrue(Material material) {
 		ItemStack item = new ItemStack(material);
-		assertTrue(Categories.isAxe(item));
-		assertTrue(Categories.is(Categories.Group.AXES, material));
+		assertTrue(Categories.AXES.contains(item));
 	}
 
 	@ParameterizedTest(name = "Material {0} must be in the PICKAXES group")
@@ -107,8 +99,7 @@ class CategoriesTest {
 	@DisplayName("Verifies that valid pickaxes return true for isPickaxe")
 	void testIsPickaxeTrue(Material material) {
 		ItemStack item = new ItemStack(material);
-		assertTrue(Categories.isPickaxe(item));
-		assertTrue(Categories.is(Categories.Group.PICKAXES, material));
+		assertTrue(Categories.PICKAXES.contains(item));
 	}
 
 	@ParameterizedTest(name = "Material {0} must be in the SHOVELS group")
@@ -121,8 +112,7 @@ class CategoriesTest {
 	@DisplayName("Verifies that valid shovels return true for isShovel")
 	void testIsShovelTrue(Material material) {
 		ItemStack item = new ItemStack(material);
-		assertTrue(Categories.isShovel(item));
-		assertTrue(Categories.is(Categories.Group.SHOVELS, material));
+		assertTrue(Categories.SHOVELS.contains(item));
 	}
 
 	@ParameterizedTest(name = "Material {0} must be in the HOES group")
@@ -135,8 +125,7 @@ class CategoriesTest {
 	@DisplayName("Verifies that valid hoes return true for isHoe")
 	void testIsHoeTrue(Material material) {
 		ItemStack item = new ItemStack(material);
-		assertTrue(Categories.isHoe(item));
-		assertTrue(Categories.is(Categories.Group.HOES, material));
+		assertTrue(Categories.HOES.contains(item));
 	}
 
 	@ParameterizedTest(name = "Material {0} must be in the RANGED group")
@@ -148,45 +137,44 @@ class CategoriesTest {
 	@DisplayName("Verifies that valid ranged weapons return true for isRanged")
 	void testIsRangedTrue(Material material) {
 		ItemStack item = new ItemStack(material);
-		assertTrue(Categories.isRanged(item));
-		assertTrue(Categories.is(Categories.Group.RANGED, material));
+		assertTrue(Categories.RANGED_WEAPONS.contains(item));
 	}
 
 
 	@DisplayName("Verifies that ARMOR group contains all helmets, chestplates, leggings, and boots")
 	@Test
 	void testArmorGroup() {
-		assertTrue(Categories.is(Categories.Group.ARMOR, Material.DIAMOND_HELMET));
-		assertTrue(Categories.is(Categories.Group.ARMOR, Material.IRON_CHESTPLATE));
-		assertTrue(Categories.is(Categories.Group.ARMOR, Material.GOLDEN_LEGGINGS));
-		assertTrue(Categories.is(Categories.Group.ARMOR, Material.NETHERITE_BOOTS));
-		assertTrue(Categories.is(Categories.Group.ARMOR, Material.ELYTRA));
+		assertTrue(Categories.ARMOR.contains(Material.DIAMOND_HELMET));
+		assertTrue(Categories.ARMOR.contains(Material.IRON_CHESTPLATE));
+		assertTrue(Categories.ARMOR.contains(Material.GOLDEN_LEGGINGS));
+		assertTrue(Categories.ARMOR.contains(Material.NETHERITE_BOOTS));
+		assertTrue(Categories.ARMOR.contains(Material.ELYTRA));
 	}
 
 	@DisplayName("Verifies that WEAPONS group contains swords, axes, and ranged weapons")
 	@Test
 	void testWeaponsGroup() {
-		assertTrue(Categories.is(Categories.Group.WEAPONS, Material.DIAMOND_SWORD));
-		assertTrue(Categories.is(Categories.Group.WEAPONS, Material.IRON_AXE));
-		assertTrue(Categories.is(Categories.Group.WEAPONS, Material.BOW));
-		assertTrue(Categories.is(Categories.Group.WEAPONS, Material.TRIDENT));
+		assertTrue(Categories.WEAPONS.contains(Material.DIAMOND_SWORD));
+		assertTrue(Categories.WEAPONS.contains(Material.IRON_AXE));
+		assertTrue(Categories.WEAPONS.contains(Material.BOW));
+		assertTrue(Categories.WEAPONS.contains(Material.TRIDENT));
 	}
 
 	@DisplayName("Verifies that TOOLS group contains pickaxes, shovels, and hoes")
 	@Test
 	void testToolsGroup() {
-		assertTrue(Categories.is(Categories.Group.TOOLS, Material.DIAMOND_PICKAXE));
-		assertTrue(Categories.is(Categories.Group.TOOLS, Material.STONE_SHOVEL));
-		assertTrue(Categories.is(Categories.Group.TOOLS, Material.GOLDEN_HOE));
+		assertTrue(Categories.TOOLS.contains(Material.DIAMOND_PICKAXE));
+		assertTrue(Categories.TOOLS.contains(Material.STONE_SHOVEL));
+		assertTrue(Categories.TOOLS.contains(Material.GOLDEN_HOE));
 	}
 
 	@DisplayName("Verifies that IMPORTANT_DURABILITY group contains ARMOR, WEAPONS, and TOOLS")
 	@Test
 	void testImportantDurabilityGroup() {
-		assertTrue(Categories.is(Categories.Group.IMPORTANT_DURABILITY, Material.DIAMOND_HELMET));
-		assertTrue(Categories.is(Categories.Group.IMPORTANT_DURABILITY, Material.IRON_SWORD));
-		assertTrue(Categories.is(Categories.Group.IMPORTANT_DURABILITY, Material.NETHERITE_PICKAXE));
-		assertFalse(Categories.is(Categories.Group.IMPORTANT_DURABILITY, Material.APPLE));
+		assertTrue(Categories.IMPORTANT_DURABILITY.contains(Material.DIAMOND_HELMET));
+		assertTrue(Categories.IMPORTANT_DURABILITY.contains(Material.IRON_SWORD));
+		assertTrue(Categories.IMPORTANT_DURABILITY.contains(Material.NETHERITE_PICKAXE));
+		assertFalse(Categories.IMPORTANT_DURABILITY.contains(Material.APPLE));
 	}
 
 
@@ -194,62 +182,61 @@ class CategoriesTest {
 	@DisplayName("Verifies that isHelmet returns false for null item")
 	@Test
 	void testIsHelmetNull() {
-		assertFalse(Categories.isHelmet((ItemStack) null));
-		assertFalse(Categories.is(Categories.Group.HELMETS, (Material) null));
+		assertFalse(Categories.HELMETS.contains((ItemStack) null));
 	}
 
 	@DisplayName("Verifies that isChestplate returns false for null item")
 	@Test
 	void testIsChestplateNull() {
-		assertFalse(Categories.isChestplate((ItemStack) null));
+		assertFalse(Categories.CHESTPLATES.contains((ItemStack) null));
 	}
 
 	@DisplayName("Verifies that isLeggings returns false for null item")
 	@Test
 	void testIsLeggingsNull() {
-		assertFalse(Categories.isLeggings((ItemStack) null));
+		assertFalse(Categories.LEGGINGS.contains((ItemStack) null));
 	}
 
 	@DisplayName("Verifies that isBoots returns false for null item")
 	@Test
 	void testIsBootsNull() {
-		assertFalse(Categories.isBoots((ItemStack) null));
+		assertFalse(Categories.BOOTS.contains((ItemStack) null));
 	}
 
 	@DisplayName("Verifies that isSword returns false for null item")
 	@Test
 	void testIsSwordNull() {
-		assertFalse(Categories.isSword((ItemStack) null));
+		assertFalse(Categories.SWORDS.contains((ItemStack) null));
 	}
 
 	@DisplayName("Verifies that isAxe returns false for null item")
 	@Test
 	void testIsAxeNull() {
-		assertFalse(Categories.isAxe((ItemStack) null));
+		assertFalse(Categories.AXES.contains((ItemStack) null));
 	}
 
 	@DisplayName("Verifies that isPickaxe returns false for null item")
 	@Test
 	void testIsPickaxeNull() {
-		assertFalse(Categories.isPickaxe((ItemStack) null));
+		assertFalse(Categories.PICKAXES.contains((ItemStack) null));
 	}
 
 	@DisplayName("Verifies that isShovel returns false for null item")
 	@Test
 	void testIsShovelNull() {
-		assertFalse(Categories.isShovel((ItemStack) null));
+		assertFalse(Categories.SHOVELS.contains((ItemStack) null));
 	}
 
 	@DisplayName("Verifies that isHoe returns false for null item")
 	@Test
 	void testIsHoeNull() {
-		assertFalse(Categories.isHoe((ItemStack) null));
+		assertFalse(Categories.HOES.contains((ItemStack) null));
 	}
 
 	@DisplayName("Verifies that isRanged returns false for null item")
 	@Test
 	void testIsRangedNull() {
-		assertFalse(Categories.isRanged((ItemStack) null));
+		assertFalse(Categories.RANGED_WEAPONS.contains((ItemStack) null));
 	}
 
 
@@ -257,51 +244,34 @@ class CategoriesTest {
 	@DisplayName("Verifies that uncategorized materials return false for specific categories")
 	@Test
 	void testNonCategorizedMaterials() {
-		assertFalse(Categories.isHelmet(Material.DIAMOND_SWORD));
-		assertFalse(Categories.isChestplate(Material.BOW));
-		assertFalse(Categories.isSword(Material.DIAMOND_HELMET));
-		assertFalse(Categories.isAxe(Material.IRON_PICKAXE));
-		assertFalse(Categories.isHoe(Material.STONE_AXE));
-		assertFalse(Categories.isRanged(Material.DIAMOND_AXE));
-		assertFalse(Categories.is(Categories.Group.HELMETS, Material.APPLE));
-	}
-
-
-	@DisplayName("Verifies that get() returns an unmodifiable set")
-	@Test
-	void testGetReturnsUnmodifiableSet() {
-		assertThrows(UnsupportedOperationException.class, () -> {
-			Categories.get(Categories.Group.SWORDS).add(Material.GOLDEN_AXE);
-		});
-	}
-
-	@DisplayName("Verifies that get() returns a non-empty set for known groups")
-	@Test
-	void testGetKnownGroup() {
-		assertNotNull(Categories.get(Categories.Group.HELMETS));
-		assertFalse(Categories.get(Categories.Group.HELMETS).isEmpty());
+		assertFalse(Categories.HELMETS.contains(Material.DIAMOND_SWORD));
+		assertFalse(Categories.CHESTPLATES.contains(Material.BOW));
+		assertFalse(Categories.SWORDS.contains(Material.DIAMOND_HELMET));
+		assertFalse(Categories.AXES.contains(Material.IRON_PICKAXE));
+		assertFalse(Categories.HOES.contains(Material.STONE_AXE));
+		assertFalse(Categories.RANGED_WEAPONS.contains(Material.DIAMOND_AXE));
 	}
 
 
 	@DisplayName("Verifies that ARMOR union does not contain tools")
 	@Test
 	void testArmorDoesNotContainTools() {
-		assertFalse(Categories.is(Categories.Group.ARMOR, Material.DIAMOND_PICKAXE));
-		assertFalse(Categories.is(Categories.Group.ARMOR, Material.STONE_SHOVEL));
-		assertFalse(Categories.is(Categories.Group.ARMOR, Material.IRON_HOE));
+		assertFalse(Categories.ARMOR.contains(Material.DIAMOND_PICKAXE));
+		assertFalse(Categories.ARMOR.contains(Material.STONE_SHOVEL));
+		assertFalse(Categories.ARMOR.contains(Material.IRON_HOE));
 	}
 
 	@DisplayName("Verifies that WEAPONS union does not contain armor")
 	@Test
 	void testWeaponsDoesNotContainArmor() {
-		assertFalse(Categories.is(Categories.Group.WEAPONS, Material.DIAMOND_HELMET));
-		assertFalse(Categories.is(Categories.Group.WEAPONS, Material.IRON_CHESTPLATE));
+		assertFalse(Categories.WEAPONS.contains(Material.DIAMOND_HELMET));
+		assertFalse(Categories.WEAPONS.contains(Material.IRON_CHESTPLATE));
 	}
 
 	@DisplayName("Verifies that TOOLS union does not contain weapons")
 	@Test
 	void testToolsDoesNotContainWeapons() {
-		assertFalse(Categories.is(Categories.Group.TOOLS, Material.DIAMOND_SWORD));
-		assertFalse(Categories.is(Categories.Group.TOOLS, Material.BOW));
+		assertFalse(Categories.TOOLS.contains(Material.DIAMOND_SWORD));
+		assertFalse(Categories.TOOLS.contains(Material.BOW));
 	}
 }
