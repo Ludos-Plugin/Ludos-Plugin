@@ -85,16 +85,18 @@ public class BerserkerAxe extends LevelItem<BerserkerAxe, BerserkerAxeLevels> {
 		BerserkerAxeLevels level = lvlObject();
 
 		if (variant == Variant.FIRST) {
-			// Base damage: 1 (player base) + 3 (modifier) + 0.5*sharpnessLevel = 4 + enchant
 			double dmg = 4.0 + level.getDamageBonus();
 			lore.add(
-				Component.text(String.format("%.1f ❤  — vampirisme pendant la rage.", dmg))
+				Component.text("Lifesteal: ")
+					.decoration(TextDecoration.ITALIC, false)
+				.append(Component.text(String.format("%.1f ❤", dmg / 2))
 					.color(NamedTextColor.RED)
 					.decoration(TextDecoration.ITALIC, false)
+				)
 			);
 		} else {
 			lore.add(
-				Component.text("Lame secondaire.")
+				Component.text("Heavy Axe")
 					.decoration(TextDecoration.ITALIC, false)
 			);
 		}

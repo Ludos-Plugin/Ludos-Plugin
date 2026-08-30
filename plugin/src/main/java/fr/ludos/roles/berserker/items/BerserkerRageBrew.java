@@ -1,9 +1,6 @@
 package fr.ludos.roles.berserker.items;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -44,9 +41,10 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 	@Override
 	public List<Component> getLore() {
 		return List.of(
-			Component.text("Clic droit : déchaîner la rage pendant 10s.")
-				.decoration(TextDecoration.ITALIC, false),
-			Component.text("Recharge : 30s, puis courte fatigue.")
+			Component.text("Consume to unleash rage for ")
+			.append(Component.text("10s.")
+				.color(NamedTextColor.GOLD)
+			)
 				.decoration(TextDecoration.ITALIC, false)
 		);
 	}
@@ -55,10 +53,12 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 	 * Events for the {@link BerserkerRageBrew}.
 	 */
 	public static class Events extends SpecialItem.Events<BerserkerRageBrew> {
-		private final Map<UUID, Long> cooldowns = new HashMap<>();
-		private static final long COOLDOWN_MS = 30_000;
-		private static final int RAGE_DURATION_TICKS = 20 * 10;
-		private static final int FATIGUE_TICKS = 20 * 5;
+		private static final int RAGE_DURATION_S = 10;
+		private static final int RAGE_DURATION_TICKS = RAGE_DURATION_S * 20;
+		private static final int FATIGUE_S = 5;
+		private static final int FATIGUE_TICKS = FATIGUE_S * 20;
+		private static final int COOLDOWN_S = RAGE_DURATION_S + 20;
+		private static final int COOLDOWN_TICKS = COOLDOWN_S * 20;
 
 		private final BerserkerRole role;
 
@@ -81,7 +81,6 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 		protected void onItemStop() {
 			super.onItemStop();
 
-			cooldowns.clear();
 			for (Player player : Bukkit.getOnlinePlayers()) {
 				role.setRage(player, false);
 			}
@@ -112,22 +111,8 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 
 			event.setReplacement(brew.getStack());
 
-			long now = System.currentTimeMillis();
-			long availableAt = cooldowns.getOrDefault(player.getUniqueId(), 0L);
-			if (availableAt > now) {
-				long remaining = (availableAt - now) / 1000;
-				player.sendMessage(
-					Component.text("Rage Brew", NamedTextColor.DARK_RED)
-						.append(Component.text(" en cooldown (", NamedTextColor.RED))
-						.append(Component.text(remaining + 's', NamedTextColor.YELLOW))
-						.append(Component.text(").", NamedTextColor.RED))
-				);
-				return;
-			}
-
 			triggerRage(player);
-			cooldowns.put(player.getUniqueId(), now + COOLDOWN_MS);
-			player.setCooldown(brew.getStack().getType(), (int) (COOLDOWN_MS / 50));
+			player.setCooldown(brew.getStack().getType(), COOLDOWN_TICKS);
 		}
 
 		private void triggerRage(Player player) {
