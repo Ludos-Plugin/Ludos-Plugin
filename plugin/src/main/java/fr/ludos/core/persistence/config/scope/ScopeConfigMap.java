@@ -2,10 +2,15 @@ package fr.ludos.core.persistence.config.scope;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,16 +18,24 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.Subcommand;
 import fr.ludos.core.group.GroupManager;
+import fr.ludos.core.gui.GuiContext;
+import fr.ludos.core.gui.WindowUtility;
+import fr.ludos.core.gui.WindowUtility.WindowSettings;
+import fr.ludos.core.gui.item.ConfigProviderItem;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionCollection;
+import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
+import xyz.xenondevs.invui.item.Item;
+import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
+import xyz.xenondevs.invui.window.Window;
 
 /**
  * {@link Subcommand} used to select a given Configuration scope for subsequent Configuration Options.
@@ -116,6 +129,45 @@ public class ScopeConfigMap extends ConfigSectionCollection {
 			default:
 				return null;
 		}
+	}
+
+	@Override
+	public Window window(Player player, GuiContext context) {
+		Set<String> options = options(player);
+		if (options.isEmpty()) return null;
+
+		WindowUtility.WindowSettings state = new WindowSettings(true);
+
+		List<Triple<String, ConfigSectionProvider, ConfigNode>> nodes = options.stream()
+			.map(key -> {
+				ConfigSectionProvider provider = getProvider(key, player);
+				if (provider == null || ! provider.checkAuthorizationSilent(player)) return null;
+
+				ConfigNode node = getNode(key);
+
+				return Triple.of(key, provider, node);
+			})
+			.filter(Objects::nonNull)
+			.toList();
+
+		if (nodes.size() == 1) {
+			Triple<String, ConfigSectionProvider, ConfigNode> item = nodes.get(0);
+			ConfigNode node = item.getRight();
+
+			return node.window(player, context.setConfig(new ConfigSectionContext(item.getMiddle())));
+		}
+
+		List<Item> items = nodes.stream()
+			.map(item -> new ConfigProviderItem(context, item.getMiddle(), item.getRight()) {
+					@Override
+					public ItemProvider getItemProvider(Player viewer) {
+						return getItem(item.getLeft(), player);
+					}
+				}.addClickHandler(state::disableModalReturn)
+			)
+			.collect(Collectors.toList());
+
+		return WindowUtility.pagedItemsWindow(player, context, items, normalizedDisplayName(), state);
 	}
 
 	protected @NotNull AbstractItemBuilder<?> getGlobalItem(CommandSender sender) {

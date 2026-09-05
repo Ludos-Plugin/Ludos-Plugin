@@ -63,12 +63,22 @@ public class GuiContext implements AccessAuthorization {
 	public GuiContext deeper(ConfigSectionContext configContext) {
 		return new GuiContext(plugin, this, null, auth, Objects.requireNonNull(configContext));
 	}
+
+	public GuiContext withWindow(WindowProvider window) {
+		return new GuiContext(plugin, previous, window, auth, configContext);
+	}
+
 	public GuiContext setWindow(WindowProvider window) {
 		this.window = window;
 		return this;
 	}
-	public GuiContext withWindow(WindowProvider window) {
-		return new GuiContext(plugin, previous, window, auth, configContext);
+	public final GuiContext setConfig(ConfigSectionContext configContext) {
+		this.configContext = configContext;
+		return this;
+	}
+	public final GuiContext setAccessAuth(AccessAuthorization auth) {
+		this.auth = auth;
+		return this;
 	}
 
 
@@ -77,12 +87,6 @@ public class GuiContext implements AccessAuthorization {
 	}
 	public final @Nullable ConfigSectionContext configContext() {
 		return this.configContext;
-	}
-	public final void setConfig(ConfigSectionContext configContext) {
-		this.configContext = configContext;
-	}
-	public final void setAccessAuth(AccessAuthorization auth) {
-		this.auth = auth;
 	}
 
 	public boolean openWindow(Player player) {
