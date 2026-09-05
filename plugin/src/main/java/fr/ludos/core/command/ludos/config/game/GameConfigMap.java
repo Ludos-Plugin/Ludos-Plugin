@@ -24,7 +24,7 @@ public class GameConfigMap extends ConfigNodeCollection {
 
 	public GameConfigMap(GameManager manager) {
 		super(
-			Game.WINDOW_TITLE,
+			Game.CONFIG_WINDOW_TITLE,
 			Game.NAMESPACE
 		);
 		this.manager = Objects.requireNonNull(manager);

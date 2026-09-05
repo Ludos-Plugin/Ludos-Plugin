@@ -174,7 +174,7 @@ public class ScopeConfigMap extends ConfigSectionCollection {
 		return new ItemBuilder(Material.NETHER_STAR)
 			.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DYE, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_POTION_EFFECTS)
 			.setDisplayName(new AdventureComponentWrapper(
-				Component.text("Server-wide Configuration")
+				Component.text("Server-wide configuration")
 					.decoration(TextDecoration.ITALIC, false)
 					.color(NamedTextColor.LIGHT_PURPLE)
 			))
@@ -188,7 +188,7 @@ public class ScopeConfigMap extends ConfigSectionCollection {
 		return new ItemBuilder(Material.BLUE_BANNER)
 			.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DYE, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_POTION_EFFECTS)
 			.setDisplayName(new AdventureComponentWrapper(
-				Component.text("Group-wide Configuration")
+				Component.text("Group-wide configuration")
 					.decoration(TextDecoration.ITALIC, false)
 					.color(NamedTextColor.GREEN)
 			))
@@ -202,7 +202,7 @@ public class ScopeConfigMap extends ConfigSectionCollection {
 		return new ItemBuilder(Material.PLAYER_HEAD)
 			.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DYE, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_POTION_EFFECTS)
 			.setDisplayName(new AdventureComponentWrapper(
-				Component.text("Personal Configuration")
+				Component.text("Personal configuration")
 					.decoration(TextDecoration.ITALIC, false)
 					.color(NamedTextColor.BLUE)
 			))

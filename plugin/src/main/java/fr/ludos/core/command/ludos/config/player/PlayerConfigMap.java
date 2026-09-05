@@ -30,7 +30,7 @@ public final class PlayerConfigMap extends ConfigNodeMap {
 
 	public PlayerConfigMap(Ludos ludos) {
 		super(
-			Component.text("Player Configuration"),
+			Component.text("Player configuration"),
 			Ludos.PLAYER_NAMESPACE,
 			List.of(
 				GUIDEBOOK_MESSAGE

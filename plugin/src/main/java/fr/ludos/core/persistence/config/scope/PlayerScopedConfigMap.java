@@ -21,7 +21,7 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
 public class PlayerScopedConfigMap extends ConfigNodeMap {
 	public PlayerScopedConfigMap(Ludos ludos) {
 		super(
-			Component.text("Player-specific Configuration"), null,
+			Component.text("Player-specific configuration"), null,
 			List.of(
 				ludos.getRoleManager().configMap,
 				ludos.playerConfigMap

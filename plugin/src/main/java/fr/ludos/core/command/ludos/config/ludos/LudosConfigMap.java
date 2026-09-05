@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
 import fr.ludos.core.persistence.config.ConfigNodeMap;
-import net.kyori.adventure.text.Component;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
@@ -17,7 +16,7 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
 public final class LudosConfigMap extends ConfigNodeMap {
 	public LudosConfigMap(Ludos ludos) {
 		super(
-			Component.text("Ludos configuration"),
+			Ludos.CONFIG_WINDOW_TITLE,
 			Ludos.NAMESPACE,
 			List.of()
 		);

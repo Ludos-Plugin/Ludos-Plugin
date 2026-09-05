@@ -16,7 +16,6 @@ import fr.ludos.core.persistence.config.ConfigNodeMap;
 import fr.ludos.core.persistence.config.valueEntry.EnumConfigEntry;
 import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
@@ -104,11 +103,9 @@ public final class GroupConfigMap extends ConfigNodeMap {
 			}
 		};
 
-	public static final TextComponent WINDOW_TITLE = Component.text("Group Configuration");
-
 	public GroupConfigMap(GroupManager manager) {
 		super(
-			WINDOW_TITLE,
+			Group.CONFIG_WINDOW_TITLE,
 			Group.NAMESPACE,
 			List.of(
 				MEMBERS_AUTH,

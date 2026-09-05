@@ -42,7 +42,7 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
  */
 public abstract class Role extends GameProcessBase {
 	public static final String NAMESPACE = "role";
-	public static final TextComponent WINDOW_TITLE = Component.text("Role Configuration");
+	public static final TextComponent CONFIG_WINDOW_TITLE = Component.text("Role configuration");
 	public static final String NONE_LABEL = "none";
 
 	public final static ItemBuilder createItem() {
@@ -96,7 +96,7 @@ public abstract class Role extends GameProcessBase {
 
 	public static ScopeConfigMap scopeConfig(Ludos ludos, ConfigNodeCollection nodes) {
 		return new ScopeConfigMap(
-			WINDOW_TITLE,
+			CONFIG_WINDOW_TITLE,
 			ludos,
 			nodes
 		);

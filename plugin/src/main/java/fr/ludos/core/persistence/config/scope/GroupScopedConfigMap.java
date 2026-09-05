@@ -23,7 +23,7 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
 public class GroupScopedConfigMap extends ConfigNodeMap {
 	public GroupScopedConfigMap(Ludos ludos) {
 		super(
-			Component.text("Group-wide Configuration"), null,
+			Component.text("Group-wide configuration"), null,
 			List.of(
 				ludos.getGroupManager().configMap,
 				ludos.getGameManager().configMap,

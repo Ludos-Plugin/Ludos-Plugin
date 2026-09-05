@@ -49,7 +49,7 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
  */
 public abstract class Game extends TwoStepGameProcessBase {
 	public static final String NAMESPACE = "game";
-	public static final TextComponent WINDOW_TITLE = Component.text("Game Configuration");
+	public static final TextComponent CONFIG_WINDOW_TITLE = Component.text("Game configuration");
 
 	public final static ItemBuilder createItem() {
 		return new ItemBuilder(Material.MUSIC_DISC_CHIRP);
@@ -111,7 +111,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 	public static ScopeConfigMap scopeConfig(Ludos ludos, ConfigNodeCollection nodes) {
 		return new ScopeConfigMap(
-			WINDOW_TITLE,
+			CONFIG_WINDOW_TITLE,
 			ludos,
 			nodes,
 			nodes,

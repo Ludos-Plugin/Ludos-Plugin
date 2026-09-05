@@ -13,7 +13,6 @@ import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.role.RoleManager;
-import net.kyori.adventure.text.Component;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
 
 /**
@@ -24,7 +23,7 @@ public class RoleConfigMap extends ConfigNodeCollection {
 
 	public RoleConfigMap(RoleManager manager) {
 		super(
-			Component.text("Role Configuration"),
+			Role.CONFIG_WINDOW_TITLE,
 			Role.NAMESPACE
 		);
 		this.manager = Objects.requireNonNull(manager);

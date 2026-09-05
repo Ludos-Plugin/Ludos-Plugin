@@ -38,14 +38,11 @@ import fr.ludos.core.security.group.GroupConfigAuthz;
 import fr.ludos.core.security.group.GroupInviteAuthz;
 import fr.ludos.core.security.group.GroupManageAuthz;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 
 /**
  * Manager class for {@link Group}s, used to maintain the state of current Groups, for use in {@link Ludos}.
  */
 public class GroupManager implements Listener {
-	public static final TextComponent WINDOW_TITLE = Component.text("Group configuration");
-
 	public static final String LEADER_KEY = "leader";
 	public static final String MEMBERS_KEY = "members";
 
@@ -77,7 +74,7 @@ public class GroupManager implements Listener {
 		groupsData = YamlConfiguration.loadConfiguration(groupsFile);
 
 		scopeConfigMap = new ScopeConfigMap(
-			WINDOW_TITLE,
+			Group.CONFIG_WINDOW_TITLE,
 			ludos,
 			this,
 			configMap,

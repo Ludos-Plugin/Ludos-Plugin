@@ -75,6 +75,8 @@ public class Ludos extends JavaPlugin implements Listener {
 	public static final String CONFIG_NAMESPACE = "config";
 	public static final String DATA_NAMESPACE = "data";
 
+	public static final TextComponent CONFIG_WINDOW_TITLE = Component.text("Ludos configuration");
+
 	private final AdminAuthz adminAuthz = new AdminAuthz();
 
 	private final GroupManager groupManager = new GroupManager(this);
@@ -91,7 +93,7 @@ public class Ludos extends JavaPlugin implements Listener {
 	public final GroupScopedConfigMap groupScopedConfigMap = new GroupScopedConfigMap(this);
 	public final GlobalScopedConfigMap globalScopedConfigMap = new GlobalScopedConfigMap(this);
 	public final ScopeConfigMap scopeConfigMap = new ScopeConfigMap(
-		Component.text("Ludos configuration"),
+		CONFIG_WINDOW_TITLE,
 		this,
 		globalScopedConfigMap,
 		groupScopedConfigMap,

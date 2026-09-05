@@ -41,6 +41,7 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
  */
 public final class Group {
 	public static final String NAMESPACE = "group";
+	public static final TextComponent CONFIG_WINDOW_TITLE = Component.text("Group configuration");
 
 	public final static ItemBuilder createItem() {
 		return new ItemBuilder(Material.BLUE_BANNER);
