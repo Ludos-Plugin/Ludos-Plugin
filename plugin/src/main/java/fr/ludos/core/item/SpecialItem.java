@@ -154,7 +154,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 	 * Check for the presence of any number of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
 	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
 	 * @param inventory The inventory to search the {@link SpecialItem} in
-	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}.<br>
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}
 	 * @return Whether or not the provided inventory contains at least one instance of {@link SpecialItem} type T
 	 */
 	public static <T extends SpecialItem<T>> Boolean containedIn(Inventory inventory, Function<ItemStack, T> constructor) {
@@ -175,7 +175,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 	 * Find a single instance of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
 	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
 	 * @param inventory The inventory to search the {@link SpecialItem} in
-	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}.<br>
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}
 	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
 	 * @return The first Special Item of type T found in the inventory or null if there is none
 	 */
@@ -184,22 +184,10 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 		return findOne(Arrays.asList(inventory.getContents()), constructor);
 	}
 	/**
-	 * Find all instances of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
-	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
-	 * @param inventory The inventory to search the {@link SpecialItem} in
-	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}.<br>
-	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
-	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
-	 */
-	public static <T extends SpecialItem<T>> List<T> findAll(Inventory inventory, Function<ItemStack, T> constructor) {
-		return findAll(Arrays.asList(inventory.getContents()), constructor);
-	}
-
-	/**
 	 * Find a single instance of the {@link SpecialItem} type T in the given items iterable, using the given constructor to parse ItemStacks.
 	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
 	 * @param items The items to search the {@link SpecialItem} in
-	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}.<br>
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}
 	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
 	 * @return The first Special Item of type T found in the inventory or null if there is none
 	 */
@@ -213,11 +201,23 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 		return null;
 	}
+
+	/**
+	 * Find all instances of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
+	 * @param inventory The inventory to search the {@link SpecialItem} in
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}
+	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
+	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
+	 */
+	public static <T extends SpecialItem<T>> List<T> findAll(Inventory inventory, Function<ItemStack, T> constructor) {
+		return findAll(Arrays.asList(inventory.getContents()), constructor);
+	}
 	/**
 	 * Find all instances of the {@link SpecialItem} type T in the given items iterable, using the given constructor to parse ItemStacks.
 	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
 	 * @param items The items to search the {@link SpecialItem} in
-	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}.<br>
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}
 	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
 	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
 	 */
@@ -232,6 +232,15 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 		return results;
 	}
+	/**
+	 * Find all instances of the {@link SpecialItem} type T in the given items iterable, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
+	 * @param inventory The inventory to search the {@link SpecialItem} in
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}
+	 * @param order The order of the slots to search in the inventory
+	 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
+	 * @return All the Special Items of type T found in the inventory or an empty list if there is none
+	 */
 	public static <T extends SpecialItem<T>> List<@NotNull T> findAll(PlayerInventory inventory, Function<ItemStack, T> constructor, ItemSlot[] order) {
 		ArrayList<T> results = new ArrayList<>();
 		for (ItemSlot slot : order) {
@@ -479,6 +488,61 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 				itemEvents.removeFromAllInventories();
 			}
 		}
+
+		/**
+		 * Check for the presence of any number of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
+		 * @param inventory The inventory to search the {@link SpecialItem} in
+		 * @return Whether or not the provided inventory contains at least one instance of {@link SpecialItem} type T
+		 */
+		public Boolean containedIn(Inventory inventory) {
+			return SpecialItem.containedIn(inventory, this::getItem);
+		}
+
+		/**
+		 * Find a single instance of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
+		 * @param inventory The inventory to search the {@link SpecialItem} in
+		 * @return The first Special Item of type T found in the inventory or null if there is none
+		 */
+		@Nullable
+		public T findOne(Inventory inventory) {
+			return SpecialItem.findOne(inventory, this::getItem);
+		}
+		/**
+		 * Find a single instance of the {@link SpecialItem} type T in the given items iterable, using the given constructor to parse ItemStacks.
+		 * @param items The items to search the {@link SpecialItem} in
+		 * @return The first Special Item of type T found in the inventory or null if there is none
+		 */
+		public T findOne(Iterable<ItemStack> items) {
+			return SpecialItem.findOne(items, this::getItem);
+		}
+
+		/**
+		 * Find all instances of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
+		 * @param inventory The inventory to search the {@link SpecialItem} in
+		 * @return All the Special Items of type T found in the inventory or an empty list if there is none
+		 */
+		public List<T> findAll(Inventory inventory) {
+			return SpecialItem.findAll(inventory, this::getItem);
+		}
+		/**
+		 * Find all instances of the {@link SpecialItem} type T in the given items iterable, using the given constructor to parse ItemStacks.
+		 * @param items The items to search the {@link SpecialItem} in
+		 * @return All the Special Items of type T found in the inventory or an empty list if there is none
+		 */
+		public List<T> findAll(Iterable<ItemStack> items) {
+			return SpecialItem.findAll(items, this::getItem);
+		}
+		/**
+		 * Find all instances of the {@link SpecialItem} type T in the given items iterable, using the given constructor to parse ItemStacks.
+		 * @param inventory The inventory to search the {@link SpecialItem} in
+		 * @param order The order of the slots to search in the inventory
+		 * Note: it does not CREATE a {@link SpecialItem}, it only converts it into one if possible.
+		 * @return All the Special Items of type T found in the inventory or an empty list if there is none
+		 */
+		public List<@NotNull T> findAll(PlayerInventory inventory, ItemSlot[] order) {
+			return SpecialItem.findAll(inventory, this::getItem, order);
+		}
+
 
 		public void recordKill(T item, PersistentEntry<Integer> entry) {
 			ConfigurationSection killerData = getGame().ludos().getItemData(item.getOwner(), this);

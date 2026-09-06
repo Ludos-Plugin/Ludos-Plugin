@@ -12,7 +12,6 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameEvents;
 import fr.ludos.core.item.SpecialItem;
-import fr.ludos.core.item.level.LevelItem;
 import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.role.RoleFlag;
@@ -81,7 +80,7 @@ public class HarvesterRole extends Role {
 		if (oreXp == 0) return;
 		for (var events : getGameEvents().values()) {
 			if (events instanceof SpecialItem.Events<?> itemEvents) {
-				LevelItem.findAll(inventory, itemEvents::getItem)
+				itemEvents.findAll(inventory)
 					.stream()
 					.filter(o -> o instanceof LevelItemInterface)
 					.forEach(item -> ((LevelItemInterface) item).addXp(oreXp));

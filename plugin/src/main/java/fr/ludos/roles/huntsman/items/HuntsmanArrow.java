@@ -99,7 +99,7 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 			if (! isPlayerValid(player)) return;
 
 			ItemStack launcher = event.getBow();
-			List<HuntsmanArrow> arrows = findAll(player.getInventory(), this::getItem, ItemSlot.ARROW_ORDER);
+			List<HuntsmanArrow> arrows = findAll(player.getInventory(), ItemSlot.ARROW_ORDER);
 
 			// prevent arrow consumption or restore count if not possible
 			if (arrowMagazineSize == null) {
@@ -145,7 +145,7 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 		}
 		private void manualReload(Player player) {
 			PlayerInventory inventory = player.getInventory();
-			List<HuntsmanArrow> arrows = findAll(inventory, this::getItem);
+			List<HuntsmanArrow> arrows = findAll(inventory);
 
 			int amount = countArrows(player, arrows);
 

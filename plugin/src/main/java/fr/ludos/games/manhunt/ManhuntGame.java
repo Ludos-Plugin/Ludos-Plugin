@@ -208,8 +208,8 @@ public class ManhuntGame extends Game {
 			.append(Component.text(" Z:" + lastPreyLocation.getBlockZ()).color(NamedTextColor.BLUE))
 		);
 
-		for (Player hunter : teamController.getTeamOnlinePlayers(teamController.preyTeam)) {
-			for (ManhuntCompass compass : ManhuntCompass.findAll(hunter.getInventory(), compassEvents::getItem)) {
+		for (Player hunter : teamController.getTeamOnlinePlayers(teamController.hunterTeam)) {
+			for (ManhuntCompass compass : compassEvents.findAll(hunter.getInventory())) {
 				compass.setLocation(prey);
 			}
 		}

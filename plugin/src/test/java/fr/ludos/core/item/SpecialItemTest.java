@@ -420,13 +420,13 @@ class SpecialItemTest {
 		TestSpecialItem item = testEvents.createItem(holder);
 		inventory.setItem(ItemSlot.HOTBAR_1.ordinal(), item.getStack());
 
-		assertTrue(TestSpecialItem.containedIn(inventory, testEvents::getItem));
+		assertTrue(testEvents.containedIn(inventory));
 
 
 		inventory = spy(inventory);
 		testEvents.refreshPlayerInventory(owner);
 
-		assertEquals(1, TestSpecialItem.findAll(inventory, testEvents::getItem).size());
+		assertEquals(1, testEvents.findAll(inventory).size());
 
 		verify(inventory, never()).addItem(any(ItemStack.class));
 		verify(inventory, never()).setItem(anyInt(), any(ItemStack.class));
