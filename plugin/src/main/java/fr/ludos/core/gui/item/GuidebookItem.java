@@ -61,6 +61,7 @@ public class GuidebookItem extends EventItem<GuidebookItem> {
 	@Override
 	public void handleClickInternal(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
 		if (clickType.isLeftClick()) {
+			notifyActionHandlers();
 			player.openBook(provider.createGuidebook());
 		} else if (clickType.isRightClick()) {
 			player.getInventory().addItem(provider.createGuidebook());

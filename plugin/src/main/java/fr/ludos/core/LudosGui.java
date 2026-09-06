@@ -38,14 +38,14 @@ public class LudosGui implements WindowProvider {
 		WindowUtility.WindowSettings settings = new WindowUtility.WindowSettings(true);
 
 		List<Item> items = new ArrayList<>() {{
-			add(new WindowItem(ludos.getGroupManager().gui, Group.GUI_OBJECT, childrenContext).addClickHandler(settings::disableModalReturn));
-			add(new WindowItem(ludos.getGameManager().gui, Game.GUI_OBJECT, childrenContext).addClickHandler(settings::disableModalReturn));
-			add(new WindowItem(ludos.getRoleManager().gui, Role.GUI_OBJECT, childrenContext).addClickHandler(settings::disableModalReturn));
+			add(new WindowItem(ludos.getGroupManager().gui, Group.GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn));
+			add(new WindowItem(ludos.getGameManager().gui, Game.GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn));
+			add(new WindowItem(ludos.getRoleManager().gui, Role.GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn));
 		}};
 
 		if (items.isEmpty()) return null;
 
-		Item configItem = new WindowItem(ludos.scopeConfigMap, ConfigHolder.CONFIG_GUI_OBJECT, childrenContext).addClickHandler(settings::disableModalReturn);
+		Item configItem = new WindowItem(ludos.scopeConfigMap, ConfigHolder.CONFIG_GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn);
 
 		settings
 			.setStructure(

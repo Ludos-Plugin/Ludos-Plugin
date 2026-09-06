@@ -18,6 +18,7 @@ import xyz.xenondevs.invui.item.impl.AbstractItem;
  */
 public abstract class EventItem<T extends EventItem<T>> extends AbstractItem {
 	private List<Consumer<ClickType>> clickHandlers;
+	private List<Runnable> actionHandlers;
 
 	public EventItem() { }
 
@@ -48,6 +49,30 @@ public abstract class EventItem<T extends EventItem<T>> extends AbstractItem {
 		return (T) this;
 	}
 
+
+	@SuppressWarnings("unchecked")
+	@Contract("_ -> this")
+	public @NotNull T addActionHandler(@NotNull Runnable actionHandler) {
+		if (actionHandlers == null)
+			actionHandlers = new ArrayList<>();
+
+		actionHandlers.add(actionHandler);
+		return (T) this;
+	}
+	@SuppressWarnings("unchecked")
+	@Contract("_ -> this")
+	public @NotNull T setActionHandlers(@NotNull List<@NotNull Runnable> actionHandlers) {
+		this.actionHandlers = actionHandlers;
+		return (T) this;
+	}
+
+	public final void notifyActionHandlers() {
+		if (actionHandlers != null) {
+			for (Runnable actionHandler : actionHandlers) {
+				actionHandler.run();
+			}
+		}
+	}
 
 	@Override
 	public final void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {

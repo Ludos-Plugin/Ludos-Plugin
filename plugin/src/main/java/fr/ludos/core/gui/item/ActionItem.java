@@ -27,6 +27,7 @@ public class ActionItem extends EventItem<ActionItem> {
 
 	@Override
 	public void handleClickInternal(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
+		notifyActionHandlers();
 		action.run();
 	}
 

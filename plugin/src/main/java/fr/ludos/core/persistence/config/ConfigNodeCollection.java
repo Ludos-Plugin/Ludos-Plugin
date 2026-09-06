@@ -77,7 +77,7 @@ public abstract class ConfigNodeCollection extends ConfigRootCollection implemen
 		WindowUtility.WindowSettings settings = new WindowUtility.WindowSettings(true);
 		List<Item> items = getNodes().stream()
 			.filter(Objects::nonNull)
-			.map(node -> WindowItem.of(node, childrenContext).addClickHandler(settings::disableModalReturn))
+			.map(node -> WindowItem.of(node, childrenContext).addActionHandler(settings::disableModalReturn))
 			.collect(Collectors.toList());
 
 		return WindowUtility.pagedItemsWindow(player, context, items, normalizedDisplayName(), settings);

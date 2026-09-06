@@ -39,6 +39,7 @@ public class CreateGroupItem extends EventItem<CreateGroupItem> implements GuiOb
 		manager.createGroup(player, null);
 		manager.saveData();
 
+		notifyActionHandlers();
 		window.openWindow(player, context);
 	}
 

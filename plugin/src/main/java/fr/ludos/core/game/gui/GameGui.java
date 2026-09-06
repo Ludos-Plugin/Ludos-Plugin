@@ -33,7 +33,7 @@ public class GameGui implements WindowProvider {
 		WindowUtility.WindowSettings settings = new WindowUtility.WindowSettings(true);
 
 		List<Item> items = manager.getBuilders().stream()
-			.map(g -> (Item) GameMenuGui.item(g, manager, childrenContext).addClickHandler(settings::disableModalReturn))
+			.map(g -> (Item) GameMenuGui.item(g, manager, childrenContext).addActionHandler(settings::disableModalReturn))
 			.toList();
 
 		if (items.isEmpty()) return null;

@@ -30,6 +30,7 @@ public class PickRoleItem extends EventItem<PickRoleItem> {
 
 	@Override
 	public void handleClickInternal(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
+		notifyActionHandlers();
 		if (manager.isPlayerRole(player, role.getId())) {
 			manager.userUnsetRole(player, player);
 		} else {

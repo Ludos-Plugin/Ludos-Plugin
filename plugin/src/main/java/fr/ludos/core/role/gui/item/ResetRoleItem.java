@@ -28,6 +28,7 @@ public class ResetRoleItem extends EventItem<ResetRoleItem> {
 
 	@Override
 	public void handleClickInternal(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
+		notifyActionHandlers();
 		manager.userUnsetRole(player, player);
 		notifyWindows();
 	}

@@ -104,6 +104,8 @@ public class WindowItem extends EventItem<WindowItem> {
 				window.addOutsideClickHandler(outsideClickHandler);
 			}
 		}
+
+		notifyActionHandlers();
 		window.open();
 	}
 

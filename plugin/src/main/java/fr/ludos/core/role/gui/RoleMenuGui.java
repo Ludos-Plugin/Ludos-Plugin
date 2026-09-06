@@ -50,11 +50,7 @@ public class RoleMenuGui implements WindowProvider {
 
 		ArrayList<Item> items = new ArrayList<>() {{
 			add(new PickRoleItem(role, manager));
-			add(new GuidebookItem(role).addClickHandler(t -> {
-				if (t.isLeftClick()) {
-					settings.disableModalReturn();
-				}
-			}));
+			add(new GuidebookItem(role).addActionHandler(settings::disableModalReturn));
 		}};
 
 		if (items.isEmpty()) return null;
@@ -62,7 +58,7 @@ public class RoleMenuGui implements WindowProvider {
 		ConfigNodeCollection gameConfig = role.getConfig();
 		boolean canConfig = gameConfig != null && manager.getLudos().getGroupManager().getConfigAuthz().checkAuthorizationSilent(player);
 		Item configItem = canConfig
-			? new WindowItem(Role.scopeConfig(manager.getLudos(), gameConfig), ConfigHolder.CONFIG_GUI_OBJECT, childrenContext).addClickHandler(settings::disableModalReturn)
+			? new WindowItem(Role.scopeConfig(manager.getLudos(), gameConfig), ConfigHolder.CONFIG_GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn)
 			: BorderItem.INSTANCE;
 
 		settings

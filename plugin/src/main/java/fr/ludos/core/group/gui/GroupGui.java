@@ -48,21 +48,21 @@ public class GroupGui implements WindowProvider {
 
 		Group group = manager.getGroupOfPlayer(player);
 		if (group == null) {
-			items.add(new CreateGroupItem(manager, this, context).addClickHandler(settings::disableModalReturn));
-			items.add(WindowItem.of(joinGui, childrenContext).addClickHandler(settings::disableModalReturn));
+			items.add(new CreateGroupItem(manager, this, context).addActionHandler(settings::disableModalReturn));
+			items.add(WindowItem.of(joinGui, childrenContext).addActionHandler(settings::disableModalReturn));
 		}
 		else {
 			if (inviteGui.checkAuthorizationSilent(player)) {
-				items.add(WindowItem.of(inviteGui, childrenContext).addClickHandler(settings::disableModalReturn));
+				items.add(WindowItem.of(inviteGui, childrenContext).addActionHandler(settings::disableModalReturn));
 			}
 			if (kickGui.checkAuthorizationSilent(player)) {
-				items.add(WindowItem.of(kickGui, childrenContext).addClickHandler(settings::disableModalReturn));
+				items.add(WindowItem.of(kickGui, childrenContext).addActionHandler(settings::disableModalReturn));
 			}
 		}
 
 		boolean canConfig = manager.getConfigAuthz().checkAuthorizationSilent(player);
 		Item configItem = canConfig
-			? new WindowItem(manager.getScopeConfigMap(), ConfigHolder.CONFIG_GUI_OBJECT, childrenContext).addClickHandler(settings::disableModalReturn)
+			? new WindowItem(manager.getScopeConfigMap(), ConfigHolder.CONFIG_GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn)
 			: BorderItem.INSTANCE;
 		boolean canManage = manager.getManageAuthz().checkAuthorizationSilent(player);
 		Item disbandItem = canManage
