@@ -22,6 +22,13 @@ public class ConfigSectionContext implements ConfigSectionProvider {
 		this(provider, null);
 	}
 
+	public static ConfigSectionContext of(ConfigSectionProvider provider) {
+		return new ConfigSectionContext(provider);
+	}
+	public static ConfigSectionContext at(@Nullable String path) {
+		return new ConfigSectionContext(null, path);
+	}
+
 	public ConfigSectionContext getDeeper(@Nullable String path) {
 		String finalPath = path == null
 			? this.path
@@ -29,6 +36,13 @@ public class ConfigSectionContext implements ConfigSectionProvider {
 				? path
 				: this.path + '.' + path;
 		return new ConfigSectionContext(provider, finalPath);
+	}
+
+	public ConfigSectionContext withProvider(ConfigSectionProvider provider) {
+		return new ConfigSectionContext(provider, path);
+	}
+	public ConfigSectionContext withPath(@Nullable String path) {
+		return new ConfigSectionContext(provider, path);
 	}
 
 

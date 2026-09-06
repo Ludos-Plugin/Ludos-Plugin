@@ -11,6 +11,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
+import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
 import fr.ludos.core.security.AccessAuthorization;
 
 /**
@@ -74,6 +75,22 @@ public class GuiContext implements AccessAuthorization {
 	}
 	public final GuiContext setConfig(ConfigSectionContext configContext) {
 		this.configContext = configContext;
+		return this;
+	}
+	public final GuiContext setConfigProvider(ConfigSectionProvider sectionProvider) {
+		if (configContext == null) {
+			configContext = ConfigSectionContext.of(sectionProvider);
+			return this;
+		}
+		configContext = configContext.withProvider(sectionProvider);
+		return this;
+	}
+	public final GuiContext setConfigPath(@Nullable String path) {
+		if (configContext == null) {
+			configContext = ConfigSectionContext.at(path);
+			return this;
+		}
+		configContext = configContext.withPath(path);
 		return this;
 	}
 	public final GuiContext setAccessAuth(AccessAuthorization auth) {

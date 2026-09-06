@@ -24,7 +24,6 @@ import fr.ludos.core.gui.WindowUtility.WindowSettings;
 import fr.ludos.core.gui.item.ConfigProviderItem;
 import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionCollection;
-import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -154,7 +153,7 @@ public class ScopeConfigMap extends ConfigSectionCollection {
 			Triple<String, ConfigSectionProvider, ConfigNode> item = nodes.get(0);
 			ConfigNode node = item.getRight();
 
-			return node.window(player, context.setConfig(new ConfigSectionContext(item.getMiddle())));
+			return node.window(player, context.setConfigProvider(item.getMiddle()));
 		}
 
 		List<Item> items = nodes.stream()

@@ -58,7 +58,7 @@ public class RoleMenuGui implements WindowProvider {
 		ConfigNodeCollection gameConfig = role.getConfig();
 		boolean canConfig = gameConfig != null && manager.getLudos().getGroupManager().getConfigAuthz().checkAuthorizationSilent(player);
 		Item configItem = canConfig
-			? new WindowItem(Role.scopeConfig(manager.getLudos(), gameConfig), ConfigHolder.CONFIG_GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn)
+			? new WindowItem(Role.scopeConfig(manager.getLudos(), gameConfig), ConfigHolder.CONFIG_GUI_OBJECT, childrenContext.setConfigPath(Role.NAMESPACE)).addActionHandler(settings::disableModalReturn)
 			: BorderItem.INSTANCE;
 
 		settings
