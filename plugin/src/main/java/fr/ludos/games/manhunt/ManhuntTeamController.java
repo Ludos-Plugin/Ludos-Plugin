@@ -92,10 +92,11 @@ public final class ManhuntTeamController extends GameTeamController {
 			}
 		}
 
-		if (selectedPrey == null) {
+		prey = selectedPrey;
+		if (prey == null) {
 			prey = finalHunters.iterator().next();
 		}
-		else if (! selectedPrey.isOnline()) {
+		else if (! prey.isOnline()) {
 			throw new IllegalArgumentException("Configured Prey is not online");
 		}
 
