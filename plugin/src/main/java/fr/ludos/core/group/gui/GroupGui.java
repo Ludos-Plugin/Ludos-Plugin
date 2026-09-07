@@ -28,15 +28,15 @@ import xyz.xenondevs.invui.window.Window;
  */
 public class GroupGui implements WindowProvider {
 	private final GroupManager manager;
+	private final GroupPlayerListGui playersGui;
 	private final GroupJoinGui joinGui;
 	private final GroupInviteGui inviteGui;
-	private final GroupKickGui kickGui;
 
-	public GroupGui(GroupManager manager, GroupJoinGui joinGui, GroupInviteGui inviteGui, GroupKickGui kickGui) {
+	public GroupGui(GroupManager manager, GroupPlayerListGui playersGui, GroupJoinGui joinGui, GroupInviteGui inviteGui) {
 		this.manager = manager;
+		this.playersGui = playersGui;
 		this.joinGui = joinGui;
 		this.inviteGui = inviteGui;
-		this.kickGui = kickGui;
 	}
 
 	@Override
@@ -55,10 +55,9 @@ public class GroupGui implements WindowProvider {
 			if (inviteGui.checkAuthorizationSilent(player)) {
 				items.add(WindowItem.of(inviteGui, childrenContext).addActionHandler(settings::disableModalReturn));
 			}
-			if (kickGui.checkAuthorizationSilent(player)) {
-				items.add(WindowItem.of(kickGui, childrenContext).addActionHandler(settings::disableModalReturn));
-			}
 		}
+
+		Item playersListItem = WindowItem.of(playersGui, childrenContext).addActionHandler(settings::disableModalReturn);
 
 		boolean canConfig = manager.getConfigAuthz().checkAuthorizationSilent(player);
 		Item configItem = canConfig
@@ -73,13 +72,14 @@ public class GroupGui implements WindowProvider {
 			.setStructure(
 				group != null
 					? new Structure(
-						"# # # # # # # # C",
+						"l # # # # # # # C",
 						"# x x x x x x x #",
 						"L # # # P # # # D"
 					)
 					.addIngredient('#', BorderItem.INSTANCE)
 					.addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
 					.addIngredient('P', ChangePageItem.INSTANCE)
+					.addIngredient('l', playersListItem)
 					.addIngredient('C', configItem)
 					.addIngredient('L', new LeaveGroupItem<>(manager))
 					.addIngredient('D', disbandItem)

@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupManager;
 import fr.ludos.core.gui.GuiObject;
-import fr.ludos.core.gui.WindowProvider;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -22,14 +21,14 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.AbstractItem;
 
 /**
- * An item that represents the action of kicking a player from a group. When clicked, it will attempt to kick the player from the group.
+ * An item that represents a player that can be promoted to Leader status, in a {@link Group}. When clicked, it will attempt to transfer the Group leader status to the target player.
  */
-public class KickPlayerItem extends AbstractItem implements GuiObject {
+public class PromotePlayerItem extends AbstractItem implements GuiObject {
 	private final GroupManager manager;
 	private final OfflinePlayer target;
-	private boolean wasKicked = false;
+	private boolean wasPromoted = false;
 
-	public KickPlayerItem(GroupManager manager, OfflinePlayer target) {
+	public PromotePlayerItem(GroupManager manager, OfflinePlayer target) {
 		this.manager = Objects.requireNonNull(manager);
 		this.target = Objects.requireNonNull(target);
 	}
@@ -43,20 +42,15 @@ public class KickPlayerItem extends AbstractItem implements GuiObject {
 			return;
 		}
 
-		if (group.isLeader(target)) {
-			player.sendMessage(Component.text("Cannot kick the group leader.").color(NamedTextColor.RED));
+		if (! group.isLeader(player)) {
+			player.sendMessage(Component.text("Only the Group leader can Promote another player.").color(NamedTextColor.RED));
 			return;
 		}
 
-		if (! manager.getManageAuthz().checkAuthorizationNotify(player)) {
-			WindowProvider.playDenySound(player);
-			return;
-		}
-
-		if (! group.removePlayer(target, true)) {
-			player.sendMessage(Component.text("Failed to kick player.").color(NamedTextColor.RED));
+		if (! group.promoteToLeader(target)) {
+			player.sendMessage(Component.text("Could not promote Player.").color(NamedTextColor.RED));
 		} else {
-			wasKicked = true;
+			wasPromoted = true;
 			manager.saveData();
 			notifyWindows();
 		}
@@ -65,7 +59,7 @@ public class KickPlayerItem extends AbstractItem implements GuiObject {
 
 	@Override
 	public ItemProvider getItemProvider() {
-		if (wasKicked) {
+		if (wasPromoted) {
 			return ItemProvider.EMPTY;
 		}
 		return this.displayItem(null);
@@ -73,11 +67,11 @@ public class KickPlayerItem extends AbstractItem implements GuiObject {
 
 	@Override
 	public TextComponent displayName() {
-		return Component.text("Kick Player").color(NamedTextColor.RED);
+		return Component.text("Promote Player").color(NamedTextColor.GOLD);
 	}
 
 	@Override
 	public AbstractItemBuilder<?> createItem(Player player) {
-		return new ItemBuilder(Material.BARRIER);
+		return new ItemBuilder(Material.NAME_TAG);
 	}
 }

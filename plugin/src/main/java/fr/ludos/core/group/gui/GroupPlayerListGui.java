@@ -9,12 +9,11 @@ import org.bukkit.entity.Player;
 
 import fr.ludos.core.group.Group;
 import fr.ludos.core.group.GroupManager;
-import fr.ludos.core.group.gui.item.KickPlayerItem;
 import fr.ludos.core.gui.GuiContext;
 import fr.ludos.core.gui.WindowObject;
 import fr.ludos.core.gui.WindowProvider;
 import fr.ludos.core.gui.WindowUtility;
-import fr.ludos.core.security.AccessAuthorization;
+import fr.ludos.core.gui.item.WindowItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import xyz.xenondevs.invui.item.Item;
@@ -23,23 +22,23 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.window.Window;
 
 /**
- * A {@link WindowProvider} for the group kick command, which provides a GUI for kicking players from a group.
+ * A {@link WindowProvider} which provides a GUI to see all players in a group.
  */
-public class GroupKickGui implements WindowObject {
+public class GroupPlayerListGui implements WindowObject {
 	private final GroupManager manager;
 
-	public GroupKickGui(GroupManager manager) {
+	public GroupPlayerListGui(GroupManager manager) {
 		this.manager = manager;
 	}
 
 	@Override
 	public TextComponent displayName() {
-		return Component.text("Kick Players from Group");
+		return Component.text("Players list");
 	}
 
 	@Override
 	public AbstractItemBuilder<?> createItem(Player player) {
-		return new ItemBuilder(Material.BARRIER);
+		return new ItemBuilder(Material.PLAYER_HEAD);
 	}
 
 	@Override
@@ -49,19 +48,15 @@ public class GroupKickGui implements WindowObject {
 			return null;
 		}
 
+		GuiContext childrenContext = context.deeper();
+
 		WindowUtility.WindowSettings settings = new WindowUtility.WindowSettings(true);
 		List<Item> items = manager.getLudos().getServer().getOnlinePlayers().stream()
 			.filter(Objects::nonNull)
-			.filter(p -> p != player)
 			.filter(group::isPlayer)
-			.map(target -> new KickPlayerItem(manager, target))
+			.map(target -> WindowItem.of(new GroupPlayerGui(manager, target), childrenContext).addActionHandler(settings::disableModalReturn))
 			.collect(Collectors.toList());
 
 		return WindowUtility.pagedItemsWindow(player, context, items, normalizedDisplayName(), settings);
-	}
-
-	@Override
-	public AccessAuthorization getAccessAuthorization() {
-		return manager.getManageAuthz();
 	}
 }

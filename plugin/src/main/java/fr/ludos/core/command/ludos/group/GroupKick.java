@@ -58,10 +58,7 @@ public class GroupKick implements Subcommand {
 		}
 
 		if (args.length == 0) {
-			if (! manager.getKickGui().openWindow(player, manager.getLudos())) {
-				sender.sendMessage("No available players to kick.");
-			}
-			return true;
+			return false;
 		}
 
 		boolean success = false;

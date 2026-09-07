@@ -31,7 +31,7 @@ import fr.ludos.core.game.Game;
 import fr.ludos.core.group.gui.GroupGui;
 import fr.ludos.core.group.gui.GroupInviteGui;
 import fr.ludos.core.group.gui.GroupJoinGui;
-import fr.ludos.core.group.gui.GroupKickGui;
+import fr.ludos.core.group.gui.GroupPlayerListGui;
 import fr.ludos.core.persistence.config.scope.ScopeConfigMap;
 import fr.ludos.core.role.Role;
 import fr.ludos.core.security.group.GroupConfigAuthz;
@@ -61,10 +61,10 @@ public class GroupManager implements Listener {
 	public final GroupConfigMap configMap = new GroupConfigMap(this);
 	private final ScopeConfigMap scopeConfigMap;
 
+	public final GroupPlayerListGui playersListGui = new GroupPlayerListGui(this);
 	public final GroupJoinGui joinGui = new GroupJoinGui(this);
 	public final GroupInviteGui inviteGui = new GroupInviteGui(this);
-	public final GroupKickGui kickGui = new GroupKickGui(this);
-	public final GroupGui gui = new GroupGui(this, joinGui, inviteGui, kickGui);
+	public final GroupGui gui = new GroupGui(this, playersListGui, joinGui, inviteGui);
 
 
 	public GroupManager(Ludos ludos) {
@@ -102,9 +102,6 @@ public class GroupManager implements Listener {
 	}
 	public final GroupInviteGui getInviteGui() {
 		return inviteGui;
-	}
-	public final GroupKickGui getKickGui() {
-		return kickGui;
 	}
 
 	public final ScopeConfigMap getScopeConfigMap() {
