@@ -68,7 +68,7 @@ class RoleManagerTest {
 		when(mockLudos.getLogger()).thenReturn(Logger.getLogger("Test"));
 		when(mockLudos.getServer()).thenReturn(server);
 		when(mockLudos.getPlayersConfig()).thenReturn(mockPlayersConfig);
-		when(mockLudos.getGroupManager()).thenReturn(mockGroupManager);
+		when(mockLudos.groupManager()).thenReturn(mockGroupManager);
 		when(mockLudos.getPlayerConfigSection(any())).thenReturn(mockPlayerConfigSection);
 
 

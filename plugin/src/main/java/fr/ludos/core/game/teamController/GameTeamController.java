@@ -20,27 +20,30 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
+import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.Utility;
 import fr.ludos.core.area.Area;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameProcessBase;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.ForwardingAudience;
 
 
 /**
  * A controller to manage different {@link Team}s, during a {@link Game}.<br>
  * Contains various utility functions to manager players and entities.
  */
-public abstract class GameTeamController extends GameProcessBase {
+public abstract class GameTeamController extends GameProcessBase implements ForwardingAudience {
 	private final Game game;
 	public final Game game() {
 		return game;
 	}
 
 	@Override
-	protected final JavaPlugin getPlugin() {
-		return game().getPlugin();
+	protected final JavaPlugin plugin() {
+		return game().plugin();
 	}
 
 	private final GameJoinOption joinOption;
@@ -51,7 +54,7 @@ public abstract class GameTeamController extends GameProcessBase {
 		this.joinOption = joinOption;
 	}
 	public GameTeamController(Game game) {
-		this(game, GroupConfigMap.GAME_JOIN.getGroupConfig(game.getGroup()));
+		this(game, GroupConfigMap.GAME_JOIN.getGroupConfig(game.group()));
 	}
 
 	public abstract Collection<Team> getTeams();
@@ -59,7 +62,7 @@ public abstract class GameTeamController extends GameProcessBase {
 	public final Set<Entity> getEntities() {
 		Set<Entity> all = new HashSet<>();
 		for (Team team : getTeams()) {
-			all.addAll(Utility.getTeamEntities(team, game.getPlugin().getServer()).toList());
+			all.addAll(Utility.getTeamEntities(team, game.plugin().getServer()).toList());
 		}
 		return all;
 	}
@@ -94,28 +97,28 @@ public abstract class GameTeamController extends GameProcessBase {
 
 	public final Stream<Entity> getTeamEntitiesStream(@Nullable Team team) {
 		if (team == null) return Stream.of();
-		return Utility.getTeamEntities(team, game.getPlugin().getServer());
+		return Utility.getTeamEntities(team, game.plugin().getServer());
 	}
 	public final Set<Entity> getTeamEntities(Team team) {
 		return getTeamEntitiesStream(team)
 			.collect(Collectors.toSet());
 	}
 	public final Stream<OfflinePlayer> getTeamPlayersStream(Team team) {
-		return Utility.getTeamPlayers(team, game.getPlugin().getServer());
+		return Utility.getTeamPlayers(team, game.plugin().getServer());
 	}
 	public final Set<OfflinePlayer> getTeamPlayers(Team team) {
 		return getTeamPlayersStream(team)
 			.collect(Collectors.toSet());
 	}
 	public final Stream<Player> getTeamOnlinePlayersStream(Team team) {
-		return Utility.getTeamOnlinePlayers(team, game.getPlugin().getServer());
+		return Utility.getTeamOnlinePlayers(team, game.plugin().getServer());
 	}
 	public final Set<Player> getTeamOnlinePlayers(Team team) {
 		return getTeamOnlinePlayersStream(team)
 			.collect(Collectors.toSet());
 	}
 	public final Stream<Player> getTeamAlivePlayersStream(Team team) {
-		return Utility.getTeamAlivePlayers(team, game.getPlugin().getServer());
+		return Utility.getTeamAlivePlayers(team, game.plugin().getServer());
 	}
 	public final Set<Player> getTeamAlivePlayers(Team team) {
 		return getTeamAlivePlayersStream(team)
@@ -130,7 +133,7 @@ public abstract class GameTeamController extends GameProcessBase {
 		if (entityName1 == null || entityName2 == null) return false;
 		if (entityName1.equals(entityName2)) return true;
 
-		Scoreboard scoreboard = game.getScoreboard();
+		Scoreboard scoreboard = game.scoreboard();
 
 		var entity1Team = scoreboard.getEntryTeam(entityName1);
 		var entity2Team = scoreboard.getEntryTeam(entityName2);
@@ -175,7 +178,7 @@ public abstract class GameTeamController extends GameProcessBase {
 	public final Player pickRandomPlayer() {
 		List<Player> players = getAlivePlayersStream().toList();
 		if (players.isEmpty()) return null;
-		return players.get(game.getRandom().nextInt(players.size()));
+		return players.get(game.random().nextInt(players.size()));
 	}
 
 	public final Location getLocationAroundTeammate(Team team) {
@@ -188,12 +191,12 @@ public abstract class GameTeamController extends GameProcessBase {
 		return getLocationAroundTeammate(
 			team,
 			noPlayerFallback,
-			() -> game().getWorldManager().getWorld().getSpawnLocation()
+			() -> game().worldManager().getWorld().getSpawnLocation()
 		);
 	}
 	public final Location getLocationAroundTeammate(Team team, Function<Area, Location> noPlayerFallback, Supplier<Location> noAreaFallback) {
 		Set<Player> players = getTeamAlivePlayers(team);
-		Area area = game().getWorldManager().getArea();
+		Area area = game().worldManager().getArea();
 
 		if (! players.isEmpty()) {
 			Player teammate = players.iterator().next();
@@ -210,23 +213,31 @@ public abstract class GameTeamController extends GameProcessBase {
 	}
 
 	public final void addPlayer(OfflinePlayer player) {
-		Player onlinePlayer = player.getPlayer();
-		if (onlinePlayer != null && joinOption == GameJoinOption.no) {
-			onlinePlayer.sendMessage("Joining is not enabled for this game session.");
-			return;
+		switch (joinOption) {
+			case yes -> joinPlayer(player);
+			case spectator -> discardPlayer(player);
+			default -> {
+				Player onlinePlayer = player.getPlayer();
+				if (onlinePlayer != null) {
+					onlinePlayer.sendMessage("Joining is not enabled for this game session.");
+				}
+			}
 		}
-		joinPlayer(player);
 	}
+
 	protected abstract void joinPlayer(OfflinePlayer player);
 	protected abstract void discardPlayer(OfflinePlayer player);
 	public abstract void removePlayer(OfflinePlayer player);
 
-	public final void tryJoinPlayer(OfflinePlayer player) {
-		if (joinOption == GameJoinOption.yes) {
-			joinPlayer(player);
+	public abstract void placePlayer(OfflinePlayer player);
+	public void placeAllPlayers() {
+		for (OfflinePlayer player : getPlayers()) {
+			placePlayer(player);
 		}
-		else {
-			discardPlayer(player);
-		}
+	}
+
+	@NotNull
+	public Iterable<? extends Audience> audiences() {
+		return getOnlinePlayers();
 	}
 }

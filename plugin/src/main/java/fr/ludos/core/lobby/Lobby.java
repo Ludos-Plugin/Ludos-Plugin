@@ -66,8 +66,8 @@ public final class Lobby extends GameProcessBase {
 
 	private final Builder builder;
 	@Override
-	protected JavaPlugin getPlugin() {
-		return this.builder.game.getPlugin();
+	protected JavaPlugin plugin() {
+		return this.builder.game.plugin();
 	}
 
 	private Structure structure;
@@ -183,7 +183,7 @@ public final class Lobby extends GameProcessBase {
 					);
 				}
 			}
-		}.runTaskTimer(getPlugin(), 0, 20);
+		}.runTaskTimer(plugin(), 0, 20);
 	}
 
 	private final BukkitTask startOnTimer(Component text, int seconds, Runnable onFinish) {
@@ -216,7 +216,7 @@ public final class Lobby extends GameProcessBase {
 
 				timeLeft--;
 			}
-		}.runTaskTimer(getPlugin(), 0, 20L);
+		}.runTaskTimer(plugin(), 0, 20L);
 	}
 
 

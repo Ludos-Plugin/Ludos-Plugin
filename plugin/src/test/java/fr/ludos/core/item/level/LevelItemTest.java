@@ -144,9 +144,9 @@ class LevelItemTest {
 		owner = server.addPlayer("Owner");
 
 		when(mockLudos.getServer()).thenReturn(server);
-		when(mockGame.getPlugin()).thenReturn(mockLudos);
+		when(mockGame.plugin()).thenReturn(mockLudos);
 		when(mockGame.ludos()).thenReturn(mockLudos);
-		when(mockGame.getGroup()).thenReturn(mockGroup);
+		when(mockGame.group()).thenReturn(mockGroup);
 		when(mockGroup.isPlayer(any())).thenReturn(true);
 		when(mockGroup.getOnlinePlayers()).thenReturn(Set.of(owner));
 
@@ -158,7 +158,7 @@ class LevelItemTest {
 	@DisplayName("Equal operation should work")
 	void testEquals() {
 		TestLevelItem item = testEvents.createItem(owner);
-		TestLevelItem copyItem = testEvents.getItem(item.getStack());
+		TestLevelItem copyItem = testEvents.getItem(item.stack());
 
 		assertEquals(item, copyItem);
 		assertTrue(item == copyItem);
@@ -168,10 +168,10 @@ class LevelItemTest {
 		TestLevelItem otherItem = spy(copyItem);
 
 		PlayerMock otherOwner = server.addPlayer("OtherOwner");
-		when(otherItem.getOwner()).thenReturn(otherOwner);
+		when(otherItem.owner()).thenReturn(otherOwner);
 		assertFalse(item.equals(otherItem));
 
-		when(otherItem.getTypeId()).thenReturn("other_type_id");
+		when(otherItem.typeId()).thenReturn("other_type_id");
 		assertFalse(item.equals(otherItem));
 
 		when(otherItem.getItemId()).thenReturn(UUID.randomUUID());
@@ -189,7 +189,7 @@ class LevelItemTest {
 		assertEquals(0.0, item.xp(), 0.001);
 
 		// Verify PDC contains level data
-		ItemStack stack = item.getStack();
+		ItemStack stack = item.stack();
 		ItemMeta meta = stack.getItemMeta();
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
@@ -269,8 +269,8 @@ class LevelItemTest {
 		TestLevelItem item2 = testEvents.createItem(player);
 		item2.addXp(30.0); // Level 2
 
-		inventory.setItem(0, item1.getStack());
-		inventory.setItem(1, item2.getStack());
+		inventory.setItem(0, item1.stack());
+		inventory.setItem(1, item2.stack());
 
 		// Create mock event for switching from slot 0 to 1
 		PlayerItemHeldEvent switchEvent = mock(PlayerItemHeldEvent.class);
@@ -285,7 +285,7 @@ class LevelItemTest {
 		TestLevelItem item = testEvents.createItem(owner);
 		item.addXp(15.0); // Level 1
 
-		ItemStack stack = item.getStack();
+		ItemStack stack = item.stack();
 		LevelValue savedLevel = LevelItemInterface.levelFromItemStack(stack, mockGame);
 
 		assertNotNull(savedLevel);

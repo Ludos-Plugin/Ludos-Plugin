@@ -27,7 +27,7 @@ public enum HarvesterPickBranches implements HarvesterPickBranch {
 		public void onBreakBlock(HarvesterPick pick, BlockBreakEvent event) {
 			Block targetBlock = event.getBlock();
 
-			pick.events.role.awardBreak(event.getPlayer(), targetBlock, pick.getGame());
+			pick.events.role.awardBreak(event.getPlayer(), targetBlock, pick.game());
 		}
 
 		@Override
@@ -45,7 +45,7 @@ public enum HarvesterPickBranches implements HarvesterPickBranch {
 	) {
 		@Override
 		public void onBreakBlock(HarvesterPick pick, BlockBreakEvent event) {
-			Player player = pick.getOwner();
+			Player player = pick.owner();
 
 			List<Block> lastTwoTargetBlocks = player.getLastTwoTargetBlocks(null, 100);
 			if (lastTwoTargetBlocks.size() != 2) return;
@@ -62,23 +62,23 @@ public enum HarvesterPickBranches implements HarvesterPickBranch {
 
 		@Override
 		public void onEquip(SpecialItemInterface item) {
-			Player owner = item.getOwner();
+			Player owner = item.owner();
 			owner.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, Integer.MAX_VALUE, 0, false, false));
 		}
 		@Override
 		public void onUnequip(SpecialItemInterface item) {
-			Player owner = item.getOwner();
+			Player owner = item.owner();
 			owner.removePotionEffect(PotionEffectType.SLOW_DIGGING);
 		}
 
 		@Override
 		public void onSelectBranch(SpecialItemInterface item) {
-			Player owner = item.getOwner();
+			Player owner = item.owner();
 			owner.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, Integer.MAX_VALUE, 0, false, false));
 		}
 		@Override
 		public void onDeselectBranch(SpecialItemInterface item) {
-			Player owner = item.getOwner();
+			Player owner = item.owner();
 			owner.removePotionEffect(PotionEffectType.SLOW_DIGGING);
 		}
 	};

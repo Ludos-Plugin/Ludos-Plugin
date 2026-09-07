@@ -37,13 +37,13 @@ public enum AssassinDaggerLevels implements LevelItemInterface.Level<AssassinDag
 
 	@Override
 	public void onSwitchToLevel(SpecialItemInterface item) {
-		item.getStack().removeEnchantment(Enchantment.DAMAGE_ALL);
-		item.getStack().addEnchantments(enchantments);
+		item.stack().removeEnchantment(Enchantment.DAMAGE_ALL);
+		item.stack().addEnchantments(enchantments);
 	}
 
 	@Override
 	public void onSwitchOffLevel(SpecialItemInterface item) {
-		item.getStack().removeEnchantment(Enchantment.DAMAGE_ALL);
+		item.stack().removeEnchantment(Enchantment.DAMAGE_ALL);
 	}
 
 	@Override

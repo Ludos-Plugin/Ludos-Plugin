@@ -185,7 +185,7 @@ public class HuntsmanCrossbow extends MultiLevelBranchItem<HuntsmanCrossbow, Hun
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.ludos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
+			return game.ludos().roleManager().isPlayerRole(owner, HuntsmanRole.ID);
 		}
 	}
 }

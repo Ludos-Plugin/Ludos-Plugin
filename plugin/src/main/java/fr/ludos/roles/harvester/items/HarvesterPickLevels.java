@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
+import fr.ludos.core.item.BranchItemInterface;
 import fr.ludos.core.item.SpecialItemInterface;
 import fr.ludos.core.item.level.LevelItemInterface;
 
@@ -79,7 +80,7 @@ public enum HarvesterPickLevels implements LevelItemInterface.Level<HarvesterPic
 
 	@Override
 	public void onSwitchToLevel(SpecialItemInterface item) {
-		ItemStack stack = item.getStack();
+		ItemStack stack = item.stack();
 		stack.setType(material);
 		stack.removeEnchantment(Enchantment.DIG_SPEED);
 		stack.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);

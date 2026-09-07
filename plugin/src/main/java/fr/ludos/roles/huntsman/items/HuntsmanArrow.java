@@ -85,12 +85,12 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 				public void run() {
 					PlayerInventory inventory = player.getInventory();
 					for (HuntsmanArrow arrow : arrows) {
-						inventory.remove(arrow.getStack());
+						inventory.remove(arrow.stack());
 						arrow.uncache();
 					}
 					createItem(player).give(player);
 				}
-			}.runTaskLater(game.getPlugin(), reloadTime);
+			}.runTaskLater(game.plugin(), reloadTime);
 		}
 
 		@EventHandler
@@ -111,7 +111,7 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 						createItem(player).give(player);
 					}
 					else {
-						ItemStack firstStack = arrows.get(0).getStack();
+						ItemStack firstStack = arrows.get(0).stack();
 						firstStack.setAmount(firstStack.getAmount() + 1);
 					}
 
@@ -133,7 +133,7 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 
 			if (arrows.size() != 0) {
 				HuntsmanArrow nextConsumed = arrows.get(0);
-				if (nextConsumed.getStack().getAmount() <= 1) {
+				if (nextConsumed.stack().getAmount() <= 1) {
 					nextConsumed.uncache();
 					arrows.remove(0);
 				}
@@ -192,13 +192,13 @@ public class HuntsmanArrow extends SpecialItem<HuntsmanArrow> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.ludos().getRoleManager().isPlayerRole(owner, HuntsmanRole.ID);
+			return game.ludos().roleManager().isPlayerRole(owner, HuntsmanRole.ID);
 		}
 
 		private int countArrows(Player player, List<HuntsmanArrow> arrows) {
 			// count arrow stacks
 			int amount = arrows.stream()
-				.mapToInt(item -> item.getStack().getAmount())
+				.mapToInt(item -> item.stack().getAmount())
 				.sum();
 			// count loaded arrows in crossbows
 			amount += Arrays.stream(player.getInventory().getContents())

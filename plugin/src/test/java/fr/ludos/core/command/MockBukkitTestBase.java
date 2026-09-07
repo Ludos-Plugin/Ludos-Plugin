@@ -118,7 +118,7 @@ public abstract class MockBukkitTestBase {
 	protected void assertJoinGroup(PlayerMock player, PlayerMock leader) {
 		clearMessages(player);
 
-		Group leaderGroup = ludos.getGroupManager().getGroupOfPlayer(leader);
+		Group leaderGroup = ludos.groupManager().getGroupOfPlayer(leader);
 		assertNotNull(leaderGroup, "Player attempted to join the group of a player not in a group");
 
 		Set<PlayerMock> groupPlayers = leaderGroup.getMembers().stream()
@@ -139,7 +139,7 @@ public abstract class MockBukkitTestBase {
 	protected void assertGroupInfo(PlayerMock player) {
 		clearMessages(player);
 
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
+		Group group = ludos.groupManager().getGroupOfPlayer(player);
 		assertNotNull(group, "Cannot get group info of player not in a group.");
 		OfflinePlayer leader = group.getLeader();
 		assertGroupInfo(player, leader, group.getMembers());

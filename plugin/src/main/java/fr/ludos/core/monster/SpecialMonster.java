@@ -34,20 +34,20 @@ public abstract class SpecialMonster<TEntity extends LivingEntity> {
 		this.id = UUID.randomUUID();
 	}
 
-	public String getTypeId() {
+	public String typeId() {
 		return typeId;
 	}
 
-	public Game getGame() {
-		return game;
-	}
-
-	public UUID getId() {
+	public UUID id() {
 		return id;
 	}
 
+	public Game game() {
+		return game;
+	}
+
 	@Nullable
-	public TEntity getEntity() {
+	public TEntity entity() {
 		return entity;
 	}
 
@@ -64,7 +64,7 @@ public abstract class SpecialMonster<TEntity extends LivingEntity> {
 
 		onMonsterSpawn(spawned);
 
-		tickTask = game.getPlugin().getServer().getScheduler().runTaskTimer(game.getPlugin(), () -> {
+		tickTask = game.plugin().getServer().getScheduler().runTaskTimer(game.plugin(), () -> {
 			if (!isAlive()) {
 				disposeTask();
 				return;

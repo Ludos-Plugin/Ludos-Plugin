@@ -61,8 +61,8 @@ public class ManhuntTimer extends GameProcessBase {
 	}
 
 	@Override
-	protected JavaPlugin getPlugin() {
-		return game.getPlugin();
+	protected JavaPlugin plugin() {
+		return game.plugin();
 	}
 
 	public Duration getDuration() {
@@ -100,7 +100,7 @@ public class ManhuntTimer extends GameProcessBase {
 			public void run() {
 				addSecond();
 			}
-		}.runTaskTimer(game.getPlugin(), 20, 20);
+		}.runTaskTimer(game.plugin(), 20, 20);
 	}
 
 	public void pause() {
@@ -117,7 +117,7 @@ public class ManhuntTimer extends GameProcessBase {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-		if (! game.getGroup().isPlayer(player)) return;
+		if (! game.group().isPlayer(player)) return;
 
 		bossbar.addPlayer(event.getPlayer());
 		bossbar.setVisible(true);
@@ -127,38 +127,38 @@ public class ManhuntTimer extends GameProcessBase {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				ManhuntTeamController teamController = game.getTeamController();
+				ManhuntTeamController teamController = game.teamController();
 				Set<Player> hunters = teamController.getTeamOnlinePlayers(teamController.hunterTeam);
 				Set<Player> prey = teamController.getTeamOnlinePlayers(teamController.preyTeam);
 
 				if (! prey.isEmpty() && ! hunters.isEmpty()) {
 					resume();
 
-					Bukkit.broadcast(
+					game.group().sendMessage(
 						Component.text("The game has resumed!")
 					);
 				}
 			}
-		}.runTaskLater(getPlugin(), 1);
+		}.runTaskLater(plugin(), 1);
 	}
 
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
-		if (! game.getGroup().isPlayer(player)) return;
+		if (! game.group().isPlayer(player)) return;
 		if (! isRunning()) return;
 
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				ManhuntTeamController teamController = game.getTeamController();
+				ManhuntTeamController teamController = game.teamController();
 				Set<Player> hunters = teamController.getTeamOnlinePlayers(teamController.hunterTeam);
 				Set<Player> prey = teamController.getTeamOnlinePlayers(teamController.preyTeam);
 
 				if (prey.isEmpty()) {
 					pause();
 
-					Bukkit.broadcast(
+					game.group().sendMessage(
 						Component.text("The game has been paused because the Prey has left the game.")
 							.append(Component.text('\n'))
 							.append(Component.text("Waiting for them to join back..."))
@@ -167,7 +167,7 @@ public class ManhuntTimer extends GameProcessBase {
 				if (hunters.isEmpty()) {
 					pause();
 
-					Bukkit.broadcast(
+					game.group().sendMessage(
 						Component.text("The game has been paused because all Hunters have left the game.")
 							.append(Component.text('\n'))
 							.append(Component.text("Waiting for them to join back..."))
@@ -175,7 +175,7 @@ public class ManhuntTimer extends GameProcessBase {
 				}
 
 			}
-		}.runTask(getPlugin());
+		}.runTask(plugin());
 	}
 
 	@Override
@@ -183,7 +183,7 @@ public class ManhuntTimer extends GameProcessBase {
 		super.onStart();
 		resume();
 
-		for (Player player : game.getGroup().getOnlinePlayers()) {
+		for (Player player : game.group().getOnlinePlayers()) {
 			bossbar.addPlayer(player);
 		}
 		bossbar.setVisible(true);
@@ -196,7 +196,7 @@ public class ManhuntTimer extends GameProcessBase {
 		bossbar.removeAll();
 		bossbar.setVisible(false);
 
-		Bukkit.getServer().broadcast(
+		game.group().sendMessage(
 			Component.text("Timer ended. Final Time : " + formattedTime)
 				.color(NamedTextColor.GREEN)
 		);

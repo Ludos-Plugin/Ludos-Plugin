@@ -25,9 +25,9 @@ public class GroupScopedConfigMap extends ConfigNodeMap {
 		super(
 			Component.text("Group-wide configuration"), null,
 			List.of(
-				ludos.getGroupManager().configMap,
-				ludos.getGameManager().configMap,
-				ludos.getRoleManager().configMap,
+				ludos.groupManager().configMap,
+				ludos.gameManager().configMap,
+				ludos.roleManager().configMap,
 				ludos.playerConfigMap
 			)
 		);

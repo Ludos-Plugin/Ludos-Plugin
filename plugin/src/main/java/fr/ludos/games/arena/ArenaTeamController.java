@@ -22,9 +22,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import fr.ludos.core.Utility;
-import fr.ludos.core.area.Area;
 import fr.ludos.core.game.teamController.GameTeamController;
-import fr.ludos.core.item.SpecialItem;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 /**
@@ -60,8 +58,13 @@ public final class ArenaTeamController extends GameTeamController {
 		this.mode = mode;
 		this.selectedPrimary = primaryPlayers;
 		this.selectedSecondary = secondaryPlayers;
+	}
 
-		Scoreboard scoreboard = game().getScoreboard();
+	@Override
+	protected void onStart() {
+		super.onStart();
+
+		Scoreboard scoreboard = game().scoreboard();
 
 		primaryTeam = createOrGetTeam(scoreboard, "ArenaTeam1", NamedTextColor.BLUE, false);
 		secondaryTeam = createOrGetTeam(scoreboard, "ArenaTeam2", NamedTextColor.RED, false);
@@ -69,20 +72,15 @@ public final class ArenaTeamController extends GameTeamController {
 
 		combatTeams.add(primaryTeam);
 		combatTeams.add(secondaryTeam);
-	}
 
-	@Override
-	protected void onStart() {
-		super.onStart();
-
-		Set<Player> online = new HashSet<>(game().getGroup().getOnlinePlayers());
+		Set<Player> online = new HashSet<>(game().group().getOnlinePlayers());
 		if (online.size() < 2) {
 			throw new IllegalArgumentException("At least 2 online players are required for Arena : " + online.size());
 		}
 
 		Set<Player> finalPrimary;
 		Set<Player> finalSecondary;
-		if (selectedPrimary == null && selectedSecondary == null) {
+		if ((selectedPrimary == null || selectedPrimary.isEmpty()) && (selectedSecondary == null || selectedSecondary.isEmpty())) {
 			List<? extends Collection<Player>> split = Utility.split(online, 2);
 			finalPrimary = split.get(0).stream().collect(Collectors.toSet());
 			finalSecondary = split.get(1).stream().collect(Collectors.toSet());
@@ -91,7 +89,7 @@ public final class ArenaTeamController extends GameTeamController {
 			finalPrimary = Utility.getOnline(selectedPrimary).collect(Collectors.toCollection(HashSet::new));
 			finalSecondary = Utility.getOnline(selectedSecondary).collect(Collectors.toCollection(HashSet::new));
 
-			if (selectedPrimary == null) {
+			if (selectedPrimary == null || selectedPrimary.isEmpty()) {
 				finalPrimary = new HashSet<>(online);
 				finalPrimary.removeAll(finalSecondary);
 			} else {
@@ -115,49 +113,15 @@ public final class ArenaTeamController extends GameTeamController {
 			finalSecondary = Set.of(p2);
 		}
 
-		for (Player player : game().getGroup().getOnlinePlayers()) {
+		for (Player player : game().group().getOnlinePlayers()) {
 			if (finalPrimary.contains(player)) {
-				moveToTeam(player, primaryTeam);
+				joinActivePlayer(player, primaryTeam);
 			} else if (finalSecondary.contains(player)) {
-				moveToTeam(player, secondaryTeam);
+				joinActivePlayer(player, secondaryTeam);
 			} else {
-				moveToTeam(player, spectatorTeam);
+				joinActivePlayer(player, spectatorTeam);
 			}
 		}
-
-		// Area area = game.getWorldManager().getArea();
-		// Location center = area != null
-		// 	? area.getCenter()
-		// 	: game.getWorldManager().getWorld().getSpawnLocation();
-
-		// Location primarySpawn = area != null
-		// 	? area.pickRandom(0.30, 0.35)
-		// 	: game.getWorldManager().getWorld().getSpawnLocation()
-		// 		.add(40, 0, 20);
-		// Location secondarySpawn = center.clone().subtract(primarySpawn.clone().subtract(center));
-		// Utility.snapToHighestY(primarySpawn);
-		// Utility.snapToHighestY(secondarySpawn);
-
-		// Vector primaryLookDirection = secondarySpawn.toVector().subtract(primarySpawn.toVector()).normalize();
-		// primarySpawn.setDirection(primaryLookDirection);
-
-		// Vector secondaryLookDirection = primarySpawn.toVector().subtract(secondarySpawn.toVector()).normalize();
-		// secondarySpawn.setDirection(secondaryLookDirection);
-
-		// ArenaTeamController teamController = game.getTeamController();
-
-		// PotionEffect glowEffect = new PotionEffect(PotionEffectType.GLOWING, 10 * 20, 0, true, false);
-		// for (Player player : Utility.getTeamAlivePlayers(teamController.getCombatTeam(0)).toList()) {
-		// 	player.teleport(primarySpawn);
-		// 	player.addPotionEffect(glowEffect);
-		// }
-		// for (Player player : Utility.getTeamAlivePlayers(teamController.getCombatTeam(1)).toList()) {
-		// 	player.teleport(secondarySpawn);
-		// 	player.addPotionEffect(glowEffect);
-		// }
-		// for (Player player : Utility.getTeamOnlinePlayers(teamController.getSpectatorTeam()).toList()) {
-		// 	player.teleport(center);
-		// }
 	}
 
 	@Override
@@ -173,6 +137,7 @@ public final class ArenaTeamController extends GameTeamController {
 				team.unregister();
 			}
 		}
+
 		combatTeams.clear();
 	}
 
@@ -209,26 +174,98 @@ public final class ArenaTeamController extends GameTeamController {
 		return this.spectatorTeam;
 	}
 
-	// public void moveToCombatTeam(OfflinePlayer player, int index) {
-	// 	moveToTeam(player, getCombatTeam(index));
-	// }
+	@Override
+	protected void joinPlayer(OfflinePlayer player) {
+		if (player == null) return;
 
-	public void joinSpectator(OfflinePlayer player) {
+		if (getPlayers().contains(player)) return;
+
+		Team primaryTeam = getCombatTeam(PRIMARY_TEAM_INDEX);
+		Team secondaryTeam = getCombatTeam(SECONDARY_TEAM_INDEX);
+		Set<Player> primaryTeamPlayers = getTeamOnlinePlayers(primaryTeam);
+		Set<Player> secondaryTeamPlayers = getTeamOnlinePlayers(secondaryTeam);
+
+		int primarySize = primaryTeamPlayers.size();
+		int secondarySize = secondaryTeamPlayers.size();
+
+		if (primarySize < secondarySize) {
+			joinActivePlayer(player, primaryTeam);
+		} else if (primarySize > secondarySize) {
+			joinActivePlayer(player, secondaryTeam);
+		} else {
+			joinActivePlayer(player, game().random().nextFloat() < 0.5 ? primaryTeam : secondaryTeam);
+		}
+	}
+
+	private void joinActivePlayer(OfflinePlayer player, Team destination) {
+		if (player == null || destination == null) return;
+
+		for (Team team : combatTeams) {
+			team.removePlayer(player);
+		}
+		spectatorTeam.removePlayer(player);
+
+		destination.addPlayer(player);
+
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;
 
-		moveToTeam(onlinePlayer, spectatorTeam);
+		onlinePlayer.setScoreboard(game().scoreboard());
 
-		Area area = game().getWorldManager().getArea();
-		Location center = area != null
-			? area.getCenter()
-			: game().getWorldManager().getWorld().getSpawnLocation();
-		onlinePlayer.teleport(center);
-		onlinePlayer.setGameMode(GameMode.SPECTATOR);
+		onlinePlayer.setGameMode(GameMode.SURVIVAL);
+
+		Utility.resetPlayer(onlinePlayer);
+		onlinePlayer.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 3, 0, true, false, false));
+
+		placeActivePlayer(onlinePlayer, destination);
 	}
 
-	private void moveToTeam(OfflinePlayer player, Team destination) {
-		if (player == null || destination == null) return;
+	public void joinSpectator(OfflinePlayer player) {
+		if (player == null) return;
+
+		for (Team team : combatTeams) {
+			team.removePlayer(player);
+		}
+		spectatorTeam.addPlayer(player);
+
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer == null) return;
+
+		onlinePlayer.setScoreboard(game().scoreboard());
+
+		onlinePlayer.setGameMode(GameMode.SPECTATOR);
+
+		placeSpectator(onlinePlayer);
+	}
+
+	@Override
+	protected void discardPlayer(OfflinePlayer player) {
+		combatTeams.forEach(team -> team.removePlayer(player));
+		joinSpectator(player);
+	}
+
+	@Override
+	public void removePlayer(OfflinePlayer player) {
+		combatTeams.forEach(team -> team.removePlayer(player));
+		spectatorTeam.removePlayer(player);
+	}
+
+
+	@Override
+	public void placePlayer(OfflinePlayer player) {
+		if (primaryTeam.hasPlayer(player)) {
+			placeActivePlayer(player, primaryTeam);
+		}
+		else if (secondaryTeam.hasPlayer(player)) {
+			placeActivePlayer(player, secondaryTeam);
+		}
+		else {
+			placeSpectator(player);
+		}
+	}
+
+	public void placeActivePlayer(OfflinePlayer player, Team destination) {
+		if (player == null) return;
 
 		Location teammateLocation = getLocationAroundTeammate(
 			destination,
@@ -250,83 +287,32 @@ public final class ArenaTeamController extends GameTeamController {
 		);
 		teammateLocation = Utility.snapToHighestY(teammateLocation, true);
 
-		for (Team team : combatTeams) {
-			team.removePlayer(player);
-		}
-		spectatorTeam.removePlayer(player);
-
-		destination.addPlayer(player);
-
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;
 
 		onlinePlayer.teleport(teammateLocation, true);
-
-		onlinePlayer.setScoreboard(game().getScoreboard());
+		onlinePlayer.setBedSpawnLocation(teammateLocation, true);
 	}
 
-	public void joinAnyPlayer(Player player, @Nullable Location location) {
-		player.setScoreboard(game().getScoreboard());
-
-		Utility.resetPlayer(player);
-		player.setGameMode(GameMode.SURVIVAL);
-
-		player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20 * 3, 0, true, false, false));
-
-		if (location != null) {
-			player.teleport(location);
-			player.setBedSpawnLocation(location, true);
-		}
-	}
-
-	@Override
-	protected void joinPlayer(OfflinePlayer player) {
-		if (player == null) return;
-
-		if (getPlayers().contains(player)) return;
-
-		Team primaryTeam = getCombatTeam(PRIMARY_TEAM_INDEX);
-		Team secondaryTeam = getCombatTeam(SECONDARY_TEAM_INDEX);
-		Set<Player> primaryTeamPlayers = getTeamOnlinePlayers(primaryTeam);
-		Set<Player> secondaryTeamPlayers = getTeamOnlinePlayers(secondaryTeam);
-
-		int primarySize = primaryTeamPlayers.size();
-		int secondarySize = secondaryTeamPlayers.size();
-
-		if (primarySize < secondarySize) {
-			moveToTeam(player, primaryTeam);
-		} else if (primarySize > secondarySize) {
-			moveToTeam(player, secondaryTeam);
-		} else {
-			moveToTeam(player, game().getRandom().nextFloat() < 0.5 ? primaryTeam : secondaryTeam);
-		}
-	}
-
-	@Override
-	protected void discardPlayer(OfflinePlayer player) {
-		joinSpectator(player);
-	}
-
-	@Override
-	public void removePlayer(OfflinePlayer player) {
-		combatTeams.forEach(team -> team.removeEntry(player.getName()));
-		spectatorTeam.removeEntry(player.getName());
-
+	public void placeSpectator(OfflinePlayer player) {
 		Player onlinePlayer = player.getPlayer();
-		if (onlinePlayer != null) {
-			SpecialItem.Events.removeFromPlayerInventory(game(), onlinePlayer);
-			onlinePlayer.teleport(game().getWorldManager().getReturnLocation());
-		}
+		if (onlinePlayer == null) return;
+
+		Location center = game().worldManager().getArea() != null
+			? game().worldManager().getArea().getCenter()
+			: game().worldManager().getWorld().getSpawnLocation();
+		center = Utility.snapToHighestY(center, true);
+		onlinePlayer.teleport(center, true);
 	}
 
 
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
-		if (game().getWorldManager().isLobbyStarted()) return;
+		if (game().worldManager().isLobbyStarted()) return;
 
 		Player player = event.getEntity();
 		if (!getPlayers().contains(player)) return;
 
-		Utility.onDeathSpectate(event, getPlugin());
+		Utility.onDeathSpectate(event, plugin());
 	}
 }

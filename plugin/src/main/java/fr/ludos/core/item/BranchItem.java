@@ -86,7 +86,7 @@ public abstract class BranchItem<T extends BranchItem<T, TBranch>, TBranch exten
 
 		TBranch oldBranch = item.getBranch();
 
-		ItemStack itemStack = item.getStack();
+		ItemStack itemStack = item.stack();
 
 		ItemMeta meta = itemStack.getItemMeta();
 		meta.getPersistentDataContainer().set(BRANCH_KEY, PersistentDataType.STRING, newBranch.id());

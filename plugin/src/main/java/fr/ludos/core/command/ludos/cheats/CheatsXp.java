@@ -54,13 +54,13 @@ public class CheatsXp implements Subcommand {
 			return true;
 		}
 
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
+		Group group = ludos.groupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
 		}
 
-		Game game = group.getGame();
+		Game game = group.game();
 		if (game == null) {
 			sender.sendMessage("You are not in a game.");
 			return true;

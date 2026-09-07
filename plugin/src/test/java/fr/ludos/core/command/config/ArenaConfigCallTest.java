@@ -31,7 +31,7 @@ class ArenaConfigCallTest extends ConfigTest {
 			player1.getName() + ' ' + player2.getName() + ' ' + player3.getName()
 		);
 
-		Game.Builder gameBuilder = ludos.getGameManager().getGameById(ArenaGame.ID);
+		Game.Builder gameBuilder = ludos.gameManager().getGameById(ArenaGame.ID);
 		if (! (gameBuilder instanceof ArenaGame.Builder arena)) {
 			AssertionFailureBuilder.assertionFailure()
 				.message("Could not get ArenaGame.Builder instance from Game registry")

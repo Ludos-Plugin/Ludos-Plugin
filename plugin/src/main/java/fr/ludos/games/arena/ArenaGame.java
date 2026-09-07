@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
@@ -48,13 +47,13 @@ public class ArenaGame extends WaveGame {
 
 	private final WorldManager worldManager;
 	@Override
-	public WorldManager getWorldManager() {
+	public WorldManager worldManager() {
 		return worldManager;
 	}
 
 	private final ArenaTeamController teamController;
 	@Override
-	public ArenaTeamController getTeamController() {
+	public ArenaTeamController teamController() {
 		return teamController;
 	}
 
@@ -69,15 +68,13 @@ public class ArenaGame extends WaveGame {
 		super(builder, group);
 		this.builder = builder;
 
-		Location returnLocation = group.pickReturnLocation();
-
 
 		this.waveController = new ArenaWaveController(
 			this,
 			builder.rounds.getGameConfig(group, builder)
 		);
 
-		this.worldManager = WorldManager.within(this, returnLocation)
+		this.worldManager = WorldManager.within(this)
 			.of(builder.createWorldCreator())
 			.withLobby(
 				Lobby.within(this)
@@ -109,7 +106,7 @@ public class ArenaGame extends WaveGame {
 	public static class Builder extends Game.Builder {
 		public final GroupPlayersConfigEntry team1Players =
 			new GroupPlayersConfigEntry(
-				getManager().getLudos().getGroupManager(),
+				getManager().getLudos().groupManager(),
 				Component.text("Team 1 players"),
 				"team_1", "random"
 			) {
@@ -121,7 +118,7 @@ public class ArenaGame extends WaveGame {
 
 		public final GroupPlayersConfigEntry team2Players =
 			new GroupPlayersConfigEntry(
-				getManager().getLudos().getGroupManager(),
+				getManager().getLudos().groupManager(),
 				Component.text("Team 2 players"),
 				"team_2", "random"
 			) {

@@ -43,6 +43,6 @@ public class DefaultWaveLoadout extends WaveLoadoutService {
 		ItemStack boots = enchantedItem(Material.DIAMOND_BOOTS, Enchantment.PROTECTION_ENVIRONMENTAL, 3);
 		ItemSlot.BOOTS.set(boots, inventory);
 
-		SpecialItem.Events.refreshPlayerInventory(getGame(), player);
+		SpecialItem.Events.refreshPlayerInventory(game(), player);
 	}
 }

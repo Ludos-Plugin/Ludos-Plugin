@@ -61,8 +61,8 @@ class LobbyTest {
 		player1 = server.addPlayer("Player1");
 		player2 = server.addPlayer("Player2");
 
-		when(mockGame.getPlugin()).thenReturn(ludos);
-		when(mockGame.getGroup()).thenReturn(mockGroup);
+		when(mockGame.plugin()).thenReturn(ludos);
+		when(mockGame.group()).thenReturn(mockGroup);
 		when(mockGroup.getOnlinePlayers()).thenReturn(Set.of(player1, player2));
 		when(mockGroup.isPlayer(any())).thenReturn(true);
 	}

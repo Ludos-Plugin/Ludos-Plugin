@@ -20,15 +20,16 @@ import net.kyori.adventure.text.format.NamedTextColor;
  */
 public abstract class WaveController extends GameProcessBase {
 	private boolean scheduled = false;
+	private boolean evaluating = false;
 
 	private final WaveGame game;
-	public final WaveGame getGame() {
+	public final WaveGame game() {
 		return this.game;
 	}
 
 	@Override
-	protected JavaPlugin getPlugin() {
-		return game.getPlugin();
+	protected JavaPlugin plugin() {
+		return game.plugin();
 	}
 
 	private int wave = 0;
@@ -55,18 +56,32 @@ public abstract class WaveController extends GameProcessBase {
 		this.loadout = loadout;
 	}
 
+
+
 	@EventHandler
 	public void _onPlayerQuit(PlayerQuitEvent event) {
-		if (game.getWorldManager().isLobbyStarted()) return;
-		if (! game.getTeamController().contains(event.getPlayer())) return;
-		Bukkit.getScheduler().runTask(getPlugin(), this::evaluateWaveState);
+		if (evaluating) return;
+		if (game.worldManager().isLobbyStarted()) return;
+		if (! game.teamController().contains(event.getPlayer())) return;
+
+		evaluating = true;
+		Bukkit.getScheduler().runTask(plugin(), () -> {
+			evaluateWaveState();
+			evaluating = false;
+		});
 	}
 
 	@EventHandler
 	public void _onEntityDeath(EntityDeathEvent event) {
-		if (game.getWorldManager().isLobbyStarted()) return;
-		if (event.getEntity().getWorld() != game.getWorldManager().getWorld()) return;
-		Bukkit.getScheduler().runTask(getPlugin(), this::evaluateWaveState);
+		if (evaluating) return;
+		if (game.worldManager().isLobbyStarted()) return;
+		if (event.getEntity().getWorld() != game.worldManager().getWorld()) return;
+
+		evaluating = true;
+		Bukkit.getScheduler().runTask(plugin(), () -> {
+			evaluateWaveState();
+			evaluating = false;
+		});
 	}
 
 	public void applyLoadout(Player player) {
@@ -84,30 +99,51 @@ public abstract class WaveController extends GameProcessBase {
 		return Component.text("Waves completed!").color(NamedTextColor.GOLD);
 	}
 
-	public void scheduleReturn() {
+	public final void completeCurrentWave() {
+		wave ++;
+
+		if (maxWaves > 0 && wave >= maxWaves) {
+			scheduleReturn();
+		} else {
+			scheduleNextWave();
+		}
+	}
+
+	public final void scheduleReturn() {
 		if (scheduled) return;
 
 		scheduled = true;
 		long delay = 20 * 5;
 
-		Bukkit.getScheduler().runTaskLater(getPlugin(), this::stop, delay);
+		onScheduleEnd();
+		Bukkit.getScheduler().runTaskLater(plugin(), this::scheduledEnd, delay);
+	}
+	private void scheduledEnd() {
+		scheduled = false;
+		stop();
 	}
 
-	public void scheduleNextWave() {
+	public void onScheduleEnd() { }
+
+
+	public final void scheduleNextWave() {
 		if (scheduled) return;
 
 		scheduled = true;
 		long delay = 20 * 2;
-		if (maxWaves > 0 && wave >= maxWaves) {
-			Bukkit.broadcast(getCompletionText());
-			Bukkit.getScheduler().runTaskLater(getPlugin(), this::stop, delay);
-		}
-		else {
-			wave ++;
-			Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
-				scheduled = false;
-				nextWave();
-			}, delay);
-		}
+
+		onScheduleNextWave();
+		Bukkit.getScheduler().runTaskLater(plugin(), this::scheduledNextWave, delay);
+	}
+	private void scheduledNextWave() {
+		scheduled = false;
+		nextWave();
+	}
+
+	public void onScheduleNextWave() {
+		game.group().sendMessage(
+			Component.text("Wave " + getCurrentWaveNumber() + " starting...")
+				.color(NamedTextColor.YELLOW)
+		);
 	}
 }

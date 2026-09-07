@@ -24,9 +24,9 @@ public class GlobalScopedConfigMap extends ConfigNodeMap {
 			Component.text("Server-wide configuration"), null,
 			List.of(
 				ludos.configMap,
-				ludos.getGroupManager().configMap,
-				ludos.getGameManager().configMap,
-				ludos.getRoleManager().configMap,
+				ludos.groupManager().configMap,
+				ludos.gameManager().configMap,
+				ludos.roleManager().configMap,
 				ludos.playerConfigMap
 			)
 		);

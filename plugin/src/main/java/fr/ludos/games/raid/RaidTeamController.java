@@ -36,11 +36,6 @@ public final class RaidTeamController extends GameTeamController {
 		super(game);
 
 		this.selectedPlayers = selectedPlayers;
-
-		Scoreboard scoreboard = game().getScoreboard();
-
-		playersTeam = createOrGetTeam(scoreboard, "ArenaTeam", NamedTextColor.BLUE, false);
-		spectatorsTeam = createOrGetTeam(scoreboard, "ArenaSpectators", NamedTextColor.GRAY, true);
 	}
 
 	@Override
@@ -52,10 +47,12 @@ public final class RaidTeamController extends GameTeamController {
 	protected void onStart() {
 		super.onStart();
 
-		Set<Player> online = game().getGroup().getOnlinePlayers();
-		if (online.size() < 2) {
-			throw new IllegalArgumentException("At least 2 online players are required for Arena");
-		}
+		Scoreboard scoreboard = game().scoreboard();
+
+		playersTeam = createOrGetTeam(scoreboard, "ArenaTeam", NamedTextColor.BLUE, false);
+		spectatorsTeam = createOrGetTeam(scoreboard, "ArenaSpectators", NamedTextColor.GRAY, true);
+
+		Set<Player> online = game().group().getOnlinePlayers();
 
 		Set<Player> finalPlayers;
 		if (selectedPlayers == null || selectedPlayers.isEmpty()) {
@@ -64,7 +61,7 @@ public final class RaidTeamController extends GameTeamController {
 			finalPlayers = Utility.getOnline(selectedPlayers).collect(Collectors.toSet());
 		}
 
-		for (Player player : game().getGroup().getOnlinePlayers()) {
+		for (Player player : online) {
 			if (finalPlayers.contains(player)) {
 				moveToTeam(player, playersTeam);
 			} else {
@@ -101,8 +98,6 @@ public final class RaidTeamController extends GameTeamController {
 	private void moveToTeam(OfflinePlayer player, Team team) {
 		if (player == null || team == null) return;
 
-		Location teammateLocation = Utility.snapToHighestY(getLocationAroundTeammate(team), true);
-
 		playersTeam.removePlayer(player);
 		spectatorsTeam.removePlayer(player);
 		team.addPlayer(player);
@@ -110,13 +105,11 @@ public final class RaidTeamController extends GameTeamController {
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer == null) return;
 
-		onlinePlayer.teleport(teammateLocation);
-
-		onlinePlayer.setScoreboard(game().getScoreboard());
+		onlinePlayer.setScoreboard(game().scoreboard());
 	}
 
 	public void joinAnyPlayer(Player player) {
-		player.setScoreboard(game().getScoreboard());
+		player.setScoreboard(game().scoreboard());
 
 		Utility.resetPlayer(player);
 
@@ -137,6 +130,8 @@ public final class RaidTeamController extends GameTeamController {
 		onlinePlayer.setGameMode(GameMode.SURVIVAL);
 
 		SpecialItem.Events.refreshPlayerInventory(game(), onlinePlayer);
+
+		placeActivePlayer(onlinePlayer);
 	}
 
 	public void joinSpectator(OfflinePlayer player) {
@@ -150,23 +145,44 @@ public final class RaidTeamController extends GameTeamController {
 
 		joinAnyPlayer(onlinePlayer);
 		onlinePlayer.setGameMode(GameMode.SPECTATOR);
+
+		placeSpectator(onlinePlayer);
 	}
 
 	@Override
 	protected void discardPlayer(OfflinePlayer player) {
+		playersTeam.removePlayer(player);
+
 		joinSpectator(player);
 	}
 
 	@Override
 	public void removePlayer(OfflinePlayer player) {
-		playersTeam.removeEntry(player.getName());
-		spectatorsTeam.removeEntry(player.getName());
+		playersTeam.removePlayer(player);
+		spectatorsTeam.removePlayer(player);
+	}
+
+	@Override
+	public void placePlayer(OfflinePlayer player) {
+		if (player == null) return;
 
 		Player onlinePlayer = player.getPlayer();
-		if (onlinePlayer != null) {
-			SpecialItem.Events.removeFromPlayerInventory(game(), onlinePlayer);
-			onlinePlayer.teleport(game().getWorldManager().getReturnLocation());
+		if (onlinePlayer == null) return;
+
+		if (playersTeam.hasPlayer(onlinePlayer)) {
+			placeActivePlayer(onlinePlayer);
+		} else {
+			placeSpectator(onlinePlayer);
 		}
+	}
+
+	private void placeActivePlayer(Player player) {
+		Location teammateLocation = Utility.snapToHighestY(getLocationAroundTeammate(playersTeam), true);
+
+		player.teleport(teammateLocation);
+	}
+	private void placeSpectator(Player player) {
+		player.teleport(Utility.snapToHighestY(getLocationAroundTeammate(playersTeam), true));
 	}
 
 
@@ -175,6 +191,6 @@ public final class RaidTeamController extends GameTeamController {
 		Player player = event.getEntity();
 		if (!getPlayers().contains(player)) return;
 
-		Utility.onDeathSpectate(event, getPlugin());
+		Utility.onDeathSpectate(event, plugin());
 	}
 }

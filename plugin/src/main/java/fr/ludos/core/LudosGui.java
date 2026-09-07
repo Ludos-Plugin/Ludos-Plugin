@@ -38,9 +38,9 @@ public class LudosGui implements WindowProvider {
 		WindowUtility.WindowSettings settings = new WindowUtility.WindowSettings(true);
 
 		List<Item> items = new ArrayList<>() {{
-			add(new WindowItem(ludos.getGroupManager().gui, Group.GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn));
-			add(new WindowItem(ludos.getGameManager().gui, Game.GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn));
-			add(new WindowItem(ludos.getRoleManager().gui, Role.GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn));
+			add(new WindowItem(ludos.groupManager().gui, Group.GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn));
+			add(new WindowItem(ludos.gameManager().gui, Game.GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn));
+			add(new WindowItem(ludos.roleManager().gui, Role.GUI_OBJECT, childrenContext).addActionHandler(settings::disableModalReturn));
 		}};
 
 		if (items.isEmpty()) return null;

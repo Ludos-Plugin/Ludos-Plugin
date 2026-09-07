@@ -60,9 +60,9 @@ class GameTeamControllerTest {
 
 
 		when(mockLudos.getServer()).thenReturn(server);
-		when(mockGame.getRandom()).thenReturn(new Random());
-		when(mockGame.getPlugin()).thenReturn(mockLudos);
-		when(mockGame.getScoreboard()).thenReturn(mockScoreboard);
+		when(mockGame.random()).thenReturn(new Random());
+		when(mockGame.plugin()).thenReturn(mockLudos);
+		when(mockGame.scoreboard()).thenReturn(mockScoreboard);
 		when(mockScoreboard.getEntryTeam(anyString())).thenReturn(mockTeam);
 		when(mockTeam.getEntries()).thenReturn(Collections.emptySet());
 
@@ -79,6 +79,8 @@ class GameTeamControllerTest {
 			protected void discardPlayer(OfflinePlayer player) { }
 			@Override
 			public void removePlayer(OfflinePlayer player) { }
+			@Override
+			public void placePlayer(OfflinePlayer player) { }
 		};
 	}
 
@@ -177,6 +179,8 @@ class GameTeamControllerTest {
 			protected void discardPlayer(OfflinePlayer player) { }
 			@Override
 			public void removePlayer(OfflinePlayer player) { }
+			@Override
+			public void placePlayer(OfflinePlayer player) { }
 		};
 
 

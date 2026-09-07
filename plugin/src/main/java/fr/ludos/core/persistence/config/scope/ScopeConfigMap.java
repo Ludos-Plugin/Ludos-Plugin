@@ -62,7 +62,7 @@ public class ScopeConfigMap extends ConfigSectionCollection {
 		this.playerProvider = playerRoot != null ? new PlayerConfigProvider(ludos) : null;
 	}
 	public ScopeConfigMap(TextComponent name, Ludos ludos, @Nullable ConfigNode globalRoot, @Nullable ConfigNode groupRoot, @Nullable ConfigNode playerRoot) {
-		this(name, ludos, ludos.getGroupManager(), globalRoot, groupRoot, playerRoot);
+		this(name, ludos, ludos.groupManager(), globalRoot, groupRoot, playerRoot);
 	}
 	public ScopeConfigMap(TextComponent name, Ludos ludos, GroupManager groupManager, @Nullable ConfigNode root) {
 		this(name, ludos, groupManager, root, root, root);

@@ -175,9 +175,9 @@ class MultiLevelBranchItemTest {
 		owner = server.addPlayer("Owner");
 
 		when(mockLudos.getServer()).thenReturn(server);
-		when(mockGame.getPlugin()).thenReturn(mockLudos);
+		when(mockGame.plugin()).thenReturn(mockLudos);
 		when(mockGame.ludos()).thenReturn(mockLudos);
-		when(mockGame.getGroup()).thenReturn(mockGroup);
+		when(mockGame.group()).thenReturn(mockGroup);
 		when(mockGroup.isPlayer(any())).thenReturn(true);
 		when(mockGroup.getOnlinePlayers()).thenReturn(Set.of(owner));
 
@@ -372,8 +372,8 @@ class MultiLevelBranchItemTest {
 		item2.switchBranch(TestBranch.MODE_C);
 		item2.addXp(50.0); // MODE_C, Level 1
 
-		inventory.setItem(0, item1.getStack());
-		inventory.setItem(1, item2.getStack());
+		inventory.setItem(0, item1.stack());
+		inventory.setItem(1, item2.stack());
 
 		// Create mock event for switching
 		PlayerItemHeldEvent switchEvent = mock(PlayerItemHeldEvent.class);
@@ -647,7 +647,7 @@ class MultiLevelBranchItemTest {
 
 		BranchItem.setItemBranch(item, TestBranch.MODE_B);
 
-		ItemStack stack = item.getStack();
+		ItemStack stack = item.stack();
 		ItemMeta meta = stack.getItemMeta();
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
@@ -724,7 +724,7 @@ class MultiLevelBranchItemTest {
 		assertNotNull(item.getBranch());
 
 
-		ItemStack stack = item.getStack();
+		ItemStack stack = item.stack();
 		ItemMeta meta = stack.getItemMeta();
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 		String savedBranchId = container.get(BranchItemInterface.BRANCH_KEY, PersistentDataType.STRING);
@@ -737,7 +737,7 @@ class MultiLevelBranchItemTest {
 	@DisplayName("Should handle branch switch event with PlayerItemHeldEvent")
 	void testSetItemBranchWithEvent() {
 		TestMultiLevelBranchItem item = (testEvents.createItem(owner));
-		owner.getInventory().setItem(0, item.getStack());
+		owner.getInventory().setItem(0, item.stack());
 
 		TestBranch mockBranch = spy(item.getBranch());
 		item.branches.put(mockBranch.id(), mockBranch);

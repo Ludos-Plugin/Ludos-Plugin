@@ -63,10 +63,10 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 	private final Events<T> events;
 	public Events<T> getEvents() { return events; }
-	public Game getGame() { return events.getGame(); }
+	public Game game() { return events.game(); }
 
 	@Override
-	public final String getTypeId() {
+	public final String typeId() {
 		return events.getTypeId();
 	}
 
@@ -76,12 +76,12 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 	}
 
 	ItemStack stack;
-	public ItemStack getStack() {
+	public ItemStack stack() {
 		return stack;
 	}
 
 	private final Player owner;
-	public Player getOwner() {
+	public Player owner() {
 		return owner;
 	}
 
@@ -94,13 +94,13 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 
 	public void updateName() {
-		ItemStack stack = getStack();
+		ItemStack stack = stack();
 		ItemMeta meta = stack.getItemMeta();
 		meta.displayName(normalizedDisplayName());
 		stack.setItemMeta(meta);
 	}
 	public void updateLore() {
-		ItemStack stack = getStack();
+		ItemStack stack = stack();
 		ItemMeta meta = stack.getItemMeta();
 		meta.lore(getLore());
 		stack.setItemMeta(meta);
@@ -125,8 +125,8 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 	@ExcludeFromJacocoGeneratedReport // Tested, but not picked up by Jacoco
 	public final boolean refreshUseCooldown() {
-		Player owner = getOwner();
-		Material itemType = getStack().getType();
+		Player owner = owner();
+		Material itemType = stack().getType();
 
 		int cooldown = owner.getCooldown(itemType);
 		if (cooldown > 0 && cooldown <= USAGE_COOLDOWN) {
@@ -146,8 +146,8 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 		return
 			getItemId().equals(item.getItemId()) &&
-			getTypeId().equals(item.getTypeId()) &&
-			getOwner().getUniqueId().equals(item.getOwner().getUniqueId());
+			typeId().equals(item.typeId()) &&
+			owner().getUniqueId().equals(item.owner().getUniqueId());
 	}
 
 	/**
@@ -365,7 +365,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 		public final T createItem(Player owner) {
 			T item = createItemInternal(owner);
 
-			ItemMeta meta = item.getStack().getItemMeta();
+			ItemMeta meta = item.stack().getItemMeta();
 
 			if (! visibleDurability()) {
 				meta.setUnbreakable(true);
@@ -377,7 +377,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			container.set(TYPE_ID_KEY, PersistentDataType.STRING, getTypeId());
 			container.set(ITEM_ID_KEY, PersistentDataType.STRING, item.getItemId().toString());
 
-			item.getStack().setItemMeta(meta);
+			item.stack().setItemMeta(meta);
 
 			item.updateName();
 			item.updateLore();
@@ -403,7 +403,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 		}
 
 		public final Boolean isPlayerValid(OfflinePlayer player) {
-			if (! game.getGroup().isPlayer(player)) return false;
+			if (! game.group().isPlayer(player)) return false;
 			return isPlayerValidInternal(player);
 		}
 		protected Boolean isPlayerValidInternal(OfflinePlayer player) {
@@ -413,14 +413,14 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 		public <TItem extends SpecialItem<T>> void give(TItem item, PlayerInventory inventory) {
 			if (item == null) return;
-			ItemSlot.set(info.slot, item.getStack(), inventory);
+			ItemSlot.set(info.slot, item.stack(), inventory);
 		}
 		public <TItem extends SpecialItem<T>> void give(TItem item, Player player) {
 			give(item, player.getInventory());
 		}
 
 		public void refreshPlayerInventory(Player player) {
-			if (! game.getGroup().isPlayer(player)) return;
+			if (! game.group().isPlayer(player)) return;
 			if (! isPlayerValid(player)) return;
 
 			PlayerInventory inventory = player.getInventory();
@@ -432,7 +432,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 		}
 
 		public void refreshAllPlayerInventories() {
-			for (Player player : getGame().getGroup().getOnlinePlayers()) {
+			for (Player player : game().group().getOnlinePlayers()) {
 				refreshPlayerInventory(player);
 			}
 		}
@@ -440,28 +440,28 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 		public void removeFromPlayerInventory(Player player) {
 			PlayerInventory inventory = player.getInventory();
 			for(T item : SpecialItem.findAll(inventory, this::getItem)) {
-				inventory.remove(item.getStack());
+				inventory.remove(item.stack());
 
-				if (item.getStack().equals(inventory.getHelmet())) {
+				if (item.stack().equals(inventory.getHelmet())) {
 					inventory.setHelmet(null);
 				}
-				else if (item.getStack().equals(inventory.getChestplate())) {
+				else if (item.stack().equals(inventory.getChestplate())) {
 					inventory.setChestplate(null);
 				}
-				else if (item.getStack().equals(inventory.getLeggings())) {
+				else if (item.stack().equals(inventory.getLeggings())) {
 					inventory.setLeggings(null);
 				}
-				else if (item.getStack().equals(inventory.getBoots())) {
+				else if (item.stack().equals(inventory.getBoots())) {
 					inventory.setBoots(null);
 				}
-				else if (item.getStack().equals(inventory.getItemInOffHand())) {
+				else if (item.stack().equals(inventory.getItemInOffHand())) {
 					inventory.setItemInOffHand(null);
 				}
 			}
 		}
 
 		public void removeFromAllInventories() {
-			for (Player player : getGame().getGroup().getOnlinePlayers()) {
+			for (Player player : game().group().getOnlinePlayers()) {
 				removeFromPlayerInventory(player);
 			}
 		}
@@ -545,12 +545,12 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 
 		public void recordKill(T item, PersistentEntry<Integer> entry) {
-			ConfigurationSection killerData = getGame().ludos().getItemData(item.getOwner(), this);
+			ConfigurationSection killerData = game().ludos().getItemData(item.owner(), this);
 
 			int currentKills = entry.getOrDefault(killerData);
 			entry.set(currentKills + 1, killerData);
 
-			getGame().ludos().savePlayersConfig();
+			game().ludos().savePlayersConfig();
 		}
 
 		@EventHandler

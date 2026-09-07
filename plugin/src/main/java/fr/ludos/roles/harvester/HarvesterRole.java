@@ -135,7 +135,7 @@ public class HarvesterRole extends Role {
 		}
 
 		public Builder(Ludos ludos) {
-			super(ludos.getRoleManager(), ludos);
+			super(ludos.roleManager(), ludos);
 		}
 
 		@Override

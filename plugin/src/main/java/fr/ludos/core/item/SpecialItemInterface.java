@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.gui.Named;
+import fr.ludos.core.role.Role;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -35,11 +36,12 @@ public interface SpecialItemInterface extends Named {
 	public static final NamespacedKey OWNER_KEY = new NamespacedKey(Ludos.NAMESPACE, OWNER_KEY_STRING);
 
 
-	Game getGame();
-	public ItemStack getStack();
-	public Player getOwner();
+	public Game game();
+	public Player owner();
+	public ItemStack stack();
 
-	public String getTypeId();
+	public String typeId();
+
 	public default List<Component> getLore() {
 		return new ArrayList<>();
 	}

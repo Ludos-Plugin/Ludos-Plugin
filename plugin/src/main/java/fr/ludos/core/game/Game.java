@@ -74,6 +74,8 @@ public abstract class Game extends TwoStepGameProcessBase {
 	private final Map<String, Role> activeRoles = new HashMap<>();
 	private final Set<SpecialItem.Events<?>> activeItems = new HashSet<>();
 
+	private final Map<OfflinePlayer, PreGameInfo> preGameInfo = new HashMap<>();
+
 	private final Random random = new Random();
 	private Scoreboard scoreboard;
 
@@ -119,21 +121,6 @@ public abstract class Game extends TwoStepGameProcessBase {
 		);
 	}
 
-	public Builder builder() {
-		return builder;
-	}
-	public Ludos ludos() {
-		return builder.getLudos();
-	}
-	@Override
-	public JavaPlugin getPlugin() {
-		return ludos();
-	}
-
-	public Group getGroup() {
-		return group;
-	}
-
 	public Map<String, Role> getActiveRoles() {
 		return activeRoles;
 	}
@@ -142,39 +129,87 @@ public abstract class Game extends TwoStepGameProcessBase {
 		return activeItems;
 	}
 
-	public final Random getRandom() {
+	public Builder builder() {
+		return builder;
+	}
+	public Ludos ludos() {
+		return builder.getLudos();
+	}
+	@Override
+	public JavaPlugin plugin() {
+		return ludos();
+	}
+
+	public Group group() {
+		return group;
+	}
+
+	public final Random random() {
 		return random;
 	}
-	public final Scoreboard getScoreboard() {
+	public final Scoreboard scoreboard() {
 		return scoreboard;
 	}
 
-	public abstract WorldManager getWorldManager();
-	public abstract GameTeamController getTeamController();
+	public abstract WorldManager worldManager();
+	public abstract GameTeamController teamController();
 
 	@Override
 	public boolean isClear() {
-		return super.isClear() && getWorldManager().isClear() && getTeamController().isClear();
+		return super.isClear() && worldManager().isClear() && teamController().isClear();
 	}
 
 	private void onJoinGroup(OfflinePlayer player) {
-		if (isStarted()) {
-			getTeamController().addPlayer(player);
-		}
+		joinGame(player);
 	}
 	private void onLeaveGroup(OfflinePlayer player) {
+		leaveGame(player);
+	}
+
+	public void joinGame(OfflinePlayer player) {
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer == null) return;
+
+		addPlayer(onlinePlayer);
+
+		if (isStarted()) {
+			teamController().addPlayer(player);
+		}
+	}
+
+	public void leaveGame(OfflinePlayer player) {
 		Player onlinePlayer = player.getPlayer();
 		if (onlinePlayer != null) {
-			getWorldManager().evacuatePlayer(onlinePlayer);
+			returnPlayer(player);
 		}
 
 		if (isStarted()) {
-			getTeamController().removePlayer(player);
+			teamController().removePlayer(player);
 		}
+	}
+
+	public void addPlayer(Player player) {
+		preGameInfo.put(player, new PreGameInfo(player));
+	}
+
+	public void returnPlayer(OfflinePlayer player) {
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer == null) return;
+
+		PreGameInfo info = preGameInfo.remove(onlinePlayer);
+		if (info != null) {
+			info.apply();
+		}
+	}
+	public void returnAllPlayers() {
+		for (PreGameInfo info : preGameInfo.values()) {
+			info.apply();
+		}
+		preGameInfo.clear();
 	}
 
 	public void activateRoles() {
-		for (Role.Builder roleBuilder : builder.getLudos().getRoleManager().getRegistered().values()) {
+		for (Role.Builder roleBuilder : builder.getLudos().roleManager().getRegistered().values()) {
 			String id = roleBuilder.getId();
 			if (activeRoles.containsKey(id)) {
 				Bukkit.broadcast(
@@ -212,10 +247,8 @@ public abstract class Game extends TwoStepGameProcessBase {
 				seconds
 			)
 		).color(NamedTextColor.YELLOW);
-		for (Player player : getGroup().getOnlinePlayers()) {
-			player.sendMessage(message);
-		}
-		Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
+		group().sendMessage(message);
+		Bukkit.getScheduler().runTaskLater(plugin(), () -> {
 			stop();
 		}, seconds * 20);
 	}
@@ -224,17 +257,20 @@ public abstract class Game extends TwoStepGameProcessBase {
 	@Override
 	protected final void onSetup() {
 		super.onSetup();
-		Game oldGame = group.getGame();
+		Game oldGame = group.game();
 		if (oldGame != null && oldGame != this) {
 			oldGame.stop();
+		}
+		for (Player player : group().getOnlinePlayers()) {
+			addPlayer(player);
 		}
 
 		notifySetup();
 
-		getWorldManager().start();
+		worldManager().start();
 
-		getGroup().addJoinGroupListener(this::onJoinGroup);
-		getGroup().addLeaveGroupListener(this::onLeaveGroup);
+		group().addJoinGroupListener(this::onJoinGroup);
+		group().addLeaveGroupListener(this::onLeaveGroup);
 
 		onGameSetup();
 	}
@@ -248,7 +284,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 	protected final void onStart() {
 		super.onStart();
 
-		getTeamController().start();
+		teamController().start();
 
 		activateRoles();
 
@@ -264,7 +300,7 @@ public abstract class Game extends TwoStepGameProcessBase {
 		deactivateRoles();
 		deactivateItems();
 
-		getTeamController().stop();
+		teamController().stop();
 	}
 
 	@Override
@@ -278,10 +314,11 @@ public abstract class Game extends TwoStepGameProcessBase {
 
 		onGameSetdown();
 
-		getGroup().removeJoinGroupListener(this::onJoinGroup);
-		getGroup().removeLeaveGroupListener(this::onLeaveGroup);
+		group().removeJoinGroupListener(this::onJoinGroup);
+		group().removeLeaveGroupListener(this::onLeaveGroup);
 
-		getWorldManager().stop();
+		returnAllPlayers();
+		worldManager().stop();
 
 		scoreboard = null;
 

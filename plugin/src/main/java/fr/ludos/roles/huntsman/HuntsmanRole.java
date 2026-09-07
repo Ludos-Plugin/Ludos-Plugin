@@ -60,12 +60,12 @@ public class HuntsmanRole extends Role {
 	}
 
 	public void recordSnipeDistance(Player player, double distance) {
-		ConfigurationSection data = getLudos().getRoleData(player, getBuilder());
+		ConfigurationSection data = ludos().getRoleData(player, getBuilder());
 
 		Double currentRecord = SNIPE_DISTANCE.getOrDefault(data);
 		if (currentRecord == null || distance > currentRecord) {
 			SNIPE_DISTANCE.set(distance, data);
-			getLudos().savePlayersConfig();
+			ludos().savePlayersConfig();
 		}
 	}
 
@@ -109,7 +109,7 @@ public class HuntsmanRole extends Role {
 				}
 				progress += 1;
 			}
-		}.runTaskTimer(getPlugin(), 0, 1);
+		}.runTaskTimer(plugin(), 0, 1);
 	}
 
 	@Override
@@ -128,7 +128,7 @@ public class HuntsmanRole extends Role {
 		}
 
 		public Builder(Ludos ludos) {
-			super(ludos.getRoleManager(), ludos);
+			super(ludos.roleManager(), ludos);
 		}
 
 

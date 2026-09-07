@@ -12,7 +12,7 @@ import fr.ludos.core.game.Game;
  */
 public abstract class WaveLoadoutService {
 	private final Game game;
-	public final Game getGame() {
+	public final Game game() {
 		return this.game;
 	}
 

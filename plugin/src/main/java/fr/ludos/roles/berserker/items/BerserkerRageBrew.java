@@ -98,7 +98,7 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.ludos().getRoleManager().isPlayerRole(owner, BerserkerRole.ID);
+			return game.ludos().roleManager().isPlayerRole(owner, BerserkerRole.ID);
 		}
 
 		@EventHandler
@@ -109,10 +109,10 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 			BerserkerRageBrew brew = getItem(event.getItem());
 			if (brew == null) return;
 
-			event.setReplacement(brew.getStack());
+			event.setReplacement(brew.stack());
 
 			triggerRage(player);
-			player.setCooldown(brew.getStack().getType(), COOLDOWN_TICKS);
+			player.setCooldown(brew.stack().getType(), COOLDOWN_TICKS);
 		}
 
 		private void triggerRage(Player player) {
@@ -123,7 +123,7 @@ public class BerserkerRageBrew extends SpecialItem<BerserkerRageBrew> {
 
 			player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1f, 0.8f);
 
-			game.getPlugin().getServer().getScheduler().runTaskLater(game.getPlugin(), () -> {
+			game.plugin().getServer().getScheduler().runTaskLater(game.plugin(), () -> {
 				role.setRage(player, false);
 
 				player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, FATIGUE_TICKS, 0, false, false));

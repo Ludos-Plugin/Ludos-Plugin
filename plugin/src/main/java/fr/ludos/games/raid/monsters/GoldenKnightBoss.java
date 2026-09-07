@@ -545,7 +545,7 @@ public class GoldenKnightBoss extends RaidMonsterBoss<WitherSkeleton> {
 					});
 				ticks++;
 			}
-		}.runTaskTimer(getGame().getPlugin(), 0L, 1L);
+		}.runTaskTimer(game().plugin(), 0L, 1L);
 	}
 
 	private void brutalCloseCombatPattern(WitherSkeleton boss, Player focusTarget, CombatProfile profile) {
@@ -586,7 +586,7 @@ public class GoldenKnightBoss extends RaidMonsterBoss<WitherSkeleton> {
 				double secondHitDamage = profile.dashDamage + (phase >= 3 ? 2.0 : 1.0);
 				dealBossDamage(boss, focusTarget, secondHitDamage);
 			}
-		}.runTaskLater(getGame().getPlugin(), 6L);
+		}.runTaskLater(game().plugin(), 6L);
 	}
 
 	private void earthShatterPattern(WitherSkeleton boss) {
@@ -728,7 +728,7 @@ public class GoldenKnightBoss extends RaidMonsterBoss<WitherSkeleton> {
 
 		Player pullTarget = focusTarget;
 		if (pullTarget == null) {
-			pullTarget = getGame().getTeamController().pickRandomPlayer();
+			pullTarget = game().teamController().pickRandomPlayer();
 		}
 
 		if (pullTarget != null) {
@@ -838,7 +838,7 @@ public class GoldenKnightBoss extends RaidMonsterBoss<WitherSkeleton> {
 
 		world.playSound(center, Sound.BLOCK_BEACON_AMBIENT, 0.9f, 1.4f);
 
-		orbitTask = getGame().getPlugin().getServer().getScheduler().runTaskTimer(getGame().getPlugin(), new Runnable() {
+		orbitTask = game().plugin().getServer().getScheduler().runTaskTimer(game().plugin(), new Runnable() {
 			private int ticks = 0;
 			private double angle = 0.0;
 

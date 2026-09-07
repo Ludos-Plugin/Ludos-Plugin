@@ -40,7 +40,7 @@ class TwoStepGameProcessBaseTest {
 
 		process = new TwoStepGameProcessBase() {
 			@Override
-			protected JavaPlugin getPlugin() {
+			protected JavaPlugin plugin() {
 				return ludos;
 			}
 		};

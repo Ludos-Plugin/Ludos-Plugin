@@ -73,7 +73,7 @@ class AreaTest {
 				return true;
 			}
 			@Override
-			protected JavaPlugin getPlugin() {
+			protected JavaPlugin plugin() {
 				return mock(JavaPlugin.class);
 			}
 		};

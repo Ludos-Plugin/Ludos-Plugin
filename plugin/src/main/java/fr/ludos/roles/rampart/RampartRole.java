@@ -47,7 +47,7 @@ public class RampartRole extends Role {
 	protected void onRoleStart() {
 		super.onRoleStart();
 
-		List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
+		List<Player> players = game().group().getOnlinePlayers().stream()
 			.filter(getBuilder().getManager().ofRole(ID))
 			.toList();
 
@@ -69,7 +69,7 @@ public class RampartRole extends Role {
 	protected void onRoleStop() {
 		super.onRoleStop();
 
-		List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
+		List<Player> players = game().group().getOnlinePlayers().stream()
 			.filter(getBuilder().getManager().ofRole(ID))
 			.toList();
 
@@ -108,7 +108,7 @@ public class RampartRole extends Role {
 		}
 
 		public Builder(Ludos ludos) {
-			super(ludos.getRoleManager(), ludos);
+			super(ludos.roleManager(), ludos);
 		}
 
 		@Override

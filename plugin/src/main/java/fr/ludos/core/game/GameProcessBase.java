@@ -12,7 +12,7 @@ public abstract class GameProcessBase implements GameProcess {
 		return started;
 	}
 
-	protected abstract JavaPlugin getPlugin();
+	protected abstract JavaPlugin plugin();
 
 	public final void start() {
 		if (started) return;
@@ -21,7 +21,7 @@ public abstract class GameProcessBase implements GameProcess {
 
 		onInit();
 
-		getPlugin().getServer().getPluginManager().registerEvents(this, getPlugin());
+		plugin().getServer().getPluginManager().registerEvents(this, plugin());
 
 		onStart();
 	}

@@ -58,8 +58,8 @@ class GameManagerTest {
 		when(mockBuilder.getId()).thenReturn(mockBuilderId);
 		when(mockBuilder.build(any(Group.class))).thenReturn(mockGame);
 		when(mockGame.ludos()).thenReturn(mockLudos);
-		when(mockGame.getPlugin()).thenReturn(mockLudos);
-		when(mockGame.getGroup()).thenReturn(mockGroup);
+		when(mockGame.plugin()).thenReturn(mockLudos);
+		when(mockGame.group()).thenReturn(mockGroup);
 	}
 
 
@@ -107,8 +107,8 @@ class GameManagerTest {
 	void testStartGameWithExistingGame() {
 		Game oldGame = mock(Game.class);
 		when(oldGame.isClear()).thenReturn(true);
-		when(oldGame.getPlugin()).thenReturn(mockLudos);
-		when(mockGroup.getGame()).thenReturn(oldGame);
+		when(oldGame.plugin()).thenReturn(mockLudos);
+		when(mockGroup.game()).thenReturn(oldGame);
 
 
 		GameManager manager = new GameManager(mockLudos);

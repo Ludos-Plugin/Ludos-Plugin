@@ -2,7 +2,6 @@ package fr.ludos.core.group;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -120,20 +119,5 @@ class GroupTest {
 
 		assertEquals(Group.AddPlayerResult.Requested, result);
 		assertTrue(group.getJoinRequests().containsKey(requester.getUniqueId()));
-	}
-
-	@Test
-	@DisplayName("Should return correct return location when offline")
-	void testPickReturnLocationOffline() {
-		GroupManager manager = new GroupManager(mockLudos);
-		PlayerMock leader = server.addPlayer("Leader");
-		Group group = manager.createGroup(leader, null);
-		leader.disconnect();
-
-
-		var location = group.pickReturnLocation();
-
-		assertNotNull(location);
-		assertEquals(server.getWorlds().get(0).getSpawnLocation(), location);
 	}
 }

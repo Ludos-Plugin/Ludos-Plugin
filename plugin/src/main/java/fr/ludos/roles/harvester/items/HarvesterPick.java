@@ -94,11 +94,11 @@ public final class HarvesterPick extends LevelBranchItem<HarvesterPick, Harveste
 		) {
 			if (
 				ItemUtilities.isBreakable(relativeBlock) &&
-				relativeBlock.isPreferredTool(getStack()) &&
+				relativeBlock.isPreferredTool(stack()) &&
 				relativeBlock.getType().getHardness() == blockHardness
 			) {
-				events.role.awardBreak(breaker, relativeBlock, getGame());
-				relativeBlock.breakNaturally(getStack(), true);
+				events.role.awardBreak(breaker, relativeBlock, game());
+				relativeBlock.breakNaturally(stack(), true);
 			}
 		}
 	}
@@ -164,7 +164,7 @@ public final class HarvesterPick extends LevelBranchItem<HarvesterPick, Harveste
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.ludos().getRoleManager().isPlayerRole(owner, HarvesterRole.ID);
+			return game.ludos().roleManager().isPlayerRole(owner, HarvesterRole.ID);
 		}
 	}
 }

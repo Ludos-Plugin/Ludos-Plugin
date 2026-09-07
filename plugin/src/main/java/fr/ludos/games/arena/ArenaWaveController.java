@@ -2,11 +2,11 @@ package fr.ludos.games.arena;
 
 import java.time.Duration;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import fr.ludos.core.Utility;
 import fr.ludos.core.game.teamController.GameTeamController;
+import fr.ludos.core.item.SpecialItem;
 import fr.ludos.core.lobby.Lobby;
 import fr.ludos.core.wave.DefaultWaveLoadout;
 import fr.ludos.core.wave.WaveController;
@@ -32,80 +32,95 @@ public final class ArenaWaveController extends WaveController {
 	protected void onStart() {
 		super.onStart();
 
-		game.getWorldManager()
+		game.worldManager()
 			.mutateLobby(lobby -> lobby
 				.wait(Duration.ofSeconds(3))
 				.showOnStart(Component.text("Round starting"))
-				.thenDont(getGame()::start)
+				.thenDont(game()::start)
 				.then(this::startWave)
 			);
 	}
 
 	@Override
 	protected void onStop() {
+		super.onStop();
+		game().stop();
+	}
+
+	@Override
+	public void onScheduleEnd() {
 		Component result;
 		if (primaryWins > secondaryWins) {
-			result = Component.text("Arena finished: Team 1 wins " + primaryWins + " - " + secondaryWins).color(NamedTextColor.BLUE);
+			result = Component.text("Arena finished: ")
+				.append(Component.text("Team 1").color(NamedTextColor.BLUE))
+				.append(Component.text(" wins "))
+
+				.append(Component.text(primaryWins).color(NamedTextColor.BLUE))
+				.append(Component.text(" / "))
+				.append(Component.text(secondaryWins).color(NamedTextColor.RED));
 		} else if (secondaryWins > primaryWins) {
-			result = Component.text("Arena finished: Team 2 wins " + secondaryWins + " - " + primaryWins).color(NamedTextColor.RED);
+			result = Component.text("Arena finished: ")
+				.append(Component.text("Team 2").color(NamedTextColor.RED))
+				.append(Component.text(" wins "))
+
+				.append(Component.text(secondaryWins).color(NamedTextColor.RED))
+				.append(Component.text(" / "))
+				.append(Component.text(primaryWins).color(NamedTextColor.BLUE));
 		} else {
-			result = Component.text("Arena finished: Draw " + primaryWins + " - " + secondaryWins).color(NamedTextColor.WHITE);
+			result = Component.text("Arena finished: Draw " + primaryWins + " wins each!").color(NamedTextColor.WHITE);
 		}
 
 
-		for (Player player : getGame().getTeamController().getOnlinePlayers()) {
-			player.showTitle(Title.title(
-				Component.text("Match Over").color(NamedTextColor.GOLD),
-				result,
-				Title.Times.times(Duration.ZERO, Duration.ofSeconds(5), Duration.ofSeconds(2))
-			));
+		game().group().showTitle(Title.title(
+			Component.text("Match Over").color(NamedTextColor.GOLD),
+			result,
+			Title.Times.times(Duration.ZERO, Duration.ofSeconds(5), Duration.ofSeconds(2))
+		));
+	}
+
+	@Override
+	public void startWave() {
+		GameTeamController teamController = game.teamController();
+		for (Player player : teamController.getOnlinePlayers()) {
+			Utility.resetPlayer(player);
+			SpecialItem.Events.refreshPlayerInventory(game, player);
+			teamController.placePlayer(player);
 		}
 
-		super.onStop();
-		getGame().stop();
+		game().group().sendMessage(Component.text("Round " + getCurrentWaveNumber() + " starts!").color(NamedTextColor.GREEN));
 	}
 
 	@Override
 	protected void nextWave() {
-		Lobby lobby = game.getWorldManager().getLobby();
+		Lobby lobby = game.worldManager().getLobby();
 		if (lobby == null) {
 			stop();
 			return;
 		}
 
-		GameTeamController teamController = getGame().getTeamController();
-		teamController.stop();
 		lobby.restart();
-		teamController.start();
-	}
-
-	@Override
-	public void startWave() {
-		getGame().getTeamController().start();
-
-		Bukkit.broadcast(Component.text("Round " + getCurrentWaveNumber() + " starts!").color(NamedTextColor.GREEN));
 	}
 
 	@Override
 	protected void evaluateWaveState() {
-		ArenaTeamController teamController = game.getTeamController();
+		ArenaTeamController teamController = game.teamController();
 
-		long alivePrimary = Utility.getTeamAlivePlayers(teamController.getCombatTeam(0), game.getPlugin().getServer()).count();
-		long aliveSecondary = Utility.getTeamAlivePlayers(teamController.getCombatTeam(1), game.getPlugin().getServer()).count();
+		long alivePrimary = Utility.getTeamAlivePlayers(teamController.getCombatTeam(0), game.plugin().getServer()).count();
+		long aliveSecondary = Utility.getTeamAlivePlayers(teamController.getCombatTeam(1), game.plugin().getServer()).count();
 		if (alivePrimary > 0 && aliveSecondary > 0) return;
 
 		int currentRound = getCurrentWaveNumber();
 
 		if (alivePrimary > aliveSecondary) {
 			primaryWins++;
-			Bukkit.broadcast(Component.text("Round " + currentRound + " won by Team 1").color(NamedTextColor.BLUE));
+			game().group().sendMessage(Component.text("Round " + currentRound + " won by Team 1").color(NamedTextColor.BLUE));
 		} else if (aliveSecondary > alivePrimary) {
 			secondaryWins++;
-			Bukkit.broadcast(Component.text("Round " + currentRound + " won by Team 2").color(NamedTextColor.RED));
+			game().group().sendMessage(Component.text("Round " + currentRound + " won by Team 2").color(NamedTextColor.RED));
 		} else {
-			Bukkit.broadcast(Component.text("Round " + currentRound + " is a draw").color(NamedTextColor.WHITE));
+			game().group().sendMessage(Component.text("Round " + currentRound + " is a draw").color(NamedTextColor.WHITE));
 		}
 
-		scheduleNextWave();
+		completeCurrentWave();
 	}
 }

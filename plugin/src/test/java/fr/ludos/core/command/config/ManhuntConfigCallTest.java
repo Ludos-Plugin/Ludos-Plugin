@@ -30,7 +30,7 @@ class ManhuntConfigCallTest extends ConfigTest {
 		// 	player1.getName() + ' ' + player2.getName() + ' ' + player3.getName()
 		// );
 
-		Game.Builder gameBuilder = ludos.getGameManager().getGameById(ManhuntGame.ID);
+		Game.Builder gameBuilder = ludos.gameManager().getGameById(ManhuntGame.ID);
 		if (! (gameBuilder instanceof ManhuntGame.Builder manhunt)) {
 			AssertionFailureBuilder.assertionFailure()
 				.message("Could not get ManhuntGame.Builder instance from Game registry")

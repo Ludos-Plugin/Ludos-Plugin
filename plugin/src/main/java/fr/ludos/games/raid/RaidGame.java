@@ -5,7 +5,6 @@ import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.DyeColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
@@ -48,13 +47,13 @@ public class RaidGame extends WaveGame {
 
 	private final WorldManager worldManager;
 	@Override
-	public WorldManager getWorldManager() {
+	public WorldManager worldManager() {
 		return worldManager;
 	}
 
 	private final RaidTeamController teamController;
 	@Override
-	public RaidTeamController getTeamController() {
+	public RaidTeamController teamController() {
 		return teamController;
 	}
 
@@ -69,15 +68,13 @@ public class RaidGame extends WaveGame {
 		super(builder, group);
 		this.builder = builder;
 
-		Location returnLocation = group.pickReturnLocation();
-
 
 		this.waveController = new RaidWaveController(
 			this,
 			builder.waves.getGameConfig(group, builder)
 		);
 
-		this.worldManager = WorldManager.within(this, returnLocation)
+		this.worldManager = WorldManager.within(this)
 			.of(builder.createWorldCreator())
 			.withLobby(
 				Lobby.within(this)

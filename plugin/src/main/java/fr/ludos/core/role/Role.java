@@ -62,7 +62,7 @@ public abstract class Role extends GameProcessBase {
 	};
 
 	private final Game game;
-	public Game getGame() {
+	public Game game() {
 		return game;
 	}
 
@@ -71,11 +71,11 @@ public abstract class Role extends GameProcessBase {
 		return builder;
 	}
 
-	public Ludos getLudos() {
+	public Ludos ludos() {
 		return game.ludos();
 	}
-	public JavaPlugin getPlugin() {
-		return game.getPlugin();
+	public JavaPlugin plugin() {
+		return game.plugin();
 	}
 
 	private final Map<String, GameEvents> gameEvents;
@@ -148,7 +148,7 @@ public abstract class Role extends GameProcessBase {
 
 
 	public final Boolean isPlayerValid(OfflinePlayer player) {
-		if (! game.getGroup().isPlayer(player)) return false;
+		if (! game.group().isPlayer(player)) return false;
 		return isPlayerValidInternal(player);
 	}
 	protected Boolean isPlayerValidInternal(OfflinePlayer player) {

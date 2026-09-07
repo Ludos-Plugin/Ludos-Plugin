@@ -190,9 +190,9 @@ class LevelBranchItemTest {
 		owner = server.addPlayer("Owner");
 
 		when(mockLudos.getServer()).thenReturn(server);
-		when(mockGame.getPlugin()).thenReturn(mockLudos);
+		when(mockGame.plugin()).thenReturn(mockLudos);
 		when(mockGame.ludos()).thenReturn(mockLudos);
-		when(mockGame.getGroup()).thenReturn(mockGroup);
+		when(mockGame.group()).thenReturn(mockGroup);
 		when(mockGroup.isPlayer(any())).thenReturn(true);
 		when(mockGroup.getOnlinePlayers()).thenReturn(Set.of(owner));
 
@@ -203,7 +203,7 @@ class LevelBranchItemTest {
 	@DisplayName("Equal operation should work for LevelBranchItem")
 	void testEquals() {
 		TestLevelBranchItem item = testEvents.createItem(owner);
-		TestLevelBranchItem copyItem = testEvents.getItem(item.getStack());
+		TestLevelBranchItem copyItem = testEvents.getItem(item.stack());
 
 		assertEquals(item, copyItem);
 		assertTrue(item == copyItem);
@@ -212,10 +212,10 @@ class LevelBranchItemTest {
 
 		TestLevelBranchItem otherItem = spy(copyItem);
 		PlayerMock otherOwner = server.addPlayer("OtherOwner");
-		when(otherItem.getOwner()).thenReturn(otherOwner);
+		when(otherItem.owner()).thenReturn(otherOwner);
 		assertFalse(item.equals(otherItem));
 
-		when(otherItem.getTypeId()).thenReturn("other_type_id");
+		when(otherItem.typeId()).thenReturn("other_type_id");
 		assertFalse(item.equals(otherItem));
 
 		when(otherItem.getItemId()).thenReturn(UUID.randomUUID());
@@ -235,7 +235,7 @@ class LevelBranchItemTest {
 		assertEquals(0.0, item.xp(), 0.001);
 
 		// Verify PDC contains both branch and level data
-		ItemStack stack = item.getStack();
+		ItemStack stack = item.stack();
 		ItemMeta meta = stack.getItemMeta();
 		PersistentDataContainer container = meta.getPersistentDataContainer();
 
@@ -339,8 +339,8 @@ class LevelBranchItemTest {
 		item2.addXp(30.0); // Level 2
 		item2.switchBranch(TestBranch.MODE_C);
 
-		inventory.setItem(0, item1.getStack());
-		inventory.setItem(1, item2.getStack());
+		inventory.setItem(0, item1.stack());
+		inventory.setItem(1, item2.stack());
 
 		// Create mock event for switching
 		PlayerItemHeldEvent switchEvent = mock(PlayerItemHeldEvent.class);
@@ -359,7 +359,7 @@ class LevelBranchItemTest {
 		item.addXp(15.0); // Level 1
 		item.switchBranch(TestBranch.MODE_B);
 
-		ItemStack stack = item.getStack();
+		ItemStack stack = item.stack();
 
 		// Load Branch
 		String loadedBranchId = BranchItemInterface.branchFromItemStack(stack, mockGame);

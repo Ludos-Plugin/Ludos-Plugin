@@ -40,7 +40,7 @@ public class GameStop implements Subcommand {
 			return true;
 		}
 
-		Group group = manager.getLudos().getGroupManager().getGroupOfPlayer(player);
+		Group group = manager.getLudos().groupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			sender.sendMessage("You are not in a group.");
 			return true;
@@ -52,7 +52,7 @@ public class GameStop implements Subcommand {
 			return true;
 		}
 
-		Game game = group.getGame();
+		Game game = group.game();
 		if (game == null) {
 			sender.sendMessage("There is no game running.");
 			return true;

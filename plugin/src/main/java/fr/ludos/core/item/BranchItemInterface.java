@@ -39,7 +39,7 @@ public interface BranchItemInterface<T extends BranchItemInterface<T, TBranch>, 
 
 		switchBranch(newBranch);
 
-		Player owner = getOwner();
+		Player owner = owner();
 		owner.playSound(owner.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 0.25f, 1);
 	}
 
@@ -53,7 +53,7 @@ public interface BranchItemInterface<T extends BranchItemInterface<T, TBranch>, 
 	public static <T extends BranchItemInterface<T, TBranch>, TBranch extends BranchItemInterface.Branch> void setItemBranch(BranchItemInterface<T, TBranch> item, TBranch newBranch) {
 		final TBranch oldBranch = item.getBranch();
 
-		saveBranchId(item.getStack(), newBranch.id());
+		saveBranchId(item.stack(), newBranch.id());
 
 		item.onSetBranch(newBranch);
 

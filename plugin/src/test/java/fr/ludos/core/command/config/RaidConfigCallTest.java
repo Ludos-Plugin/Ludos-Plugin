@@ -30,7 +30,7 @@ class RaidConfigCallTest extends ConfigTest {
 		// 	player1.getName() + ' ' + player2.getName() + ' ' + player3.getName()
 		// );
 
-		Game.Builder gameBuilder = ludos.getGameManager().getGameById(RaidGame.ID);
+		Game.Builder gameBuilder = ludos.gameManager().getGameById(RaidGame.ID);
 		if (! (gameBuilder instanceof RaidGame.Builder raid)) {
 			AssertionFailureBuilder.assertionFailure()
 				.message("Could not get RaidGame.Builder instance from Game registry")

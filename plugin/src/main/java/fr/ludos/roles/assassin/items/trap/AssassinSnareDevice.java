@@ -80,7 +80,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDevice, Assassi
 			trapTask = new BukkitRunnable() {
 				@Override
 				public void run() {
-					GameTeamController teamController = game.getTeamController();
+					GameTeamController teamController = game.teamController();
 					if (teamController == null) return;
 
 					for (var playerTrapEntries : traps.entrySet()) {
@@ -112,7 +112,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDevice, Assassi
 						}
 					}
 				}
-			}.runTaskTimer(game.getPlugin(), 0, 1);
+			}.runTaskTimer(game.plugin(), 0, 1);
 		}
 
 		@Override
@@ -209,7 +209,7 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDevice, Assassi
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.ludos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);
+			return game.ludos().roleManager().isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

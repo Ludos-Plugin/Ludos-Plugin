@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -36,7 +35,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.core.Utility;
-import fr.ludos.core.game.teamController.GameTeamController;
 import fr.ludos.core.generator.OceanChunkGenerator;
 import fr.ludos.core.item.Categories;
 import fr.ludos.core.item.Category;
@@ -91,6 +89,7 @@ public final class RaidWaveController extends WaveController {
 	private static final int BOSS_INTERVAL = 10;
 	private static final int BASE_WAVE_POINTS = 200;
 	private static final int MAX_WAVE_POINTS = 48000;
+	private static final int LAST_FEW_MOBS_COUNT = 5;
 	private static final int MIN_MOBS_NON_BOSS_WAVE = 11;
 	private static final int MAX_MOB_COUNT = 100;
 	private static final int STEAK_REWARD_PER_BOSS_WAVE = 64;
@@ -184,44 +183,42 @@ public final class RaidWaveController extends WaveController {
 	protected void onStart() {
 		super.onStart();
 
-		for (Player player : getGame().getTeamController().getOnlinePlayers()) {
+		for (Player player : game().teamController().getOnlinePlayers()) {
 			applyLoadout(player);
 		}
 
-		game.getWorldManager()
+		game.worldManager()
 			.mutateLobby(lobby -> lobby
 				.clear(ClearMode.STATE)
 				.showOnStart(Component.text("Wave starting"))
-				.thenDont(getGame()::start)
+				.thenDont(game()::start)
 				.then(this::startWave)
 			);
 	}
 
 	@Override
 	protected void onStop() {
-		super.onStop();
-
 		despawnAllEnemies();
-		getGame().stop();
+
+		super.onStop();
+		game().stop();
 	}
 
 	@Override
 	protected void nextWave() {
-		for (Player player : getGame().getTeamController().getOnlinePlayers()) {
+		for (Player player : game().teamController().getOnlinePlayers()) {
 			Utility.resetPlayerState(player);
 			player.setGameMode(GameMode.SURVIVAL);
 		}
 
-		GameTeamController teamController = getGame().getTeamController();
-		teamController.stop();
-		game.getWorldManager().transfer((builder) -> builder
+		game.worldManager().transfer((builder) -> builder
 			.of(getCurrentWaveTheme().getWorldCreator())
 		);
 	}
 
 	@Override
 	public void startWave() {
-		getGame().getTeamController().start();
+		game().teamController().placeAllPlayers();
 
 		applyThemePlayerEffects();
 
@@ -230,9 +227,9 @@ public final class RaidWaveController extends WaveController {
 
 	@Override
 	protected void evaluateWaveState() {
-		Set<Player> alivePlayers = game.getTeamController().getAlivePlayers();
+		Set<Player> alivePlayers = game.teamController().getAlivePlayers();
 		if (alivePlayers.isEmpty()) {
-			Bukkit.broadcast(Component.text("Raid failed: all players are down").color(NamedTextColor.RED));
+			game.group().sendMessage(Component.text("Raid failed: all players are down").color(NamedTextColor.RED));
 
 			scheduleReturn();
 			return;
@@ -245,14 +242,23 @@ public final class RaidWaveController extends WaveController {
 
 		aliveWaveMonsters.removeIf(monster -> monster.isDead() || !monster.isValid());
 
+		PotionEffect glow = new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 0, true, false);
+		if (aliveWaveMonsters.size() <= LAST_FEW_MOBS_COUNT) {
+			for (Monster mob : aliveWaveMonsters) {
+				mob.getWorld().spawnParticle(Particle.SMOKE_LARGE, mob.getLocation(), 12, 0.3, 0.4, 0.3, 0.01);
+				mob.getWorld().playSound(mob.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 0.5f, 0.7f);
+				mob.addPotionEffect(glow);
+			}
+		}
+
 		if (aliveWaveMonsters.isEmpty()) {
 			if (bossWaveActive) {
 				onBossWaveCleared();
 			}
 
-			Bukkit.broadcast(Component.text("Wave " + getCurrentWaveNumber() + " cleared").color(NamedTextColor.GREEN));
+			game.group().sendMessage(Component.text("Wave " + getCurrentWaveNumber() + " cleared").color(NamedTextColor.GREEN));
 
-			scheduleNextWave();
+			completeCurrentWave();
 		}
 	}
 
@@ -267,7 +273,7 @@ public final class RaidWaveController extends WaveController {
 
 		int pointsBudget = computeWavePointsBudget();
 		List<WaveUnit> roster = composeWaveRoster(pointsBudget, getCurrentWaveTheme());
-		Location center = getGame().getWorldManager().getWorld().getSpawnLocation();
+		Location center = game().worldManager().getWorld().getSpawnLocation();
 
 		for (WaveUnit unit : roster) {
 			Location spawn = Utility.snapToHighestY(center.clone().add(
@@ -284,13 +290,20 @@ public final class RaidWaveController extends WaveController {
 			aliveWaveMonsters.add(mob);
 		}
 
-		Bukkit.broadcast(Component.text(
+		PotionEffect glow = new PotionEffect(PotionEffectType.GLOWING, 10 * 20, 0, true, false);
+		for (Monster mob : aliveWaveMonsters) {
+			mob.getWorld().spawnParticle(Particle.SMOKE_LARGE, mob.getLocation(), 12, 0.3, 0.4, 0.3, 0.01);
+			mob.getWorld().playSound(mob.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 0.5f, 0.7f);
+			mob.addPotionEffect(glow);
+		}
+
+		game.group().sendMessage(Component.text(
 			"Wave " + getCurrentWaveNumber() + " spawned: " + aliveWaveMonsters.size() + " monsters (" + pointsBudget + " pts)"
 		).color(NamedTextColor.DARK_RED));
 	}
 
 	private void spawnBossWave() {
-		Location center = getGame().getWorldManager().getWorld().getSpawnLocation();
+		Location center = game().worldManager().getWorld().getSpawnLocation();
 
 		WaveTheme currentTheme = getCurrentWaveTheme();
 
@@ -307,12 +320,12 @@ public final class RaidWaveController extends WaveController {
 		currentBoss = createBossForTheme(currentTheme);
 		currentBoss.spawn(center);
 
-		Monster bossEntity = currentBoss.getEntity();
+		Monster bossEntity = currentBoss.entity();
 		if (bossEntity != null) {
 			aliveWaveMonsters.add(bossEntity);
 		}
 
-		Bukkit.broadcast(Component.text(
+		game.group().sendMessage(Component.text(
 			"Boss Wave (" + currentTheme.getDisplay() + "): " + mapThemeToBossTitle(currentTheme)
 		).color(NamedTextColor.DARK_PURPLE));
 
@@ -329,11 +342,11 @@ public final class RaidWaveController extends WaveController {
 		mobilityTrident.addUnsafeEnchantment(Enchantment.RIPTIDE, 2);
 		mobilityTrident.addUnsafeEnchantment(Enchantment.DURABILITY, 3);
 
-		for (Player player : game.getTeamController().getOnlinePlayers()) {
+		for (Player player : game.teamController().getOnlinePlayers()) {
 			player.getInventory().addItem(mobilityTrident.clone());
 		}
 
-		Bukkit.broadcast(Component.text(
+		game.group().sendMessage(Component.text(
 			"Water boss kit: mobility trident granted"
 		).color(NamedTextColor.AQUA));
 	}
@@ -341,12 +354,12 @@ public final class RaidWaveController extends WaveController {
 	private void grantBossWaveCombatSupplies() {
 		int goldenApples = Math.min(8, Math.max(1, bossesDefeated + 2));
 
-		for (Player player : game.getTeamController().getOnlinePlayers()) {
+		for (Player player : game.teamController().getOnlinePlayers()) {
 			player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, STEAK_REWARD_PER_BOSS_WAVE));
 			player.getInventory().addItem(new ItemStack(Material.GOLDEN_APPLE, goldenApples));
 		}
 
-		Bukkit.broadcast(Component.text(
+		game.group().sendMessage(Component.text(
 			"Boss combat supplies delivered: 64 steaks + " + goldenApples + " golden apples"
 		).color(NamedTextColor.GOLD));
 	}
@@ -362,7 +375,7 @@ public final class RaidWaveController extends WaveController {
 	}
 
 	private void configureWaveMob(LivingEntity mob, WaveUnit unit) {
-		List<Player> alivePlayers = game.getTeamController().getAlivePlayersStream().toList();
+		List<Player> alivePlayers = game.teamController().getAlivePlayersStream().toList();
 		if (mob instanceof Monster monster && !alivePlayers.isEmpty()) {
 			monster.setTarget(alivePlayers.get(ThreadLocalRandom.current().nextInt(alivePlayers.size())));
 		}
@@ -594,13 +607,13 @@ public final class RaidWaveController extends WaveController {
 		bossesDefeated++;
 		int goldenApples = Math.min(8, Math.max(1, bossesDefeated));
 
-		for (Player player : game.getTeamController().getOnlinePlayers()) {
+		for (Player player : game.teamController().getOnlinePlayers()) {
 			if (!player.isOnline()) continue;
 			player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, STEAK_REWARD_PER_BOSS_WAVE));
 			player.getInventory().addItem(new ItemStack(Material.GOLDEN_APPLE, goldenApples));
 		}
 
-		Bukkit.broadcast(Component.text(
+		game.group().sendMessage(Component.text(
 			"Boss defeated! Rewards: 64 steaks + " + goldenApples + " golden apples per player"
 		).color(NamedTextColor.GOLD));
 
@@ -666,7 +679,7 @@ public final class RaidWaveController extends WaveController {
 		}
 	}
 	private void applyThemePlayerEffects() {
-		for (Player player : game.getTeamController().getOnlinePlayers()) {
+		for (Player player : game.teamController().getOnlinePlayers()) {
 			applyThemePlayerEffects(player);
 		}
 	}

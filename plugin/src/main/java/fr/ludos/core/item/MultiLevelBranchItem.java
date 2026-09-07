@@ -134,8 +134,8 @@ public abstract class MultiLevelBranchItem<T extends MultiLevelBranchItem<T, TBr
 		return LevelItemInterface.initializeLevelState(
 			this, this,
 			state,
-			(lvlValue, oldLevel) -> LevelItemInterface.saveLevelValues(getStack(), getLevelValues()),
-			(lvlValue, oldXp) -> LevelItemInterface.saveLevelValues(getStack(), getLevelValues())
+			(lvlValue, oldLevel) -> LevelItemInterface.saveLevelValues(stack(), getLevelValues()),
+			(lvlValue, oldXp) -> LevelItemInterface.saveLevelValues(stack(), getLevelValues())
 		);
 	}
 
@@ -241,7 +241,7 @@ public abstract class MultiLevelBranchItem<T extends MultiLevelBranchItem<T, TBr
 		@Override
 		protected final T createItemInternal(BranchItem.BranchData<TBranch> data, Player owner) {
 			T created = createItemInternal(new MultiLevelData(new HashMap<>()), data, owner);
-			saveLevelStates(created.getStack(), created.getLevelStates().entrySet().stream()
+			saveLevelStates(created.stack(), created.getLevelStates().entrySet().stream()
 				.collect(Collectors.toMap(
 					e -> e.getKey(),
 					e -> e.getValue().value()

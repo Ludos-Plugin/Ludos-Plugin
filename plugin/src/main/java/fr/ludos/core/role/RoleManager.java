@@ -97,8 +97,8 @@ public final class RoleManager {
 		}
 
 		if (operator instanceof Player player) {
-			final Group group = ludos.getGroupManager().getGroupOfPlayer(player);
-			if (group != null && group.isLeader(player) && group == ludos.getGroupManager().getGroupOfPlayer(target)) {
+			final Group group = ludos.groupManager().getGroupOfPlayer(player);
+			if (group != null && group.isLeader(player) && group == ludos.groupManager().getGroupOfPlayer(target)) {
 				return true;
 			}
 		}

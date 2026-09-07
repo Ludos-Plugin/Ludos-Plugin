@@ -68,7 +68,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpade, HarvesterSpadeLeve
 
 	public void useAbility() {
 		if (! refreshUseCooldown()) return;
-		boolean tunnelActive = TUNNEL_BLOCKS.containsKey(getOwner());
+		boolean tunnelActive = TUNNEL_BLOCKS.containsKey(owner());
 
 
 		if (tunnelActive) {
@@ -90,11 +90,11 @@ public class HarvesterSpade extends LevelItem<HarvesterSpade, HarvesterSpadeLeve
 
 
 	private boolean digTunnel() {
-		if (TUNNEL_BLOCKS.containsKey(getOwner())) return false;
+		if (TUNNEL_BLOCKS.containsKey(owner())) return false;
 
-		List<Block> lastTwoTargetBlocks = getOwner().getLastTwoTargetBlocks(null, 12);
+		List<Block> lastTwoTargetBlocks = owner().getLastTwoTargetBlocks(null, 12);
 		if (lastTwoTargetBlocks.size() != 2) return false;
-		TUNNEL_BLOCKS.put(getOwner(), null);
+		TUNNEL_BLOCKS.put(owner(), null);
 
 
 		Block targetBlock = lastTwoTargetBlocks.get(1);
@@ -141,20 +141,20 @@ public class HarvesterSpade extends LevelItem<HarvesterSpade, HarvesterSpadeLeve
 
 				current++;
 				if (current >= digBlocks.size()) {
-					TUNNEL_BLOCKS.put(getOwner(), digBlocksState);
+					TUNNEL_BLOCKS.put(owner(), digBlocksState);
 					cancel();
 				}
 			}
-		}.runTaskTimer(getGame().getPlugin(), 0, 1);
+		}.runTaskTimer(game().plugin(), 0, 1);
 
 		return true;
 	}
 
 
 	private boolean revertTunnel() {
-		List<List<BlockState>> blocks = TUNNEL_BLOCKS.get(getOwner());
+		List<List<BlockState>> blocks = TUNNEL_BLOCKS.get(owner());
 		if (blocks == null) return false;
-		TUNNEL_BLOCKS.put(getOwner(), null);
+		TUNNEL_BLOCKS.put(owner(), null);
 
 
 		new BukkitRunnable() {
@@ -174,15 +174,15 @@ public class HarvesterSpade extends LevelItem<HarvesterSpade, HarvesterSpadeLeve
 
 				current++;
 				if (current >= blocks.size()) {
-					TUNNEL_BLOCKS.remove(getOwner());
+					TUNNEL_BLOCKS.remove(owner());
 					cancel();
 				}
 			}
 
-		}.runTaskTimer(getGame().getPlugin(), 0, 1);
+		}.runTaskTimer(game().plugin(), 0, 1);
 
 
-		getOwner().setCooldown(getStack().getType(), COOLDOWN_SECONDS * 20);
+		owner().setCooldown(stack().getType(), COOLDOWN_SECONDS * 20);
 		return true;
 	}
 
@@ -232,7 +232,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpade, HarvesterSpadeLeve
 			HarvesterSpade spade = getItem(mainHandItem);
 			if (spade == null) return;
 
-			role.awardBreak(event.getPlayer(), event.getBlock(), spade.getGame());
+			role.awardBreak(event.getPlayer(), event.getBlock(), spade.game());
 		}
 
 		@Override
@@ -248,7 +248,7 @@ public class HarvesterSpade extends LevelItem<HarvesterSpade, HarvesterSpadeLeve
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.ludos().getRoleManager().isPlayerRole(owner, HarvesterRole.ID);
+			return game.ludos().roleManager().isPlayerRole(owner, HarvesterRole.ID);
 		}
 	}
 }

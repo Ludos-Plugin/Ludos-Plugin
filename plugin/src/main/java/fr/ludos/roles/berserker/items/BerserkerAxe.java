@@ -142,7 +142,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxe, BerserkerAxeLevels> {
 
 			if (!hasFirst) {
 				createVariant = Variant.FIRST;
-				player.getInventory().addItem(createItem(player).getStack());
+				player.getInventory().addItem(createItem(player).stack());
 			}
 
 			if (!hasSecond) {
@@ -152,9 +152,9 @@ public class BerserkerAxe extends LevelItem<BerserkerAxe, BerserkerAxeLevels> {
 				BerserkerAxe secondAxe = createItem(player);
 
 				if (currentOffHand == null || currentOffHand.getType().isAir()) {
-					player.getInventory().setItemInOffHand(secondAxe.getStack());
+					player.getInventory().setItemInOffHand(secondAxe.stack());
 				} else {
-					player.getInventory().addItem(secondAxe.getStack());
+					player.getInventory().addItem(secondAxe.stack());
 				}
 			}
 		}
@@ -195,7 +195,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxe, BerserkerAxeLevels> {
 					), owner)
 				), this
 			);
-			ItemMeta meta = created.getStack().getItemMeta();
+			ItemMeta meta = created.stack().getItemMeta();
 
 			meta.getPersistentDataContainer().set(VARIANT_KEY, PersistentDataType.INTEGER, variant.key());
 
@@ -216,7 +216,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxe, BerserkerAxeLevels> {
 				);
 			}
 
-			created.getStack().setItemMeta(meta);
+			created.stack().setItemMeta(meta);
 
 			return created;
 		}
@@ -242,7 +242,7 @@ public class BerserkerAxe extends LevelItem<BerserkerAxe, BerserkerAxeLevels> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.ludos().getRoleManager().isPlayerRole(owner, BerserkerRole.ID);
+			return game.ludos().roleManager().isPlayerRole(owner, BerserkerRole.ID);
 		}
 	}
 }

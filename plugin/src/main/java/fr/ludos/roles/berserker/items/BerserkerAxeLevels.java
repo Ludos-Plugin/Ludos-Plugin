@@ -69,7 +69,7 @@ public enum BerserkerAxeLevels implements LevelItemInterface.Level<BerserkerAxeL
 
 	@Override
 	public void onSwitchToLevel(SpecialItemInterface item) {
-		ItemStack stack = item.getStack();
+		ItemStack stack = item.stack();
 		Material material = getMaterialForVariant(((BerserkerAxe) item).getVariant());
 		stack.setType(material);
 		stack.removeEnchantment(Enchantment.DAMAGE_ALL);

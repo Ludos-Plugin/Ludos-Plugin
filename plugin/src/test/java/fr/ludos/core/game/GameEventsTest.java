@@ -43,7 +43,7 @@ class GameEventsTest {
 		mockGame = mock(Game.class);
 
 		when(mockLudos.getServer()).thenReturn(server);
-		when(mockGame.getPlugin()).thenReturn(mockLudos);
+		when(mockGame.plugin()).thenReturn(mockLudos);
 
 
 		gameEvents = new GameEvents(mockGame);
@@ -53,14 +53,14 @@ class GameEventsTest {
 	@Test
 	@DisplayName("Should initialize with correct game reference")
 	void testInitialization() {
-		assertNotNull(gameEvents.getGame());
-		assertEquals(mockGame, gameEvents.getGame());
+		assertNotNull(gameEvents.game());
+		assertEquals(mockGame, gameEvents.game());
 	}
 
 
 	@Test
 	@DisplayName("Should return correct plugin from game")
 	void testGetPlugin() {
-		assertEquals(mockLudos, gameEvents.getPlugin());
+		assertEquals(mockLudos, gameEvents.plugin());
 	}
 }

@@ -135,7 +135,7 @@ public abstract class RaidMonsterBoss<TEntity extends LivingEntity> extends Spec
 			}
 		}
 
-		if (attacker == null || !getGame().getTeamController().contains(attacker)) return;
+		if (attacker == null || !game().teamController().contains(attacker)) return;
 
 		double distance = Math.sqrt(attacker.getLocation().distanceSquared(boss.getLocation()));
 		double totalAggro = damageEvent.getFinalDamage() * (distance > 8.0 ? 1.45 : 1.0);
@@ -171,7 +171,7 @@ public abstract class RaidMonsterBoss<TEntity extends LivingEntity> extends Spec
 	}
 
 	protected final boolean isArenaTarget(Player player, World world, Location center, double maxDistanceSquared) {
-		if (!getGame().getTeamController().contains(player)) return false;
+		if (!game().teamController().contains(player)) return false;
 		if (!player.getWorld().equals(world)) return false;
 		return player.getLocation().distanceSquared(center) <= maxDistanceSquared;
 	}
@@ -213,7 +213,7 @@ public abstract class RaidMonsterBoss<TEntity extends LivingEntity> extends Spec
 	protected final void initBossBar(String name, BarColor color, BarStyle style) {
 		disposeBossBar();
 		bossBar = Bukkit.createBossBar(name, color, style);
-		for (Player player : getGame().getTeamController().getOnlinePlayers()) {
+		for (Player player : game().teamController().getOnlinePlayers()) {
 			bossBar.addPlayer(player);
 		}
 		bossBar.setVisible(true);

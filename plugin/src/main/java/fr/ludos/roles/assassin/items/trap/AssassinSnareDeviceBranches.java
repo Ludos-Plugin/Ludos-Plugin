@@ -138,7 +138,7 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 
 	@Override
 	public void onSelectBranch(SpecialItemInterface item) {
-		item.getStack().setType(type);
+		item.stack().setType(type);
 	}
 	@Override
 	public void onDeselectBranch(SpecialItemInterface item) { }

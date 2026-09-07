@@ -120,13 +120,13 @@ public class Ludos extends JavaPlugin implements Listener {
 		return this.adminAuthz;
 	}
 
-	public final GroupManager getGroupManager() {
+	public final GroupManager groupManager() {
 		return this.groupManager;
 	}
-	public final GameManager getGameManager() {
+	public final GameManager gameManager() {
 		return this.gameManager;
 	}
-	public final RoleManager getRoleManager() {
+	public final RoleManager roleManager() {
 		return this.roleManager;
 	}
 

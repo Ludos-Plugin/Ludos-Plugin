@@ -100,7 +100,7 @@ public interface PersistentEntry<T> {
 		return getOrDefault(ludos.getPluginConfig());
 	}
 	public default T getGroupConfig(Group group) {
-		return getOrDefault(group.getGroupConfig(), group.getManager().getGlobalGroupConfig());
+		return getOrDefault(group.getGroupConfig(), group.manager().getGlobalGroupConfig());
 	}
 	public default T getGameConfig(Group group, Game.Builder game) {
 		return getOrDefault(group.getGameConfig(game), game.getManager().getGlobalGameConfig(game));
@@ -111,7 +111,7 @@ public interface PersistentEntry<T> {
 	public default T getRoleConfig(OfflinePlayer player, Ludos ludos, Role.Builder role) {
 		ConfigurationSection playerScopedConfig = ludos.getPlayerRoleConfig(player, role);
 		ConfigurationSection globalScopedConfig = ludos.getGlobalRoleConfig(role);
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
+		Group group = ludos.groupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			return getOrDefault(playerScopedConfig, globalScopedConfig);
 		}
@@ -120,7 +120,7 @@ public interface PersistentEntry<T> {
 	public default T getPlayerConfig(OfflinePlayer player, Ludos ludos) {
 		ConfigurationSection playerScopedConfig = ludos.getPlayerConfig(player);
 		ConfigurationSection globalScopedConfig = ludos.getGlobalPlayerConfig();
-		Group group = ludos.getGroupManager().getGroupOfPlayer(player);
+		Group group = ludos.groupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			return getOrDefault(playerScopedConfig, globalScopedConfig);
 		}

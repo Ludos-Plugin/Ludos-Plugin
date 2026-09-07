@@ -47,7 +47,7 @@ public class RampartDash extends SpecialItem<RampartDash> {
 	}
 
 	public void useDash() {
-		Player player = this.getOwner();
+		Player player = this.owner();
 
 		player.getWorld().playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0f, 1.0f);
 
@@ -98,7 +98,7 @@ public class RampartDash extends SpecialItem<RampartDash> {
 				);
 
 				Stream<Entity> targetsStream = player.getNearbyEntities(COLLISION_RANGE.getX(), COLLISION_RANGE.getY(), COLLISION_RANGE.getZ()).stream()
-					.filter(getGame().getTeamController().isEntityEnemyOfPlayer(player));
+					.filter(game().teamController().isEntityEnemyOfPlayer(player));
 				Iterable<Entity> targets = () -> targetsStream.iterator();
 
 				for (Entity entity : targets) {
@@ -118,7 +118,7 @@ public class RampartDash extends SpecialItem<RampartDash> {
 				}
 				ticks++;
 			}
-		}.runTaskTimer(this.getGame().getPlugin(), 0, 1);
+		}.runTaskTimer(this.game().plugin(), 0, 1);
 	}
 
 	@Override
@@ -165,7 +165,7 @@ public class RampartDash extends SpecialItem<RampartDash> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return getGame().ludos().getRoleManager().isPlayerRole(owner, RampartRole.ID);
+			return game().ludos().roleManager().isPlayerRole(owner, RampartRole.ID);
 		}
 
 		@EventHandler

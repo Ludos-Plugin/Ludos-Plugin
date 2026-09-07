@@ -78,7 +78,7 @@ public final class GameManager {
 		return playerStartGame(player, builder);
 	}
 	public boolean playerStartGame(Player player, Game.Builder builder) {
-		Group group = getLudos().getGroupManager().getGroupOfPlayer(player);
+		Group group = getLudos().groupManager().getGroupOfPlayer(player);
 		if (group == null) {
 			player.sendMessage("You are not in a group.");
 			return true;
@@ -102,7 +102,7 @@ public final class GameManager {
 		return true;
 	}
 	public final void startGame(Game.Builder builder, Group group) {
-		Game oldGame = group.getGame();
+		Game oldGame = group.game();
 		if (oldGame != null) {
 			oldGame.stop();
 			if (! oldGame.isClear()) {
@@ -114,7 +114,7 @@ public final class GameManager {
 						startGameInternal(builder, group);
 						cancel();
 					}
-				}.runTaskTimer(oldGame.getPlugin(), 0, 20);
+				}.runTaskTimer(oldGame.plugin(), 0, 20);
 				return;
 			}
 		}

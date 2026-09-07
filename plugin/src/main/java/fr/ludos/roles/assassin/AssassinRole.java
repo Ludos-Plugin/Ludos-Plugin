@@ -53,9 +53,9 @@ public class AssassinRole extends Role {
 	protected void onRoleStart() {
 		super.onRoleStart();
 
-		stealthTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), () -> {
+		stealthTask = Bukkit.getScheduler().runTaskTimer(plugin(), () -> {
 			long now = System.currentTimeMillis();
-			List<Player> players = getGame().getGroup().getOnlinePlayers().stream()
+			List<Player> players = game().group().getOnlinePlayers().stream()
 				.filter((player) -> getBuilder().getManager().isPlayerRole(player, ID))
 				.collect(Collectors.toUnmodifiableList());
 			for (Player player : players) {
@@ -136,7 +136,7 @@ public class AssassinRole extends Role {
 		}
 
 		public Builder(Ludos ludos) {
-			super(ludos.getRoleManager(), ludos);
+			super(ludos.roleManager(), ludos);
 		}
 
 

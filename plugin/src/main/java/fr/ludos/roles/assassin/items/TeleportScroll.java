@@ -78,7 +78,7 @@ public class TeleportScroll extends SpecialItem<TeleportScroll> {
 		protected void onItemStop() {
 			super.onItemStop();
 
-			for (Player player : game.ludos().getRoleManager().getPlayersOfRole(AssassinRole.ID)) {
+			for (Player player : game.ludos().roleManager().getPlayersOfRole(AssassinRole.ID)) {
 				var healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
 				if (healthAttr == null) continue;
 				new ArrayList<>(healthAttr.getModifiers()).stream()
@@ -130,7 +130,7 @@ public class TeleportScroll extends SpecialItem<TeleportScroll> {
 					public void run() {
 						player.setInvulnerable(false);
 					}
-				}.runTaskLater(game.getPlugin(), INVULNERABILITY_DURATION);
+				}.runTaskLater(game.plugin(), INVULNERABILITY_DURATION);
 
 				player.setCooldown(Material.PAPER, COOLDOWN);
 			}
@@ -176,7 +176,7 @@ public class TeleportScroll extends SpecialItem<TeleportScroll> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.ludos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);
+			return game.ludos().roleManager().isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

@@ -50,7 +50,7 @@ class LudosTest {
 
 		assertEquals("Ludos Guidebook", itemMeta.getTitle());
 		assertEquals("Ludos", itemMeta.getAuthor());
-		assertTrue(itemMeta.pages().size() >= ludos.getGameManager().getRegistered().keySet().size() + ludos.getRoleManager().getRegistered().keySet().size() + 3);
+		assertTrue(itemMeta.pages().size() >= ludos.gameManager().getRegistered().keySet().size() + ludos.roleManager().getRegistered().keySet().size() + 3);
 	}
 
 }

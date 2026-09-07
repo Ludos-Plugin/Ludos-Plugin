@@ -28,9 +28,9 @@ public class LudosCommand implements Subcommand {
 	public LudosCommand(Ludos ludos) {
 		manager = new SubcommandManager(
 			new ArrayList<>() {{
-				add(new GroupSubcommand(ludos.getGroupManager()));
-				add(new GameSubcommand(ludos.getGameManager()));
-				add(new RoleSubcommand(ludos.getRoleManager()));
+				add(new GroupSubcommand(ludos.groupManager()));
+				add(new GameSubcommand(ludos.gameManager()));
+				add(new RoleSubcommand(ludos.roleManager()));
 				add(new LudosConfig(ludos));
 				add(new CheatsSubcommand(ludos));
 				add(new LudosGuidebook(ludos));

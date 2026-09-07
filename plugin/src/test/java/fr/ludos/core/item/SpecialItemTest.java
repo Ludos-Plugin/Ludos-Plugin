@@ -130,9 +130,9 @@ class SpecialItemTest {
 
 
 		when(mockLudos.getServer()).thenReturn(server);
-		when(mockGame.getPlugin()).thenReturn(mockLudos);
+		when(mockGame.plugin()).thenReturn(mockLudos);
 		when(mockGame.ludos()).thenReturn(mockLudos);
-		when(mockGame.getGroup()).thenReturn(mockGroup);
+		when(mockGame.group()).thenReturn(mockGroup);
 		when(mockGroup.isPlayer(any())).thenReturn(true);
 		when(mockGroup.getOnlinePlayers()).thenReturn(Set.of(owner));
 
@@ -157,7 +157,7 @@ class SpecialItemTest {
 	void testInitializeItem() {
 		TestSpecialItem testItem = testEvents.createItem(owner);
 
-		ItemStack stack = testItem.getStack();
+		ItemStack stack = testItem.stack();
 		assertNotNull(stack);
 
 		assertTrue(stack.hasItemFlag(ItemFlag.HIDE_UNBREAKABLE));
@@ -176,7 +176,7 @@ class SpecialItemTest {
 		assertEquals(owner.getUniqueId().toString(), pdc.get(SpecialItem.OWNER_KEY, PersistentDataType.STRING));
 
 		assertTrue(pdc.has(SpecialItem.TYPE_ID_KEY, PersistentDataType.STRING));
-		assertEquals(testItem.getTypeId(), pdc.get(SpecialItem.TYPE_ID_KEY, PersistentDataType.STRING));
+		assertEquals(testItem.typeId(), pdc.get(SpecialItem.TYPE_ID_KEY, PersistentDataType.STRING));
 
 		assertTrue(pdc.has(SpecialItem.ITEM_ID_KEY, PersistentDataType.STRING));
 		assertEquals(testItem.getItemId().toString(), pdc.get(SpecialItem.ITEM_ID_KEY, PersistentDataType.STRING));
@@ -186,19 +186,19 @@ class SpecialItemTest {
 	@DisplayName("Test Item id persistence")
 	void testGetSpecialItemId() {
 		TestSpecialItem item = testEvents.createItem(owner);
-		assertEquals(item.getItemId(), SpecialItemInterface.getSpecialItemId(item.getStack(), mockGame));
+		assertEquals(item.getItemId(), SpecialItemInterface.getSpecialItemId(item.stack(), mockGame));
 
 		TestSpecialItem otherItem = testEvents.createItem(owner);
-		assertNotEquals(item.getItemId(), SpecialItemInterface.getSpecialItemId(otherItem.getStack(), mockGame));
+		assertNotEquals(item.getItemId(), SpecialItemInterface.getSpecialItemId(otherItem.stack(), mockGame));
 
-		ItemStack itemWithoutMeta = spy(item.getStack());
+		ItemStack itemWithoutMeta = spy(item.stack());
 		when(itemWithoutMeta.getItemMeta()).thenReturn(null);
 		assertNull(SpecialItemInterface.getSpecialItemId(itemWithoutMeta, mockGame));
 
-		ItemMeta meta = item.getStack().getItemMeta();
+		ItemMeta meta = item.stack().getItemMeta();
 		meta.getPersistentDataContainer().set(SpecialItem.ITEM_ID_KEY, PersistentDataType.STRING, null);
-		item.getStack().setItemMeta(meta);
-		assertNull(SpecialItemInterface.getSpecialItemId(item.getStack(), mockGame));
+		item.stack().setItemMeta(meta);
+		assertNull(SpecialItemInterface.getSpecialItemId(item.stack(), mockGame));
 
 		ItemStack trashItem = spy(new ItemStack(Material.ACACIA_BOAT));
 		assertNull(SpecialItemInterface.getSpecialItemId(trashItem, mockGame));
@@ -210,9 +210,9 @@ class SpecialItemTest {
 	@DisplayName("Test owner persistence")
 	void testGetSpecialItemOwner() {
 		TestSpecialItem item = testEvents.createItem(owner);
-		assertEquals(owner, SpecialItemInterface.getSpecialItemOwner(item.getStack()));
+		assertEquals(owner, SpecialItemInterface.getSpecialItemOwner(item.stack()));
 
-		ItemStack itemWithoutMeta = spy(item.getStack());
+		ItemStack itemWithoutMeta = spy(item.stack());
 		when(itemWithoutMeta.getItemMeta()).thenReturn(null);
 		assertNull(SpecialItemInterface.getSpecialItemOwner(itemWithoutMeta));
 
@@ -246,7 +246,7 @@ class SpecialItemTest {
 	@DisplayName("Equal operation should work")
 	void testEquals() {
 		TestSpecialItem item = testEvents.createItem(owner);
-		TestSpecialItem copyItem = testEvents.getItem(item.getStack());
+		TestSpecialItem copyItem = testEvents.getItem(item.stack());
 
 		assertEquals(item, copyItem);
 		assertTrue(item == copyItem);
@@ -256,10 +256,10 @@ class SpecialItemTest {
 		TestSpecialItem otherItem = spy(copyItem);
 
 		PlayerMock otherOwner = server.addPlayer("OtherOwner");
-		when(otherItem.getOwner()).thenReturn(otherOwner);
+		when(otherItem.owner()).thenReturn(otherOwner);
 		assertFalse(item.equals(otherItem));
 
-		when(otherItem.getTypeId()).thenReturn("other_type_id");
+		when(otherItem.typeId()).thenReturn("other_type_id");
 		assertFalse(item.equals(otherItem));
 
 		when(otherItem.getItemId()).thenReturn(UUID.randomUUID());
@@ -272,7 +272,7 @@ class SpecialItemTest {
 		Inventory inventory = mock(Inventory.class);
 		TestSpecialItem item = testEvents.createItem(owner);
 
-		when(inventory.getContents()).thenReturn(new ItemStack[]{null, new ItemStack(Material.ACACIA_BOAT), item.getStack()});
+		when(inventory.getContents()).thenReturn(new ItemStack[]{null, new ItemStack(Material.ACACIA_BOAT), item.stack()});
 
 
 		TestSpecialItem found = SpecialItem.findOne(inventory, testEvents::getItem);
@@ -306,7 +306,7 @@ class SpecialItemTest {
 		assertFalse(TestSpecialItem.containedIn(inventory, testEvents::getItem));
 
 		TestSpecialItem item = testEvents.createItem(owner);
-		inventory.setItem(ItemSlot.BOOTS.ordinal(), item.getStack());
+		inventory.setItem(ItemSlot.BOOTS.ordinal(), item.stack());
 
 		assertTrue(TestSpecialItem.containedIn(inventory, testEvents::getItem));
 	}
@@ -331,7 +331,7 @@ class SpecialItemTest {
 
 		ItemStack trashItem = new ItemStack(Material.ACACIA_BOAT);
 
-		inventory.setItem(ItemSlot.HOTBAR_1.ordinal(), testItem.getStack());
+		inventory.setItem(ItemSlot.HOTBAR_1.ordinal(), testItem.stack());
 		inventory.setItem(ItemSlot.OFFHAND.ordinal(), trashItem);
 		inventory.setItem(ItemSlot.BOOTS.ordinal(), trashItem);
 		inventory.setItem(ItemSlot.LEGGINGS.ordinal(), trashItem);
@@ -347,11 +347,11 @@ class SpecialItemTest {
 		assertEquals(trashItem, inventory.getItem(ItemSlot.HELMET.ordinal()));
 
 
-		inventory.setItem(ItemSlot.OFFHAND.ordinal(), testItem.getStack());
-		inventory.setItem(ItemSlot.BOOTS.ordinal(), testItem.getStack());
-		inventory.setItem(ItemSlot.LEGGINGS.ordinal(), testItem.getStack());
-		inventory.setItem(ItemSlot.CHESTPLATE.ordinal(), testItem.getStack());
-		inventory.setItem(ItemSlot.HELMET.ordinal(), testItem.getStack());
+		inventory.setItem(ItemSlot.OFFHAND.ordinal(), testItem.stack());
+		inventory.setItem(ItemSlot.BOOTS.ordinal(), testItem.stack());
+		inventory.setItem(ItemSlot.LEGGINGS.ordinal(), testItem.stack());
+		inventory.setItem(ItemSlot.CHESTPLATE.ordinal(), testItem.stack());
+		inventory.setItem(ItemSlot.HELMET.ordinal(), testItem.stack());
 		testEvents.removeFromPlayerInventory(owner);
 
 		assertNull(inventory.getItem(ItemSlot.OFFHAND.ordinal()));
@@ -378,9 +378,9 @@ class SpecialItemTest {
 		PlayerMock player2 = server.addPlayer("Player2");
 		PlayerInventory inventory2 = player2.getInventory();
 		TestSpecialItem item1 = testEvents.createItem(owner);
-		inventory1.setItem(ItemSlot.HOTBAR_1.ordinal(), item1.getStack());
+		inventory1.setItem(ItemSlot.HOTBAR_1.ordinal(), item1.stack());
 		TestSpecialItem item2 = testEvents.createItem(player2);
-		inventory2.setItem(ItemSlot.HOTBAR_1.ordinal(), item2.getStack());
+		inventory2.setItem(ItemSlot.HOTBAR_1.ordinal(), item2.stack());
 
 		when(mockGroup.getOnlinePlayers()).thenReturn(Set.of(owner, player2));
 
@@ -418,7 +418,7 @@ class SpecialItemTest {
 		PlayerMock holder = owner;
 		PlayerInventory inventory = holder.getInventory();
 		TestSpecialItem item = testEvents.createItem(holder);
-		inventory.setItem(ItemSlot.HOTBAR_1.ordinal(), item.getStack());
+		inventory.setItem(ItemSlot.HOTBAR_1.ordinal(), item.stack());
 
 		assertTrue(testEvents.containedIn(inventory));
 
@@ -441,7 +441,7 @@ class SpecialItemTest {
 
 		when(dropEvent.getPlayer()).thenReturn(owner);
 		TestSpecialItem item = testEvents.createItem(owner);
-		when(mockItem.getItemStack()).thenReturn(item.getStack());
+		when(mockItem.getItemStack()).thenReturn(item.stack());
 		when(dropEvent.getItemDrop()).thenReturn(mockItem);
 
 
@@ -461,7 +461,7 @@ class SpecialItemTest {
 
 		when(dropEvent.getPlayer()).thenReturn(owner);
 		TestSpecialItem item = testEvents.createItem(owner);
-		when(mockItem.getItemStack()).thenReturn(item.getStack());
+		when(mockItem.getItemStack()).thenReturn(item.stack());
 		when(dropEvent.getItemDrop()).thenReturn(mockItem);
 
 
@@ -492,7 +492,7 @@ class SpecialItemTest {
 		TestSpecialItem item = testEvents.createItem(owner);
 
 		when(clickEvent.getWhoClicked()).thenReturn(owner);
-		when(clickEvent.getCursor()).thenReturn(item.getStack());
+		when(clickEvent.getCursor()).thenReturn(item.stack());
 		when(clickEvent.getInventory()).thenReturn(inventory);
 		when(clickEvent.getAction()).thenReturn(InventoryAction.MOVE_TO_OTHER_INVENTORY);
 		when(inventory.getType()).thenReturn(InventoryType.PLAYER);
@@ -516,7 +516,7 @@ class SpecialItemTest {
 		TestSpecialItem item = testEvents.createItem(owner);
 
 		when(clickEvent.getWhoClicked()).thenReturn(owner);
-		when(clickEvent.getCursor()).thenReturn(item.getStack());
+		when(clickEvent.getCursor()).thenReturn(item.stack());
 		when(clickEvent.getAction()).thenReturn(InventoryAction.MOVE_TO_OTHER_INVENTORY);
 		when(clickEvent.getInventory()).thenReturn(inventory);
 		when(inventory.getType()).thenReturn(InventoryType.CHEST);
@@ -575,7 +575,7 @@ class SpecialItemTest {
 
 		TestSpecialItem item = testEvents.createItem(owner);
 		when(spawnEvent.getEntity()).thenReturn(itemEntity);
-		when(itemEntity.getItemStack()).thenReturn(item.getStack());
+		when(itemEntity.getItemStack()).thenReturn(item.stack());
 
 
 		testEvents.onItemSpawn(spawnEvent);

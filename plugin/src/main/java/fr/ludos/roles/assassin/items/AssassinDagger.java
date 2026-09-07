@@ -110,7 +110,7 @@ public class AssassinDagger extends LevelItem<AssassinDagger, AssassinDaggerLeve
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.ludos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);
+			return game.ludos().roleManager().isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

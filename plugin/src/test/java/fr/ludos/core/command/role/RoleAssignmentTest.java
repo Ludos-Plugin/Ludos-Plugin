@@ -11,7 +11,7 @@ import fr.ludos.core.role.Role;
 
 class RoleAssignmentTest extends RoleTest {
 	private final Role.Builder getValidRole() {
-		Role.Builder role = ludos.getRoleManager().getBuilders().get(0);
+		Role.Builder role = ludos.roleManager().getBuilders().get(0);
 		assertNotNull(role, "Could not find valid role");
 		return role;
 	}
@@ -30,7 +30,7 @@ class RoleAssignmentTest extends RoleTest {
 		player1.performCommand("ludos role get");
 		assertEquals(role.getId(), player1.nextMessage(), "Role was not persisted after being set");
 
-		assertEquals(role, ludos.getRoleManager().getPlayerRole(player1), "Role appears set but isn't");
+		assertEquals(role, ludos.roleManager().getPlayerRole(player1), "Role appears set but isn't");
 
 		player1.performCommand("ludos role reset");
 		assertEquals("Your role was reset", player1.nextMessage(), "Role reset message was not sent");
@@ -38,7 +38,7 @@ class RoleAssignmentTest extends RoleTest {
 		player1.performCommand("ludos role get");
 		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was not unset");
 
-		assertNull(ludos.getRoleManager().getPlayerRole(player1), "Role appears unset but isn't");
+		assertNull(ludos.roleManager().getPlayerRole(player1), "Role appears unset but isn't");
 	}
 
 	@Test
@@ -46,7 +46,7 @@ class RoleAssignmentTest extends RoleTest {
 		PlayerMock player1 = createPlayer("Player1");
 
 		String invalidRoleId = "invalidRole";
-		Role.Builder role = ludos.getRoleManager().getRoleById(invalidRoleId);
+		Role.Builder role = ludos.roleManager().getRoleById(invalidRoleId);
 		assertNull(role, "Invalid role ID should not return a valid role builder");
 
 		player1.performCommand("ludos role set " + invalidRoleId);
@@ -61,6 +61,6 @@ class RoleAssignmentTest extends RoleTest {
 		player1.performCommand("ludos role get");
 		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was not reset");
 
-		assertNull(ludos.getRoleManager().getPlayerRole(player1), "Role appears unset but isn't");
+		assertNull(ludos.roleManager().getPlayerRole(player1), "Role appears unset but isn't");
 	}
 }

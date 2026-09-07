@@ -52,7 +52,7 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 	}
 
 	public void hit(double damage, double multiplier) {
-		ItemStack stack = getStack();
+		ItemStack stack = stack();
 		ItemMeta meta = stack.getItemMeta();
 		if (! (meta instanceof Damageable damageable)) return;
 
@@ -82,7 +82,7 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 	}
 
 	public void restore(double health) {
-		ItemStack stack = getStack();
+		ItemStack stack = stack();
 		ItemMeta meta = stack.getItemMeta();
 		if (! (meta instanceof Damageable damageable)) return;
 
@@ -104,14 +104,14 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 	}
 
 	public void doCooldown() {
-		Player player = getOwner();
-		ItemStack stack = getStack();
+		Player player = owner();
+		ItemStack stack = stack();
 
 		player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BREAK, 1.0f, 1.0f);
 		// player.setShieldBlockingDelay(COOLDOWN_DURATION);
 		player.setCooldown(Material.SHIELD, COOLDOWN_DURATION_SECONDS * 20);
 
-		PlayerInventory defenderInventory = getOwner().getInventory();
+		PlayerInventory defenderInventory = owner().getInventory();
 		boolean isOffHand = defenderInventory.getItemInOffHand().equals(stack);
 
 		if (isOffHand) {
@@ -127,15 +127,15 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 					defenderInventory.setItemInMainHand(stack);
 				}
 			}
-		}.runTaskLater(getGame().getPlugin(), 2);
+		}.runTaskLater(game().plugin(), 2);
 	}
 
 	public void saveDamageAbsorbed(double damage) {
-		ConfigurationSection data = getGame().ludos().getItemData(getOwner(), getEvents());
+		ConfigurationSection data = game().ludos().getItemData(owner(), getEvents());
 
 		double currentDamage = DAMAGE_ABSORBED.getOrDefault(data);
 		DAMAGE_ABSORBED.set(currentDamage + damage, data);
-		getGame().ludos().savePlayersConfig();
+		game().ludos().savePlayersConfig();
 	}
 
 	@Override
@@ -198,8 +198,8 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 			rampartRoutine = new BukkitRunnable() {
 				@Override
 				public void run() {
-					Player[] rampartPlayers = getGame().getGroup().getOnlinePlayers().stream()
-						.filter(game.ludos().getRoleManager().ofRole(RampartRole.ID))
+					Player[] rampartPlayers = game().group().getOnlinePlayers().stream()
+						.filter(game.ludos().roleManager().ofRole(RampartRole.ID))
 						.toArray(Player[]::new);
 
 					for (Player player : rampartPlayers) {
@@ -214,7 +214,7 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 						}
 					}
 				}
-			}.runTaskTimer(getPlugin(), 0, 20);
+			}.runTaskTimer(plugin(), 0, 20);
 		}
 
 		private void displayProtectionRadius(Player player) {
@@ -272,7 +272,7 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.ludos().getRoleManager().isPlayerRole(owner, RampartRole.ID);
+			return game.ludos().roleManager().isPlayerRole(owner, RampartRole.ID);
 		}
 
 		@EventHandler
@@ -312,7 +312,7 @@ public class RampartShield extends LevelItem<RampartShield, RampartShieldLevels>
 			for (Entity rampartEntity : nearbyRamparts) {
 				if (! (rampartEntity instanceof Player rampartPlayer)) continue;
 
-				if (! game.getTeamController().areEntitiesAllies(victim, rampartPlayer)) continue;
+				if (! game.teamController().areEntitiesAllies(victim, rampartPlayer)) continue;
 				if (! rampartPlayer.isBlocking() || rampartPlayer.getCooldown(Material.SHIELD) > 0) continue;
 
 				ItemStack mainHand = rampartPlayer.getInventory().getItemInMainHand();

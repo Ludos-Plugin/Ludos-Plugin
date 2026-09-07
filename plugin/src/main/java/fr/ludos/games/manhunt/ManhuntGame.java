@@ -2,7 +2,6 @@ package fr.ludos.games.manhunt;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -64,13 +63,13 @@ public class ManhuntGame extends Game {
 
 	private final WorldManager worldManager;
 	@Override
-	public WorldManager getWorldManager() {
+	public WorldManager worldManager() {
 		return this.worldManager;
 	}
 
 	private final ManhuntTeamController teamController;
 	@Override
-	public ManhuntTeamController getTeamController() {
+	public ManhuntTeamController teamController() {
 		return this.teamController;
 	}
 
@@ -87,20 +86,7 @@ public class ManhuntGame extends Game {
 		super(builder, group, Bukkit.getServer().getScoreboardManager().getNewScoreboard());
 		this.builder = builder;
 
-		Location returnLocation;
-		Player leader = group.getLeader().getPlayer();
-		if (leader == null || ! leader.isOnline()) {
-			Optional<Player> onlinePlayer = group.getOnlinePlayers().stream()
-				.filter(p -> p.isOnline())
-				.findFirst();
-			returnLocation = onlinePlayer.isPresent()
-				? onlinePlayer.get().getLocation()
-				: Bukkit.getServer().getWorlds().get(0).getSpawnLocation();
-		} else {
-			returnLocation = leader.getLocation();
-		}
-
-		this.worldManager = WorldManager.within(this, returnLocation)
+		this.worldManager = WorldManager.within(this)
 			.of(builder.createWorldCreator())
 			.withLobby(Lobby.within(this)
 				.clear(ClearMode.ALL)
@@ -137,28 +123,26 @@ public class ManhuntGame extends Game {
 			public void run() {
 				if (lastPreyLocation == null) return;
 
-				for (Player player : getGroup().getOnlinePlayers()) {
-					player.sendActionBar(
-						Component.text("Prey's location:")
-						.append(Component.text(" X:" + lastPreyLocation.getBlockX()).color(NamedTextColor.RED))
-						.append(Component.text(" Y:" + lastPreyLocation.getBlockY()).color(NamedTextColor.GREEN))
-						.append(Component.text(" Z:" + lastPreyLocation.getBlockZ()).color(NamedTextColor.BLUE))
-					);
-				}
+				group().sendActionBar(
+					Component.text("Prey's location:")
+					.append(Component.text(" X:" + lastPreyLocation.getBlockX()).color(NamedTextColor.RED))
+					.append(Component.text(" Y:" + lastPreyLocation.getBlockY()).color(NamedTextColor.GREEN))
+					.append(Component.text(" Z:" + lastPreyLocation.getBlockZ()).color(NamedTextColor.BLUE))
+				);
 			}
-		}.runTaskTimer(getPlugin(), 0, 1);
+		}.runTaskTimer(plugin(), 0, 1);
 
 		saturationTask = new BukkitRunnable() {
 			@Override
 			public void run() {
-				for (Player player : getGroup().getOnlinePlayers()) {
+				for (Player player : group().getOnlinePlayers()) {
 					player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 1, 0, true, false));
 				}
 			}
-		}.runTaskTimer(getPlugin(), 400, 400);
+		}.runTaskTimer(plugin(), 400, 400);
 
 
-		Bukkit.getServer().broadcast(Component.text("The Game of Manhunt started"));
+		group().sendMessage(Component.text("The Game of Manhunt started"));
 	}
 
 	@Override
@@ -168,7 +152,7 @@ public class ManhuntGame extends Game {
 		compassEvents.stop();
 		timer.stop();
 
-		for (Player player : getGroup().getOnlinePlayers()) {
+		for (Player player : group().getOnlinePlayers()) {
 			player.setScoreboard(Bukkit.getServer().getScoreboardManager().getMainScoreboard());
 		}
 
@@ -182,7 +166,7 @@ public class ManhuntGame extends Game {
 			saturationTask = null;
 		}
 
-		Bukkit.getServer().broadcast(Component.text("The Game of Manhunt ended"));
+		group().sendMessage(Component.text("The Game of Manhunt ended"));
 	}
 
 	@Override
@@ -200,7 +184,7 @@ public class ManhuntGame extends Game {
 
 		lastPreyLocation = prey.getLocation();
 
-		Bukkit.getServer().broadcast(
+		group().sendMessage(
 			Component.text("The Prey was revealed!\n")
 			.append(Component.text("They are located at"))
 			.append(Component.text(" X:" + lastPreyLocation.getBlockX()).color(NamedTextColor.RED))
@@ -221,9 +205,9 @@ public class ManhuntGame extends Game {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-		if (! getGroup().isPlayer(player)) return;
+		if (! group().isPlayer(player)) return;
 		if (isStarted()) {
-			player.setScoreboard(getScoreboard());
+			player.setScoreboard(scoreboard());
 		}
 	}
 
@@ -233,7 +217,7 @@ public class ManhuntGame extends Game {
 	public static class Builder extends Game.Builder {
 		public final GroupPlayerConfigEntry prey =
 			new GroupPlayerConfigEntry(
-				getManager().getLudos().getGroupManager(),
+				getManager().getLudos().groupManager(),
 				Component.text("Prey Player"),
 				"prey"
 			) {

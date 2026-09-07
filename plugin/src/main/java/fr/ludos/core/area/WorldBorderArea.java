@@ -42,8 +42,8 @@ public class WorldBorderArea extends Area {
 	}
 
 	@Override
-	protected JavaPlugin getPlugin() {
-		return this.builder.game.getPlugin();
+	protected JavaPlugin plugin() {
+		return this.builder.game.plugin();
 	}
 
 	private Location initialCenter;

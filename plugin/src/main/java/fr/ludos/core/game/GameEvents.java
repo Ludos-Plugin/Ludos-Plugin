@@ -7,13 +7,13 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class GameEvents extends GameProcessBase {
 	public final Game game;
-	public final Game getGame() {
+	public final Game game() {
 		return game;
 	}
 
 	@Override
-	protected JavaPlugin getPlugin() {
-		return game.getPlugin();
+	protected JavaPlugin plugin() {
+		return game.plugin();
 	}
 
 	public GameEvents(Game game) {

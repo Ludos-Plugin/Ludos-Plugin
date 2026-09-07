@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -17,17 +16,19 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.gui.GuiObject;
 import fr.ludos.core.role.Role;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -39,7 +40,7 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
 /**
  * A structure to encapsulate a Group of Players. Meant for {@link Game} instances.
  */
-public final class Group {
+public final class Group implements ForwardingAudience {
 	public static final String NAMESPACE = "group";
 	public static final TextComponent CONFIG_WINDOW_TITLE = Component.text("Group configuration");
 
@@ -71,13 +72,13 @@ public final class Group {
 
 
 
-	public GroupManager getManager() {
-		return groupManager;
-	}
 	public final UUID getId() {
 		return id;
 	}
-	public @Nullable Game getGame() {
+	public GroupManager manager() {
+		return groupManager;
+	}
+	public @Nullable Game game() {
 		return game;
 	}
 
@@ -194,12 +195,12 @@ public final class Group {
 	}
 
 	public final void disband() {
-		Game game = getGame();
+		Game game = game();
 		if (game != null) {
 			game.stop();
 		}
 
-		getManager().removeGroup(this);
+		manager().removeGroup(this);
 
 		Component disbandMessage = Component.text("Your group has been disbanded.");
 
@@ -226,7 +227,7 @@ public final class Group {
 		this.leaderId = newLeaderId;
 		memberIds.remove(newLeaderId);
 		memberIds.add(currentLeader);
-		getManager().writeAllToConfig(this);
+		manager().writeAllToConfig(this);
 
 		Component promotionMessage = Component.text("You have been promoted to group leader.");
 		Player onlineLeader = Bukkit.getPlayer(newLeaderId);
@@ -258,7 +259,7 @@ public final class Group {
 		Player onlinePlayer = player.getPlayer();
 		if (isPlayer(player)) return false;
 
-		Group currentGroup = getManager().getGroupOfPlayer(player);
+		Group currentGroup = manager().getGroupOfPlayer(player);
 		if (currentGroup != null) {
 			currentGroup.removePlayer(player, false);
 		}
@@ -282,19 +283,19 @@ public final class Group {
 
 	private final void addMemberInternal(OfflinePlayer player) {
 		memberIds.add(player.getUniqueId());
-		getManager().setPlayerGroup(player, this);
+		manager().setPlayerGroup(player, this);
 	}
 	private final void addMemberInternalPersistent(OfflinePlayer player) {
 		addMemberInternal(player);
-		getManager().writeMembersToConfig(this);
+		manager().writeMembersToConfig(this);
 	}
 	private final void removeMemberInternal(OfflinePlayer player) {
 		memberIds.remove(player.getUniqueId());
-		getManager().unsetPlayerGroup(player);
+		manager().unsetPlayerGroup(player);
 	}
 	private final void removeMemberInternalPersistent(OfflinePlayer player) {
 		removeMemberInternal(player);
-		getManager().writeMembersToConfig(this);
+		manager().writeMembersToConfig(this);
 	}
 	public final boolean removePlayer(OfflinePlayer player, boolean kick) {
 		boolean wasLeader = isLeader(player);
@@ -407,28 +408,28 @@ public final class Group {
 	}
 
 	public ConfigurationSection getConfig() {
-		return getManager().getConfigSection(this);
+		return manager().getConfigSection(this);
 	}
 	public ConfigurationSection getScopedConfig() {
-		return getManager().getScopedConfig(this);
+		return manager().getScopedConfig(this);
 	}
 	public ConfigurationSection getGroupConfig() {
-		return getManager().getGroupConfig(this);
+		return manager().getGroupConfig(this);
 	}
 	public ConfigurationSection getGameConfig(Game.Builder game) {
-		return getManager().getGameConfig(this, game);
+		return manager().getGameConfig(this, game);
 	}
 	public ConfigurationSection getRoleConfig(Role.Builder role) {
-		return getManager().getRoleConfig(this, role);
+		return manager().getRoleConfig(this, role);
 	}
 	public ConfigurationSection getPlayerConfig() {
-		return getManager().getPlayerConfig(this);
+		return manager().getPlayerConfig(this);
 	}
 
-	public Location pickReturnLocation() {
-		Optional<Player> any = getOnlinePlayers().stream().filter(Player::isOnline).findFirst();
-		if (any.isPresent()) return any.get().getLocation();
-		return Bukkit.getWorlds().get(0).getSpawnLocation();
+	@ApiStatus.OverrideOnly
+	@NotNull
+	public Iterable<? extends Audience> audiences() {
+		return getOnlinePlayers();
 	}
 
 

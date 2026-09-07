@@ -59,7 +59,7 @@ public enum HarvesterSpadeLevels implements Level<HarvesterSpadeLevels> {
 
 	@Override
 	public void onSwitchToLevel(SpecialItemInterface item) {
-		ItemStack stack = item.getStack();
+		ItemStack stack = item.stack();
 		stack.setType(material);
 		stack.removeEnchantment(Enchantment.DIG_SPEED);
 		stack.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);

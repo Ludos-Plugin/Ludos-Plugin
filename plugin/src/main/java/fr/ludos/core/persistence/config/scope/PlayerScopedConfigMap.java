@@ -23,7 +23,7 @@ public class PlayerScopedConfigMap extends ConfigNodeMap {
 		super(
 			Component.text("Player-specific configuration"), null,
 			List.of(
-				ludos.getRoleManager().configMap,
+				ludos.roleManager().configMap,
 				ludos.playerConfigMap
 			)
 		);

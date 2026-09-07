@@ -71,7 +71,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScythe, HarvesterScytheL
 
 
 	public void castEarthWall(@Nullable Block anchor) {
-		Player owner = getOwner();
+		Player owner = owner();
 		if (owner == null || owner.getWorld() == null) return;
 
 		Block baseBlock;
@@ -138,7 +138,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScythe, HarvesterScytheL
 						cancel();
 					}
 				}
-			}.runTaskTimer(getGame().getPlugin(), 0, 3);
+			}.runTaskTimer(game().plugin(), 0, 3);
 		}
 	}
 
@@ -181,10 +181,10 @@ public class HarvesterScythe extends LevelItem<HarvesterScythe, HarvesterScytheL
 			HarvesterScythe scythe = getItem(attacker.getInventory().getItemInMainHand());
 			if (scythe == null) return;
 
-			if (game.getTeamController().areEntitiesAllies(attacker, primaryTarget)) return;
+			if (game.teamController().areEntitiesAllies(attacker, primaryTarget)) return;
 
 			if (event.getCause() == DamageCause.ENTITY_ATTACK) {
-				int enchantmentLevel = scythe.getStack().getEnchantmentLevel(Enchantment.SWEEPING_EDGE);
+				int enchantmentLevel = scythe.stack().getEnchantmentLevel(Enchantment.SWEEPING_EDGE);
 				ItemUtilities.doSweepAttack(attacker, primaryTarget, event.getDamage(), enchantmentLevel, 2.25);
 			}
 		}
@@ -198,8 +198,8 @@ public class HarvesterScythe extends LevelItem<HarvesterScythe, HarvesterScytheL
 			HarvesterScythe scythe = getItem(player.getInventory().getItemInMainHand());
 			if (scythe == null) return;
 
-			if (player.hasCooldown(scythe.getStack().getType())) return;
-			player.setCooldown(scythe.getStack().getType(), WALL_COOLDOWN_TICKS);
+			if (player.hasCooldown(scythe.stack().getType())) return;
+			player.setCooldown(scythe.stack().getType(), WALL_COOLDOWN_TICKS);
 
 			event.setCancelled(true);
 
@@ -209,7 +209,7 @@ public class HarvesterScythe extends LevelItem<HarvesterScythe, HarvesterScytheL
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.ludos().getRoleManager().isPlayerRole(owner, HarvesterRole.ID);
+			return game.ludos().roleManager().isPlayerRole(owner, HarvesterRole.ID);
 		}
 	}
 }

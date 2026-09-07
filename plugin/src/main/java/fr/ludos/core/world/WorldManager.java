@@ -2,7 +2,6 @@ package fr.ludos.core.world;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -11,11 +10,8 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang.NullArgumentException;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -36,16 +32,11 @@ import net.kyori.adventure.util.TriState;
 public final class WorldManager extends GameProcessBase {
 	private final Builder builder;
 	@Override
-	protected JavaPlugin getPlugin() {
-		return this.builder.game.getPlugin();
+	protected JavaPlugin plugin() {
+		return this.builder.game.plugin();
 	}
 
 	private Map<Integer, BukkitTask> flushTasks = new HashMap<>();
-
-	private Location returnLocation;
-	public final Location getReturnLocation() {
-		return this.returnLocation;
-	}
 
 	private World world;
 	public final World getWorld() {
@@ -97,8 +88,8 @@ public final class WorldManager extends GameProcessBase {
 			: null;
 	}
 
-	public static Builder within(Game game, Location returnLocation) {
-		return new Builder(game, returnLocation);
+	public static Builder within(Game game) {
+		return new Builder(game);
 	}
 
 	public boolean transfer(Consumer<Builder> config) {
@@ -126,13 +117,11 @@ public final class WorldManager extends GameProcessBase {
 	}
 
 	private void startProcesses() {
-		for (Player player : builder.game.getGroup().getOnlinePlayers()) {
-			player.sendMessage(
-				Component.text("Loading world...")
-					.color(NamedTextColor.YELLOW)
-					.decorate(TextDecoration.BOLD)
-			);
-		}
+		builder.game.group().sendMessage(
+			Component.text("Loading world...")
+				.color(NamedTextColor.YELLOW)
+				.decorate(TextDecoration.BOLD)
+		);
 
 		if (builder.world != null) {
 			this.world = builder.world;
@@ -145,8 +134,6 @@ public final class WorldManager extends GameProcessBase {
 		} else throw new NullArgumentException("world/worldCreator");
 
 		builder.worldConfig.accept(world);
-
-		returnLocation = builder.returnLocation;
 
 		if (area != null) {
 			area.mutate(area -> area
@@ -180,11 +167,7 @@ public final class WorldManager extends GameProcessBase {
 	}
 	private boolean flushWorld(World world, boolean evacuate) {
 		if (evacuate) {
-			List<Player> playersInWorld = world.getPlayers();
-
-			for (Player player : playersInWorld) {
-				evacuatePlayer(player);
-			}
+			builder.game.returnAllPlayers();
 		}
 
 		if (world == null) return true;
@@ -202,23 +185,13 @@ public final class WorldManager extends GameProcessBase {
 
 		return unloaded;
 	}
-	public void evacuatePlayer(Player player) {
-		if (! player.getWorld().equals(world)) return;
-
-		if (player.isDead()) {
-			player.spigot().respawn();
-		}
-		player.teleport(returnLocation);
-		Utility.resetPlayer(player);
-		player.setGameMode(GameMode.SURVIVAL);
-	}
 
 	public TriState scheduleFlushWorld(boolean evacuate) {
 		return scheduleFlushWorld(this.world, evacuate);
 	}
 	private TriState scheduleFlushWorld(World world, boolean evacuate) {
 		if (world == null) return TriState.TRUE;
-		if (getPlugin().isEnabled()) {
+		if (plugin().isEnabled()) {
 			BukkitTask task = new BukkitRunnable() {
 				public void run() {
 					if (flushWorld(world, evacuate)) {
@@ -226,7 +199,7 @@ public final class WorldManager extends GameProcessBase {
 						flushTasks.remove(this.getTaskId());
 					}
 				}
-			}.runTaskTimer(getPlugin(), 0, 20);
+			}.runTaskTimer(plugin(), 0, 20);
 			flushTasks.put(task.getTaskId(), task);
 			return TriState.NOT_SET;
 		}
@@ -252,11 +225,9 @@ public final class WorldManager extends GameProcessBase {
 	 */
 	public static final class Builder {
 		private final Game game;
-		private Location returnLocation;
 
-		public Builder(Game game, Location returnLocation) {
+		public Builder(Game game) {
 			this.game = Objects.requireNonNull(game);
-			this.returnLocation = Objects.requireNonNull(returnLocation);
 		}
 
 		private World world;

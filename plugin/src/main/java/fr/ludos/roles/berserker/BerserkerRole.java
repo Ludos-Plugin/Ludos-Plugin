@@ -93,7 +93,7 @@ public class BerserkerRole extends Role {
 					spawnRageParticles(player);
 				}
 			}
-		}.runTaskTimer(getGame().getPlugin(), 0, 10);
+		}.runTaskTimer(game().plugin(), 0, 10);
 	}
 
 	@Override
@@ -143,7 +143,7 @@ public class BerserkerRole extends Role {
 		Material mainHandMaterial = player.getInventory().getItemInMainHand().getType();
 		if (! mainHandMaterial.isEmpty() && ! Categories.MELEE_WEAPONS.contains(mainHandMaterial)) return;
 
-		Material offHandAxeMaterial = offHandAxe.getStack().getType();
+		Material offHandAxeMaterial = offHandAxe.stack().getType();
 		if (player.getCooldown(offHandAxeMaterial) > 0) return;
 		player.setCooldown(offHandAxeMaterial, calculateCooldown(player));
 
@@ -191,7 +191,7 @@ public class BerserkerRole extends Role {
 
 				progress += increment;
 			}
-		}.runTaskTimer(getPlugin(), 0, 1); // Run every tick for 10 ticks
+		}.runTaskTimer(plugin(), 0, 1); // Run every tick for 10 ticks
 	}
 
 	private void spawnRageParticles(Player player) {
@@ -210,7 +210,7 @@ public class BerserkerRole extends Role {
 	public static class Builder extends Role.Builder {
 
 		public Builder(Ludos ludos) {
-			super(ludos.getRoleManager(), ludos);
+			super(ludos.roleManager(), ludos);
 		}
 
 		@Override

@@ -8,6 +8,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
 import fr.ludos.core.item.SpecialItemInterface;
+import fr.ludos.core.item.level.LevelItemInterface;
 import fr.ludos.core.item.level.LevelItemInterface.Level;
 
 /**
@@ -57,7 +58,7 @@ public enum HarvesterScytheLevels implements Level<HarvesterScytheLevels> {
 
 	@Override
 	public void onSwitchToLevel(SpecialItemInterface item) {
-		ItemStack stack = item.getStack();
+		ItemStack stack = item.stack();
 		stack.setType(material);
 		stack.removeEnchantment(Enchantment.DAMAGE_ALL);
 		stack.removeEnchantment(Enchantment.SWEEPING_EDGE);

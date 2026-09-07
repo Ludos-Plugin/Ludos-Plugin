@@ -69,7 +69,7 @@ public class ManhuntCompass extends SpecialItem<ManhuntCompass> {
 	}
 
 	public void setLocation(Player prey) {
-		ItemStack stack = getStack();
+		ItemStack stack = stack();
 		CompassMeta meta = (CompassMeta) stack.getItemMeta();
 
 		meta.setLodestoneTracked(false);
@@ -79,7 +79,7 @@ public class ManhuntCompass extends SpecialItem<ManhuntCompass> {
 	}
 
 	public Location getLocation() {
-		ItemStack stack = getStack();
+		ItemStack stack = stack();
 		CompassMeta meta = (CompassMeta) stack.getItemMeta();
 
 		return meta.getLodestone();
@@ -113,7 +113,7 @@ public class ManhuntCompass extends SpecialItem<ManhuntCompass> {
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
 			if (! (game instanceof ManhuntGame manhunt)) return false;
-			return manhunt.getTeamController().hunterTeam.hasEntry(owner.getName());
+			return manhunt.teamController().hunterTeam.hasEntry(owner.getName());
 		}
 	}
 }

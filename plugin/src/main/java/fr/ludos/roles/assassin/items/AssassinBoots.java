@@ -102,7 +102,7 @@ public class AssassinBoots extends SpecialItem<AssassinBoots> {
 
 		@Override
 		protected Boolean isPlayerValidInternal(OfflinePlayer owner) {
-			return game.ludos().getRoleManager().isPlayerRole(owner, AssassinRole.ID);
+			return game.ludos().roleManager().isPlayerRole(owner, AssassinRole.ID);
 		}
 	}
 }

@@ -70,7 +70,7 @@ public interface LevelItemInterface extends SpecialItemInterface {
 		final int oldLevel = levelItem.level();
 		final int newLevel = level.level();
 
-		saveLevelValue(item.getStack(), level);
+		saveLevelValue(item.stack(), level);
 
 		levelItem.onSwitchOffLevel(oldLevel);
 		levelItem.onSwitchToLevel(newLevel);
@@ -126,7 +126,7 @@ public interface LevelItemInterface extends SpecialItemInterface {
 			item.updateLore();
 
 			if (newLevel > oldLevel) {
-				item.getOwner().sendMessage(
+				item.owner().sendMessage(
 					LevelItemInterface.getLevelUpMessage(item)
 				);
 			}
@@ -145,8 +145,8 @@ public interface LevelItemInterface extends SpecialItemInterface {
 		return initializeLevelState(
 			levelItem, item,
 			levelState,
-			(lvlValue, oldLevel) -> LevelItemInterface.saveLevelValue(item.getStack(), lvlValue),
-			(lvlValue, oldXp) -> LevelItemInterface.saveLevelValue(item.getStack(), lvlValue)
+			(lvlValue, oldLevel) -> LevelItemInterface.saveLevelValue(item.stack(), lvlValue),
+			(lvlValue, oldXp) -> LevelItemInterface.saveLevelValue(item.stack(), lvlValue)
 		);
 	}
 

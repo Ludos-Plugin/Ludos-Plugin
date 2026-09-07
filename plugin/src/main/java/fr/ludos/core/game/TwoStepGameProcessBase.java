@@ -24,7 +24,7 @@ public abstract class TwoStepGameProcessBase implements TwoStepGameProcess {
 		return ! isStarted();
 	}
 
-	protected abstract JavaPlugin getPlugin();
+	protected abstract JavaPlugin plugin();
 
 
 	public void setUp() {
@@ -43,7 +43,7 @@ public abstract class TwoStepGameProcessBase implements TwoStepGameProcess {
 
 		onInit();
 
-		getPlugin().getServer().getPluginManager().registerEvents(this, getPlugin());
+		plugin().getServer().getPluginManager().registerEvents(this, plugin());
 
 		onStart();
 	}
