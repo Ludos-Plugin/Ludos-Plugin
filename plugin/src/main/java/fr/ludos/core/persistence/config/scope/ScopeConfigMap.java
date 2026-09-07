@@ -162,7 +162,7 @@ public class ScopeConfigMap extends ConfigSectionCollection {
 					public ItemProvider getItemProvider(Player viewer) {
 						return getItem(item.getLeft(), player);
 					}
-				}.addClickHandler(state::disableModalReturn)
+				}.addActionHandler(state::disableModalReturn)
 			)
 			.collect(Collectors.toList());
 

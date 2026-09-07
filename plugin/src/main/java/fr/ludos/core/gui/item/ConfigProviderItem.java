@@ -16,17 +16,15 @@ import fr.ludos.core.persistence.config.ConfigNode;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionContext;
 import fr.ludos.core.persistence.config.sectionProvider.ConfigSectionProvider;
 import xyz.xenondevs.invui.item.ItemProvider;
-import xyz.xenondevs.invui.item.impl.AbstractItem;
 import xyz.xenondevs.invui.window.Window;
 
 /**
  * A clickable sub-menu item used to pick a {@link ConfigSectionProvider} for all subsequent Config {@link WindowProvider}s.
  */
-public abstract class ConfigProviderItem extends AbstractItem {
+public abstract class ConfigProviderItem extends EventItem<ConfigProviderItem> {
 	private final GuiContext context;
 	private final ConfigSectionProvider provider;
 	private final ConfigNode node;
-	private List<Runnable> clickHandlers;
 	private List<Runnable> openHandlers;
 	private List<Runnable> closeHandlers;
 	private List<Consumer<InventoryClickEvent>> outsideClickHandlers;
@@ -35,18 +33,6 @@ public abstract class ConfigProviderItem extends AbstractItem {
 		this.context = Objects.requireNonNull(context);
 		this.provider = Objects.requireNonNull(provider);
 		this.node = Objects.requireNonNull(node);
-	}
-
-	public @NotNull ConfigProviderItem setClickHandlers(@NotNull List<@NotNull Runnable> clickHandlers) {
-		this.clickHandlers = clickHandlers;
-		return this;
-	}
-	public @NotNull ConfigProviderItem addClickHandler(@NotNull Runnable clickHandler) {
-		if (clickHandlers == null)
-			clickHandlers = new ArrayList<>();
-
-		clickHandlers.add(clickHandler);
-		return this;
 	}
 
 	public @NotNull ConfigProviderItem setOpenHandlers(@NotNull List<@NotNull Runnable> openHandlers) {
@@ -86,7 +72,7 @@ public abstract class ConfigProviderItem extends AbstractItem {
 	}
 
 	@Override
-	public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
+	public void handleClickInternal(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
 		if (! context.checkAuthorizationNotify(player)) {
 			WindowProvider.playDenySound(player);
 			return;
@@ -96,12 +82,6 @@ public abstract class ConfigProviderItem extends AbstractItem {
 		if (window == null) {
 			WindowProvider.playDenySound(player);
 			return;
-		}
-
-		if (clickHandlers != null) {
-			for (Runnable clickHandler : clickHandlers) {
-				clickHandler.run();
-			}
 		}
 
 		if (closeHandlers != null) {

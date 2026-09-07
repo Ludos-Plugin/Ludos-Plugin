@@ -1,5 +1,7 @@
 package fr.ludos.core.game.gui.item;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -8,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameManager;
+import fr.ludos.core.group.Group;
 import fr.ludos.core.gui.item.ControlEventItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -31,9 +34,13 @@ public class StartGameItem extends ControlEventItem<StartGameItem, Gui> {
 
 	@Override
 	public void handleClickInternal(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
-		if (manager.playerStartGame(player, game)) {
-			getGui().closeForAllViewers();
-		}
+		AtomicReference<Group> outGroup = new AtomicReference<>();
+		if (! manager.verifyPlayerCanStartGame(player, game, outGroup)) return;
+
+		notifyActionHandlers();
+
+		getGui().closeForAllViewers();
+		manager.startGame(game, outGroup.get());
 	}
 
 	@Override

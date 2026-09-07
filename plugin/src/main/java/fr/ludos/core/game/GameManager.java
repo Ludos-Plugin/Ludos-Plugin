@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.bukkit.configuration.ConfigurationSection;
@@ -68,6 +69,27 @@ public final class GameManager {
 		return Collections.unmodifiableSet(active);
 	}
 
+	public boolean verifyPlayerCanStartGame(Player player, Game.Builder builder) {
+		AtomicReference<Group> outGroup = new AtomicReference<>();
+		return verifyPlayerCanStartGame(player, builder, outGroup);
+	}
+	public boolean verifyPlayerCanStartGame(Player player, Game.Builder builder, AtomicReference<Group> outGroup) {
+		Group group = getLudos().groupManager().getGroupOfPlayer(player);
+		if (group == null) {
+			player.sendMessage("You are not in a group.");
+			return false;
+		}
+		outGroup.set(group);
+
+		boolean membersCanRunGames = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canRunGames();
+		if (! group.isLeader(player) && ! membersCanRunGames) {
+			player.sendMessage("Only the group leader can start games.");
+			return false;
+		}
+
+		return true;
+	}
+
 	public boolean playerStartGame(Player player, String id) {
 		Game.Builder builder = registered.get(id);
 		if (builder == null) {
@@ -78,19 +100,10 @@ public final class GameManager {
 		return playerStartGame(player, builder);
 	}
 	public boolean playerStartGame(Player player, Game.Builder builder) {
-		Group group = getLudos().groupManager().getGroupOfPlayer(player);
-		if (group == null) {
-			player.sendMessage("You are not in a group.");
-			return true;
-		}
+		AtomicReference<Group> outGroup = new AtomicReference<>();
+		if (! verifyPlayerCanStartGame(player, builder, outGroup)) return false;
 
-		boolean membersCanRunGames = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canRunGames();
-		if (! group.isLeader(player) && ! membersCanRunGames) {
-			player.sendMessage("Only the group leader can start games.");
-			return true;
-		}
-
-		startGame(builder, group);
+		startGame(builder, outGroup.get());
 		return true;
 	}
 

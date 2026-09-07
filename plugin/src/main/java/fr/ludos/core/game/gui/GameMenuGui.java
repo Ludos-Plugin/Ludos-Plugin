@@ -49,12 +49,8 @@ public class GameMenuGui implements WindowProvider {
 		WindowUtility.WindowSettings settings = new WindowUtility.WindowSettings(true);
 
 		ArrayList<Item> items = new ArrayList<>() {{
-			add(new StartGameItem(game, manager).addClickHandler(settings::disableModalReturn));
-			add(new GuidebookItem(game).addClickHandler(t -> {
-				if (t.isLeftClick()) {
-					settings.disableModalReturn();
-				}
-			}));
+			add(new StartGameItem(game, manager).addActionHandler(settings::disableModalReturn));
+			add(new GuidebookItem(game).addActionHandler(settings::disableModalReturn));
 		}};
 
 		if (items.isEmpty()) return null;

@@ -94,7 +94,7 @@ public abstract class ConfigSectionCollection extends ConfigRootCollection {
 					public ItemProvider getItemProvider(Player viewer) {
 						return getItem(key, player);
 					}
-				}.addClickHandler(state::disableModalReturn);
+				}.addActionHandler(state::disableModalReturn);
 			})
 			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
