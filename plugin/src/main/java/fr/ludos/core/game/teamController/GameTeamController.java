@@ -181,22 +181,23 @@ public abstract class GameTeamController extends GameProcessBase implements Forw
 		return players.get(game.random().nextInt(players.size()));
 	}
 
-	public final Location getLocationAroundTeammate(Team team) {
+	public final Location getLocationAroundTeammate(Player player, Team team) {
 		return getLocationAroundTeammate(
-			team,
+			player, team,
 			(area) -> area.pickRandom(0.3, 0.7)
 		);
 	}
-	public final Location getLocationAroundTeammate(Team team, Function<Area, Location> noPlayerFallback) {
+	public final Location getLocationAroundTeammate(Player player, Team team, Function<Area, Location> noPlayerFallback) {
 		return getLocationAroundTeammate(
-			team,
+			player, team,
 			noPlayerFallback,
 			() -> game().worldManager().getWorld().getSpawnLocation()
 		);
 	}
-	public final Location getLocationAroundTeammate(Team team, Function<Area, Location> noPlayerFallback, Supplier<Location> noAreaFallback) {
-		Set<Player> players = getTeamAlivePlayers(team);
+	public final Location getLocationAroundTeammate(Player player, Team team, Function<Area, Location> noPlayerFallback, Supplier<Location> noAreaFallback) {
 		Area area = game().worldManager().getArea();
+		Set<Player> players = getTeamAlivePlayersStream(team).filter(Predicate.not(player::equals))
+			.collect(Collectors.toSet());
 
 		if (! players.isEmpty()) {
 			Player teammate = players.iterator().next();

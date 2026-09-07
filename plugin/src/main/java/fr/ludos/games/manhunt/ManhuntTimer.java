@@ -196,10 +196,12 @@ public class ManhuntTimer extends GameProcessBase {
 		bossbar.removeAll();
 		bossbar.setVisible(false);
 
-		game.group().sendMessage(
-			Component.text("Timer ended. Final Time : " + formattedTime)
-				.color(NamedTextColor.GREEN)
-		);
+		if (formattedTime != null) {
+			game.group().sendMessage(
+				Component.text("Timer ended. Final Time : " + formattedTime)
+					.color(NamedTextColor.GREEN)
+			);
+		}
 		super.onStop();
 	}
 }

@@ -2,6 +2,7 @@ package fr.ludos.core.lobby;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,11 +18,13 @@ import fr.ludos.other.ExcludeFromJacocoGeneratedReport;
  * Default {@link Structure} for a {@link Lobby}.
  */
 public class LobbyStructure extends BoundingBoxStructure {
+	private static final Random RANDOM = new Random();
 	private final Map<Location, BlockData> blocksData;
 	private final Location entranceLocation;
 
 	private final static int RADIUS = 5;
 	private final static int HEIGHT = 5;
+	private final static int PILLAR_DISTANCE = RADIUS - 2;
 
 	private final BoundingBox bb;
 
@@ -39,7 +42,17 @@ public class LobbyStructure extends BoundingBoxStructure {
 
 	@Override
 	public Location getEntranceLocation() {
-		return entranceLocation.clone();
+		return entranceLocation.toCenterLocation();
+	}
+
+	@Override
+	public Location randomizedEntranceLocation() {
+		return entranceLocation.toCenterLocation()
+			.add(
+				RANDOM.nextDouble(-PILLAR_DISTANCE, PILLAR_DISTANCE),
+				0,
+				RANDOM.nextDouble(-PILLAR_DISTANCE, PILLAR_DISTANCE)
+			);
 	}
 
 	@Override
@@ -160,12 +173,11 @@ public class LobbyStructure extends BoundingBoxStructure {
 			}
 
 
-			int pillarDistance = RADIUS - 2;
 			for (int y = 1; y <= HEIGHT - 1; y ++) {
-				setBlock(origin.clone().add(-pillarDistance, y, -pillarDistance), pillar, oldBlocks);
-				setBlock(origin.clone().add(pillarDistance, y, -pillarDistance), pillar, oldBlocks);
-				setBlock(origin.clone().add(-pillarDistance, y, pillarDistance), pillar, oldBlocks);
-				setBlock(origin.clone().add(pillarDistance, y, pillarDistance), pillar, oldBlocks);
+				setBlock(origin.clone().add(-PILLAR_DISTANCE, y, -PILLAR_DISTANCE), pillar, oldBlocks);
+				setBlock(origin.clone().add(PILLAR_DISTANCE, y, -PILLAR_DISTANCE), pillar, oldBlocks);
+				setBlock(origin.clone().add(-PILLAR_DISTANCE, y, PILLAR_DISTANCE), pillar, oldBlocks);
+				setBlock(origin.clone().add(PILLAR_DISTANCE, y, PILLAR_DISTANCE), pillar, oldBlocks);
 			}
 
 			Location entrance = origin.clone().add(0, 1, 0);

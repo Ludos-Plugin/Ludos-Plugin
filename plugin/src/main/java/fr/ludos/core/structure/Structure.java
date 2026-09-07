@@ -17,6 +17,7 @@ public abstract class Structure {
 	}
 
 	public abstract Location getEntranceLocation();
+	public abstract Location randomizedEntranceLocation();
 	public abstract boolean contains(BoundingBox bb);
 	public abstract boolean contains(Location location);
 	abstract public void destroy();

@@ -267,8 +267,11 @@ public final class ArenaTeamController extends GameTeamController {
 	public void placeActivePlayer(OfflinePlayer player, Team destination) {
 		if (player == null) return;
 
+		Player onlinePlayer = player.getPlayer();
+		if (onlinePlayer == null) return;
+
 		Location teammateLocation = getLocationAroundTeammate(
-			destination,
+			onlinePlayer, destination,
 			(area) -> {
 				if (destination == spectatorTeam) return area.getCenter();
 
@@ -286,9 +289,8 @@ public final class ArenaTeamController extends GameTeamController {
 			}
 		);
 		teammateLocation = Utility.snapToHighestY(teammateLocation, true);
-
-		Player onlinePlayer = player.getPlayer();
-		if (onlinePlayer == null) return;
+		teammateLocation.setYaw(onlinePlayer.getLocation().getYaw());
+		teammateLocation.setPitch(onlinePlayer.getLocation().getPitch());
 
 		onlinePlayer.teleport(teammateLocation, true);
 		onlinePlayer.setBedSpawnLocation(teammateLocation, true);

@@ -40,6 +40,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionEffectType.Category;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -159,10 +160,13 @@ public class Utility {
 	@ExcludeFromJacocoGeneratedReport // Fully tested, but coverage stops at first line.
 	public static void resetPlayerState(Player player) {
 		for (PotionEffect effect : player.getActivePotionEffects()) {
-			if (effect.getType().getEffectCategory() == Category.HARMFUL) {
-				player.removePotionEffect(effect.getType());
+			PotionEffectType type = effect.getType();
+			if (type.getEffectCategory() == Category.HARMFUL) {
+				player.removePotionEffect(type);
 			}
 		}
+		player.removePotionEffect(PotionEffectType.INVISIBILITY);
+
 		player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 
 		player.setFoodLevel(20);
@@ -178,6 +182,10 @@ public class Utility {
 	public static void resetPlayer(Player player) {
 		player.getInventory().clear();
 		revokeAllAdvancements(player);
+
+		for (PotionEffect effect : player.getActivePotionEffects()) {
+			player.removePotionEffect(effect.getType());
+		}
 
 		resetPlayerState(player);
 	}

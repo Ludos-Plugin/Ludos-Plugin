@@ -177,12 +177,12 @@ public final class RaidTeamController extends GameTeamController {
 	}
 
 	private void placeActivePlayer(Player player) {
-		Location teammateLocation = Utility.snapToHighestY(getLocationAroundTeammate(playersTeam), true);
+		Location teammateLocation = Utility.snapToHighestY(getLocationAroundTeammate(player, playersTeam), true);
 
 		player.teleport(teammateLocation);
 	}
 	private void placeSpectator(Player player) {
-		player.teleport(Utility.snapToHighestY(getLocationAroundTeammate(playersTeam), true));
+		player.teleport(Utility.snapToHighestY(getLocationAroundTeammate(player, playersTeam), true));
 	}
 
 

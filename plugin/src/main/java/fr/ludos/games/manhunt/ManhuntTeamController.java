@@ -345,6 +345,8 @@ public final class ManhuntTeamController extends GameTeamController {
 				.pickRandom(0.4, 0.8),
 			true
 		);
+		preyLocation.setYaw(player.getLocation().getYaw());
+		preyLocation.setPitch(player.getLocation().getPitch());
 
 		player.teleport(preyLocation);
 		player.setBedSpawnLocation(preyLocation, true);
@@ -353,11 +355,13 @@ public final class ManhuntTeamController extends GameTeamController {
 	public void placeHunter(Player player) {
 		Location hunterLocation = Utility.snapToHighestY(
 			getLocationAroundTeammate(
-				hunterTeam,
+				player, hunterTeam,
 				(area) -> area.pickRandom(0, 0.3)
 			),
 			true
 		);
+		hunterLocation.setYaw(player.getLocation().getYaw());
+		hunterLocation.setPitch(player.getLocation().getPitch());
 
 		player.teleport(hunterLocation);
 		player.setBedSpawnLocation(hunterLocation, true);

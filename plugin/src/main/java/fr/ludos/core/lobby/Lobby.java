@@ -25,6 +25,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
 import com.google.common.base.Predicate;
 
@@ -157,12 +158,21 @@ public final class Lobby extends GameProcessBase {
 					return;
 				}
 
+				Location structureEntrance = structure.getEntranceLocation();
 				for (OfflinePlayer waitedPlayer : allPlayersToTeleport) {
 					Player player = waitedPlayer.getPlayer();
 					if (player == null) continue;
 					if (! player.isOnline()) continue;
 
-					player.teleport(structure.getEntranceLocation());
+					Location randomizedEntrance = structure.randomizedEntranceLocation();
+					Vector lookingDirection = structureEntrance.toVector().subtract(randomizedEntrance.toVector());
+					if (lookingDirection.lengthSquared() >= 0) {
+						try {
+							lookingDirection.normalize();
+							randomizedEntrance.setDirection(lookingDirection);
+						} finally { }
+					}
+					player.teleport(randomizedEntrance);
 					builder.clearMode.handlePlayer(player);
 					if (builder.gameMode != null) player.setGameMode(builder.gameMode);
 				}
