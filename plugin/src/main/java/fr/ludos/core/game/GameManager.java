@@ -19,7 +19,7 @@ import fr.ludos.core.Ludos;
 import fr.ludos.core.Utility;
 import fr.ludos.core.command.ludos.config.game.GameConfigMap;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
-import fr.ludos.core.game.gui.GameGui;
+import fr.ludos.core.game.gui.GameListGui;
 import fr.ludos.core.group.Group;
 
 /**
@@ -33,7 +33,7 @@ public final class GameManager {
 
 	public final GameConfigMap configMap = new GameConfigMap(this);
 
-	public final GameGui gui = new GameGui(this);
+	public final GameListGui gui = new GameListGui(this);
 
 
 	public GameManager(Ludos ludos) {

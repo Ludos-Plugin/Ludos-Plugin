@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import fr.ludos.core.Ludos;
 import fr.ludos.core.command.ludos.config.role.RoleConfigMap;
 import fr.ludos.core.group.Group;
-import fr.ludos.core.role.gui.RoleGui;
+import fr.ludos.core.role.gui.RoleListGui;
 
 /**
  * Manager class for {@link Role}s, used to maintain a registry of roles for use in {@link Ludos}.
@@ -32,7 +32,7 @@ public final class RoleManager {
 
 	public final RoleConfigMap configMap = new RoleConfigMap(this);
 
-	public final RoleGui gui = new RoleGui(this);
+	public final RoleListGui gui = new RoleListGui(this);
 
 
 	public RoleManager(Ludos ludos) {
