@@ -183,6 +183,8 @@ public class Utility {
 		player.getInventory().clear();
 		revokeAllAdvancements(player);
 
+		player.setTotalExperience(0);
+
 		for (PotionEffect effect : player.getActivePotionEffects()) {
 			player.removePotionEffect(effect.getType());
 		}
@@ -399,11 +401,34 @@ public class Utility {
 		return loc1.getX() == loc2.getX() && loc1.getY() == loc2.getY() && loc1.getZ() == loc2.getZ();
 	}
 
+	public static int getHighestBlockYInNether(Location location) {
+		World world = location.getWorld();
+		int x = location.getBlockX();
+		int z = location.getBlockZ();
+
+		for (int y = world.getMaxHeight() - 1; y >= world.getMinHeight(); y--) {
+			Block block = world.getBlockAt(x, y, z);
+			if (
+				! block.isEmpty() &&
+				block.getType() != org.bukkit.Material.BEDROCK &&
+				block.getRelative(BlockFace.UP).isEmpty()
+			) {
+				return y;
+			}
+		}
+
+		return world.getMinHeight();
+	}
+
 	public static Location snapToHighestY(Location location) {
 		return snapToHighestY(location, false);
 	}
 	public static Location snapToHighestY(Location location, boolean oneAbove) {
+		// if (location.getWorld().getEnvironment() == Environment.NETHER) {
+		// 	location.setY(getHighestBlockYInNether(location));
+		// } else {
 		location.setY(location.getWorld().getHighestBlockYAt(location));
+		// }
 		if (oneAbove) {
 			location.add(0, 1, 0);
 		}

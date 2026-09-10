@@ -1,5 +1,6 @@
 package fr.ludos.core.wave;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -22,9 +23,13 @@ public abstract class WaveLoadoutService {
 
 	protected abstract void applyBaseKit(Player player);
 
-	protected ItemStack enchantedItem(Material type, Enchantment enchantment, int level) {
+	@SafeVarargs
+	protected final ItemStack enchantedItem(Material type, Pair<Enchantment, Integer>... enchantments) {
 		ItemStack stack = new ItemStack(type);
-		stack.addUnsafeEnchantment(enchantment, level);
+		for (Pair<Enchantment, Integer> enchantment : enchantments) {
+			if (enchantment == null || enchantment.getLeft() == null || enchantment.getRight() == null) continue;
+			stack.addUnsafeEnchantment(enchantment.getLeft(), enchantment.getRight());
+		}
 		return stack;
 	}
 }

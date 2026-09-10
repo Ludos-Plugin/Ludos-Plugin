@@ -1,13 +1,10 @@
 package fr.ludos.games.raid;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -16,18 +13,19 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.WorldType;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.AbstractSkeleton;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Husk;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
+import org.bukkit.entity.Pillager;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.Vindicator;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
@@ -35,14 +33,17 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import fr.ludos.core.Utility;
-import fr.ludos.core.generator.OceanChunkGenerator;
 import fr.ludos.core.item.Categories;
 import fr.ludos.core.item.Category;
 import fr.ludos.core.lobby.Lobby.ClearMode;
 import fr.ludos.core.wave.DefaultWaveLoadout;
 import fr.ludos.core.wave.WaveController;
-import fr.ludos.games.raid.monsters.GoldenKnightBoss;
 import fr.ludos.games.raid.monsters.RaidMonsterBoss;
+import fr.ludos.games.raid.theme.EarthWaveTheme;
+import fr.ludos.games.raid.theme.HellWaveTheme;
+import fr.ludos.games.raid.theme.OceanWaveTheme;
+import fr.ludos.games.raid.theme.RaidWaveTheme;
+import fr.ludos.games.raid.theme.RaidWaveTheme.WaveUnit;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -50,121 +51,27 @@ import net.kyori.adventure.text.format.NamedTextColor;
  * Controller for {@link RaidGame} wave behavior.
  */
 public final class RaidWaveController extends WaveController {
-	/**
-	 * Themes used for raid worlds.
-	 */
-	public enum WaveTheme {
-		EARTH("Earth", () -> new WorldCreator("raid_earth_" + UUID.randomUUID())
-			.environment(World.Environment.NORMAL)
-			.type(WorldType.NORMAL)
-		),
-		WATER("Water", () -> new WorldCreator("raid_water_" + UUID.randomUUID())
-			.environment(World.Environment.NORMAL)
-			.type(WorldType.AMPLIFIED)
-			.generator(new OceanChunkGenerator())
-		),
-		FIRE("Fire", () -> new WorldCreator("raid_fire_" + UUID.randomUUID())
-			.environment(World.Environment.NETHER)
-			.type(WorldType.NORMAL)
-		);
-
-		private final String display;
-		public final String getDisplay() {
-			return display;
-		}
-
-		private final Supplier<WorldCreator> worldCreatorBuilder;
-		public final WorldCreator getWorldCreator() {
-			return this.worldCreatorBuilder.get();
-		}
-
-		WaveTheme(String display, Supplier<WorldCreator> worldCreator) {
-			this.display = display;
-			this.worldCreatorBuilder = worldCreator;
-		}
-
-	}
-
-	private static final int BOSS_START_WAVE = 1;
-	private static final int BOSS_INTERVAL = 10;
+	private static final int BOSS_START_WAVE = 5;
+	private static final int BOSS_INTERVAL = 5;
 	private static final int BASE_WAVE_POINTS = 200;
 	private static final int MAX_WAVE_POINTS = 48000;
 	private static final int LAST_FEW_MOBS_COUNT = 5;
-	private static final int MIN_MOBS_NON_BOSS_WAVE = 11;
-	private static final int MAX_MOB_COUNT = 100;
 	private static final int STEAK_REWARD_PER_BOSS_WAVE = 64;
-	private static final int ENV_EFFECT_TICKS = 220;
-
-	private static final List<WaveUnit> EARTH_WAVE_UNITS = List.of(
-		new WaveUnit(EntityType.ZOMBIE, 12, 30, false),
-		new WaveUnit(EntityType.HUSK, 13, 24, false),
-		new WaveUnit(EntityType.DROWNED, 16, 18, false),
-		new WaveUnit(EntityType.SKELETON, 14, 22, false),
-		new WaveUnit(EntityType.STRAY, 17, 14, false),
-		new WaveUnit(EntityType.SPIDER, 12, 18, false),
-		new WaveUnit(EntityType.CAVE_SPIDER, 18, 12, false),
-		new WaveUnit(EntityType.CREEPER, 22, 15, false),
-		new WaveUnit(EntityType.ENDERMAN, 38, 9, false),
-		new WaveUnit(EntityType.SLIME, 20, 14, false),
-		new WaveUnit(EntityType.PILLAGER, 26, 20, false),
-		new WaveUnit(EntityType.VINDICATOR, 34, 14, false),
-		new WaveUnit(EntityType.WITCH, 42, 10, false),
-		new WaveUnit(EntityType.EVOKER, 88, 6, false),
-		new WaveUnit(EntityType.RAVAGER, 140, 3, false),
-		new WaveUnit(EntityType.VEX, 52, 6, false),
-		new WaveUnit(EntityType.HOGLIN, 62, 5, false),
-		new WaveUnit(EntityType.ZOGLIN, 84, 4, false),
-		new WaveUnit(EntityType.WITHER_SKELETON, 900, 1, true)
-	);
-
-	private static final List<WaveUnit> WATER_WAVE_UNITS = List.of(
-		new WaveUnit(EntityType.DROWNED, 12, 30, false),
-		new WaveUnit(EntityType.GUARDIAN, 22, 18, false),
-		new WaveUnit(EntityType.ELDER_GUARDIAN, 170, 2, false),
-		new WaveUnit(EntityType.SLIME, 16, 16, false),
-		new WaveUnit(EntityType.MAGMA_CUBE, 28, 10, false),
-		new WaveUnit(EntityType.CAVE_SPIDER, 18, 12, false),
-		new WaveUnit(EntityType.SPIDER, 12, 14, false),
-		new WaveUnit(EntityType.WITCH, 46, 8, false),
-		new WaveUnit(EntityType.VEX, 56, 7, false),
-		new WaveUnit(EntityType.ENDERMAN, 42, 8, false),
-		new WaveUnit(EntityType.RAVAGER, 160, 2, false),
-		new WaveUnit(EntityType.HOGLIN, 62, 5, false),
-		new WaveUnit(EntityType.ZOGLIN, 84, 4, false),
-		new WaveUnit(EntityType.WITHER_SKELETON, 900, 1, true)
-	);
-
-	private static final List<WaveUnit> FIRE_WAVE_UNITS = List.of(
-		new WaveUnit(EntityType.BLAZE, 20, 24, false),
-		new WaveUnit(EntityType.MAGMA_CUBE, 18, 20, false),
-		new WaveUnit(EntityType.WITHER_SKELETON, 42, 12, false),
-		new WaveUnit(EntityType.PIGLIN_BRUTE, 72, 8, false),
-		new WaveUnit(EntityType.HOGLIN, 52, 10, false),
-		new WaveUnit(EntityType.ZOGLIN, 64, 8, false),
-		new WaveUnit(EntityType.GHAST, 96, 5, false),
-		new WaveUnit(EntityType.VEX, 48, 8, false),
-		new WaveUnit(EntityType.EVOKER, 88, 5, false),
-		new WaveUnit(EntityType.RAVAGER, 145, 3, false),
-		new WaveUnit(EntityType.ENDERMAN, 40, 9, false),
-		new WaveUnit(EntityType.WITHER_SKELETON, 900, 1, true)
-	);
-
-	private static final Map<WaveTheme, List<WaveUnit>> THEME_WAVE_UNITS = Map.of(
-		WaveTheme.EARTH, EARTH_WAVE_UNITS,
-		WaveTheme.WATER, WATER_WAVE_UNITS,
-		WaveTheme.FIRE, FIRE_WAVE_UNITS
-	);
 
 	private final RaidGame game;
 
-	public WaveTheme getCurrentWaveTheme() {
+	private final EarthWaveTheme plains;
+	private final OceanWaveTheme ocean;
+	private final HellWaveTheme hell;
+
+	public RaidWaveTheme getCurrentWaveTheme() {
 		int waveIndex = getCurrentWave();
 		if (waveIndex == 0) {
-			return WaveTheme.EARTH;
+			return plains;
 		}
 
 		int idx = Math.floorMod(waveIndex - 2, 3);
-		return idx == 0 ? WaveTheme.EARTH : idx == 1 ? WaveTheme.WATER : WaveTheme.FIRE;
+		return idx == 0 ? plains : idx == 1 ? ocean : hell;
 	}
 
 	private final Set<Monster> aliveWaveMonsters = new HashSet<>();
@@ -173,10 +80,18 @@ public final class RaidWaveController extends WaveController {
 	private int bossesDefeated = 0;
 	private boolean bossWaveActive = false;
 
+	public int bossesDefeated() {
+		return this.bossesDefeated;
+	}
+
 
 	protected RaidWaveController(RaidGame game, int maxWaves) {
 		super(game, maxWaves, new DefaultWaveLoadout(game));
 		this.game = game;
+
+		plains = new EarthWaveTheme(game);
+		ocean = new OceanWaveTheme(game);
+		hell = new HellWaveTheme(game);
 	}
 
 	@Override
@@ -213,6 +128,7 @@ public final class RaidWaveController extends WaveController {
 
 		game.worldManager().transfer((builder) -> builder
 			.of(getCurrentWaveTheme().getWorldCreator())
+			.config(getCurrentWaveTheme().getWorldConfig())
 		);
 	}
 
@@ -220,10 +136,13 @@ public final class RaidWaveController extends WaveController {
 	public void startWave() {
 		game().teamController().placeAllPlayers();
 
-		applyThemePlayerEffects();
+		Set<Player> alivePlayers = game.teamController().getAlivePlayers();
+		getCurrentWaveTheme().applyPlayerEffects(alivePlayers);
 
 		spawnWaveContent();
 	}
+
+
 
 	@Override
 	protected void evaluateWaveState() {
@@ -235,8 +154,7 @@ public final class RaidWaveController extends WaveController {
 			return;
 		}
 
-		applyThemePlayerEffects();
-		// retargetAliveMonsters(alivePlayers);
+		retargetAliveMonsters(alivePlayers);
 
 		if (aliveWaveMonsters.isEmpty()) return;
 
@@ -264,15 +182,18 @@ public final class RaidWaveController extends WaveController {
 
 	private void spawnWaveContent() {
 		aliveWaveMonsters.clear();
-		bossWaveActive = shouldSpawnBossWave();
 
-		if (bossWaveActive) {
+		if (shouldSpawnBossWave()) {
 			spawnBossWave();
 			return;
 		}
 
+		spawnWaveMobs();
+	}
+
+	private void spawnWaveMobs() {
 		int pointsBudget = computeWavePointsBudget();
-		List<WaveUnit> roster = composeWaveRoster(pointsBudget, getCurrentWaveTheme());
+		List<WaveUnit> roster = getCurrentWaveTheme().composeWaveRoster(pointsBudget, this);
 		Location center = game().worldManager().getWorld().getSpawnLocation();
 
 		for (WaveUnit unit : roster) {
@@ -303,21 +224,14 @@ public final class RaidWaveController extends WaveController {
 	}
 
 	private void spawnBossWave() {
-		Location center = game().worldManager().getWorld().getSpawnLocation();
+		RaidWaveTheme currentTheme = getCurrentWaveTheme();
 
-		WaveTheme currentTheme = getCurrentWaveTheme();
-
-		if (currentTheme != WaveTheme.WATER) {
-			center.add(0, 1.0, 0);
-		}
+		Location center = currentTheme.getSpawnLocation(game().worldManager().getWorld());
 
 		grantBossWaveCombatSupplies();
-		if (currentTheme == WaveTheme.WATER) {
-			grantWaterBossMobilityKit();
-		}
 
 		despawnBoss();
-		currentBoss = createBossForTheme(currentTheme);
+		currentBoss = currentTheme.createBoss(game);
 		currentBoss.spawn(center);
 
 		Monster bossEntity = currentBoss.entity();
@@ -325,30 +239,16 @@ public final class RaidWaveController extends WaveController {
 			aliveWaveMonsters.add(bossEntity);
 		}
 
-		game.group().sendMessage(Component.text(
-			"Boss Wave (" + currentTheme.getDisplay() + "): " + mapThemeToBossTitle(currentTheme)
-		).color(NamedTextColor.DARK_PURPLE));
+		game.group().sendMessage(
+			Component.text("Boss Wave (")
+				.append(currentTheme.displayName())
+				.append(Component.text("): "))
+				.append(currentBoss.displayName())
+			.color(NamedTextColor.DARK_PURPLE)
+		);
 
 		center.getWorld().strikeLightningEffect(center);
 		center.getWorld().playSound(center, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.7f);
-	}
-
-	private RaidMonsterBoss<? extends Monster> createBossForTheme(WaveTheme theme) {
-		return new GoldenKnightBoss(game, mapThemeToBossElement(theme));
-	}
-
-	private void grantWaterBossMobilityKit() {
-		ItemStack mobilityTrident = new ItemStack(Material.TRIDENT);
-		mobilityTrident.addUnsafeEnchantment(Enchantment.RIPTIDE, 2);
-		mobilityTrident.addUnsafeEnchantment(Enchantment.DURABILITY, 3);
-
-		for (Player player : game.teamController().getOnlinePlayers()) {
-			player.getInventory().addItem(mobilityTrident.clone());
-		}
-
-		game.group().sendMessage(Component.text(
-			"Water boss kit: mobility trident granted"
-		).color(NamedTextColor.AQUA));
 	}
 
 	private void grantBossWaveCombatSupplies() {
@@ -380,16 +280,10 @@ public final class RaidWaveController extends WaveController {
 			monster.setTarget(alivePlayers.get(ThreadLocalRandom.current().nextInt(alivePlayers.size())));
 		}
 
-		WaveTheme currentTheme = getCurrentWaveTheme();
+		RaidWaveTheme currentTheme = getCurrentWaveTheme();
 
-		mob.setRemoveWhenFarAway(false);
-		if (currentTheme == WaveTheme.FIRE) {
-			mob.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, true, false));
-		}
-		if (currentTheme == WaveTheme.WATER) {
-			mob.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, Integer.MAX_VALUE, 0, true, false));
-			mob.addPotionEffect(new PotionEffect(PotionEffectType.DOLPHINS_GRACE, Integer.MAX_VALUE, 0, true, false));
-		}
+		mob.setRemoveWhenFarAway(true);
+		currentTheme.applyMobEffects(mob);
 
 		if (mob instanceof Zombie zombie) {
 			zombie.setShouldBurnInDay(false);
@@ -423,7 +317,7 @@ public final class RaidWaveController extends WaveController {
 		applyScaledEquipment(mob);
 
 		if (unit.bossEcho()) {
-			mob.customName(Component.text("Echo of Dark Knight").color(NamedTextColor.DARK_PURPLE));
+			mob.customName(Component.text("Echo of the Past").color(NamedTextColor.DARK_PURPLE));
 			mob.setCustomNameVisible(true);
 			mob.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Integer.MAX_VALUE, 2, true, false));
 			mob.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, Integer.MAX_VALUE, 1, true, false));
@@ -447,21 +341,33 @@ public final class RaidWaveController extends WaveController {
 		double weaponChance = Math.min(0.95, 0.25 + currentWave * 0.035);
 		int tier = Math.min(4, Math.max(0, (currentWave - 1) / 5));
 
-		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setHelmet(createArmor(tier, Categories.ARMOR_TYPE.HELMETS));
-		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setChestplate(createArmor(tier, Categories.ARMOR_TYPE.CHESTPLATES));
-		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setLeggings(createArmor(tier, Categories.ARMOR_TYPE.LEGGINGS));
-		if (ThreadLocalRandom.current().nextDouble() < armorChance) equipment.setBoots(createArmor(tier, Categories.ARMOR_TYPE.BOOTS));
-
-		if (ThreadLocalRandom.current().nextDouble() < weaponChance) {
-			ItemStack weapon = createWeapon(tier);
-			if (weapon != null) equipment.setItemInMainHand(weapon);
+		if (ThreadLocalRandom.current().nextDouble() < armorChance) {
+			equipment.setHelmet(createArmor(tier, Categories.ARMOR_TYPE.HELMETS));
+			equipment.setHelmetDropChance(tier >= 3 ? 1.0f : 0.0f);
+		}
+		if (ThreadLocalRandom.current().nextDouble() < armorChance) {
+			equipment.setChestplate(createArmor(tier, Categories.ARMOR_TYPE.CHESTPLATES));
+			equipment.setHelmetDropChance(tier >= 3 ? 1.0f : 0.0f);
+		}
+		if (ThreadLocalRandom.current().nextDouble() < armorChance) {
+			equipment.setLeggings(createArmor(tier, Categories.ARMOR_TYPE.LEGGINGS));
+			equipment.setHelmetDropChance(tier >= 3 ? 1.0f : 0.0f);
+		}
+		if (ThreadLocalRandom.current().nextDouble() < armorChance) {
+			equipment.setBoots(createArmor(tier, Categories.ARMOR_TYPE.BOOTS));
+			equipment.setHelmetDropChance(tier >= 3 ? 1.0f : 0.0f);
 		}
 
-		equipment.setHelmetDropChance(0f);
-		equipment.setChestplateDropChance(0f);
-		equipment.setLeggingsDropChance(0f);
-		equipment.setBootsDropChance(0f);
-		equipment.setItemInMainHandDropChance(0f);
+		if (
+			! (mob instanceof Vindicator) &&
+			! (mob instanceof Pillager) &&
+			! (mob instanceof Skeleton) &&
+			! (mob instanceof Husk) &&
+			ThreadLocalRandom.current().nextDouble() < weaponChance
+		) {
+			equipment.setItemInMainHand(createWeapon(tier));
+			equipment.setItemInMainHandDropChance(tier >= 3 ? 1.0f : 0.0f);
+		}
 	}
 
 	private ItemStack createArmor(int tier, Categories.ARMOR_TYPE armorGroup) {
@@ -555,51 +461,6 @@ public final class RaidWaveController extends WaveController {
 		return (int) Math.min(MAX_WAVE_POINTS, budget);
 	}
 
-	private List<WaveUnit> composeWaveRoster(int pointsBudget, WaveTheme theme) {
-		List<WaveUnit> roster = new ArrayList<>();
-		int remaining = pointsBudget;
-		int guard = 0;
-
-		while (remaining >= 12 && guard++ < 2000 && roster.size() < MAX_MOB_COUNT) {
-			WaveUnit picked = pickWeightedUnit(remaining, theme);
-			if (picked == null) break;
-			roster.add(picked);
-			remaining -= picked.cost();
-		}
-
-		while (roster.size() < MIN_MOBS_NON_BOSS_WAVE && roster.size() < MAX_MOB_COUNT) {
-			WaveUnit filler = pickWeightedUnit(20, theme);
-			if (filler == null) {
-				filler = new WaveUnit(EntityType.ZOMBIE, 12, 1, false);
-			}
-			roster.add(filler);
-		}
-
-		return roster;
-	}
-
-	@Nullable
-	private WaveUnit pickWeightedUnit(int remainingPoints, WaveTheme theme) {
-		List<WaveUnit> pool = THEME_WAVE_UNITS.getOrDefault(theme, EARTH_WAVE_UNITS);
-		List<WaveUnit> eligible = pool.stream()
-			.filter(unit -> unit.cost() <= remainingPoints)
-			.filter(unit -> !unit.bossEcho() || bossesDefeated > 0)
-			.collect(java.util.stream.Collectors.toList());
-
-		if (eligible.isEmpty()) return null;
-
-		int totalWeight = eligible.stream().mapToInt(WaveUnit::weight).sum();
-		int roll = ThreadLocalRandom.current().nextInt(totalWeight);
-		int current = 0;
-
-		for (WaveUnit unit : eligible) {
-			current += unit.weight();
-			if (roll < current) return unit;
-		}
-
-		return eligible.get(eligible.size() - 1);
-	}
-
 	private void onBossWaveCleared() {
 		if (! bossWaveActive) return;
 		bossWaveActive = false;
@@ -620,19 +481,16 @@ public final class RaidWaveController extends WaveController {
 		despawnBoss();
 	}
 
-	// private void retargetAliveMonsters(Collection<Player> alivePlayers) {
-	// 	if (alivePlayers.isEmpty()) return;
+	private void retargetAliveMonsters(Collection<Player> alivePlayers) {
+		if (alivePlayers.isEmpty()) return;
 
-	// 	for (UUID id : aliveWaveMonsters) {
-	// 		Entity entity = Bukkit.getEntity(id);
-	// 		if (! (entity instanceof Monster monster)) continue;
+		for (Monster mob : aliveWaveMonsters) {
+			if (mob.isDead() || !mob.isValid()) continue;
 
-	// 		if (monster.isDead() || !monster.isValid()) continue;
-
-	// 		Player target = List.copyOf(alivePlayers).get(ThreadLocalRandom.current().nextInt(alivePlayers.size()));
-	// 		monster.setTarget(target);
-	// 	}
-	// }
+			Player target = List.copyOf(alivePlayers).get(ThreadLocalRandom.current().nextInt(alivePlayers.size()));
+			mob.setTarget(target);
+		}
+	}
 
 	private boolean shouldSpawnBossWave() {
 		int wave = getCurrentWave();
@@ -663,42 +521,4 @@ public final class RaidWaveController extends WaveController {
 			instance.setBaseValue(value);
 		}
 	}
-
-	private void applyThemePlayerEffects(Player player) {
-		WaveTheme currentTheme = getCurrentWaveTheme();
-
-		if (currentTheme == WaveTheme.WATER) {
-			player.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, ENV_EFFECT_TICKS, 0, true, false, true));
-			player.addPotionEffect(new PotionEffect(PotionEffectType.DOLPHINS_GRACE, ENV_EFFECT_TICKS, 0, true, false, true));
-			player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, ENV_EFFECT_TICKS, 0, true, false, true));
-		} else if (currentTheme == WaveTheme.FIRE) {
-			player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, ENV_EFFECT_TICKS, 0, true, false, true));
-		} else {
-			player.removePotionEffect(PotionEffectType.DOLPHINS_GRACE);
-			player.removePotionEffect(PotionEffectType.NIGHT_VISION);
-		}
-	}
-	private void applyThemePlayerEffects() {
-		for (Player player : game.teamController().getOnlinePlayers()) {
-			applyThemePlayerEffects(player);
-		}
-	}
-
-	private RaidMonsterBoss.Element mapThemeToBossElement(WaveTheme theme) {
-		return switch (theme) {
-			case WATER -> RaidMonsterBoss.Element.WATER;
-			case FIRE -> RaidMonsterBoss.Element.FIRE;
-			default -> RaidMonsterBoss.Element.EARTH;
-		};
-	}
-
-	private String mapThemeToBossTitle(WaveTheme theme) {
-		return switch (theme) {
-			case WATER -> "Abyssal Serpent";
-			case FIRE -> "Infernal Knight";
-			default -> "Golden Knight";
-		};
-	}
-
-	private record WaveUnit(EntityType type, int cost, int weight, boolean bossEcho) { }
 }

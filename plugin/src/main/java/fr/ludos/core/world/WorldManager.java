@@ -133,7 +133,7 @@ public final class WorldManager extends GameProcessBase {
 			world.setAutoSave(false);
 		} else throw new NullArgumentException("world/worldCreator");
 
-		builder.worldConfig.accept(world);
+		builder.configure(world);
 
 		if (area != null) {
 			area.mutate(area -> area
@@ -269,11 +269,18 @@ public final class WorldManager extends GameProcessBase {
 			return this;
 		}
 
-		private Consumer<World> worldConfig = ignored -> {};
+		private Consumer<World> worldConfig = null;
 
 		public final Builder config(Consumer<World> config) {
 			this.worldConfig = config;
 			return this;
+		}
+
+		public final World configure(World world) {
+			if (this.worldConfig != null) {
+				this.worldConfig.accept(world);
+			}
+			return world;
 		}
 
 		public WorldManager build() {

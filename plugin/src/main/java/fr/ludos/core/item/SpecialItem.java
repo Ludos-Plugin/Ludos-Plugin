@@ -153,11 +153,51 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 	/**
 	 * Check for the presence of any number of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
 	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
+	 * @param player The player whose inventory to search the {@link SpecialItem} in
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}
+	 * @return Whether or not the provided player owns at least one instance of {@link SpecialItem} type T
+	 */
+	public static <T extends SpecialItem<T>> Boolean isOwnedBy(Player player, Function<ItemStack, T> constructor) {
+		return isContainedIn(player.getInventory(), constructor);
+	}
+
+	/**
+	 * Check for the presence of any number of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
 	 * @param inventory The inventory to search the {@link SpecialItem} in
 	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}
 	 * @return Whether or not the provided inventory contains at least one instance of {@link SpecialItem} type T
 	 */
-	public static <T extends SpecialItem<T>> Boolean containedIn(Inventory inventory, Function<ItemStack, T> constructor) {
+	public static <T extends SpecialItem<T>> Boolean isContainedIn(PlayerInventory inventory, Function<ItemStack, T> constructor) {
+		if (isContainedIn((Inventory) inventory, constructor)) {
+			return true;
+		}
+		else if (constructor.apply(inventory.getHelmet()) != null) {
+			return true;
+		}
+		else if (constructor.apply(inventory.getChestplate()) != null) {
+			return true;
+		}
+		else if (constructor.apply(inventory.getLeggings()) != null) {
+			return true;
+		}
+		else if (constructor.apply(inventory.getBoots()) != null) {
+			return true;
+		}
+		else if (constructor.apply(inventory.getItemInOffHand()) != null) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Check for the presence of any number of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
+	 * @param <T> The specific type of {@link SpecialItem} that will be searched for
+	 * @param inventory The inventory to search the {@link SpecialItem} in
+	 * @param constructor A function that parses an ItemStack as an instance of that {@link SpecialItem}
+	 * @return Whether or not the provided inventory contains at least one instance of {@link SpecialItem} type T
+	 */
+	public static <T extends SpecialItem<T>> Boolean isContainedIn(Inventory inventory, Function<ItemStack, T> constructor) {
 		ItemStack[] items = inventory.getContents();
 		for (ItemStack item : items) {
 			if (item == null) continue;
@@ -410,6 +450,10 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			return true;
 		}
 
+		public void createAndGiveTo(Player player) {
+			T item = createItem(player);
+			give(item, player);
+		}
 
 		public <TItem extends SpecialItem<T>> void give(TItem item, PlayerInventory inventory) {
 			if (item == null) return;
@@ -423,12 +467,9 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 			if (! game.group().isPlayer(player)) return;
 			if (! isPlayerValid(player)) return;
 
-			PlayerInventory inventory = player.getInventory();
-			if (T.containedIn(inventory, this::getItem)) return;
+			if (isOwnedBy(player)) return;
 
-			T item = createItem(player);
-
-			item.give(inventory);
+			createAndGiveTo(player);
 		}
 
 		public void refreshAllPlayerInventories() {
@@ -491,11 +532,29 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 		/**
 		 * Check for the presence of any number of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
+		 * @param player The player whose inventory to search the {@link SpecialItem} in
+		 * @return Whether or not the provided player owns at least one instance of {@link SpecialItem} type T
+		 */
+		public Boolean isOwnedBy(Player player) {
+			return SpecialItem.isOwnedBy(player, this::getItem);
+		}
+
+		/**
+		 * Check for the presence of any number of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
 		 * @param inventory The inventory to search the {@link SpecialItem} in
 		 * @return Whether or not the provided inventory contains at least one instance of {@link SpecialItem} type T
 		 */
-		public Boolean containedIn(Inventory inventory) {
-			return SpecialItem.containedIn(inventory, this::getItem);
+		public Boolean isContainedIn(PlayerInventory inventory) {
+			return SpecialItem.isContainedIn(inventory, this::getItem);
+		}
+
+		/**
+		 * Check for the presence of any number of the {@link SpecialItem} type T in the given inventory, using the given constructor to parse ItemStacks.
+		 * @param inventory The inventory to search the {@link SpecialItem} in
+		 * @return Whether or not the provided inventory contains at least one instance of {@link SpecialItem} type T
+		 */
+		public Boolean isContainedIn(Inventory inventory) {
+			return SpecialItem.isContainedIn(inventory, this::getItem);
 		}
 
 		/**

@@ -31,6 +31,7 @@ import org.bukkit.util.Vector;
 import fr.ludos.core.Utility;
 import fr.ludos.core.game.Game;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -124,7 +125,29 @@ public class GoldenKnightBoss extends RaidMonsterBoss<WitherSkeleton> {
 		abstract boolean perform(GoldenKnightBoss self, WitherSkeleton boss, @org.jetbrains.annotations.Nullable Player focusTarget, @org.jetbrains.annotations.Nullable Player rangedTarget, CombatProfile profile);
 	}
 
-	private static final String BOSS_NAME = "The Golden Knight";
+	private static final String PLAINS_BOSS_NAME_STRING = "Golden Knight";
+	private static final TextComponent PLAINS_BOSS_NAME = Component.text(PLAINS_BOSS_NAME_STRING).color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD);
+
+	private static final String OCEAN_BOSS_NAME_STRING = "Abyssal Knight";
+	private static final TextComponent OCEAN_BOSS_NAME = Component.text(OCEAN_BOSS_NAME_STRING).color(NamedTextColor.DARK_AQUA).decorate(TextDecoration.BOLD);
+
+	private static final String HELL_BOSS_NAME_STRING = "Infernal Knight";
+	private static final TextComponent HELL_BOSS_NAME = Component.text(HELL_BOSS_NAME_STRING).color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD);
+
+	@Override
+	public TextComponent displayName() {
+		switch (getElement()) {
+			case WATER -> {
+				return OCEAN_BOSS_NAME;
+			}
+			case FIRE -> {
+				return HELL_BOSS_NAME;
+			}
+			default -> {
+				return PLAINS_BOSS_NAME;
+			}
+		}
+	}
 
 	private static final double MAX_HEALTH = 460.0;
 	private static final int NO_HIT_TICKS_FOR_ATTRACTION = 120;
@@ -157,12 +180,12 @@ public class GoldenKnightBoss extends RaidMonsterBoss<WitherSkeleton> {
 	@Nullable
 	private BukkitTask orbitTask;
 
-	public GoldenKnightBoss(Game game) {
-		this(game, Element.EARTH);
-	}
-
 	public GoldenKnightBoss(Game game, Element element) {
 		super("golden_knight", game, element, 3);
+	}
+
+	public GoldenKnightBoss(Game game) {
+		this(game, Element.EARTH);
 	}
 
 	@Override
@@ -173,7 +196,7 @@ public class GoldenKnightBoss extends RaidMonsterBoss<WitherSkeleton> {
 
 		WitherSkeleton b = (WitherSkeleton) w.spawnEntity(location, EntityType.WITHER_SKELETON);
 
-		b.customName(Component.text(BOSS_NAME).color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
+		b.customName(displayName());
 
 		b.setCustomNameVisible(true);
 		b.setRemoveWhenFarAway(false);

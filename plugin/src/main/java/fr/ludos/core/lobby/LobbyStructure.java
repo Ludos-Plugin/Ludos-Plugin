@@ -80,11 +80,7 @@ public class LobbyStructure extends BoundingBoxStructure {
 		@Override
 		@ExcludeFromJacocoGeneratedReport
 		public Structure build(Location location) {
-			Location origin = location.clone();
-
-			origin.setY(location.getWorld().getMaxHeight() - 15);
-			origin.setX(origin.getBlockX());
-			origin.setZ(origin.getBlockZ());
+			Location origin = location.add(0, 15, 0).toBlockLocation();
 
 			HashMap<Location, BlockData> oldBlocks = new HashMap<>();
 

@@ -1,5 +1,6 @@
 package fr.ludos.core.item;
 
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -74,6 +75,9 @@ public enum ItemSlot {
 		} else {
 			inventory.setItem(index, item);
 		}
+	}
+	public void give(ItemStack item, Player player) {
+		set(item, player.getInventory());
 	}
 
 	public ItemStack get(PlayerInventory inventory) {

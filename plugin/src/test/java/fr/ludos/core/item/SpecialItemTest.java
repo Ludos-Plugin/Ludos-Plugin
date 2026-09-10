@@ -303,12 +303,12 @@ class SpecialItemTest {
 		inventory.setItem(ItemSlot.MID_6.ordinal(), null);
 		inventory.setItem(ItemSlot.MID_7.ordinal(), new ItemStack(Material.ACACIA_BOAT));
 
-		assertFalse(TestSpecialItem.containedIn(inventory, testEvents::getItem));
+		assertFalse(TestSpecialItem.isContainedIn(inventory, testEvents::getItem));
 
 		TestSpecialItem item = testEvents.createItem(owner);
 		inventory.setItem(ItemSlot.BOOTS.ordinal(), item.stack());
 
-		assertTrue(TestSpecialItem.containedIn(inventory, testEvents::getItem));
+		assertTrue(TestSpecialItem.isContainedIn(inventory, testEvents::getItem));
 	}
 
 	@Test
@@ -420,7 +420,7 @@ class SpecialItemTest {
 		TestSpecialItem item = testEvents.createItem(holder);
 		inventory.setItem(ItemSlot.HOTBAR_1.ordinal(), item.stack());
 
-		assertTrue(testEvents.containedIn(inventory));
+		assertTrue(testEvents.isContainedIn(inventory));
 
 
 		inventory = spy(inventory);
