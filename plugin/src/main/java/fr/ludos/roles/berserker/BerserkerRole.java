@@ -143,14 +143,12 @@ public class BerserkerRole extends Role {
 		Material mainHandMaterial = player.getInventory().getItemInMainHand().getType();
 		if (! mainHandMaterial.isEmpty() && ! Categories.MELEE_WEAPONS.contains(mainHandMaterial)) return;
 
+		Entity target = player.getTargetEntity(5);
+		if (! (target instanceof LivingEntity livingTarget)) return;
+
 		Material offHandAxeMaterial = offHandAxe.stack().getType();
 		if (player.getCooldown(offHandAxeMaterial) > 0) return;
 		player.setCooldown(offHandAxeMaterial, calculateCooldown(player));
-
-		player.swingOffHand();
-
-		Entity target = player.getTargetEntity(4);
-		if (! (target instanceof LivingEntity livingTarget)) return;
 
 		AttributeInstance attackDamageAttribute = player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
 		if (attackDamageAttribute == null) return;
@@ -158,6 +156,8 @@ public class BerserkerRole extends Role {
 
 		player.attack(livingTarget);
 		event.setCancelled(true);
+
+		player.swingOffHand();
 
 		attackDamageAttribute.removeModifier(DAMAGE_MODIFIER);
 	}
