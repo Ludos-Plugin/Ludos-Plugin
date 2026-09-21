@@ -614,7 +614,7 @@ public abstract class SpecialItem<T extends SpecialItem<T>> implements SpecialIt
 
 		@EventHandler
 		public void onKill(EntityDeathEvent event) {
-			if (isWeapon()) return;
+			if (! isWeapon()) return;
 
 			LivingEntity victim = event.getEntity();
 			EntityDamageEvent damageEvent = victim.getLastDamageCause();
