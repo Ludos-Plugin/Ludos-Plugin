@@ -103,9 +103,10 @@ public class AssassinRole extends Role {
 			event.getFrom().getBlockY() == event.getTo().getBlockY() &&
 			event.getFrom().getBlockZ() == event.getTo().getBlockZ()) return;
 
+
 		lastMoveTime.put(player.getUniqueId(), System.currentTimeMillis());
 
-		if (player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
+		if (!player.isSneaking() && player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
 			player.removePotionEffect(PotionEffectType.INVISIBILITY);
 		}
 	}

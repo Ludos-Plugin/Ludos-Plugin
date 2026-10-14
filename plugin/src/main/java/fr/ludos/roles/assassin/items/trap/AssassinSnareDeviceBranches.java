@@ -32,7 +32,7 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 		public AssassinTrap createTrap(Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
-			return new BlockTrap(owner, trapBlock.getLocation(), new Vector(3, 1, 3), trapBlock.getWorld(), block.getType()) {
+			return new BlockTrap(owner, trapBlock.getLocation(), new Vector(1, 3, 1), trapBlock.getWorld(), block.getType()) {
 				@Override
 				public void triggerBlockTrapEffect(LivingEntity target) {
 					target.addPotionEffect(PotionEffectType.GLOWING.createEffect(20 * 20, 1));
