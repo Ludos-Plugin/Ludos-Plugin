@@ -25,10 +25,16 @@ public abstract class BlockTrap extends AssassinTrap {
 
 	@Override
 	public final void triggerEffect(LivingEntity target) {
-		if (this.getLocation().getBlock().getType() == this.getType()) {
-			this.getLocation().getBlock().setType(Material.AIR, false);
-		}
+		remove();
 		triggerBlockTrapEffect(target);
+	}
+
+	@Override
+	public void remove() {
+		Block block = this.getLocation().getBlock();
+		if (block.getType() == this.getType()) {
+			block.setType(Material.AIR, false);
+		}
 	}
 
 	public abstract void triggerBlockTrapEffect(LivingEntity target);

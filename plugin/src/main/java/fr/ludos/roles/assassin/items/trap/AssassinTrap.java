@@ -42,4 +42,9 @@ public abstract class AssassinTrap {
 		return true;
 	}
 	public abstract void triggerEffect(LivingEntity target);
+
+	/**
+	 * Removes every trace of the Trap from the World, without triggering it.
+	 */
+	public void remove() { }
 }

@@ -63,9 +63,11 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDevice, Assassi
 	public static class Events extends BranchItem.Events<AssassinSnareDevice, AssassinSnare> {
 		private BukkitTask trapTask = null;
 		public final Map<Player, Map<AssassinSnare, ArrayList<AssassinTrap>>> traps = new HashMap<>();
+		private final AssassinRole role;
 
-		public Events(Game game) {
+		public Events(Game game, AssassinRole role) {
 			super(Arrays.asList(AssassinSnareDeviceBranches.values()), game, new Events.Info(ItemSlot.HOTBAR_2));
+			this.role = role;
 		}
 
 		@Override
@@ -90,16 +92,13 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDevice, Assassi
 							AssassinSnare branch = branchTrapEntries.getKey();
 							@SuppressWarnings("unchecked")
 							ArrayList<AssassinTrap> branchTraps = ((ArrayList<AssassinTrap>) branchTrapEntries.getValue().clone());
-							if (branch.getLimit() > 0 && branchTraps.size() >= branch.getLimit()) {
-								continue;
-							}
 
 							for (AssassinTrap trap : branchTraps) {
 								Vector range = trap.getRange();
 								List<LivingEntity> targets = trap.getLocation()
 									.getNearbyLivingEntities(range.getX(), range.getY(), range.getZ()).stream()
 									.filter(Utility.IS_ENTITY_ALIVE)
-									.filter(teamController.isEntityAllyOfEntity(player))
+									.filter(teamController.isEntityEnemyOfEntity(player))
 									.collect(Collectors.toList());
 
 								for (LivingEntity target : targets) {
@@ -119,6 +118,11 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDevice, Assassi
 		protected void onItemStop() {
 			super.onItemStop();
 
+			for (var branchTraps : traps.values()) {
+				for (var trapList : branchTraps.values()) {
+					trapList.forEach(AssassinTrap::remove);
+				}
+			}
 			traps.clear();
 
 			if (trapTask != null) {
@@ -172,8 +176,15 @@ public class AssassinSnareDevice extends BranchItem<AssassinSnareDevice, Assassi
 					}
 
 					AssassinSnare branch = snareDevice.getBranch();
+					ArrayList<AssassinTrap> branchTraps = getTraps(player, branch);
 
-					getTraps(player, branch).add(branch.createTrap(player, clickedBlock, face));
+					// Une fois la limite atteinte, le piège le plus ancien est retiré
+					int limit = role.config(role.getBuilder().trapLimit);
+					if (limit > 0 && branchTraps.size() >= limit) {
+						branchTraps.remove(0).remove();
+					}
+
+					branchTraps.add(branch.createTrap(game.plugin(), player, clickedBlock, face));
 				}
 				default -> player.sendMessage("You must click on a block to place a trap."); // TODO: Translate
 			}

@@ -1,11 +1,13 @@
 package fr.ludos.roles.assassin.items.trap;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
@@ -29,7 +31,7 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 		Material.ENDER_EYE
 	) {
 		@Override
-		public AssassinTrap createTrap(Player owner, Block block, BlockFace face) {
+		public AssassinTrap createTrap(JavaPlugin plugin, Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
 			return new BlockTrap(owner, trapBlock.getLocation(), new Vector(1, 3, 1), trapBlock.getWorld(), block.getType()) {
@@ -52,17 +54,27 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 		Material.COBWEB
 	) {
 		@Override
-		public AssassinTrap createTrap(Player owner, Block block, BlockFace face) {
+		public AssassinTrap createTrap(JavaPlugin plugin, Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
 			return new BlockTrap(owner, trapBlock.getLocation(), new Vector(7, 3, 7), trapBlock.getWorld(), Material.COARSE_DIRT) {
 				@Override
 				public void triggerBlockTrapEffect(LivingEntity target) {
-					target.addPotionEffect(PotionEffectType.SLOW.createEffect(20 * 10, 1));
+					int slowDuration = 20 * 10;
+					target.addPotionEffect(PotionEffectType.SLOW.createEffect(slowDuration, 1));
 
 					// TODO: Find an algorithm to make a web-like structure around the trap location
 					// For now, just set the block to cobweb
-					this.getLocation().getBlock().setType(Material.COBWEB);
+					Block web = this.getLocation().getBlock();
+					web.setType(Material.COBWEB);
+
+					// La toile disparaît à la fin du ralentissement
+					Bukkit.getScheduler().runTaskLater(plugin, () -> {
+						if (Bukkit.getWorld(web.getWorld().getUID()) == null) return;
+						if (web.getType() == Material.COBWEB) {
+							web.setType(Material.AIR, false);
+						}
+					}, slowDuration);
 				}
 			};
 		}
@@ -77,7 +89,7 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 		Material.ENDER_PEARL
 	) {
 		@Override
-		public AssassinTrap createTrap(Player owner, Block block, BlockFace face) {
+		public AssassinTrap createTrap(JavaPlugin plugin, Player owner, Block block, BlockFace face) {
 			Block trapBlock = block.getRelative(face);
 
 			return new BlockTrap(owner, trapBlock.getLocation(), new Vector(7, 3, 7), trapBlock.getWorld(), Material.END_ROD) {
@@ -110,20 +122,12 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 		return type;
 	}
 
-	private final int limit;
-	public int getLimit() {
-		return limit;
-	}
 
 
 	private AssassinSnareDeviceBranches(TextComponent name, Component description, Material type) {
-		this(name, description, type, 0);
-	}
-	private AssassinSnareDeviceBranches(TextComponent name, Component description, Material type, int limit) {
 		this.name = name;
 		this.description = description;
 		this.type = type;
-		this.limit = limit;
 	}
 
 	@Override
@@ -143,5 +147,5 @@ public enum AssassinSnareDeviceBranches implements AssassinSnare {
 	@Override
 	public void onDeselectBranch(SpecialItemInterface item) { }
 
-	public abstract AssassinTrap createTrap(Player owner, Block block, BlockFace face);
+	public abstract AssassinTrap createTrap(JavaPlugin plugin, Player owner, Block block, BlockFace face);
 }

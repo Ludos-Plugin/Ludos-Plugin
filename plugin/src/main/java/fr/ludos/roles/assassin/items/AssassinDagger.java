@@ -56,8 +56,11 @@ public class AssassinDagger extends LevelItem<AssassinDagger, AssassinDaggerLeve
 	public static class Events extends LevelItem.Events<AssassinDagger, AssassinDaggerLevels> {
 		private static final List<AssassinDaggerLevels> LEVELS = List.of(AssassinDaggerLevels.values());
 
-		public Events(Game game) {
+		private final AssassinRole role;
+
+		public Events(Game game, AssassinRole role) {
 			super(game, new Events.Info(ItemSlot.HOTBAR_1));
+			this.role = role;
 		}
 
 		@Override
@@ -82,7 +85,7 @@ public class AssassinDagger extends LevelItem<AssassinDagger, AssassinDaggerLeve
 			if (!(event.getEntity() instanceof LivingEntity target)) return;
 
 			// Dégâts augmentés
-			event.setDamage(event.getDamage() * 1.5);
+			event.setDamage(event.getDamage() * role.config(role.getBuilder().daggerDamage) / 100.0);
 
 			// Ralentissement si joueur
 			if (target instanceof HumanEntity humanTarget) {

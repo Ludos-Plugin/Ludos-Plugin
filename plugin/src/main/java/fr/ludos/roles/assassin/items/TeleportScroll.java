@@ -2,8 +2,10 @@ package fr.ludos.roles.assassin.items;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -46,7 +48,7 @@ public class TeleportScroll extends SpecialItem<TeleportScroll> {
 		return new ArrayList<>(Arrays.asList(
 			Component.text("Téléporte-toi aléatoirement"),
 			Component.text("Perd 2 coeurs max à l'utilisation"),
-			Component.text("Cooldown : 30 secondes")
+			Component.text("Cooldown : " + ((Events) getEvents()).getCooldownSeconds() + " secondes")
 		));
 	}
 
@@ -54,19 +56,30 @@ public class TeleportScroll extends SpecialItem<TeleportScroll> {
 	 * Events for the {@link TeleportScroll}.
 	 */
 	public static class Events extends SpecialItem.Events<TeleportScroll> {
-		private static final int COOLDOWN = 20 * 30; // 30 secondes
 		private static final int MAX_ATTEMPTS = 100;
 		private static final int INVULNERABILITY_DURATION = 20; // 1 seconde
 		private static final String HEALTH_MODIFIER_NAME = "teleport_scroll_health_reduction";
+		private static final Set<Material> UNSAFE_GROUND = EnumSet.of(
+			Material.MAGMA_BLOCK,
+			Material.CACTUS,
+			Material.CAMPFIRE,
+			Material.SOUL_CAMPFIRE
+		);
 		private final Random random = new Random();
+		private final AssassinRole role;
 
-		public Events(Game game) {
+		public Events(Game game, AssassinRole role) {
 			super(game, new Events.Info(ItemSlot.HOTBAR_3));
+			this.role = role;
 		}
 
 		@Override
 		public String getTypeId() {
 			return ID;
+		}
+
+		public int getCooldownSeconds() {
+			return role.config(role.getBuilder().teleportCooldown);
 		}
 
 		@Override
@@ -132,7 +145,7 @@ public class TeleportScroll extends SpecialItem<TeleportScroll> {
 					}
 				}.runTaskLater(game.plugin(), INVULNERABILITY_DURATION);
 
-				player.setCooldown(Material.PAPER, COOLDOWN);
+				player.setCooldown(Material.PAPER, 20 * getCooldownSeconds());
 			}
 		}
 
@@ -147,7 +160,7 @@ public class TeleportScroll extends SpecialItem<TeleportScroll> {
 				int highestY = world.getHighestBlockYAt(x, z);
 				Block blockAtY = world.getBlockAt(x, highestY, z);
 
-				if (blockAtY.getType() == Material.WATER) {
+				if (blockAtY.isLiquid() || UNSAFE_GROUND.contains(blockAtY.getType())) {
 					continue;
 				}
 

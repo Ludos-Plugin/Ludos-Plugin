@@ -9,10 +9,11 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.item.ItemSlot;
@@ -49,6 +50,13 @@ public class AssassinBoots extends SpecialItem<AssassinBoots> {
 	 * Events for the {@link AssassinBoots}.
 	 */
 	public static class Events extends SpecialItem.Events<AssassinBoots> {
+		private static final int EFFECT_REFRESH_PERIOD = 20;
+		private static final int EFFECT_DURATION = 20 * 2;
+		// Jump Boost I protège déjà d'un bloc de chute en vanilla, ce qui fait +2 blocs au total
+		private static final double FALL_DAMAGE_REDUCTION = 1.0;
+
+		private BukkitTask effectTask = null;
+
 		public Events(Game game) {
 			super(game, new Events.Info(ItemSlot.BOOTS));
 		}
@@ -63,16 +71,32 @@ public class AssassinBoots extends SpecialItem<AssassinBoots> {
 			return false;
 		}
 
-		@EventHandler
-		public void onPlayerMove(PlayerMoveEvent event) {
-			Player player = event.getPlayer();
-			if (! isPlayerValid(player)) return;
+		@Override
+		protected void onItemStart() {
+			super.onItemStart();
 
-			ItemStack bootsStack = player.getInventory().getBoots();
-			if (getItem(bootsStack) == null) return;
+			effectTask = new BukkitRunnable() {
+				@Override
+				public void run() {
+					for (Player player : game.ludos().roleManager().getPlayersOfRole(AssassinRole.ID)) {
+						if (! isPlayerValid(player)) continue;
+						if (getItem(player.getInventory().getBoots()) == null) continue;
 
-			// Vitesse constante
-			player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 2, 1, true, false));
+						player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, EFFECT_DURATION, 1, true, false));
+						player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, EFFECT_DURATION, 0, true, false));
+					}
+				}
+			}.runTaskTimer(game.plugin(), 0, EFFECT_REFRESH_PERIOD);
+		}
+
+		@Override
+		protected void onItemStop() {
+			super.onItemStop();
+
+			if (effectTask != null) {
+				effectTask.cancel();
+				effectTask = null;
+			}
 		}
 
 		@EventHandler
@@ -85,8 +109,11 @@ public class AssassinBoots extends SpecialItem<AssassinBoots> {
 			ItemStack bootsStack = player.getInventory().getBoots();
 			if (getItem(bootsStack) == null) return;
 
-			if (event.getDamage() <= 2) {
+			double damage = event.getDamage() - FALL_DAMAGE_REDUCTION;
+			if (damage <= 0) {
 				event.setCancelled(true);
+			} else {
+				event.setDamage(damage);
 			}
 		}
 
