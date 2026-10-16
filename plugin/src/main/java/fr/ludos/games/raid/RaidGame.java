@@ -65,7 +65,7 @@ public class RaidGame extends WaveGame {
 
 
 	protected RaidGame(Builder builder, Group group) {
-		super(builder, group);
+		super(builder, group, null);
 		this.builder = builder;
 
 

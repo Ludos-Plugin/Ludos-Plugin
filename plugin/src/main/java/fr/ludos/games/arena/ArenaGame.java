@@ -65,7 +65,7 @@ public class ArenaGame extends WaveGame {
 
 
 	protected ArenaGame(Builder builder, Group group) {
-		super(builder, group);
+		super(builder, group, null);
 		this.builder = builder;
 
 

@@ -1,6 +1,8 @@
 package fr.ludos.core.wave;
 
-import org.bukkit.Bukkit;
+import javax.annotation.Nullable;
+
+import org.bukkit.scoreboard.Scoreboard;
 
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
@@ -16,8 +18,8 @@ public abstract class WaveGame extends Game {
 		return super.isClear() && getWaveController().isClear();
 	}
 
-	protected WaveGame(Builder builder, Group group) {
-		super(builder, group, Bukkit.getServer().getScoreboardManager().getNewScoreboard());
+	protected WaveGame(Builder builder, Group group, @Nullable Scoreboard scoreboard) {
+		super(builder, group, scoreboard);
 	}
 
 

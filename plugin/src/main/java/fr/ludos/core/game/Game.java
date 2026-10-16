@@ -105,10 +105,10 @@ public abstract class Game extends TwoStepGameProcessBase {
 		}
 	}
 
-	protected Game(Builder builder, Group group, Scoreboard scoreboard) {
+	protected Game(Builder builder, Group group, @Nullable Scoreboard scoreboard) {
 		this.builder = builder;
 		this.group = group;
-		this.scoreboard = builder.getLudos().getServer().getScoreboardManager().getNewScoreboard();
+		this.scoreboard = scoreboard != null ? scoreboard : builder.getLudos().getServer().getScoreboardManager().getNewScoreboard();
 	}
 
 	public static ScopeConfigMap scopeConfig(Ludos ludos, ConfigNodeCollection nodes) {

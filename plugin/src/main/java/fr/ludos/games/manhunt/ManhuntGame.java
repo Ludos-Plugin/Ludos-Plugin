@@ -83,7 +83,7 @@ public class ManhuntGame extends Game {
 
 
 	protected ManhuntGame(Builder builder, Group group) {
-		super(builder, group, Bukkit.getServer().getScoreboardManager().getNewScoreboard());
+		super(builder, group, null);
 		this.builder = builder;
 
 		this.worldManager = WorldManager.within(this)
