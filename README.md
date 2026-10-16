@@ -1,19 +1,29 @@
 # LudosPlugin
 
 ## Introduction
-Minecraft est un jeu de type bac à sable très populaire. En effet, ce jeu, par sa modularité, permet de créer ses propres règles voire un mode de jeu à l'intérieur du jeu.
-De cet engouement découle une popularité grandissante pour certains modes de jeux, tels que le Manhunt, un mode de jeu créé et popularisé via YouTube.
-Malgré le succès de ce mode, il n'existe pas ou peu de moyens pour encadrer ou organiser une partie, ce qui oblige les joueurs à se faire confiance (tricher), et certains problèmes de praticité peuvent gâcher la partie de ces derniers. C'est là que nous intervenons.
+Ludos is a Java Plugin for Spigot Minecraft Servers; its aim is to make it as easy as possible for users to play popular minigames with their friends, with the possibility of using custom-built Roles.
+Ludos includes extensible Group, World and Teams Management systems along with modular Games and Roles frameworks to ease add-on development. 
 
-## Objectif
-Notre projet a pour vocation de rendre accessible le mode de jeu Manhunt sur Minecraft à l'aide d'un plugin pour l'implémenter dans le futur sur un serveur.
+## Installation
+To build Ludos Plugin, [Java 17](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) needs to be installed and set up.
 
-## Membre du projet
-### Chefs
-* **Axel Sevenet** _alias_ [@AxelSevenS](https://github.com/AxelSevenS)
-* **Valentin Chorro** _alias_ [@Ganon358](https://github.com/Ganon358)
-### Collaborateurs
-* **Guillaume PHAM** _alias_ [@GuillaumePham](https://github.com/GuillaumePHAM)
-* **Quentin Coletta Chambon** _alias_ [@feur25](https://github.com/feur25)
+### Docker
+If you want to quickly test the Plugin, you can use Docker compose to run a compatible Minecraft server.
+```docker compose up ludos-server```
+Using the `build.bat`/`build.sh` scripts will automatically update the plugin in the server, you only need to reload the plugins in-game to apply changes: `/reload` or `/reload confirm`, depending on the server.
 
 
+### VSCode
+When using VSCode, you can use the [Java Extension Pack](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack) extension to make development simpler.
+If at any point during development, the code analyzer stops working correctly (showing errors that don't actually exist when building, failing to fetch dependencies...), use the `Java: Clean Java Language Server Workspace` command, which will then prompt an editor restart.
+This should fix the code analyzer; if not, then check your JDK installation.
+
+## Ingame
+If the Plugin install was successful, you should see a message in chat offering a Ludos Guidebook.
+The Guidebook is a more user-friendly interface to pick a Role and start Games.
+For a more in-depth interface, use the `/ludos` command:
+- `/ludos role` for role actions
+- `/ludos group` for group actions
+- `/ludos game` for game actions
+
+To Start a Game, you need to be in a group `/ludos group create` (`ludos group invite` to invite players to the group), you can then configure the game if you want `/ludos group config <game_id>` and start a game `/ludos game start <game_id>`.

@@ -1,0 +1,76 @@
+package fr.ludos.core.command.ludos.game;
+
+import java.util.List;
+
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+import fr.ludos.core.command.Subcommand;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
+import fr.ludos.core.game.Game;
+import fr.ludos.core.game.GameManager;
+import fr.ludos.core.group.Group;
+
+/**
+ * {@link Subcommand} to stop the currently-operating {@link Game}, as a {@link Group} leader.
+ */
+public class GameStop implements Subcommand {
+	private final static String ID = "stop";
+	private final GameManager manager;
+
+	public GameStop(GameManager manager) {
+		this.manager = manager;
+	}
+
+	@Override
+	public String id() {
+		return ID;
+	}
+
+	@Override
+	public String getDescription() {
+		return "Stop the current game.";
+	}
+	@Override
+	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+		if (!(sender instanceof Player player)) {
+			sender.sendMessage("Only players can stop games.");
+			return true;
+		}
+
+		Group group = manager.getLudos().groupManager().getGroupOfPlayer(player);
+		if (group == null) {
+			sender.sendMessage("You are not in a group.");
+			return true;
+		}
+
+		boolean membersCanRunGames = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canRunGames();
+		if (! group.isLeader(player) && ! membersCanRunGames) {
+			sender.sendMessage("Only the group leader can stop the game.");
+			return true;
+		}
+
+		Game game = group.game();
+		if (game == null) {
+			sender.sendMessage("There is no game running.");
+			return true;
+		}
+
+		game.stop();
+		return true;
+	}
+	@Override
+	public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+		return null;
+	}
+	@Override
+	public String getUsage(@NotNull CommandSender sender) {
+		return "";
+	}
+	@Override
+	public boolean requireOp() {
+		return false;
+	}
+}

@@ -1,0 +1,58 @@
+package fr.ludos.core.item.texture;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.bukkit.inventory.ItemStack;
+
+/**
+ * Registry for custom model data mappings used by texture providers.
+ */
+public final class CustomModelRegistry {
+	private static final ConcurrentHashMap<String, Integer> REGISTRY = new ConcurrentHashMap<>();
+
+	public static int register(String key, TextureProvider provider) {
+		return REGISTRY.computeIfAbsent(key, k -> provider.calculateCustomModelData(k));
+	}
+
+	public static <T extends TextureProvider> void apply(ItemStack item, T textureProvider) {
+		if (item == null || item.getItemMeta() == null || textureProvider == null) return;
+
+		String id = textureProvider.getTextureId();
+		Integer modelId = REGISTRY.get(id);
+
+		if (modelId == null) return;
+
+		var meta = item.getItemMeta();
+		meta.setCustomModelData(modelId);
+		item.setItemMeta(meta);
+	}
+
+	public static void apply(ItemStack item, String id) {
+		if (item == null || item.getItemMeta() == null) return;
+
+		Integer modelId = REGISTRY.get(id);
+
+		if (modelId == null) return;
+
+		var meta = item.getItemMeta();
+		meta.setCustomModelData(modelId);
+		item.setItemMeta(meta);
+	}
+
+	public static Integer get(String id) {
+		return REGISTRY.get(id);
+	}
+
+	public static boolean has(String id) {
+		return REGISTRY.containsKey(id);
+	}
+
+	public static Set<String> getAllKeys() {
+		return REGISTRY.keySet();
+	}
+
+	public static void clear() {
+		REGISTRY.clear();
+	}
+}

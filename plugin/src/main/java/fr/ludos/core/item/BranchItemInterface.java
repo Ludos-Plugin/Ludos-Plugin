@@ -1,0 +1,139 @@
+package fr.ludos.core.item;
+
+import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import fr.ludos.core.Ludos;
+import fr.ludos.core.game.Game;
+import fr.ludos.core.gui.Named;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+
+/**
+ * Special Item with different "branches" (firing modes, switching between abilities...).
+ * @param <T> self type
+ * @param <TBranch> The type that a Branch needs to implement/extend to be used as a Branch for this type.
+ */
+public interface BranchItemInterface<T extends BranchItemInterface<T, TBranch>, TBranch extends BranchItemInterface.Branch> extends SpecialItemInterface {
+	public static final String BRANCH_KEY_STRING = "branch";
+	public static final NamespacedKey BRANCH_KEY = new NamespacedKey(Ludos.NAMESPACE, BRANCH_KEY_STRING);
+
+	public TBranch getBranch();
+	public void onSetBranch(TBranch branch);
+	public TBranch getNextBranch();
+
+	public boolean switchBranch(TBranch branch);
+	public void addBranch(TBranch branch);
+	public boolean removeBranch(TBranch branch);
+
+	public default void cycleBranch() {
+		TBranch newBranch = getNextBranch();
+
+		switchBranch(newBranch);
+
+		Player owner = owner();
+		owner.playSound(owner.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, 0.25f, 1);
+	}
+
+	/**
+	 * Utility function to handle branch switching when player switches branches.
+	 * @param <T> The type of the item, must extend SpecialItem
+	 * @param <TBranch> The type of the branch, must be an enum that implements {@link BranchItemInterface.Branch}
+	 * @param item The item whose branch is being switched
+	 * @param newBranch The new branch to switch to
+	 */
+	public static <T extends BranchItemInterface<T, TBranch>, TBranch extends BranchItemInterface.Branch> void setItemBranch(BranchItemInterface<T, TBranch> item, TBranch newBranch) {
+		final TBranch oldBranch = item.getBranch();
+
+		saveBranchId(item.stack(), newBranch.id());
+
+		item.onSetBranch(newBranch);
+
+		if (oldBranch != null) {
+			oldBranch.onDeselectBranch(item);
+		}
+		newBranch.onSelectBranch(item);
+
+		item.update();
+	}
+
+	public static void saveBranchId(ItemStack stack, String branchId) {
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) return;
+
+		PersistentDataContainer container = meta.getPersistentDataContainer();
+
+		container.set(BRANCH_KEY, PersistentDataType.STRING, branchId);
+		stack.setItemMeta(meta);
+	}
+
+	public static @Nullable String branchFromItemStack(ItemStack stack, Game game) {
+		if (stack == null) return null;
+
+		ItemMeta meta = stack.getItemMeta();
+		if (meta == null) return null;
+
+		PersistentDataContainer container = meta.getPersistentDataContainer();
+
+		if ( ! container.has(BRANCH_KEY, PersistentDataType.STRING) ) return null;
+		return container.get(BRANCH_KEY, PersistentDataType.STRING);
+	}
+
+	public static Component getCycleBranchAnnotation(final @NotNull String keybind) {
+		return SpecialItemInterface.getActionAnnotation(keybind, Component.text("Switch Mode"));
+	}
+	public static <TBranch extends Branch> Component getBranchAnnotation(TBranch branch) {
+		if (branch == null) return Component.empty();
+
+		return Component.text('(')
+			.append(branch.displayName())
+			.append(Component.text(')'))
+			.decoration(TextDecoration.ITALIC, false);
+	}
+	public static <TBranch extends Branch> Component getBranchLoreField(TBranch branch) {
+		return Component.text("Mode: ")
+				.color(NamedTextColor.GRAY)
+			.append(branch.displayName()
+				.color(NamedTextColor.YELLOW))
+			.decoration(TextDecoration.ITALIC, false);
+	}
+
+	/**
+	 * A strategy-pattern like system for {@link SpecialItem}s to switch between, at will.
+	 */
+	public static interface Branch extends Named {
+		public String id();
+		public Component getDescription();
+
+		/**
+		 * Called when item is equipped (mainhand) while the branch is selected.
+		 * @param item The item being equipped
+		 */
+		public void onEquip(SpecialItemInterface item);
+		/**
+		 * Called when item is unequipped (mainhand) while the branch is selected.
+		 * @param item The item being unequipped
+		 */
+		public void onUnequip(SpecialItemInterface item);
+
+		/**
+		 * Called when the branch is deselected (another branch is selected).
+		 * @param item The item whose branch is being deselected
+		 */
+		public void onDeselectBranch(SpecialItemInterface item);
+
+		/**
+		 * Called when the branch is selected.
+		 * @param item The item whose branch is being selected
+		 */
+		public void onSelectBranch(SpecialItemInterface item);
+	}
+}

@@ -1,0 +1,131 @@
+package fr.ludos.core.monster;
+
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
+import org.bukkit.Location;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.scheduler.BukkitTask;
+
+import fr.ludos.core.game.Game;
+import fr.ludos.core.gui.Named;
+
+/**
+ * Base class for special monsters managed by the Ludos.
+ *
+ * @param <TEntity> the type of living entity used for the monster
+ */
+public abstract class SpecialMonster<TEntity extends LivingEntity> implements Named {
+	private final String typeId;
+	private final Game game;
+	private final UUID id;
+
+	@Nullable
+	private TEntity entity;
+
+	@Nullable
+	private BukkitTask tickTask;
+
+	protected SpecialMonster(String typeId, Game game) {
+		this.typeId = typeId;
+		this.game = game;
+		this.id = UUID.randomUUID();
+	}
+
+	public String typeId() {
+		return typeId;
+	}
+
+	public UUID id() {
+		return id;
+	}
+
+	public Game game() {
+		return game;
+	}
+
+	@Nullable
+	public TEntity entity() {
+		return entity;
+	}
+
+	public boolean isAlive() {
+		TEntity entity = this.entity;
+		if (entity == null) return false;
+		return entity.isValid() && ! entity.isDead();
+	}
+
+	public final void spawn(Location location) {
+		if (isAlive()) return;
+		TEntity spawned = spawnMonsterEntity(location);
+		this.entity = spawned;
+
+		onMonsterSpawn(spawned);
+
+		tickTask = game.plugin().getServer().getScheduler().runTaskTimer(game.plugin(), () -> {
+			if (!isAlive()) {
+				disposeTask();
+				return;
+			}
+			onMonsterTick(spawned);
+		}, 1L, 1L);
+	}
+
+	public final void despawn() {
+		disposeTask();
+		TEntity current = entity;
+		entity = null;
+
+		if (current != null) {
+			onMonsterDespawn(current);
+			if (current.isValid() && !current.isDead()) {
+				current.remove();
+			}
+		}
+	}
+
+	public final void onDeath() {
+		disposeTask();
+		TEntity current = entity;
+		entity = null;
+
+		if (current != null) {
+			onMonsterDeath(current);
+		}
+	}
+
+	protected final void setMaxHealth(LivingEntity livingEntity, double maxHealth) {
+		AttributeInstance maxHealthAttr = livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+		if (maxHealthAttr != null) {
+			maxHealthAttr.setBaseValue(maxHealth);
+		}
+		livingEntity.setHealth(Math.min(maxHealth, livingEntity.getHealth()));
+	}
+
+	protected final void setAttributeBase(LivingEntity livingEntity, Attribute attribute, double value) {
+		AttributeInstance instance = livingEntity.getAttribute(attribute);
+		if (instance != null) {
+			instance.setBaseValue(value);
+		}
+	}
+
+	private void disposeTask() {
+		if (tickTask != null) {
+			tickTask.cancel();
+			tickTask = null;
+		}
+	}
+
+	protected abstract TEntity spawnMonsterEntity(Location location);
+
+	protected void onMonsterSpawn(TEntity entity) { }
+
+	protected abstract void onMonsterTick(TEntity entity);
+
+	protected void onMonsterDespawn(TEntity entity) { }
+
+	protected void onMonsterDeath(TEntity entity) { }
+}

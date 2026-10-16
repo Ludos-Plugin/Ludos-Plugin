@@ -1,0 +1,191 @@
+package fr.ludos.core.lobby;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.util.BoundingBox;
+import org.bukkit.util.Vector;
+
+import fr.ludos.core.structure.BoundingBoxStructure;
+import fr.ludos.core.structure.Structure;
+import fr.ludos.other.ExcludeFromJacocoGeneratedReport;
+
+/**
+ * Default {@link Structure} for a {@link Lobby}.
+ */
+public class LobbyStructure extends BoundingBoxStructure {
+	private static final Random RANDOM = new Random();
+	private final Map<Location, BlockData> blocksData;
+	private final Location entranceLocation;
+
+	private final static int RADIUS = 5;
+	private final static int HEIGHT = 5;
+	private final static int PILLAR_DISTANCE = RADIUS - 2;
+
+	private final BoundingBox bb;
+
+	private LobbyStructure(Location location, Map<Location, BlockData> blocksData, Location entranceLocation) {
+		super(location);
+		this.blocksData = blocksData;
+		this.entranceLocation = entranceLocation;
+
+		Vector vec = location.toVector();
+		bb = new BoundingBox(
+			vec.getX() - RADIUS, vec.getY(), vec.getZ() - RADIUS,
+			vec.getX() + RADIUS, vec.getY() + HEIGHT, vec.getZ() + RADIUS
+		);
+	}
+
+	@Override
+	public Location getEntranceLocation() {
+		return entranceLocation.toCenterLocation();
+	}
+
+	@Override
+	public Location randomizedEntranceLocation() {
+		return entranceLocation.toCenterLocation()
+			.add(
+				RANDOM.nextDouble(-PILLAR_DISTANCE, PILLAR_DISTANCE),
+				0,
+				RANDOM.nextDouble(-PILLAR_DISTANCE, PILLAR_DISTANCE)
+			);
+	}
+
+	@Override
+	public BoundingBox getBoundingBox() {
+		return bb;
+	}
+
+	@Override
+	public void destroy() {
+		for (Map.Entry<Location, BlockData> backup : blocksData.entrySet()) {
+			Location blockLocation = backup.getKey();
+			BlockData blockData = backup.getValue();
+			if (blockLocation == null || blockData == null) continue;
+			blockLocation.getBlock().setBlockData(blockData, false);
+		}
+		blocksData.clear();
+	}
+
+	/**
+	 * Builder for {@link LobbyStructure}s.
+	 */
+	public static class Builder extends Structure.Builder {
+		public Builder() { }
+
+		@Override
+		@ExcludeFromJacocoGeneratedReport
+		public Structure build(Location location) {
+			Location origin = location.add(0, 15, 0).toBlockLocation();
+
+			HashMap<Location, BlockData> oldBlocks = new HashMap<>();
+
+			Material floorBorder = Material.BLUE_CONCRETE;
+			Material floorCenter = Material.CYAN_STAINED_GLASS;
+			Material wall = Material.BLACK_CONCRETE;
+			Material pillar = Material.POLISHED_BLACKSTONE_BRICKS;
+			Material window = Material.CYAN_STAINED_GLASS;
+			Material roof = Material.BLACKSTONE;
+			Material accent = Material.SEA_LANTERN;
+
+			// Hollow out the structure
+			for (int x = -RADIUS; x <= RADIUS; x++) {
+				for (int z = -RADIUS; z <= RADIUS; z++) {
+					for (int y = 0; y <= HEIGHT; y++) {
+						Location blockLoc = origin.clone().add(x, y, z);
+						setBlock(blockLoc, Material.AIR, oldBlocks);
+					}
+				}
+			}
+
+			// Bordered floor
+			for (int x = -RADIUS; x <= RADIUS; x++) {
+				for (int z = -RADIUS; z <= RADIUS; z++) {
+					Location blockLoc = origin.clone().add(x, 0, z);
+					int absX = Math.abs(x);
+					int absZ = Math.abs(z);
+					setBlock(blockLoc, ((absX > 2 && absZ > 2) || absX == RADIUS || absZ == RADIUS) ? floorBorder : floorCenter, oldBlocks);
+				}
+			}
+
+			// Floor Lights
+			for (int dx : new int[]{-2, 2}) {
+				for (int dz : new int[]{-2, 2}) {
+					setBlock(origin.clone().add(dx, 0, dz), accent, oldBlocks);
+				}
+			}
+
+			// North and South walls
+			for (int x = -RADIUS; x <= RADIUS; x++) {
+				for (int y = 1; y <= HEIGHT - 1; y++) {
+					Location north = origin.clone().add(x, y, -RADIUS);
+					Location south = origin.clone().add(x, y, RADIUS);
+					int absX = Math.abs(x);
+					if ((absX >= 1 && absX <= 3) && (y >= 1 && y <= 3)) {
+						setBlock(north, window, oldBlocks);
+						setBlock(south, window, oldBlocks);
+					} else {
+						setBlock(north, wall, oldBlocks);
+						setBlock(south, wall, oldBlocks);
+					}
+				}
+			}
+
+			// East and West walls
+			for (int z = -RADIUS + 1; z <= RADIUS - 1; z++) {
+				for (int y = 1; y <= HEIGHT - 1; y++) {
+					Location west = origin.clone().add(-RADIUS, y, z);
+					Location east = origin.clone().add(RADIUS, y, z);
+					int absZ = Math.abs(z);
+					if ((absZ >= 1 && absZ <= 3) && (y >= 1 && y <= 3)) {
+						setBlock(west, window, oldBlocks);
+						setBlock(east, window, oldBlocks);
+					} else {
+						setBlock(west, wall, oldBlocks);
+						setBlock(east, wall, oldBlocks);
+					}
+				}
+			}
+
+			// Roof
+			for (int x = -RADIUS; x <= RADIUS; x++) {
+				for (int z = -RADIUS; z <= RADIUS; z++) {
+					setBlock(origin.clone().add(x, HEIGHT, z), Material.POLISHED_BLACKSTONE_SLAB, oldBlocks);
+				}
+			}
+
+			for (int x = -RADIUS; x <= RADIUS; x++) {
+				setBlock(origin.clone().add(x, HEIGHT, -RADIUS), roof, oldBlocks);
+				setBlock(origin.clone().add(x, HEIGHT, RADIUS), roof, oldBlocks);
+			}
+
+			for (int z = -RADIUS + 1; z <= RADIUS - 1; z++) {
+				setBlock(origin.clone().add(-RADIUS, HEIGHT, z), roof, oldBlocks);
+				setBlock(origin.clone().add(RADIUS, HEIGHT, z), roof, oldBlocks);
+			}
+
+
+			for (int y = 1; y <= HEIGHT - 1; y ++) {
+				setBlock(origin.clone().add(-PILLAR_DISTANCE, y, -PILLAR_DISTANCE), pillar, oldBlocks);
+				setBlock(origin.clone().add(PILLAR_DISTANCE, y, -PILLAR_DISTANCE), pillar, oldBlocks);
+				setBlock(origin.clone().add(-PILLAR_DISTANCE, y, PILLAR_DISTANCE), pillar, oldBlocks);
+				setBlock(origin.clone().add(PILLAR_DISTANCE, y, PILLAR_DISTANCE), pillar, oldBlocks);
+			}
+
+			Location entrance = origin.clone().add(0, 1, 0);
+			return new LobbyStructure(origin, oldBlocks, entrance);
+		}
+
+		private void setBlock(Location location, Material material, HashMap<Location, BlockData> oldBlocks) {
+			if (location == null) return;
+			if (! oldBlocks.containsKey(location)) {
+				oldBlocks.put(location, location.getBlock().getBlockData().clone());
+			}
+			location.getBlock().setType(material);
+		}
+	}
+}

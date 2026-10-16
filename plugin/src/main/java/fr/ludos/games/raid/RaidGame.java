@@ -1,0 +1,176 @@
+package fr.ludos.games.raid;
+
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+
+import org.bukkit.DyeColor;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World.Environment;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
+import org.bukkit.block.banner.Pattern;
+import org.bukkit.block.banner.PatternType;
+import org.bukkit.entity.Player;
+
+import fr.ludos.core.Ludos;
+import fr.ludos.core.PlayerList;
+import fr.ludos.core.area.WorldBorderArea;
+import fr.ludos.core.game.Game;
+import fr.ludos.core.game.GameManager;
+import fr.ludos.core.group.Group;
+import fr.ludos.core.lobby.Lobby;
+import fr.ludos.core.lobby.Lobby.ClearMode;
+import fr.ludos.core.persistence.config.ConfigNodeCollection;
+import fr.ludos.core.persistence.config.ConfigNodeMap;
+import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
+import fr.ludos.core.wave.WaveController;
+import fr.ludos.core.wave.WaveGame;
+import fr.ludos.core.world.WorldManager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.BannerBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
+
+/**
+ * Implementation of the Raid {@link Game}.
+ */
+public class RaidGame extends WaveGame {
+	public static final String ID = "raid";
+
+	private final Builder builder;
+	public final Builder builder() {
+		return this.builder;
+	}
+
+	private final WorldManager worldManager;
+	@Override
+	public WorldManager worldManager() {
+		return worldManager;
+	}
+
+	private final RaidTeamController teamController;
+	@Override
+	public RaidTeamController teamController() {
+		return teamController;
+	}
+
+	private final RaidWaveController waveController;
+	@Override
+	public WaveController getWaveController() {
+		return this.waveController;
+	}
+
+
+	protected RaidGame(Builder builder, Group group) {
+		super(builder, group);
+		this.builder = builder;
+
+
+		this.waveController = new RaidWaveController(
+			this,
+			builder.waves.getGameConfig(group, builder)
+		);
+
+		this.worldManager = WorldManager.within(this)
+			.of(builder.createWorldCreator())
+			.withLobby(
+				Lobby.within(this)
+					.clear(ClearMode.ALL)
+					.waitFor(new PlayerList.GroupWaitPlayers(group))
+					.then(this::start)
+			)
+			.inArea(
+				WorldBorderArea.within(
+					WorldBorderArea.CONFIG.getGameConfig(group, builder),
+					plugin()
+				)
+			)
+			.build();
+
+		this.teamController = new RaidTeamController(
+			this,
+			builder().getLudos().playersConfig.getGameConfig(group, builder)
+		);
+	}
+
+	/**
+	 * Builder for {@link RaidGame}.
+	 */
+	public static class Builder extends Game.Builder {
+		public final IntegerConfigEntry waves =
+			new IntegerConfigEntry(
+				Component.text("Number of Waves"),
+				"waves", 0,
+				true
+			) {
+				@Override
+				public AbstractItemBuilder<?> createItem(Player player) {
+					return new ItemBuilder(Material.SKELETON_SKULL);
+				}
+			};
+
+		public final ConfigNodeMap configMap = getConfigMap(List.of(
+			getLudos().playersConfig,
+			waves,
+			WorldBorderArea.CONFIG
+		));
+
+
+		public Builder(GameManager manager) {
+			super(manager);
+		}
+
+		@Override
+		public String getId() {
+			return ID;
+		}
+
+		@Override
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new BannerBuilder(Material.BLACK_BANNER)
+				.addPattern(new Pattern(DyeColor.CYAN, PatternType.RHOMBUS_MIDDLE))
+				.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.STRIPE_BOTTOM))
+				.addPattern(new Pattern(DyeColor.GRAY, PatternType.STRIPE_CENTER))
+				.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_MIDDLE))
+				.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.HALF_HORIZONTAL))
+				.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.CIRCLE_MIDDLE))
+				.addPattern(new Pattern(DyeColor.BLACK, PatternType.BORDER));
+		}
+
+		@Override
+		public TextComponent displayName() {
+			return Component.text("Raid")
+				.color(NamedTextColor.GOLD);
+		}
+		@Override
+		public TextComponent getDescription() {
+			return Component.text("Fight against hordes of Enemies with your friends.\n\n" +
+				"Every few waves, you will have to defeat an especially ferocious enemy..."
+			);
+		}
+
+		public WorldCreator createWorldCreator() {
+			String worldName = "raid_" + UUID.randomUUID();
+			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.NAMESPACE, worldName))
+				.environment(Environment.NORMAL)
+				.type(WorldType.NORMAL)
+				.generateStructures(true)
+				.seed(new Random().nextLong());
+			return wc;
+		}
+
+		@Override
+		public ConfigNodeCollection getConfig() {
+			return configMap;
+		}
+
+		@Override
+		public RaidGame build(Group group) {
+			return new RaidGame(this, group);
+		}
+	}
+}

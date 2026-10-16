@@ -1,0 +1,244 @@
+package fr.ludos.roles.berserker;
+
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Set;
+import java.util.UUID;
+
+import org.bukkit.Color;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
+
+import fr.ludos.core.Ludos;
+import fr.ludos.core.game.Game;
+import fr.ludos.core.game.GameEvents;
+import fr.ludos.core.item.Categories;
+import fr.ludos.core.role.Role;
+import fr.ludos.roles.berserker.items.BerserkerAxe;
+import fr.ludos.roles.berserker.items.BerserkerRageBrew;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
+
+
+/**
+ * Implementation of the Berserker {@link Role}.
+ */
+public class BerserkerRole extends Role {
+	public static final String ID = "berserker";
+
+	public static final AttributeModifier DAMAGE_MODIFIER = new AttributeModifier("berserker_offhand_damage", 4.0, AttributeModifier.Operation.ADD_NUMBER);
+
+	private static final int AXE_COOLDOWN_TICKS = 32;
+	private static final int RAGE_COOLDOWN_TICKS = 16;
+
+	private final Set<UUID> ragingPlayers = new HashSet<>();
+	private BukkitTask particleTask;
+
+
+	public BerserkerRole(Builder builder, Game game) {
+		super(builder, game);
+	}
+
+	public boolean isRaging(Player player) {
+		return ragingPlayers.contains(player.getUniqueId());
+	}
+
+	public void setRage(Player player, boolean active) {
+		if (active) {
+			ragingPlayers.add(player.getUniqueId());
+		} else {
+			ragingPlayers.remove(player.getUniqueId());
+		}
+	}
+
+	public int calculateCooldown(Player player) {
+		return isRaging(player) ? RAGE_COOLDOWN_TICKS : AXE_COOLDOWN_TICKS;
+	}
+
+	@Override
+	protected LinkedHashMap<String, GameEvents> createGameEvents(Role.Builder builder, Game game) {
+		LinkedHashMap<String, GameEvents> map = new LinkedHashMap<>();
+		map.put(BerserkerAxe.ID, new BerserkerAxe.Events(game));
+		map.put(BerserkerRageBrew.ID, new BerserkerRageBrew.Events(game, this));
+		return map;
+	}
+
+	@Override
+	protected void onRoleStart() {
+		super.onRoleStart();
+
+		particleTask = new BukkitRunnable() {
+			@Override
+			public void run() {
+				for (Player player : getBuilder().getManager().getPlayersOfRole(ID)) {
+					if (player == null || !player.isOnline()) continue;
+					spawnRageParticles(player);
+				}
+			}
+		}.runTaskTimer(game().plugin(), 0, 10);
+	}
+
+	@Override
+	protected void onRoleStop() {
+		super.onRoleStop();
+
+		if (particleTask != null) {
+			particleTask.cancel();
+			particleTask = null;
+		}
+		ragingPlayers.clear();
+	}
+
+	@EventHandler
+	public void onEntityDamage(EntityDamageByEntityEvent event) {
+		if (! (event.getDamager() instanceof Player player)) return;
+		if (! (event.getEntity() instanceof LivingEntity target)) return;
+		if (! getBuilder().getManager().isPlayerRole(player, ID)) return;
+
+		if (! isRaging(player)) return;
+
+		double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+		if (maxHealth <= 0) return;
+
+		double healAmount = event.getFinalDamage() * 0.25;
+		player.setHealth(Math.min(maxHealth, player.getHealth() + healAmount));
+		spawnLifestealParticles(player, target);
+		player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.8f);
+	}
+
+	@EventHandler
+	public void onOffHandAttack(PlayerInteractEvent event) {
+		if (event.getHand() != EquipmentSlot.HAND && event.getHand() != EquipmentSlot.OFF_HAND) return;
+		BerserkerAxe.Events axeEvents = (BerserkerAxe.Events) getGameEvents().get(BerserkerAxe.ID);
+		if (axeEvents == null) return;
+
+		Action action = event.getAction();
+		if (! action.isRightClick()) return;
+
+		if (! getBuilder().getManager().isPlayerRole(event.getPlayer(), ID)) return;
+
+		Player player = event.getPlayer();
+
+		BerserkerAxe offHandAxe = axeEvents.getItem(player.getInventory().getItemInOffHand());
+		if (offHandAxe == null) return;
+
+		Material mainHandMaterial = player.getInventory().getItemInMainHand().getType();
+		if (! mainHandMaterial.isEmpty() && ! Categories.MELEE_WEAPONS.contains(mainHandMaterial)) return;
+
+		Entity target = player.getTargetEntity(5);
+		if (! (target instanceof LivingEntity livingTarget)) return;
+
+		Material offHandAxeMaterial = offHandAxe.stack().getType();
+		if (player.getCooldown(offHandAxeMaterial) > 0) return;
+		player.setCooldown(offHandAxeMaterial, calculateCooldown(player));
+
+		AttributeInstance attackDamageAttribute = player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+		if (attackDamageAttribute == null) return;
+		attackDamageAttribute.addModifier(DAMAGE_MODIFIER);
+
+		player.attack(livingTarget);
+		event.setCancelled(true);
+
+		player.swingOffHand();
+
+		attackDamageAttribute.removeModifier(DAMAGE_MODIFIER);
+	}
+
+	private void spawnLifestealParticles(Player player, LivingEntity target) {
+		new BukkitRunnable() {
+			double progress = 0.0;
+			final double increment = 1.0 / 10;
+
+			public void run() {
+				if (progress >= 1.0) {
+					this.cancel();
+					return;
+				}
+
+				Location start = target.getLocation();
+				Location end = player.getLocation();
+
+				// Linear interpolation (lerp) between start and end
+				double x = start.getX() + (end.getX() - start.getX()) * progress;
+				double y = start.getY() + (end.getY() - start.getY()) * progress;
+				double z = start.getZ() + (end.getZ() - start.getZ()) * progress;
+
+				Location particleLoc = new Location(start.getWorld(), x, y, z);
+				player.getWorld().spawnParticle(
+					Particle.REDSTONE,
+					particleLoc,
+					6, 0.3, 0.3, 0.3,
+					new Particle.DustOptions(Color.RED, 1.0f)
+				);
+
+				progress += increment;
+			}
+		}.runTaskTimer(plugin(), 0, 1); // Run every tick for 10 ticks
+	}
+
+	private void spawnRageParticles(Player player) {
+		if (!isRaging(player)) return;
+
+		player.getWorld().spawnParticle(
+			Particle.VILLAGER_ANGRY,
+			player.getLocation().add(0, 1, 0),
+			4, 0.4, 0.4, 0.4
+		);
+	}
+
+	/**
+	 * Builder for the {@link BerserkerRole}.
+	 */
+	public static class Builder extends Role.Builder {
+
+		public Builder(Ludos ludos) {
+			super(ludos.roleManager(), ludos);
+		}
+
+		@Override
+		public String getId() {
+			return ID;
+		}
+
+		@Override
+		public AbstractItemBuilder<?> createItem(Player player) {
+			return new ItemBuilder(Material.GOLDEN_AXE);
+		}
+
+		@Override
+		public TextComponent displayName() {
+			return Component.text("Berserker")
+				.color(NamedTextColor.RED);
+		}
+
+		@Override
+		public TextComponent getDescription() {
+			return Component.text("Armed with his two Axes, the Berserker strives in the frenzy of Battle.\n" +
+				"The rage brewing within brings him strength."
+			);
+		}
+
+		@Override
+		public Role build(Game game) {
+			return new BerserkerRole(this, game);
+		}
+	}
+}

@@ -1,0 +1,66 @@
+package fr.ludos.core.command.role;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import org.junit.jupiter.api.Test;
+
+import be.seeseemelk.mockbukkit.entity.PlayerMock;
+import fr.ludos.core.role.Role;
+
+class RoleAssignmentTest extends RoleTest {
+	private final Role.Builder getValidRole() {
+		Role.Builder role = ludos.roleManager().getBuilders().get(0);
+		assertNotNull(role, "Could not find valid role");
+		return role;
+	}
+
+	@Test
+	void testSetUnsetRole() {
+		PlayerMock player1 = createPlayer("Player1");
+
+		player1.performCommand("ludos role get");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role is not unset by default");
+
+		Role.Builder role = getValidRole();
+		player1.performCommand("ludos role set " + role.getId());
+		assertEquals("Your role is now " + role.getId(), player1.nextMessage(), "Role was not set");
+
+		player1.performCommand("ludos role get");
+		assertEquals(role.getId(), player1.nextMessage(), "Role was not persisted after being set");
+
+		assertEquals(role, ludos.roleManager().getPlayerRole(player1), "Role appears set but isn't");
+
+		player1.performCommand("ludos role reset");
+		assertEquals("Your role was reset", player1.nextMessage(), "Role reset message was not sent");
+
+		player1.performCommand("ludos role get");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was not unset");
+
+		assertNull(ludos.roleManager().getPlayerRole(player1), "Role appears unset but isn't");
+	}
+
+	@Test
+	void testSetInvalidRole() {
+		PlayerMock player1 = createPlayer("Player1");
+
+		String invalidRoleId = "invalidRole";
+		Role.Builder role = ludos.roleManager().getRoleById(invalidRoleId);
+		assertNull(role, "Invalid role ID should not return a valid role builder");
+
+		player1.performCommand("ludos role set " + invalidRoleId);
+		assertEquals("Role not found: " + invalidRoleId.toLowerCase(), player1.nextMessage(), "Role was not set");
+
+		player1.performCommand("ludos role get");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was set despite being invalid");
+
+		player1.performCommand("ludos role reset");
+		assertEquals(null, player1.nextMessage(), "Role was reset, despite being already unset");
+
+		player1.performCommand("ludos role get");
+		assertEquals(Role.NONE_LABEL, player1.nextMessage(), "Role was not reset");
+
+		assertNull(ludos.roleManager().getPlayerRole(player1), "Role appears unset but isn't");
+	}
+}

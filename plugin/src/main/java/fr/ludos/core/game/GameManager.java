@@ -1,0 +1,155 @@
+package fr.ludos.core.game;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.Nullable;
+
+import fr.ludos.core.Ludos;
+import fr.ludos.core.Utility;
+import fr.ludos.core.command.ludos.config.game.GameConfigMap;
+import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
+import fr.ludos.core.game.gui.GameListGui;
+import fr.ludos.core.group.Group;
+
+/**
+ * Manager class for {@link Game}s, used to maintain a registry of games for use in {@link Ludos}.
+ */
+public final class GameManager {
+	private final Ludos ludos;
+
+	private final Map<String, Game.Builder> registered = new HashMap<>();
+	private final Set<Game> active = new HashSet<>();
+
+	public final GameConfigMap configMap = new GameConfigMap(this);
+
+	public final GameListGui gui = new GameListGui(this);
+
+
+	public GameManager(Ludos ludos) {
+		this.ludos = Objects.requireNonNull(ludos);
+	}
+
+
+	public final Ludos getLudos() {
+		return ludos;
+	}
+
+	public Map<String, Game.Builder> getRegistered() {
+		return registered;
+	}
+
+	@Nullable
+	public Game.Builder getGameById(String gameId) {
+		return registered.getOrDefault(gameId, null);
+	}
+
+	public List<String> getGameIds() {
+		return registered.keySet().stream().collect( Collectors.toList() );
+	}
+	public List<Game.Builder> getBuilders() {
+		return registered.values().stream().collect( Collectors.toList() );
+	}
+
+	public void registerGame(Game.Builder builder) {
+		registered.put(builder.getId(), builder);
+	}
+
+	public Set<Game> getActiveGames() {
+		return Collections.unmodifiableSet(active);
+	}
+
+	public boolean verifyPlayerCanStartGame(Player player, Game.Builder builder) {
+		AtomicReference<Group> outGroup = new AtomicReference<>();
+		return verifyPlayerCanStartGame(player, builder, outGroup);
+	}
+	public boolean verifyPlayerCanStartGame(Player player, Game.Builder builder, AtomicReference<Group> outGroup) {
+		Group group = getLudos().groupManager().getGroupOfPlayer(player);
+		if (group == null) {
+			player.sendMessage("You are not in a group.");
+			return false;
+		}
+		outGroup.set(group);
+
+		boolean membersCanRunGames = GroupConfigMap.MEMBERS_AUTH.getGroupConfig(group).canRunGames();
+		if (! group.isLeader(player) && ! membersCanRunGames) {
+			player.sendMessage("Only the group leader can start games.");
+			return false;
+		}
+
+		return true;
+	}
+
+	public boolean playerStartGame(Player player, String id) {
+		Game.Builder builder = registered.get(id);
+		if (builder == null) {
+			player.sendMessage("Game not found: " + id);
+			return false;
+		}
+
+		return playerStartGame(player, builder);
+	}
+	public boolean playerStartGame(Player player, Game.Builder builder) {
+		AtomicReference<Group> outGroup = new AtomicReference<>();
+		if (! verifyPlayerCanStartGame(player, builder, outGroup)) return false;
+
+		startGame(builder, outGroup.get());
+		return true;
+	}
+
+	public boolean startGame(String id, Group group) {
+		Game.Builder builder = registered.get(id);
+		if (builder == null) return false;
+
+		startGame(builder, group);
+		return true;
+	}
+	public final void startGame(Game.Builder builder, Group group) {
+		Game oldGame = group.game();
+		if (oldGame != null) {
+			oldGame.stop();
+			if (! oldGame.isClear()) {
+				new BukkitRunnable() {
+					@Override
+					public void run() {
+						if (! oldGame.isClear()) return;
+
+						startGameInternal(builder, group);
+						cancel();
+					}
+				}.runTaskTimer(oldGame.plugin(), 0, 20);
+				return;
+			}
+		}
+
+		startGameInternal(builder, group);
+	}
+
+	private final void startGameInternal(Game.Builder builder, Group group) {
+		Game game = builder.build(group);
+		game.addSetupListener(() -> {
+			group.setGame(game);
+			active.add(game);
+		});
+		game.addTeardownListener(() -> {
+			group.setGame(null);
+			active.remove(game);
+		});
+		game.setUp();
+	}
+
+
+	public ConfigurationSection getGlobalGameConfig(Game.Builder game) {
+		return Utility.getOrCreateConfigSection(ludos.getConfig(), configMap.namespace() + '.' + game.getId());
+	}
+}
