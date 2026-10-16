@@ -4,12 +4,12 @@ import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.Utility;
-import fr.ludos.core.game.Game;
 import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
 import net.kyori.adventure.text.Component;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
@@ -35,17 +35,6 @@ public class WorldBorderArea extends Area {
 			};
 		};
 
-	private final Builder builder;
-	@Override
-	public Builder getBuilder() {
-		return this.builder;
-	}
-
-	@Override
-	protected JavaPlugin plugin() {
-		return this.builder.game.plugin();
-	}
-
 	private Location initialCenter;
 	private double initialSize;
 
@@ -53,38 +42,42 @@ public class WorldBorderArea extends Area {
 	private double currentSize;
 
 
-	private WorldBorderArea(Builder builder) {
-		this.builder = builder;
+	private WorldBorderArea(Location center, int diameter, JavaPlugin plugin) {
+		super(center.getWorld(), plugin);
+		this.currentCenter = center;
+		this.currentSize = diameter;
 	}
 
-	public static Builder within(Game game, int diameter) {
-		return new Builder(game, diameter);
+	public static Builder within(int diameter, JavaPlugin plugin) {
+		return within((World) null, diameter, plugin);
+	}
+	public static Builder within(World world, int diameter, JavaPlugin plugin) {
+		return within(new Location(world, 0, 0, 0), diameter, plugin);
+	}
+	public static Builder within(Location location, int diameter, JavaPlugin plugin) {
+		return new Builder(location, diameter, plugin);
 	}
 
 	@Override
 	public boolean isClear() {
-		WorldBorder border = builder.location.getWorld().getWorldBorder();
-
-		return ! isStarted() &&
-			border.getCenter().equals(initialCenter) &&
-			border.getSize() == initialSize;
+		return ! isStarted();
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 
-		WorldBorder border = builder.location.getWorld().getWorldBorder();
+		WorldBorder border = world().getWorldBorder();
 
 		initialCenter = border.getCenter();
 		initialSize = border.getSize();
 
-		setBorder(builder.location, builder.getAreaDiameter(), 3);
+		setBorder(currentCenter, currentSize, 3);
 	}
 
 	@Override
 	public void onStop() {
-		WorldBorder border = builder.location.getWorld().getWorldBorder();
+		WorldBorder border = world().getWorldBorder();
 
 		if (
 			border.getCenter().equals(currentCenter) &&
@@ -95,13 +88,13 @@ public class WorldBorderArea extends Area {
 	}
 
 	public void setBorder(Location center, double size, long time) {
-		WorldBorder border = builder.location.getWorld().getWorldBorder();
+		WorldBorder border = world().getWorldBorder();
 
-		border.setCenter(builder.location);
-		currentCenter = builder.location;
+		currentCenter = center;
+		border.setCenter(currentCenter);
 
-		border.setSize(size, time);
 		currentSize = size;
+		border.setSize(currentSize, time);
 	}
 
 	@Override
@@ -138,11 +131,12 @@ public class WorldBorderArea extends Area {
 	 * Builder for a {@link WorldBorderArea}.
 	 */
 	public static class Builder extends Area.Builder<WorldBorderArea> {
-		private final Game game;
+		private Location center;
 		private Integer diameter;
 
-		public Builder(Game game, int diameter) {
-			this.game = game;
+		public Builder(Location center, int diameter, JavaPlugin plugin) {
+			super(plugin);
+			this.center = center;
 			this.diameter = diameter;
 		}
 
@@ -154,8 +148,10 @@ public class WorldBorderArea extends Area {
 		}
 
 		@Override
-		public WorldBorderArea build() {
-			return new WorldBorderArea(this);
+		public WorldBorderArea build(World world) {
+			Location loc = center.clone();
+			loc.setWorld(world);
+			return new WorldBorderArea(loc, diameter, plugin());
 		}
 	}
 }

@@ -29,6 +29,7 @@ import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.ServerMock;
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import fr.ludos.core.Ludos;
+import fr.ludos.core.PlayerList;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.group.Group;
 
@@ -75,7 +76,7 @@ class LobbyTest {
 	@Test
 	@DisplayName("Should create Lobby with default settings")
 	void testCreation() {
-		Lobby lobby = Lobby.within(mockGame).at(lobbyLocation).build();
+		Lobby lobby = Lobby.within(mockGame).at(lobbyLocation).build(lobbyLocation.getWorld());
 
 		assertNotNull(lobby);
 		assertFalse(lobby.isStarted());
@@ -87,9 +88,9 @@ class LobbyTest {
 	void testStartAndTeleport() {
 		Lobby lobby = Lobby.within(mockGame)
 				.at(lobbyLocation)
-				.waitFor(List.of(player1, player2))
+				.waitFor(new PlayerList.ArbitraryPlayers(List.of(player1, player2)))
 				.wait(Duration.ofSeconds(5))
-				.build();
+				.build(lobbyLocation.getWorld());
 
 		player1.teleport(new Location(mockWorld, 100, 64, 100));
 		player2.teleport(new Location(mockWorld, 200, 64, 200));
@@ -113,10 +114,10 @@ class LobbyTest {
 
 		Lobby lobby = Lobby.within(mockGame)
 			.at(lobbyLocation)
-			.waitFor(List.of(player1))
+			.waitFor(new PlayerList.ArbitraryPlayers(List.of(player1)))
 			.clear(Lobby.ClearMode.STATE)
 			.setGameMode(GameMode.ADVENTURE)
-			.build();
+			.build(lobbyLocation.getWorld());
 
 		lobby.start();
 
@@ -130,8 +131,8 @@ class LobbyTest {
 	void testStop() {
 		Lobby lobby = Lobby.within(mockGame)
 			.at(lobbyLocation)
-			.waitFor(List.of(player1))
-			.build();
+			.waitFor(new PlayerList.ArbitraryPlayers(List.of(player1)))
+			.build(lobbyLocation.getWorld());
 
 		lobby.start();
 		server.getScheduler().performTicks(1);
@@ -152,10 +153,10 @@ class LobbyTest {
 		Runnable onEnd = mock(Runnable.class);
 		Lobby lobby = Lobby.within(mockGame)
 			.at(lobbyLocation)
-			.waitFor(List.of(player1))
+			.waitFor(new PlayerList.ArbitraryPlayers(List.of(player1)))
 			.wait(Duration.ofSeconds(2))
 			.then(onEnd)
-			.build();
+			.build(lobbyLocation.getWorld());
 
 		lobby.start();
 		server.getScheduler().performTicks(1);
@@ -174,8 +175,8 @@ class LobbyTest {
 	void testPreventBlockBreak() {
 		Lobby lobby = Lobby.within(mockGame)
 			.at(lobbyLocation)
-			.waitFor(List.of(player1))
-			.build();
+			.waitFor(new PlayerList.ArbitraryPlayers(List.of(player1)))
+			.build(lobbyLocation.getWorld());
 
 		lobby.start();
 		server.getScheduler().performTicks(1);

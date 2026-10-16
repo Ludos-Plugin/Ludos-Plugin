@@ -1,14 +1,10 @@
 package fr.ludos.core.area;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
-
-import java.util.function.Consumer;
 
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +14,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.ServerMock;
+import fr.ludos.core.Ludos;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -26,6 +23,7 @@ class AreaTest {
 	private Area testArea;
 	private Location mockLocation;
 	private World mockWorld;
+	private Ludos mockLudos;
 
 
 	@BeforeAll
@@ -43,19 +41,11 @@ class AreaTest {
 	void setUp() {
 		mockWorld = server.addSimpleWorld("testWorld");
 		mockLocation = new Location(mockWorld, 0, 64, 0);
+		mockLudos = mock(Ludos.class);
 
 
 		// Create a concrete implementation for testing
-		testArea = new Area() {
-			@Override
-			public Builder<? extends Area> getBuilder() {
-				return new Builder<Area>() {
-					@Override
-					public Area build() {
-						return testArea;
-					}
-				};
-			}
+		testArea = new Area(mockWorld, mockLudos) {
 			@Override
 			public Location getCenter() {
 				return mockLocation;
@@ -72,27 +62,7 @@ class AreaTest {
 			public boolean isInside(Location location) {
 				return true;
 			}
-			@Override
-			protected JavaPlugin plugin() {
-				return mock(JavaPlugin.class);
-			}
 		};
-	}
-
-
-	@Test
-	@DisplayName("Should mutate area using consumer")
-	void testMutate() {
-		Consumer<Area.Builder<?>> config = builder -> {
-			// Mock the builder behavior
-		};
-
-
-		Area result = testArea.mutate(config);
-
-
-		assertNotNull(result);
-		assertEquals(testArea, result);
 	}
 
 	@Test

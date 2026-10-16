@@ -25,6 +25,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import fr.ludos.core.Ludos;
+import fr.ludos.core.PlayerList;
 import fr.ludos.core.area.WorldBorderArea;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
@@ -90,12 +91,12 @@ public class ManhuntGame extends Game {
 			.of(builder.createWorldCreator())
 			.withLobby(Lobby.within(this)
 				.clear(ClearMode.ALL)
-				.waitFor(group)
+				.waitFor(new PlayerList.GroupWaitPlayers(group))
 				.wait(Duration.ofSeconds(GroupConfigMap.START_DELAY.getGroupConfig(group)))
 				.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(this, WorldBorderArea.CONFIG.getGameConfig(group, builder))
+				WorldBorderArea.within(WorldBorderArea.CONFIG.getGameConfig(group, builder), plugin())
 			)
 			.build();
 		this.teamController = new ManhuntTeamController(

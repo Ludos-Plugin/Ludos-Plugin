@@ -43,15 +43,13 @@ public final class WorldManager extends GameProcessBase {
 		return this.world;
 	}
 
-	@Nullable
 	private Area area;
-	@Nullable
-	public final Area getArea() {
-		return this.area;
+	public Area getArea() {
+		return area;
 	}
 	public final WorldManager mutateArea(Consumer<Area.Builder<?>> config) {
-		if (area == null) return this;
-		area.mutate(config);
+		if (builder.areaBuilder == null) return this;
+		config.accept(builder.areaBuilder);
 		return this;
 	}
 
@@ -59,15 +57,13 @@ public final class WorldManager extends GameProcessBase {
 		return area != null && area.isStarted();
 	}
 
-	@Nullable
 	private Lobby lobby;
-	@Nullable
-	public final Lobby getLobby() {
-		return this.lobby;
+	public Lobby getLobby() {
+		return lobby;
 	}
 	public final WorldManager mutateLobby(Consumer<Lobby.Builder> config) {
-		if (lobby == null) return this;
-		lobby.mutate(config);
+		if (builder.lobbyBuilder == null) return this;
+		config.accept(builder.lobbyBuilder);
 		return this;
 	}
 
@@ -78,14 +74,6 @@ public final class WorldManager extends GameProcessBase {
 
 	private WorldManager(Builder builder) {
 		this.builder = builder;
-
-		this.area = builder.areaBuilder != null
-			? builder.areaBuilder.build()
-			: null;
-
-		this.lobby = builder.lobbyBuilder != null
-			? builder.lobbyBuilder.build()
-			: null;
 	}
 
 	public static Builder within(Game game) {
@@ -97,7 +85,6 @@ public final class WorldManager extends GameProcessBase {
 
 		config.accept(builder);
 
-		stopProcesses();
 		startProcesses();
 
 		scheduleFlushWorld(oldWorld, false);
@@ -107,9 +94,6 @@ public final class WorldManager extends GameProcessBase {
 
 	@Override
 	public boolean isClear() {
-		Area area = getArea();
-		Lobby lobby = getLobby();
-
 		return ! isStarted() &&
 			(flushTasks.size() == 0) &&
 			(area == null || area.isClear()) &&
@@ -129,21 +113,21 @@ public final class WorldManager extends GameProcessBase {
 			builder.worldCreator.keepSpawnLoaded(TriState.FALSE);
 
 			world = builder.worldCreator.createWorld();
-			world.setKeepSpawnInMemory(false);
-			world.setAutoSave(false);
 		} else throw new NullArgumentException("world/worldCreator");
+		world.setKeepSpawnInMemory(false);
+		world.setAutoSave(false);
 
 		builder.configure(world);
 
-		if (area != null) {
-			area.mutate(area -> area
-				.in(world)
-			).start();
+		stopProcesses();
+
+		if (builder.areaBuilder != null) {
+			area = builder.areaBuilder.build(world);
+			area.start();
 		}
-		if (lobby != null) {
-			lobby.mutate(lobby -> lobby
-				.in(world)
-			).start();
+		if (builder.lobbyBuilder != null) {
+			lobby = builder.lobbyBuilder.build(world);
+			lobby.start();
 		}
 	}
 	@Override
@@ -154,7 +138,10 @@ public final class WorldManager extends GameProcessBase {
 
 	private void stopProcesses() {
 		if (lobby != null) lobby.stop();
+		lobby = null;
+
 		if (area != null) area.stop();
+		area = null;
 	}
 	@Override
 	public void onStop() {

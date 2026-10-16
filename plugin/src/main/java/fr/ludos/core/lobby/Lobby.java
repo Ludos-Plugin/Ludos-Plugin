@@ -2,11 +2,9 @@ package fr.ludos.core.lobby;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -29,11 +27,10 @@ import org.bukkit.util.Vector;
 
 import com.google.common.base.Predicate;
 
+import fr.ludos.core.PlayerList;
 import fr.ludos.core.Utility;
-import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameProcessBase;
-import fr.ludos.core.group.Group;
 import fr.ludos.core.structure.Structure;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
@@ -65,16 +62,32 @@ public final class Lobby extends GameProcessBase {
 		public void handlePlayer(Player player) {}
 	}
 
-	private final Builder builder;
+	private final Game game;
 	@Override
-	protected JavaPlugin plugin() {
-		return this.builder.game.plugin();
+	protected final JavaPlugin plugin() {
+		return this.game.plugin();
+	}
+
+	private final Location location;
+
+	private final Structure.Builder structureBuilder;
+	public final Structure.Builder structureBuilder() {
+		return this.structureBuilder;
 	}
 
 	private Structure structure;
 	public final Structure getStructure() {
 		return this.structure;
 	}
+
+	private final ClearMode clearMode;
+	private final GameMode gameMode;
+	private final Duration waitDuration;
+	private final PlayerList selectedPlayers;
+	private final Predicate<Lobby> startCondition;
+	private final Runnable endFunction;
+	private final Component waitingText;
+	private final Component startingText;
 
 	private Set<OfflinePlayer> players;
 
@@ -83,17 +96,22 @@ public final class Lobby extends GameProcessBase {
 	private Set<OfflinePlayer> finalPlayersSelection;
 
 
-	private Lobby(Builder builder) {
-		this.builder = builder;
+	private Lobby(Structure.Builder structureBuilder, Location location, Game game, ClearMode clearMode, GameMode gameMode, Duration waitDuration, PlayerList selectedPlayers, Predicate<Lobby> startCondition, Runnable endFunction, Component waitingText, Component startingText) {
+		this.structureBuilder = structureBuilder;
+		this.game = game;
+		this.location = location;
+		this.clearMode = clearMode;
+		this.gameMode = gameMode;
+		this.waitDuration = waitDuration;
+		this.selectedPlayers = selectedPlayers;
+		this.startCondition = startCondition;
+		this.endFunction = endFunction;
+		this.waitingText = waitingText;
+		this.startingText = startingText;
 	}
 
 	public static Builder within(Game game) {
 		return new Builder(game);
-	}
-
-	public Lobby mutate(Consumer<Builder> config) {
-		config.accept(builder);
-		return this;
 	}
 
 	@Override
@@ -107,7 +125,7 @@ public final class Lobby extends GameProcessBase {
 	protected void onStart() {
 		super.onStart();
 
-		structure = builder.getStructureBuilder().build(builder.location);
+		structure = structureBuilder.build(location);
 
 		startWaitSequence();
 	}
@@ -137,22 +155,22 @@ public final class Lobby extends GameProcessBase {
 		joinLobbyTask = new BukkitRunnable() {
 			@Override
 			public void run() {
-				finalPlayersSelection = builder.getPlayers();
+				finalPlayersSelection = selectedPlayers.getPlayers().stream().collect(Collectors.toSet());
 
 				Set<OfflinePlayer> allPlayersToTeleport = finalPlayersSelection.stream()
 					.filter(player ->
 						!player.isOnline() ||
-						!player.getPlayer().getWorld().equals(builder.location.getWorld()) ||
+						!player.getPlayer().getWorld().equals(location.getWorld()) ||
 						!structure.contains(player.getPlayer().getBoundingBox())
 					)
 					.collect(Collectors.toSet());
 
-				if (builder.canStart(lobby) && allPlayersToTeleport.isEmpty()) {
+				if (startCondition.apply(lobby) && allPlayersToTeleport.isEmpty()) {
 					players = finalPlayersSelection;
 					startGameTask = startOnTimer(
-						builder.getStartingText(),
-						(int) builder.getWaitDuration().toSeconds(),
-						builder::onEnd
+						startingText,
+						(int) waitDuration.toSeconds(),
+						endFunction
 					);
 					cancel();
 					return;
@@ -173,13 +191,13 @@ public final class Lobby extends GameProcessBase {
 						} finally { }
 					}
 					player.teleport(randomizedEntrance);
-					builder.clearMode.handlePlayer(player);
-					if (builder.gameMode != null) player.setGameMode(builder.gameMode);
+					clearMode.handlePlayer(player);
+					if (gameMode != null) player.setGameMode(gameMode);
 				}
 
 
 				Set<Player> waitingPlayers = Utility.getOnline(finalPlayersSelection.stream())
-					.filter(player -> player.getWorld().equals(builder.location.getWorld()) )
+					.filter(player -> player.getWorld().equals(location.getWorld()) )
 					.collect(Collectors.toSet());
 
 				for (Player waitingPlayer : waitingPlayers) {
@@ -189,7 +207,7 @@ public final class Lobby extends GameProcessBase {
 					);
 					waitingPlayer.sendTitlePart(
 						TitlePart.TITLE,
-						builder.getWaitingText()
+						waitingText
 					);
 				}
 			}
@@ -272,16 +290,12 @@ public final class Lobby extends GameProcessBase {
 		private final Game game;
 
 		public Builder(Game game) {
-			this.game = game;
+			this.game = Objects.requireNonNull(game);
 		}
 
 		private Location location;
 		public Builder at(Location location) {
 			this.location = location;
-			return this;
-		}
-		public Builder in(World world) {
-			this.location = world.getSpawnLocation();
 			return this;
 		}
 
@@ -320,23 +334,9 @@ public final class Lobby extends GameProcessBase {
 			return this;
 		}
 
-		private Collection<OfflinePlayer> players;
-		private Group playersGroup;
-		private final Set<OfflinePlayer> getPlayers() {
-			if (players != null) return new HashSet<>(players);
-			if (playersGroup != null) {
-				LobbyWaitPlayersOption option = GroupConfigMap.WAIT_PLAYERS.getGroupConfig(playersGroup);
-				return option.getPlayers(playersGroup);
-			}
-			return null;
-		}
-		public Builder waitFor(Collection<OfflinePlayer> players) {
+		private PlayerList players;
+		public Builder waitFor(PlayerList players) {
 			this.players = players;
-			return this;
-		}
-		public Builder waitFor(Group group) {
-			this.playersGroup = group;
-			this.players = null;
 			return this;
 		}
 
@@ -369,10 +369,6 @@ public final class Lobby extends GameProcessBase {
 			return this;
 		}
 
-		public Lobby build() {
-			return new Lobby(this);
-		}
-
 		private static final Component DEFAULT_WAITING_TEXT = Component.text("Waiting for players to join...");
 		private Component waitingText;
 		private Component getWaitingText() {
@@ -395,6 +391,28 @@ public final class Lobby extends GameProcessBase {
 		public Builder showOnStart(Component text) {
 			this.startingText = text;
 			return this;
+		}
+
+		public Lobby build(World world) {
+			Location loc = location;
+			if (loc.getWorld() != Objects.requireNonNull(world)) {
+				loc = loc.clone();
+				loc.setWorld(world);
+			}
+
+			return new Lobby(
+				getStructureBuilder(),
+				loc,
+				game,
+				clearMode,
+				gameMode,
+				getWaitDuration(),
+				players,
+				this::canStart,
+				this::onEnd,
+				getWaitingText(),
+				getStartingText()
+			);
 		}
 	}
 }

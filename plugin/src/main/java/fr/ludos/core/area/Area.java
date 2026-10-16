@@ -1,9 +1,10 @@
 package fr.ludos.core.area;
 
-import java.util.function.Consumer;
+import java.util.Objects;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.ludos.core.game.GameProcessBase;
 
@@ -11,11 +12,21 @@ import fr.ludos.core.game.GameProcessBase;
  * Manager for a game area, responsible for setting up the area and managing requests from Game processes.
  */
 public abstract class Area extends GameProcessBase {
-	public abstract Builder<? extends Area> getBuilder();
-	public final Area mutate(Consumer<Builder<?>> config) {
-		config.accept(getBuilder());
-		return this;
+	private final World world;
+	public final World world() {
+		return world;
 	}
+	private final JavaPlugin plugin;
+	@Override
+	protected JavaPlugin plugin() {
+		return plugin;
+	}
+
+	public Area(World world, JavaPlugin plugin) {
+		this.world = Objects.requireNonNull(world);
+		this.plugin = Objects.requireNonNull(plugin);
+	}
+
 	public abstract Location getCenter();
 
 	public abstract Location pickRandom(double startFactor, double endFactor);
@@ -35,22 +46,15 @@ public abstract class Area extends GameProcessBase {
 	 * @param <T> The type of Area that will be built.
 	 */
 	public static abstract class Builder<T extends Area> {
-
-		protected Location location;
-		public Builder<T> at(Location location) {
-			this.location = location;
-			return this;
-		}
-		public Builder<T> in(World world) {
-			this.location = world.getSpawnLocation();
-			return this;
+		public Builder(JavaPlugin plugin) {
+			this.plugin = plugin;
 		}
 
-		public final Builder<T> mutate(Consumer<Builder<T>> config) {
-			config.accept(this);
-			return this;
+		private final JavaPlugin plugin;
+		public JavaPlugin plugin() {
+			return plugin;
 		}
 
-		public abstract T build();
+		public abstract T build(World world);
 	}
 }

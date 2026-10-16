@@ -15,6 +15,7 @@ import org.bukkit.block.banner.PatternType;
 import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
+import fr.ludos.core.PlayerList;
 import fr.ludos.core.area.WorldBorderArea;
 import fr.ludos.core.game.Game;
 import fr.ludos.core.game.GameManager;
@@ -79,14 +80,11 @@ public class RaidGame extends WaveGame {
 			.withLobby(
 				Lobby.within(this)
 					.clear(ClearMode.ALL)
-					.waitFor(group)
+					.waitFor(new PlayerList.GroupWaitPlayers(group))
 					.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(
-					this,
-					WorldBorderArea.CONFIG.getGameConfig(group, builder)
-				)
+				WorldBorderArea.within(WorldBorderArea.CONFIG.getGameConfig(group, builder), plugin())
 			)
 			.build();
 

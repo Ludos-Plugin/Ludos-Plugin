@@ -13,6 +13,7 @@ import org.bukkit.WorldType;
 import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
+import fr.ludos.core.PlayerList;
 import fr.ludos.core.area.WorldBorderArea;
 import fr.ludos.core.command.ludos.config.group.GroupConfigMap;
 import fr.ludos.core.game.Game;
@@ -78,13 +79,13 @@ public class ArenaGame extends WaveGame {
 			.of(builder.createWorldCreator())
 			.withLobby(
 				Lobby.within(this)
-					.waitFor(group)
+					.waitFor(new PlayerList.GroupWaitPlayers(group))
 					.clear(ClearMode.ALL)
 					.wait(Duration.ofSeconds(GroupConfigMap.START_DELAY.getGroupConfig(group)))
 					.then(this::start)
 			)
 			.inArea(
-				WorldBorderArea.within(this, WorldBorderArea.CONFIG.getGameConfig(group, builder))
+				WorldBorderArea.within(WorldBorderArea.CONFIG.getGameConfig(group, builder), plugin())
 			)
 			.build();
 		this.teamController = new ArenaTeamController(
