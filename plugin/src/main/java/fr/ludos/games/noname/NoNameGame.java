@@ -4,14 +4,11 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
-import org.bukkit.block.banner.Pattern;
-import org.bukkit.block.banner.PatternType;
 import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
@@ -25,12 +22,11 @@ import fr.ludos.core.lobby.Lobby.ClearMode;
 import fr.ludos.core.persistence.config.ConfigNodeCollection;
 import fr.ludos.core.persistence.config.ConfigNodeMap;
 import fr.ludos.core.world.WorldManager;
-import fr.ludos.games.noname.NoNameGame;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import xyz.xenondevs.invui.item.builder.AbstractItemBuilder;
-import xyz.xenondevs.invui.item.builder.BannerBuilder;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 public class NoNameGame extends Game {
     public static final String ID = "noname";
@@ -76,6 +72,7 @@ public class NoNameGame extends Game {
         );
     }
 
+
     public static class Builder extends Game.Builder {
 
 		public final ConfigNodeMap configMap = getConfigMap(List.of(
@@ -95,14 +92,7 @@ public class NoNameGame extends Game {
 
 		@Override
 		public AbstractItemBuilder<?> createItem(Player player) {
-			return new BannerBuilder(Material.BLACK_BANNER)
-				.addPattern(new Pattern(DyeColor.CYAN, PatternType.RHOMBUS_MIDDLE))
-				.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.STRIPE_BOTTOM))
-				.addPattern(new Pattern(DyeColor.GRAY, PatternType.STRIPE_CENTER))
-				.addPattern(new Pattern(DyeColor.BLACK, PatternType.STRIPE_MIDDLE))
-				.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.HALF_HORIZONTAL))
-				.addPattern(new Pattern(DyeColor.LIGHT_GRAY, PatternType.CIRCLE_MIDDLE))
-				.addPattern(new Pattern(DyeColor.BLACK, PatternType.BORDER));
+			return new ItemBuilder(Material.SPRUCE_DOOR);
 		}
 
 		@Override
