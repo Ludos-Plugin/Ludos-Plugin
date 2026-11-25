@@ -46,6 +46,7 @@ import fr.ludos.core.role.RoleManager;
 import fr.ludos.core.security.AdminAuthz;
 import fr.ludos.games.arena.ArenaGame;
 import fr.ludos.games.manhunt.ManhuntGame;
+import fr.ludos.games.noname.NoNameGame;
 import fr.ludos.games.raid.RaidGame;
 import fr.ludos.other.ExcludeFromJacocoGeneratedReport;
 import fr.ludos.roles.assassin.AssassinRole;
@@ -199,6 +200,7 @@ public class Ludos extends JavaPlugin implements Listener {
 		gameManager.registerGame(new ManhuntGame.Builder(gameManager));
 		gameManager.registerGame(new ArenaGame.Builder(gameManager));
 		gameManager.registerGame(new RaidGame.Builder(gameManager));
+		gameManager.registerGame(new NoNameGame.Builder(gameManager));
 
 		roleManager.registerRole(new HuntsmanRole.Builder(this));
 		roleManager.registerRole(new HarvesterRole.Builder(this));
