@@ -9,7 +9,11 @@ To build Ludos Plugin, [Java 17](https://www.oracle.com/java/technologies/javase
 
 ### Docker
 If you want to quickly test the Plugin, you can use Docker compose to run a compatible Minecraft server.
-```docker compose up ludos-server```
+```
+docker compose up -d server
+```
+The Compose service is named `server` (`ludos-server` is only the container name). Follow the logs with `docker compose logs -f server`, and stop the server with `docker compose stop` (let it finish saving the worlds, don't force-kill it).
+The server runs Paper 1.19, so connect to `localhost:25565` with a Minecraft 1.19 client.
 Using the `build.bat`/`build.sh` scripts will automatically update the plugin in the server, you only need to reload the plugins in-game to apply changes: `/reload` or `/reload confirm`, depending on the server.
 
 
