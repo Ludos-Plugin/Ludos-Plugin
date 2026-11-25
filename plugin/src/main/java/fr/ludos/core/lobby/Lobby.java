@@ -293,8 +293,9 @@ public final class Lobby extends GameProcessBase {
 			this.game = Objects.requireNonNull(game);
 		}
 
+		@Nullable
 		private Location location;
-		public Builder at(Location location) {
+		public Builder at(@Nullable Location location) {
 			this.location = location;
 			return this;
 		}
@@ -395,7 +396,9 @@ public final class Lobby extends GameProcessBase {
 
 		public Lobby build(World world) {
 			Location loc = location;
-			if (loc.getWorld() != Objects.requireNonNull(world)) {
+			if (loc == null) {
+				loc = new Location(world, 0, 0, 0);
+			} else if (loc.getWorld() != Objects.requireNonNull(world)) {
 				loc = loc.clone();
 				loc.setWorld(world);
 			}
