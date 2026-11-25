@@ -35,7 +35,6 @@ import fr.ludos.core.persistence.config.valueEntry.IntegerConfigEntry;
 import fr.ludos.core.role.Role;
 import fr.ludos.roles.assassin.items.AssassinBoots;
 import fr.ludos.roles.assassin.items.AssassinDagger;
-import fr.ludos.roles.assassin.items.SmokeBomb;
 import fr.ludos.roles.assassin.items.TeleportScroll;
 import fr.ludos.roles.assassin.items.trap.AssassinSnareDevice;
 import net.kyori.adventure.bossbar.BossBar;
@@ -241,7 +240,6 @@ public class AssassinRole extends Role {
 		map.put(AssassinBoots.ID, new AssassinBoots.Events(game));
 		map.put(TeleportScroll.ID, new TeleportScroll.Events(game, this));
 		map.put(AssassinSnareDevice.ID, new AssassinSnareDevice.Events(game, this));
-		map.put(SmokeBomb.ID, new SmokeBomb.Events(game, this));
 		return map;
 	}
 
