@@ -32,6 +32,13 @@ public class NBTFileStructure extends BoundingBoxStructure {
 
 		this.origin = location.clone();
 
+		if (rotation == null) {
+			rotation = StructureRotation.NONE;
+		}
+		if (mirror == null) {
+			mirror = Mirror.NONE;
+		}
+
 		if (entranceOffset != null) {
 			if (rotation != null) {
 				switch (rotation) {
