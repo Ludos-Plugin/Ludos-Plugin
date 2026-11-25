@@ -173,6 +173,7 @@ public final class RoleManager {
 		setRole(target, role);
 		if (user != target) {
 			user.sendMessage("The role of player " + target.getName() + " is now " + id);
+			user.setplayerListName(id + target.getName());
 		}
 		return true;
 	}
