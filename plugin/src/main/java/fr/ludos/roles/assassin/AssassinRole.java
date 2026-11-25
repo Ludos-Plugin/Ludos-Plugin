@@ -36,6 +36,7 @@ import fr.ludos.core.role.Role;
 import fr.ludos.roles.assassin.items.AssassinBoots;
 import fr.ludos.roles.assassin.items.AssassinDagger;
 import fr.ludos.roles.assassin.items.TeleportScroll;
+import fr.ludos.roles.assassin.items.trap.AssassinTeleport;
 import fr.ludos.roles.assassin.items.trap.AssassinSnareDevice;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
@@ -240,6 +241,7 @@ public class AssassinRole extends Role {
 		map.put(AssassinBoots.ID, new AssassinBoots.Events(game));
 		map.put(TeleportScroll.ID, new TeleportScroll.Events(game, this));
 		map.put(AssassinSnareDevice.ID, new AssassinSnareDevice.Events(game, this));
+		map.put(AssassinTeleport.ID, new AssassinTeleport.Events(game, this));
 		return map;
 	}
 
@@ -292,19 +294,14 @@ public class AssassinRole extends Role {
 		public final IntegerConfigEntry daggerDamage = entry("Dagger damage (%)", "dagger_damage", 150, Material.IRON_SWORD);
 		public final IntegerConfigEntry trapLimit = entry("Traps per type (0 = unlimited)", "trap_limit", 3, Material.TRIPWIRE_HOOK);
 		public final IntegerConfigEntry teleportCooldown = entry("Teleport Scroll cooldown (seconds)", "teleport_cooldown", 30, Material.PAPER);
-		public final IntegerConfigEntry smokeCooldown = entry("Smoke Bomb cooldown (seconds)", "smoke_cooldown", 30, Material.FIREWORK_STAR);
-		public final IntegerConfigEntry smokeRadius = entry("Smoke Bomb radius (blocks)", "smoke_radius", 5, Material.CAMPFIRE);
-		public final IntegerConfigEntry smokeDuration = entry("Smoke Bomb duration (seconds)", "smoke_duration", 4, Material.INK_SAC);
+
 
 		public final ConfigNodeMap configMap = getConfigMap(List.of(
 			stealthDelay,
 			ambushDamage,
 			daggerDamage,
 			trapLimit,
-			teleportCooldown,
-			smokeCooldown,
-			smokeRadius,
-			smokeDuration
+			teleportCooldown
 		));
 
 		private static IntegerConfigEntry entry(String name, String key, int defaultValue, Material material) {
