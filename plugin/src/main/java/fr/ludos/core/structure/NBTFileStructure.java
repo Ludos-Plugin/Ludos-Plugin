@@ -26,40 +26,50 @@ public class NBTFileStructure extends BoundingBoxStructure {
 	private final Location entrance;
 	private final BoundingBox boundingBox;
 
-	public NBTFileStructure(Structure structure, Location location, @Nullable Vector entranceOffset, StructureRotation rotation, Mirror mirror, int palette, float integrity, Random random) {
+	public NBTFileStructure(Structure structure, Location location, @Nullable Vector entranceOffset, @Nullable StructureRotation rotation, @Nullable Mirror mirror, int palette, float integrity, Random random) {
 		super(location);
 		Objects.requireNonNull(structure);
 
 		this.origin = location.clone();
 
-		switch (rotation) {
-			case NONE:
-				break;
-			case CLOCKWISE_180:
-				entranceOffset.setZ(- entranceOffset.getZ());
-				entranceOffset.setX(- entranceOffset.getX());
-				break;
-			case CLOCKWISE_90:
-				double clockwise_x = entranceOffset.getX();
-				entranceOffset.setX(- entranceOffset.getZ());
-				entranceOffset.setZ(clockwise_x);
-				break;
-			case COUNTERCLOCKWISE_90:
-				double counter_x = entranceOffset.getX();
-				entranceOffset.setX(entranceOffset.getZ());
-				entranceOffset.setZ(- counter_x);
-				break;
+		if (entranceOffset != null) {
+			if (rotation != null) {
+				switch (rotation) {
+					default:
+					case NONE:
+						break;
+					case CLOCKWISE_180:
+						entranceOffset.setZ(- entranceOffset.getZ());
+						entranceOffset.setX(- entranceOffset.getX());
+						break;
+					case CLOCKWISE_90:
+						double clockwise_x = entranceOffset.getX();
+						entranceOffset.setX(- entranceOffset.getZ());
+						entranceOffset.setZ(clockwise_x);
+						break;
+					case COUNTERCLOCKWISE_90:
+						double counter_x = entranceOffset.getX();
+						entranceOffset.setX(entranceOffset.getZ());
+						entranceOffset.setZ(- counter_x);
+						break;
+				}
+			}
+
+			if (mirror != null) {
+				switch (mirror) {
+					default:
+					case NONE:
+						break;
+					case FRONT_BACK:
+						entranceOffset.setZ(- entranceOffset.getZ());
+						break;
+					case LEFT_RIGHT:
+						entranceOffset.setX(- entranceOffset.getX());
+						break;
+				}
+			}
 		}
-		switch (mirror) {
-			case NONE:
-				break;
-			case FRONT_BACK:
-				entranceOffset.setZ(- entranceOffset.getZ());
-				break;
-			case LEFT_RIGHT:
-				entranceOffset.setX(- entranceOffset.getX());
-				break;
-		}
+
 		final BlockVector size = structure.getSize();
 		final Location center = origin.clone().add(size.getX() / 2.0, size.getY() / 2.0, size.getZ() / 2.0);
 		entrance = center.add(entranceOffset);
@@ -117,8 +127,8 @@ public class NBTFileStructure extends BoundingBoxStructure {
 		}
 
 		private Vector entranceOffset = null;
-		private StructureRotation rotation = StructureRotation.NONE;
-		private Mirror mirror = Mirror.NONE;
+		private StructureRotation rotation = null;
+		private Mirror mirror = null;
 		private int palette = -1;
 		private float integrity = 1.0f;
 		private Random random = null;
