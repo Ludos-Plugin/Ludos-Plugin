@@ -108,7 +108,7 @@ public class SheepwarsGame extends Game {
 
 		this.sheepRegistry = new SheepRegistry();
 		this.shipStructures = List.of(
-			new NBTFileStructure.Builder(ludos(), "red_ship.nbt").offsetEntrance(new Vector(-0.5, -25.5, 14.5)),
+			new NBTFileStructure.Builder(ludos(), "red_ship.nbt").offsetEntrance(new Vector(0.5, -24, 14.5)),
 			new NBTFileStructure.Builder(ludos(), "blue_ship.nbt").offsetEntrance(new Vector(-2.5, -23, 0.5))
 		);
 		this.worldManager = WorldManager.within(this)
