@@ -1,14 +1,15 @@
 package fr.ludos.games.noname;
 
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import fr.ludos.core.Ludos;
@@ -64,6 +65,11 @@ public class NoNameGame extends Game {
             .inArea(
                 WorldBorderArea.within(WorldBorderArea.CONFIG.getGameConfig(group, builder), plugin())
             )
+			.config(world -> {
+				Location loc = new Location(world, 0, 80, 0);
+				Block block = loc.getBlock();
+				block.setType(Material.COMMAND_BLOCK);
+			})
             .build();
 
         this.teamController = new NoNameTeamController(
@@ -111,9 +117,8 @@ public class NoNameGame extends Game {
 			String worldName = "noname_" + UUID.randomUUID();
 			WorldCreator wc = new WorldCreator(worldName, new NamespacedKey(Ludos.NAMESPACE, worldName))
 				.environment(Environment.NORMAL)
-				.type(WorldType.NORMAL)
-				.generateStructures(true)
-				.seed(new Random().nextLong());
+				.type(WorldType.FLAT)
+				.generateStructures(true);
 			return wc;
 		}
 
